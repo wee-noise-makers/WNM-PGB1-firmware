@@ -1,4 +1,4 @@
-# Wee Noise Maker
+# WNM-PS1-firmware
 
 Pocket open source synthesizer
 
