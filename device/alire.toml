@@ -1,0 +1,11 @@
+name = "wnm_ps1_device"
+description = "Shiny new project"
+version = "0.1.0-dev"
+
+authors = ["Fabien Chouteau"]
+maintainers = ["Fabien Chouteau <fabien.chouteau@gmail.com>"]
+maintainers-logins = ["Fabien-Chouteau"]
+
+executables = ["wnm_ps1_device"]
+[[depends-on]]
+rp2040_hal = "^1.6.0"
