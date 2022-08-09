@@ -36,7 +36,7 @@ package body WNM.Sample_Library is
    function Sample_Data return not null Global_Sample_Array_Access is
    begin
       return Global_Sample_Array_Access
-        (Global_Address_To_Access.To_Pointer (Storage.Sample_Data_Base));
+        (Global_Address_To_Access.To_Pointer (Sample_Data_Base));
    end Sample_Data;
 
    ----------------
@@ -96,7 +96,8 @@ package body WNM.Sample_Library is
       begin
          Ada.Text_IO.Put_Line ("Sample ID:" & ID'Img);
          if ID in
-           Natural (Valid_Sample_Index'First) .. Natural (Valid_Sample_Index'Last)
+           Natural (Valid_Sample_Index'First) ..
+           Natural (Valid_Sample_Index'Last)
          then
             Sample_Id := Valid_Sample_Index (ID);
          else
@@ -119,16 +120,13 @@ package body WNM.Sample_Library is
            Natural'Value (Line (Delim2 + 1 .. Line'Last));
       begin
          Ada.Text_IO.Put_Line ("Sample Len:" & Len'Img);
-         if Len in
-           Natural (Sample_Point_Count'First) .. Natural (Sample_Point_Count'Last)
-         then
+         if Len <= Natural (Sample_Point_Count'Last) then
             Entries (Sample_Id).Length := Sample_Point_Count (Len);
             Entries (Sample_Id).Used := Len > 0;
          else
             raise Program_Error;
          end if;
       end;
-
 
    end Parse_Info_Line;
 
@@ -145,15 +143,17 @@ package body WNM.Sample_Library is
    begin
       --  Entries (1).Used := True;
       --  Entries (1).Name := "123456789ABCDEF";
+      --  Entries (1).Length := 0;
       --
       --  Entries (2).Used := True;
       --  Entries (2).Name := "This is sample ";
+      --  Entries (2).Length := 0;
       --
       --  Entries (3).Used := True;
       --  Entries (3).Name := "This is sample ";
+      --  Entries (3).Length := 0;
 
-
-      Open_Read (FD, "/sample_entries.txt");
+      Open_Read (FD, Sample_Entries_Filename);
 
       loop
          Get_Line (FD, Line, Last);

@@ -34,7 +34,6 @@ with WNM.GUI.Logo;
 with WNM.GUI.Popup;
 --  with WNM.Sample_Library;    use WNM.Sample_Library;
 
-
 package body WNM.GUI.Update is
 
    Anim_Step : HAL.UInt32 := 0;
@@ -73,7 +72,7 @@ package body WNM.GUI.Update is
       WNM.Screen.Clear;
 
       --  Splash screen
-      if WNM.Time.Clock < 1_000_000 then
+      if WNM.Time.Clock < WNM.Time.Milliseconds (2_000) then
          WNM.GUI.Logo.Draw_On_Screen (UInt2 (Anim_Step mod 4));
          WNM.Screen.Update;
          Anim_Step := Anim_Step + 1;

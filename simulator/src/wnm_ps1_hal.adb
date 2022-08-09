@@ -1,15 +1,17 @@
+with Ada.Calendar; use Ada.Calendar;
 with Ada.Synchronous_Task_Control;
 
 with Sf;
 with Sf.Graphics.Color;
 
 with ASFML_Sim;
+with ASFML_SIM_Storage;
 
 package body WNM_PS1_HAL is
 
    LEDs_Internal : ASFML_Sim.SFML_LED_Strip := ASFML_Sim.SFML_LEDs;
 
-   Buttons_Internal : Buttons_State := (others => False);
+   Buttons_Internal : Buttons_State := (others => Up);
 
    Pixels_Internal : array (Pix_X, Pix_Y) of Boolean :=
      (others => (others => False));
@@ -22,9 +24,9 @@ package body WNM_PS1_HAL is
    begin
       for B in Button loop
          Buttons_Internal (B) :=
-           (ASFML_Sim.SFML_Pressed (B)
-            or else
-            ASFML_Sim.Force_Pressed (B));
+           (if ASFML_Sim.SFML_Pressed (B) or else ASFML_Sim.Force_Pressed (B)
+            then Down
+            else Up);
       end loop;
 
       Ada.Synchronous_Task_Control.Set_True (ASFML_Sim.Button_Scan_Signal);
@@ -36,15 +38,23 @@ package body WNM_PS1_HAL is
    -- Left_Encoder --
    ------------------
 
-   function Left_Encoder return Integer
-   is (0);
+   function Left_Encoder return Integer is
+      Res : constant Integer := ASFML_Sim.Encoder_Left;
+   begin
+      ASFML_Sim.Encoder_Left := 0;
+      return Res;
+   end Left_Encoder;
 
    -------------------
    -- Right_Encoder --
    -------------------
 
-   function Right_Encoder return Integer
-   is (0);
+   function Right_Encoder return Integer is
+      Res : constant Integer := ASFML_Sim.Encoder_Right;
+   begin
+      ASFML_Sim.Encoder_Right := 0;
+      return Res;
+   end Right_Encoder;
 
    ---------
    -- Set --
@@ -118,28 +128,87 @@ package body WNM_PS1_HAL is
       end loop;
    end Update_Screen;
 
+   ------------------------
+   -- Select_Audio_Input --
+   ------------------------
+
+   procedure Select_Audio_Input (Kind : Audio_Input_Kind) is
+   begin
+      null;
+   end Select_Audio_Input;
+
+   ----------------------
+   -- Set_Audio_Volume --
+   ----------------------
+
+   procedure Set_Audio_Volume (Volume : Audio_Volume) is
+   begin
+      null;
+   end Set_Audio_Volume;
+
    ------------------
    -- Milliseconds --
    ------------------
 
-   function Milliseconds (Ms : Natural) return Time is (0);
+   function Milliseconds (Ms : Natural) return Time_Microseconds
+   is (Time_Microseconds (Ms * 1_000));
 
    -----------
    -- Clock --
    -----------
 
-   function Clock return Time is (0);
+   Start_Time : constant Ada.Calendar.Time := Ada.Calendar.Clock;
+
+   function Clock return Time_Microseconds is
+      Delt_Sec : constant Duration := Ada.Calendar.Clock - Start_Time;
+   begin
+      return HAL.UInt64 (Delt_Sec * 1_000_000.0);
+   end Clock;
 
    -----------------
    -- Delay_Until --
    -----------------
 
-   procedure Delay_Until (Deadline : Time) is null;
+   procedure Delay_Until (Deadline : Time_Microseconds) is
+      use HAL;
+
+      Now : constant Time_Microseconds := Clock;
+   begin
+      if Deadline > Now then
+         Delay_Microseconds (Deadline - Now);
+      end if;
+   end Delay_Until;
 
    ------------------------
    -- Delay_Milliseconds --
    ------------------------
 
-   procedure Delay_Milliseconds (Ms : HAL.UInt64) is null;
+   procedure Delay_Milliseconds (Ms : HAL.UInt64) is
+   begin
+      delay Duration (Ms) / 1_000.0;
+   end Delay_Milliseconds;
+
+   ------------------------
+   -- Delay_Microseconds --
+   ------------------------
+
+   procedure Delay_Microseconds (Us : HAL.UInt64) is
+   begin
+      delay Duration (Us) / 1_000_000.0;
+   end Delay_Microseconds;
+
+   --------------------
+   -- Get_LFS_Config --
+   --------------------
+
+   function Get_LFS_Config return not null access Littlefs.LFS_Config
+   is (ASFML_SIM_Storage.Get_LFS_Config);
+
+   ----------------------
+   -- Sample_Data_Base --
+   ----------------------
+
+   function Sample_Data_Base return System.Address
+   is (ASFML_SIM_Storage.Sample_Data_Base);
 
 end WNM_PS1_HAL;

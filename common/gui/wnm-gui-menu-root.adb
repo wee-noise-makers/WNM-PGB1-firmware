@@ -19,12 +19,10 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Power_Control;
 with WNM.GUI.Menu.Drawing;           use WNM.GUI.Menu.Drawing;
 with WNM.GUI.Menu.Sample_Select;     use WNM.GUI.Menu.Sample_Select;
 with WNM.GUI.Menu.Text_Dialog;       use WNM.GUI.Menu.Text_Dialog;
 with WNM.GUI.Menu.Sample_Edit;
-with WNM.GUI.Menu.FM_Settings;
 with WNM.GUI.Menu.Create_Sample;
 with WNM.GUI.Menu.Passthrough;
 
@@ -41,7 +39,6 @@ package body WNM.GUI.Menu.Root is
           when Edit_Sample     => "Edit sample",
           when Create_Sample   => "Create sample",
           when Change_Sample   => "Change sample",
-          when FM_Tune         => "FM Tuner",
           when Set_Passthrough => "Passthrough",
           when Test_Text_Input => "Test text input",
           when Load            => "Load",
@@ -95,15 +92,13 @@ package body WNM.GUI.Menu.Root is
                   Menu.Create_Sample.Push_Window;
                when Change_Sample =>
                   Sample_Select.Push_Window;
-               when FM_Tune =>
-                  FM_Settings.Push_Window;
                when Set_Passthrough =>
                   Passthrough.Push_Window;
                when Test_Text_Input =>
                   Text_Dialog.Set_Title ("Enter some text");
                   Text_Dialog.Push_Window;
                when Shutdown =>
-                  WNM.Power_Control.Power_Down;
+                  null; -- TODO
                when others =>
                   null;
             end case;

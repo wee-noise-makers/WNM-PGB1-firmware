@@ -19,16 +19,14 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Audio;
-
 package WNM.GUI.Menu.Passthrough is
 
    procedure Push_Window;
 
- private
+private
 
    type Passthrough_Window is new Menu_Window with record
-      Src, Before : Audio.Input_Kind;
+      Src, Before : Audio_Input_Kind;
    end record;
 
    overriding

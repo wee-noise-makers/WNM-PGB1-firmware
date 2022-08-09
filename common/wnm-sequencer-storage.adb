@@ -33,7 +33,7 @@ package body WNM.Sequencer.Storage is
 
       Out_Pattern : Patterns := Patterns'Last;
       Out_Track   : Tracks   := Tracks'Last;
- begin
+   begin
       F.Start_Sequence;
       for P in Patterns loop
          for T in Tracks loop
@@ -63,7 +63,8 @@ package body WNM.Sequencer.Storage is
                      end if;
 
                      if Step.Repeat_Rate /= Default_Step.Repeat_Rate then
-                        F.Push (Repeat_Rate'Enum_Rep, Step.Repeat_Rate'Enum_Rep);
+                        F.Push (Repeat_Rate'Enum_Rep,
+                                Step.Repeat_Rate'Enum_Rep);
                      end if;
 
                      if Step.Note_Mode /= Default_Step.Note_Mode then

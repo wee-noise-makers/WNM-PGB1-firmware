@@ -1,16 +1,37 @@
 with Interfaces.C; use Interfaces.C;
 with Interfaces; use Interfaces;
 with Littlefs; use Littlefs;
-with WNM.Storage;
-with WNM.Factory_Reset;
 
 with WNM.Screen;
 with WNM.GUI.Bitmap_Fonts;
-with WNM.Buttons;
+with WNM.Sample_Library;
 
 package body WNM.File_System is
 
    FS : aliased Littlefs.LFS_T;
+
+   ---------------
+   -- Error_Img --
+   ---------------
+
+   function Error_Img (Err : int) return String
+   is (case Err is
+          when LFS_ERR_OK          => "No error",
+          when LFS_ERR_IO          => "Error during device operation",
+          when LFS_ERR_CORRUPT     => "Corrupted",
+          when LFS_ERR_NOENT       => "No directory entry",
+          when LFS_ERR_EXIST       => "Entry already exists",
+          when LFS_ERR_NOTDIR      => "Entry is not a dir",
+          when LFS_ERR_ISDIR       => "Entry is a dir",
+          when LFS_ERR_NOTEMPTY    => "Dir is not empty",
+          when LFS_ERR_BADF        => "Bad file number",
+          when LFS_ERR_FBIG        => "File too large",
+          when LFS_ERR_INVAL       => "Invalid parameter",
+          when LFS_ERR_NOSPC       => "No space left on device",
+          when LFS_ERR_NOMEM       => "No more memory available",
+          when LFS_ERR_NOATTR      => "No data/attr available",
+          when LFS_ERR_NAMETOOLONG => "File name too long",
+          when others              => "Unknown LFS error (" & Err'Img & ")");
 
    --------------------------
    -- Query_User_To_Format --
@@ -33,18 +54,34 @@ package body WNM.File_System is
       Screen.Update;
 
       loop
-         Buttons.Scan;
-         Last_Play := Play;
-         Last_Rec := Rec;
-         Play := Buttons.Is_Pressed (WNM.Play);
-         Rec := Buttons.Is_Pressed (WNM.Rec);
-         if Last_Rec and then not Rec then
-            return False;
-         elsif Last_Play and then not Play then
-            return True;
-         end if;
+         declare
+            State : constant WNM_PS1_HAL.Buttons_State := WNM_PS1_HAL.State;
+         begin
+            Last_Play := Play;
+            Last_Rec := Rec;
+            Play := State (WNM_PS1_HAL_Params.Play) = Down;
+            Rec := State (WNM_PS1_HAL_Params.Rec) = Down;
+            if Last_Rec and then not Rec then
+               return False;
+            elsif Last_Play and then not Play then
+               return True;
+            end if;
+         end;
       end loop;
    end Query_User_To_Format;
+
+   -------------------
+   -- Factory_Reset --
+   -------------------
+
+   procedure Factory_Reset is
+      FD : aliased File_Descriptor;
+   begin
+
+      Create_File (FD, Sample_Library.Sample_Entries_Filename);
+      Close (FD);
+
+   end Factory_Reset;
 
    -----------
    -- Mount --
@@ -52,30 +89,26 @@ package body WNM.File_System is
 
    procedure Mount is
       Err : int;
-
-      Do_Reset : constant Boolean := False;
    begin
-      Err := Littlefs.Mount (FS, WNM.Storage.Get_LFS_Config.all);
+      Err := Littlefs.Mount (FS, Get_LFS_Config.all);
       if Err /= 0 then
          if Query_User_To_Format then
-            Err := Littlefs.Format (FS, WNM.Storage.Get_LFS_Config.all);
+            Err := Littlefs.Format (FS, Get_LFS_Config.all);
             if Err /= 0 then
                raise Program_Error with "Format error: " & Err'Img;
             end if;
 
-            Err := Littlefs.Mount (FS, WNM.Storage.Get_LFS_Config.all);
+            Err := Littlefs.Mount (FS, Get_LFS_Config.all);
             if Err /= 0 then
                raise Program_Error with "Mount error after format: " & Err'Img;
             end if;
 
-            if Do_Reset then
-               WNM.Factory_Reset.Reset (FS);
-            end if;
+            Factory_Reset;
          else
-            raise Program_Error with "No FS available, nothing we can do from here";
+            raise Program_Error
+              with "No FS available, nothing we can do from here";
          end if;
       end if;
-
 
    end Mount;
 
@@ -84,9 +117,11 @@ package body WNM.File_System is
    -----------
 
    procedure Close (FD : aliased in out File_Descriptor) is
+      Result : constant int := Littlefs.Close (FS, FD);
    begin
-      if Littlefs.Close (FS, FD) /= 0 then
-         raise Program_Error with "Close file error...";
+      if Result /= 0 then
+         raise Program_Error with "Close file error (" &
+           Error_Img (Result) & ")";
       end if;
    end Close;
 
@@ -94,10 +129,14 @@ package body WNM.File_System is
    -- Create_File --
    -----------------
 
-   procedure Create_File (FD : aliased in out File_Descriptor; Name : String) is
+   procedure Create_File (FD : aliased in out File_Descriptor; Name : String)
+   is
+      Result : constant int :=
+        Littlefs.Open (FS, FD, Name, LFS_O_WRONLY + LFS_O_CREAT);
    begin
-      if Littlefs.Open (FS, FD, Name, LFS_O_WRONLY + LFS_O_CREAT) /= 0 then
-         raise Program_Error with "Create ('" & Name & "') file error...";
+      if Result /= 0 then
+         raise Program_Error with "Create ('" & Name & "') file error (" &
+           Error_Img (Result) & ")";
       end if;
    end Create_File;
 
@@ -110,7 +149,7 @@ package body WNM.File_System is
    begin
       if Result /= 0 then
          raise Program_Error with "Open_Read ('" & Name & "') file error (" &
-           Result'Img & ")...";
+           Error_Img (Result) & ")...";
       end if;
    end Open_Read;
 
@@ -167,7 +206,7 @@ package body WNM.File_System is
 
    function Available return File_Signed_Size is
    begin
-      return WNM.Storage.FS_Size - Littlefs.Size (FS) * Storage.Sector_Size;
+      return Storage.FS_Size - Littlefs.Size (FS) * Storage.Sector_Size;
    end Available;
 
    --------------

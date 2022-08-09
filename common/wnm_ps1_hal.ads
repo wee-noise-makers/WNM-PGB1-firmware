@@ -1,4 +1,8 @@
+with System;
+
 with HAL;
+
+with Littlefs;
 
 with WNM_PS1_HAL_Params; use WNM_PS1_HAL_Params;
 
@@ -8,7 +12,8 @@ package WNM_PS1_HAL is
    -- Buttons --
    -------------
 
-   type Buttons_State is array (Button) of Boolean;
+   type Button_State is (Up, Down);
+   type Buttons_State is array (Button) of Button_State;
 
    function State return Buttons_State;
    --  Scan buttons and return current state
@@ -52,18 +57,38 @@ package WNM_PS1_HAL is
    procedure Update_Screen;
    --  Update the screen using the internal pixels state
 
+   -----------
+   -- Audio --
+   -----------
+
+   type Audio_Input_Kind is (None, Line_In);
+   procedure Select_Audio_Input (Kind : Audio_Input_Kind);
+
+   type Audio_Volume is range 0 .. 100;
+   procedure Set_Audio_Volume (Volume : Audio_Volume);
+
    ----------
    -- Time --
    ----------
 
-   type Time is new HAL.UInt64;
+   subtype Time_Microseconds is HAL.UInt64;
 
-   function Milliseconds (Ms : Natural) return Time;
+   function Milliseconds (Ms : Natural) return Time_Microseconds;
 
-   function Clock return Time;
+   function Clock return Time_Microseconds;
 
-   procedure Delay_Until (Deadline : Time);
+   procedure Delay_Until (Deadline : Time_Microseconds);
 
    procedure Delay_Milliseconds (Ms : HAL.UInt64);
+
+   procedure Delay_Microseconds (Us : HAL.UInt64);
+
+   -------------
+   -- Storage --
+   -------------
+
+   function Get_LFS_Config return not null access Littlefs.LFS_Config;
+
+   function Sample_Data_Base return System.Address;
 
 end WNM_PS1_HAL;

@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                  Copyright (C) 2016-2017 Fabien Chouteau                  --
+--                     Copyright (C) 2022 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,48 +19,28 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-package body WNM.Master_Volume is
+with WNM.Sample_Library; use WNM.Sample_Library;
+with WNM.Screen;
 
-   Desired_Volume : Volume_Value := 40;
+package WNM.Sample_Edit is
 
-   ------------
-   -- Update --
-   ------------
+   procedure Load (Index : Valid_Sample_Index;
+                   Start, Stop : Sample_Point_Index);
 
-   procedure Update is
-   begin
-      null;
-   end Update;
+   function Start return Sample_Point_Index;
+   function Stop return Sample_Point_Index;
 
-   ---------
-   -- Set --
-   ---------
+   procedure Inc_Start;
+   procedure Inc_Stop;
 
-   procedure Set (Vol : Volume_Value) is
-   begin
-      Desired_Volume := Vol;
-   end Set;
+   procedure Dec_Start;
+   procedure Dec_Stop;
 
-   ------------
-   -- Change --
-   ------------
+   type Waveform_Point is delta 0.02 range 0.0 .. 1.0;
+   type Waveform_Range is range 0 .. WNM.Screen.Width - 20;
 
-   procedure Change (Delta_Vol : Integer) is
-      Tmp : Integer;
-   begin
+   Waveform : array (Waveform_Range) of Waveform_Point;
 
-      Tmp := Integer (Desired_Volume) + Delta_Vol;
+   procedure Update_Waveform;
 
-      if Tmp in Volume_Value then
-         Desired_Volume := Tmp;
-      end if;
-   end Change;
-
-   -----------
-   -- Value --
-   -----------
-
-   function Value return Volume_Value
-   is (Desired_Volume);
-
-end WNM.Master_Volume;
+end WNM.Sample_Edit;

@@ -20,12 +20,10 @@
 -------------------------------------------------------------------------------
 
 with WNM.Audio;
-with WNM.Storage;
 
 package WNM.Sample_Library
 with Elaborate_Body
 is
-
 
    --  Audio samples are located in a dedicated part of the Flash. All the
    --  sample have the same amout of memory available which means that getting
@@ -52,17 +50,17 @@ is
    --  In sample edit mode, the sequencer/playback is stopped to provide the
    --  maximum CPU time and allocate RAM memory for editing.
    --
-   --  The sample uder edit is first loaded in RAM. User can then apply a number
-   --  of actions/settins/effects to the sample:
+   --  The sample uder edit is first loaded in RAM. User can then apply a
+   --  number of actions/settins/effects to the sample:
    --    - Preview sample
    --    - Record from audio in
    --    - Import/Export from/to USB (via a website?)
    --    - Set sample lenght
    --    - Set start point, end point, repeat point, etc.
-   --    - Apply effects: bitcrush, drive, echo, reverse, pitch, sample rate, etc.
+   --    - Apply effects: bitcrush, drive, echo, reverse, pitch, sample rate,
+   --      etc.
    --
    --  The sample is then written back into flash.
-
 
    Samples             : constant := 50;
 
@@ -75,14 +73,16 @@ is
    Invalid_Sample_Entry : constant Sample_Index := Sample_Index'First;
 
    type Sample_Point_Count is range 0 .. Single_Sample_Point_Cnt;
-   subtype Sample_Point_Index is Sample_Point_Count range 1 .. Sample_Point_Count'Last;
+   subtype Sample_Point_Index
+     is Sample_Point_Count range 1 .. Sample_Point_Count'Last;
 
    type Single_Sample_Data is array (Sample_Point_Index) of Audio.Mono_Point
      with Size => Single_Sample_Byte_Size * 8;
 
    type Single_Sample_Data_Access is access all Single_Sample_Data;
 
-   type Global_Sample_Array is array (Valid_Sample_Index) of aliased Single_Sample_Data
+   type Global_Sample_Array
+   is array (Valid_Sample_Index) of aliased Single_Sample_Data
      with Size => Storage.Sample_Library_Size * 8;
 
    type Global_Sample_Array_Access is access all Global_Sample_Array;
@@ -101,6 +101,8 @@ is
 
    function Point_Index_To_Seconds (Index : Sample_Point_Index)
                                     return Sample_Time;
+
+   Sample_Entries_Filename : constant String := "/sample_entries.txt";
 
 private
 

@@ -122,7 +122,10 @@ package body WNM.Sample_Stream is
       Streams (Track).Cursor := Start_Point;
       Streams (Track).End_Point := End_Point;
 
-      if Sample /= Invalid_Sample_Entry then
+      if Sample /= Invalid_Sample_Entry
+        and then
+          Sample_Library.Entry_Len (Sample) > 0
+      then
          Streams (Track).End_Point := Sample_Library.Entry_Len (Sample);
       end if;
 

@@ -22,7 +22,6 @@
 with Interfaces;
 
 with WNM;
-with WNM.Sample_Library;
 with WNM.Time;
 with WNM.Audio;
 with WNM.MIDI;
@@ -52,8 +51,8 @@ package WNM.Synth is
    procedure Next_Points (Output : out Audio.Stereo_Buffer;
                           Input  :     Audio.Stereo_Buffer);
 
-   procedure Set_Passthrough (Kind : Audio.Input_Kind);
-   function Get_Passthrough return Audio.Input_Kind;
+   procedure Set_Passthrough (Kind : Audio_Input_Kind);
+   function Get_Passthrough return Audio_Input_Kind;
 
    ---------------
    -- Recording --

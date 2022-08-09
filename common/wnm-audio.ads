@@ -18,12 +18,6 @@ package WNM.Audio is
    type Stereo_Buffer is array (1 .. WNM.Samples_Per_Buffer) of Stereo_Point
      with Pack, Size => WNM.Stereo_Buffer_Size_In_Bytes * 8;
 
-   type Input_Kind is (None, Line_In);
-   procedure Select_Input (Kind : Input_Kind);
-
-   type DAC_Volume is range 0 .. 100;
-   procedure Set_Volume (Volume : DAC_Volume);
-
    --  generic
    --     with procedure Process (Out_L, Out_R : out Mono_Buffer;
    --                             In_L,  In_R  :     Mono_Buffer);

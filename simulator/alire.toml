@@ -7,11 +7,21 @@ maintainers = ["Fabien Chouteau <fabien.chouteau@gmail.com>"]
 maintainers-logins = ["Fabien-Chouteau"]
 
 executables = ["wnm_ps1_simulator"]
+
 [[depends-on]]
 asfml = "^2.5.2"
-[[depends-on]]
 hal = "~0.3.0"
-[[depends-on]]
 bbqueue = "~0.3.0"
-[[depends-on]]
 resources = "~0.1.0"
+littlefs = "~0.1.0"
+
+[[pins]]
+littlefs = { url = "git@github.com:Fabien-Chouteau/littlefs-ada.git", branch="release/0.3" }
+
+[configuration.values]
+littlefs.Assert = true
+littlefs.Debug = true
+littlefs.Warn = true
+littlefs.Error = true
+littlefs.Trace = true
+littlefs.No_Malloc = true

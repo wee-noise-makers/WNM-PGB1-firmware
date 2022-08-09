@@ -21,12 +21,11 @@
 
 with WNM.Synth;
 with WNM.GUI.Bitmap_Fonts; use WNM.GUI.Bitmap_Fonts;
-with HAL.Bitmap;           use HAL.Bitmap;
 with Enum_Next;
 
 package body WNM.GUI.Menu.Passthrough is
 
-   package Src_Enum_Next is new Enum_Next (Audio.Input_Kind);
+   package Src_Enum_Next is new Enum_Next (Audio_Input_Kind);
    use Src_Enum_Next;
 
    Win  : aliased Passthrough_Window;

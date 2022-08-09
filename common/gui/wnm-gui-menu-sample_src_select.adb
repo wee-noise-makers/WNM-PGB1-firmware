@@ -20,8 +20,7 @@
 -------------------------------------------------------------------------------
 
 with WNM.Synth;            use WNM.Synth;
-with WNM.Audio;
-with WNM.GUI.Bitmap_Fonts;   use WNM.GUI.Bitmap_Fonts;
+with WNM.GUI.Bitmap_Fonts; use WNM.GUI.Bitmap_Fonts;
 with Enum_Next;
 
 package body WNM.GUI.Menu.Sample_Src_Select is
@@ -35,11 +34,9 @@ package body WNM.GUI.Menu.Sample_Src_Select is
    begin
       case Src is
          when Line_In =>
-            WNM.Synth.Set_Passthrough (Audio.Line_In);
-         --  when FM =>
-         --     WNM.Synth.Set_Passthrough (Audio.FM);
+            WNM.Synth.Set_Passthrough (Line_In);
          when Master_Output =>
-            WNM.Synth.Set_Passthrough (Audio.None);
+            WNM.Synth.Set_Passthrough (None);
       end case;
    end Set_Passthrough;
 

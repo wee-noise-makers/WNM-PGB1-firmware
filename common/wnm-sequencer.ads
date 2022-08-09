@@ -135,7 +135,8 @@ package WNM.Sequencer is
 
    function CC_Enabled (Step : Sequencer_Steps; Id : CC_Id) return Boolean;
    procedure CC_Toggle (Step : Sequencer_Steps; Id : CC_Id);
-   function CC_Value (Step : Sequencer_Steps; Id : CC_Id) return MIDI.MIDI_Data;
+   function CC_Value (Step : Sequencer_Steps; Id : CC_Id)
+                      return MIDI.MIDI_Data;
    procedure CC_Value_Inc (Step : Sequencer_Steps; Id : CC_Id);
    procedure CC_Value_Dec (Step : Sequencer_Steps; Id : CC_Id);
 
@@ -230,7 +231,6 @@ private
       CC_Ena    : CC_Ena_Array;
       CC_Val    : CC_Val_Array;
    end record;
-
 
    Default_Step : constant Step_Rec :=
      (Trig => None,

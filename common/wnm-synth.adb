@@ -23,7 +23,7 @@ with HAL; use HAL;
 with Interfaces; use Interfaces;
 with WNM.Sample_Stream;          use WNM.Sample_Stream;
 with WNM;                        use WNM;
---  with WNM.Sample_Library;         use WNM.Sample_Library;
+with WNM.Sample_Library;         use WNM.Sample_Library;
 with WNM.Audio;                  use WNM.Audio;
 with WNM.File_System;            use WNM.File_System;
 with WNM.MIDI.Queues;
@@ -42,7 +42,7 @@ package body WNM.Synth is
    Volume_For_Track : array (WNM.Tracks) of Integer := (others => 50)
      with Atomic_Components;
 
-   Passthrough : Input_Kind := Line_In;
+   Passthrough : Audio_Input_Kind := Line_In;
 
    Next_Start : WNM.Time.Time_Microseconds := WNM.Time.Time_Microseconds'First;
    Glob_Sample_Clock : Sample_Time := 0 with Volatile;
@@ -284,7 +284,8 @@ package body WNM.Synth is
       --              Copy_Stereo_To_Mono (Out_L, Out_R, Sample_Buf);
       --        end case;
       --
-      --        Len := Write (Recording_File, Sample_Buf'Address, Sample_Buf'Length * 2);
+      --        Len := Write (Recording_File, Sample_Buf'Address,
+      --                      Sample_Buf'Length * 2);
       --        Recording_Size := Recording_Size + Len;
       --     end;
       --  end if;
@@ -296,9 +297,9 @@ package body WNM.Synth is
    -- Set_Passthrough --
    ---------------------
 
-   procedure Set_Passthrough (Kind : Input_Kind) is
+   procedure Set_Passthrough (Kind : Audio_Input_Kind) is
    begin
-      WNM.Audio.Select_Input (Kind);
+      Select_Audio_Input (Kind);
       Passthrough := Kind;
    end Set_Passthrough;
 
@@ -306,7 +307,7 @@ package body WNM.Synth is
    -- Get_Passthrough --
    ---------------------
 
-   function Get_Passthrough return Input_Kind is
+   function Get_Passthrough return Audio_Input_Kind is
    begin
       return Passthrough;
    end Get_Passthrough;

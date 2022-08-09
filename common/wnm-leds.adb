@@ -19,48 +19,44 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-package body WNM.Master_Volume is
+package body WNM.LEDs is
 
-   Desired_Volume : Volume_Value := 40;
+   -------------
+   -- Turn_On --
+   -------------
+
+   procedure Turn_On (B : LED) is
+   begin
+      Set (B, 255, 0, 0);
+   end Turn_On;
+
+   --------------
+   -- Turn_Off --
+   --------------
+
+   procedure Turn_Off (B : LED) is
+   begin
+      Set (B, 0, 0, 0);
+   end Turn_Off;
+
+   ------------------
+   -- Turn_Off_All --
+   ------------------
+
+   procedure Turn_Off_All is
+   begin
+      Clear_LEDs;
+   end Turn_Off_All;
 
    ------------
    -- Update --
    ------------
 
-   procedure Update is
+   function Update return WNM.Time.Time_Microseconds is
    begin
-      null;
+      Update_LEDs;
+
+      return 0;
    end Update;
 
-   ---------
-   -- Set --
-   ---------
-
-   procedure Set (Vol : Volume_Value) is
-   begin
-      Desired_Volume := Vol;
-   end Set;
-
-   ------------
-   -- Change --
-   ------------
-
-   procedure Change (Delta_Vol : Integer) is
-      Tmp : Integer;
-   begin
-
-      Tmp := Integer (Desired_Volume) + Delta_Vol;
-
-      if Tmp in Volume_Value then
-         Desired_Volume := Tmp;
-      end if;
-   end Change;
-
-   -----------
-   -- Value --
-   -----------
-
-   function Value return Volume_Value
-   is (Desired_Volume);
-
-end WNM.Master_Volume;
+end WNM.LEDs;

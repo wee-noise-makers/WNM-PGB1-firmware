@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                  Copyright (C) 2016-2017 Fabien Chouteau                  --
+--                     Copyright (C) 2022 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,48 +19,40 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-package body WNM.Master_Volume is
+with WNM.Sample_Library; use WNM.Sample_Library;
+with WNM.Audio;
 
-   Desired_Volume : Volume_Value := 40;
+package WNM.GUI.Menu.Sample_Edit is
 
-   ------------
-   -- Update --
-   ------------
+   procedure Push_Window;
 
-   procedure Update is
-   begin
-      null;
-   end Update;
+private
 
-   ---------
-   -- Set --
-   ---------
+   type Edit_Sample_State is (Select_Sample,
+                              Trim,
+                              Enter_Name,
+                              Select_Index,
+                              Confirm);
 
-   procedure Set (Vol : Volume_Value) is
-   begin
-      Desired_Volume := Vol;
-   end Set;
+   type Edit_Sample_Menu is new Menu_Window with record
+      State        : Edit_Sample_State;
+      Sample_Entry : Sample_Index := Invalid_Sample_Entry;
+   end record;
 
-   ------------
-   -- Change --
-   ------------
+   overriding
+   procedure Draw (This   : in out Edit_Sample_Menu)
+   is null;
 
-   procedure Change (Delta_Vol : Integer) is
-      Tmp : Integer;
-   begin
+   overriding
+   procedure On_Event (This  : in out Edit_Sample_Menu;
+                       Event : Menu_Event)
+   is null;
 
-      Tmp := Integer (Desired_Volume) + Delta_Vol;
+   overriding
+   procedure On_Pushed (This  : in out Edit_Sample_Menu);
 
-      if Tmp in Volume_Value then
-         Desired_Volume := Tmp;
-      end if;
-   end Change;
+   overriding
+   procedure On_Focus (This       : in out Edit_Sample_Menu;
+                       Exit_Value : Window_Exit_Value);
 
-   -----------
-   -- Value --
-   -----------
-
-   function Value return Volume_Value
-   is (Desired_Volume);
-
-end WNM.Master_Volume;
+end WNM.GUI.Menu.Sample_Edit;

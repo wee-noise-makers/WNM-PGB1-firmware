@@ -20,7 +20,6 @@
 -------------------------------------------------------------------------------
 
 with WNM.Sample_Library; use WNM.Sample_Library;
-with WNM.Audio;
 
 package WNM.GUI.Menu.Create_Sample is
 
@@ -29,7 +28,6 @@ package WNM.GUI.Menu.Create_Sample is
 private
 
    type Create_Sample_State is (Select_Source,
-                                FM_Tune,
                                 Rec_In_Progress,
                                 Trim,
                                 Enter_Name,
@@ -40,7 +38,7 @@ private
       State        : Create_Sample_State;
       Sample_Entry : Sample_Index := Invalid_Sample_Entry;
 
-      Input_Before : Audio.Input_Kind;
+      Input_Before : Audio_Input_Kind;
    end record;
 
    overriding

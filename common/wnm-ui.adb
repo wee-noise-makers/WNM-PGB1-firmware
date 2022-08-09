@@ -24,9 +24,7 @@ with WNM.Synth;                  use WNM.Synth;
 with WNM.Master_Volume;
 with WNM.Pattern_Sequencer;
 with WNM.GUI.Menu;
-with WNM.GUI.Menu.Root;
-with WNM.Buttons;
-with WNM.LED;
+with WNM.LEDs;
 with HAL; use HAL;
 
 with WNM.GUI.Popup;
@@ -102,7 +100,7 @@ package body WNM.UI is
 
          when Main_Modes =>
             case Evt is
-               when On_Press=>
+               when On_Press =>
                   case B is
                   when Pattern_Button =>
                      Current_Input_Mode := Pattern_Select;
@@ -151,8 +149,6 @@ package body WNM.UI is
                      else
                         Current_Input_Mode := Volume_BPM_Mute;
                      end if;
-
-
 
                      --  when Rec =>
                   --     --  Switch to squence edition mode
@@ -207,7 +203,6 @@ package body WNM.UI is
                when Keyboard_Button =>
                   Sequencer.Set_Editing_Track (To_Value (B));
                   Select_Done := True;
-
 
                when Track_Button =>
                   if Evt = On_Release then
@@ -329,7 +324,6 @@ package body WNM.UI is
                   end if;
                end if;
             end if;
-
 
          when others =>
             null;
@@ -557,14 +551,15 @@ package body WNM.UI is
               when Step_Button    => False,
               when Track_Button   => False,
               when Pattern_Button => False,
+              when Chord          => False,
               when Menu           => False,
               when Encoder_L      => True,
               when Encoder_R      => True);
    end Has_Long_Press;
 
-
-   Last_State    : array (Button) of Buttons.Raw_Button_State := (others => WNM.Buttons.Up);
-   Pressed_Since : array (Button) of WNM.Time.Time_Microseconds := (others => 0);
+   Last_State    : WNM_PS1_HAL.Buttons_State := (others => Up);
+   Pressed_Since : array (Button) of WNM.Time.Time_Microseconds :=
+     (others => 0);
    Last_Event    : array (Button) of Buttton_Event := (others => On_Release);
    Next_Start    : Time.Time_Microseconds := Time.Time_Microseconds'First;
 
@@ -573,12 +568,12 @@ package body WNM.UI is
    ------------
 
    function Update return Time.Time_Microseconds is
-      use Buttons;
-
       L_Enco : Integer;
       R_Enco : Integer;
 
       Now : constant Time.Time_Microseconds := Time.Clock;
+
+      State : WNM_PS1_HAL.Buttons_State;
    begin
       if Now < Next_Start then
          return Next_Start;
@@ -586,7 +581,7 @@ package body WNM.UI is
 
       Next_Start := Next_Start + UI_Task_Period_Microseconds;
 
-      Buttons.Scan;
+      State := WNM_PS1_HAL.State;
 
       --  Handle buttons
       for B in Button loop
@@ -640,8 +635,8 @@ package body WNM.UI is
       -- Encoders --
       --------------
 
-      L_Enco := WNM.Buttons.Left_Diff;
-      R_Enco := WNM.Buttons.Right_Diff;
+      L_Enco := WNM_PS1_HAL.Left_Encoder;
+      R_Enco := WNM_PS1_HAL.Right_Encoder;
 
       case Current_Input_Mode is
          when Volume_BPM_Mute | Volume_BPM_Solo =>
@@ -653,7 +648,7 @@ package body WNM.UI is
                                    Value => L_Enco));
             end if;
             if R_Enco /= 0 then
-            GUI.Menu.On_Event ((Kind  => GUI.Menu.Encoder_Right,
+               GUI.Menu.On_Event ((Kind  => GUI.Menu.Encoder_Right,
                                 Value => R_Enco));
             end if;
       end case;
@@ -662,18 +657,18 @@ package body WNM.UI is
       -- Set LEDs --
       --------------
 
-      LED.Turn_Off_All;
+      LEDs.Turn_Off_All;
 
       -- Rec LED --
       if Recording then
-         LED.Turn_On (Rec);
+         LEDs.Turn_On (Rec);
       end if;
 
       -- Play LED --
       if Pattern_Sequencer.Playing then
-         LED.Turn_On (Play);
+         LEDs.Turn_On (Play);
          if Sequencer.Playing_Step in 1 | 5 | 9 | 13 then
-            LED.Turn_On (Play);
+            LEDs.Turn_On (Play);
          end if;
       end if;
 
@@ -686,7 +681,7 @@ package body WNM.UI is
 
             for B in B1 .. B16 loop
                if FX_Is_On (B) then
-                  LED.Turn_On (B);
+                  LEDs.Turn_On (B);
                end if;
             end loop;
 
@@ -694,7 +689,7 @@ package body WNM.UI is
          when Step_Select =>
             for B in B1 .. B16 loop
                if Editing_Step = To_Value (B) then
-                  LED.Turn_On (B);
+                  LEDs.Turn_On (B);
                end if;
             end loop;
 
@@ -702,7 +697,7 @@ package body WNM.UI is
          when Track_Select =>
             for B in B1 .. B16 loop
                if Editing_Track = To_Value (B) then
-                  LED.Turn_On (B);
+                  LEDs.Turn_On (B);
                end if;
             end loop;
 
@@ -710,18 +705,18 @@ package body WNM.UI is
          when Pattern_Select =>
             for B in B1 .. B16 loop
                if Editing_Pattern = To_Value (B) then
-                  LED.Turn_On (B);
+                  LEDs.Turn_On (B);
                end if;
             end loop;
 
          --  Volume and BPM mode --
          when Volume_BPM_Mute | Volume_BPM_Solo =>
             if Solo_Mode_Enabled then
-               LED.Turn_On (To_Button (Solo));
+               LEDs.Turn_On (To_Button (Solo));
             else
                for B in B1 .. B16 loop
                   if not Muted (To_Value (B)) then
-                     LED.Turn_On (B);
+                     LEDs.Turn_On (B);
                   end if;
                end loop;
             end if;
@@ -729,10 +724,10 @@ package body WNM.UI is
          when Pattern_Chaining =>
             for B in B1 .. B16 loop
                if Pattern_Sequencer.Playing_Pattern = To_Value (B) then
-                  LED.Turn_On (B);
+                  LEDs.Turn_On (B);
                end if;
                if Pattern_Sequencer.Is_In_Pattern_Sequence (To_Value (B)) then
-                  LED.Turn_On (B);
+                  LEDs.Turn_On (B);
                end if;
             end loop;
 
@@ -740,37 +735,39 @@ package body WNM.UI is
             case Last_Main_Mode is
             when Pattern_Mode =>
                for B in B1 .. B16 loop
-                  if Pattern_Sequencer.Is_In_Pattern_Sequence (To_Value (B)) then
-                     LED.Turn_On (B);
+                  if Pattern_Sequencer.Is_In_Pattern_Sequence (To_Value (B))
+                  then
+                     LEDs.Turn_On (B);
                   end if;
                end loop;
 
                --  Blinking playing pattern
                if Pattern_Sequencer.Playing then
                   if Sequencer.Playing_Step in 1 | 5 | 9 | 13 then
-                     LED.Turn_On
+                     LEDs.Turn_On
                        (To_Button (Pattern_Sequencer.Playing_Pattern));
                   else
-                     LED.Turn_Off
+                     LEDs.Turn_Off
                        (To_Button (Pattern_Sequencer.Playing_Pattern));
                   end if;
                end if;
 
             when Track_Mode | Step_Mode =>
                if Pattern_Sequencer.Playing  then
-                  LED.Turn_On (To_Button (Sequencer.Playing_Step));
+                  LEDs.Turn_On (To_Button (Sequencer.Playing_Step));
                end if;
 
                if Last_Main_Mode = Step_Mode or else Recording then
                   for B in Keyboard_Button loop
                      if Sequencer.Set (To_Value (B)) then
-                        LED.Turn_On (B);
+                        LEDs.Turn_On (B);
                      end if;
                   end loop;
                else
                   for B in Keyboard_Button loop
-                     if Sequencer.Set (To_Value (B), Sequencer.Playing_Step) then
-                        LED.Turn_On (B);
+                     if Sequencer.Set (To_Value (B), Sequencer.Playing_Step)
+                     then
+                        LEDs.Turn_On (B);
                      end if;
                   end loop;
                end if;

@@ -133,7 +133,6 @@ package body WNM.GUI.Menu.Track_Settings is
 
                   --  Apply selected instrument settings
                   declare
-                     use Sequencer;
                      I : MIDI_Instrument_Settings renames
                        Builtin_Instruments (This.Instrument);
                   begin

@@ -7,6 +7,10 @@ project Wnm_Ps1_Simulator is
    for Exec_Dir use "bin";
    for Main use ("wnm_ps1_main.adb");
 
+   package Builder is
+      for Executable ("wnm_ps1_main.adb") use "wnm_ps1_simulator";
+   end Builder;
+
    package Compiler is
       for Default_Switches ("Ada") use Wnm_Ps1_Simulator_Config.Ada_Compiler_Switches;
    end Compiler;

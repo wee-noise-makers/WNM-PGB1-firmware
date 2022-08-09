@@ -20,7 +20,6 @@
 -------------------------------------------------------------------------------
 
 with WNM.Time;
-
 with WNM.Sequence_Copy;
 
 package WNM.UI is

@@ -21,19 +21,17 @@
 
 with Enum_Next;
 
-package WNM is
+with WNM_PS1_HAL_Params; use WNM_PS1_HAL_Params;
 
-   type Button is (B1, B2, B3, B4, B5, B6, B7, B8,
-                   B9, B10, B11, B12, B13, B14, B15, B16,
-                   Rec, Play,
-                   Menu, Func, Step_Button, Track_Button, Pattern_Button,
-                   Encoder_L, Encoder_R);
+pragma Warnings (Off);
+with WNM_PS1_HAL; use WNM_PS1_HAL;
+pragma Warnings (On);
+
+package WNM is
 
    subtype Keyboard_Button is Button range B1 .. B16;
 
    type Keyboard_Value is range 1 .. 16;
-
-   subtype LEDs is Button range B1 .. Play;
 
    function To_Value (B : Keyboard_Button) return Keyboard_Value;
    function To_Button (V : Keyboard_Value) return Keyboard_Button;

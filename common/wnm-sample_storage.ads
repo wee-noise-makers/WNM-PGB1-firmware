@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                  Copyright (C) 2016-2017 Fabien Chouteau                  --
+--                     Copyright (C) 2022 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,48 +19,16 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-package body WNM.Master_Volume is
 
-   Desired_Volume : Volume_Value := 40;
+with WNM.Sample_Library;
 
-   ------------
-   -- Update --
-   ------------
+package WNM.Sample_Storage is
 
-   procedure Update is
-   begin
-      null;
-   end Update;
+   function Global_Array
+     return not null Sample_Library.Global_Sample_Array_Access;
 
-   ---------
-   -- Set --
-   ---------
+   procedure Save (Index : Sample_Library.Valid_Sample_Index;
+                   Data  : not null Sample_Library.Single_Sample_Data_Access);
+   --  Save a sample in persistant memory
 
-   procedure Set (Vol : Volume_Value) is
-   begin
-      Desired_Volume := Vol;
-   end Set;
-
-   ------------
-   -- Change --
-   ------------
-
-   procedure Change (Delta_Vol : Integer) is
-      Tmp : Integer;
-   begin
-
-      Tmp := Integer (Desired_Volume) + Delta_Vol;
-
-      if Tmp in Volume_Value then
-         Desired_Volume := Tmp;
-      end if;
-   end Change;
-
-   -----------
-   -- Value --
-   -----------
-
-   function Value return Volume_Value
-   is (Desired_Volume);
-
-end WNM.Master_Volume;
+end WNM.Sample_Storage;

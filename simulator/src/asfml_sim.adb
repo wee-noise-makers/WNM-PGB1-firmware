@@ -1,3 +1,4 @@
+with System;
 with Ada.Exceptions;
 with GNAT.OS_Lib;
 with Ada.Text_IO; use Ada.Text_IO;
@@ -9,9 +10,16 @@ with Sf.Graphics.RenderTexture; use Sf.Graphics.RenderTexture;
 with Sf.Graphics.View; use Sf.Graphics.View;
 with Sf.Graphics.RenderWindow; use Sf.Graphics.RenderWindow;
 with Sf.Graphics.RectangleShape; use Sf.Graphics.RectangleShape;
+with Sf.Graphics.Font;
+with Sf.Graphics.Text;
 with Sf.Window.Window; use Sf.Window.Window;
 with Sf.Window.Event; use Sf.Window.Event;
+with Sf.Audio; use Sf.Audio;
+with Sf.Audio.SoundStream; use Sf.Audio.SoundStream;
 with Sf; use Sf;
+
+with WNM.Synth;
+with WNM.Audio;
 
 with Ada.Real_Time; use Ada.Real_Time;
 with Sf.System.Vector2; use Sf.System.Vector2;
@@ -26,6 +34,31 @@ package body ASFML_Sim is
 
    package Sim_Resources
    is new Resources (Wnm_Ps1_Simulator_Config.Crate_Name);
+
+   Font : Sf.Graphics.sfFont_Ptr;
+
+   ------------- SFML Audio
+
+   Stream : sfSoundStream_Ptr;
+
+   function SFML_Audio_Callback (chunk  : access sfSoundStreamChunk;
+                                 Unused : System.Address)
+                                 return sfBool
+     with Convention => C;
+
+   Flip : Boolean := False
+     with Atomic, Volatile;
+
+   Flip_Out_Buffers : array (Boolean) of WNM.Audio.Stereo_Buffer :=
+     (others => (others => (0, 0)));
+
+   Flip_In_Buffers : constant array (Boolean) of WNM.Audio.Stereo_Buffer :=
+     (others => (others => (0, 0)));
+
+   Synth_Trig : Ada.Synchronous_Task_Control.Suspension_Object;
+
+   task Synth_Task is
+   end Synth_Task;
 
    --------------
    -- Set_View --
@@ -52,6 +85,58 @@ package body ASFML_Sim is
 
       setViewport (View, (Pos_X, Pos_Y, Size_X, Size_Y));
    end Set_View;
+
+   function Key_Image (K : Sf.Window.Keyboard.sfKeyCode) return String
+   is ("[" & (case K is
+          when sfKeyW => "W",
+          when sfKeyE => "E",
+          when sfKeyR => "R",
+          when sfKeyT => "T",
+          when sfKeyY => "Y",
+          when sfKeyU => "U",
+          when sfKeyI => "I",
+          when sfKeyO => "O",
+          when sfKeyS => "S",
+          when sfKeyD => "D",
+          when sfKeyF => "F",
+          when sfKeyG => "G",
+          when sfKeyH => "H",
+          when sfKeyJ => "J",
+          when sfKeyK => "K",
+          when sfKeyL => "L",
+          when sfKeyEnter => "Enter",
+          when sfKeyBackslash => "\",
+          when sfKeyNum9 => "9",
+          when sfKeyEqual => "=",
+          when sfKeyA => "A",
+          when sfKeyQ => "Q",
+          when sfKeyDash => "-",
+          when sfKeyNum0 => "0",
+          when sfKeyNum1 => "1",
+          when sfKeyNum2 => "2",
+          when others => "UNKNOWN KEY EVT"
+      ) & "]");
+   ---------------
+   -- Draw_Text --
+   ---------------
+
+   Text : constant Sf.Graphics.sfText_Ptr := Sf.Graphics.Text.create;
+
+   procedure Draw_Text
+     (W     : Sf.Graphics.sfRenderWindow_Ptr;
+      Pos   : sfVector2f;
+      Str   : String;
+      Color : Sf.Graphics.Color.sfColor := Sf.Graphics.Color.sfWhite)
+   is
+      use Sf.Graphics.Text;
+   begin
+      setPosition (Text, Pos);
+      setFont (Text, Font);
+      setString (Text, Str);
+      setColor (Text, Color);
+
+      drawText (W, Text);
+   end Draw_Text;
 
    ---------------
    -- Draw_LEDS --
@@ -100,6 +185,62 @@ package body ASFML_Sim is
          drawRectangleShape (W, Rect);
       end loop;
    end Draw_LEDS;
+
+   ------------------
+   -- Draw_Buttons --
+   ------------------
+
+   procedure Draw_Buttons (W : Sf.Graphics.sfRenderWindow_Ptr) is
+
+      B_Y_Offset : constant := 40.0;
+
+      Buttons_Offset : constant array (WNM_PS1_HAL_Params.Button)
+        of sfVector2f :=
+        (
+         Menu           => (753.0, 293.0 + B_Y_Offset),
+         Chord          => (869.0, 293.0 + B_Y_Offset),
+         Pattern_Button => (985.0, 293.0 + B_Y_Offset),
+         Func           => (1114.0, 293.0 + B_Y_Offset),
+
+         Track_Button => (45.0, 434.0 + B_Y_Offset),
+         B1           => (174.0, 434.0 + B_Y_Offset),
+         B2           => (290.0, 434.0 + B_Y_Offset),
+         B3           => (406.0, 434.0 + B_Y_Offset),
+         B4           => (522.0, 434.0 + B_Y_Offset),
+         B5           => (638.0, 434.0 + B_Y_Offset),
+         B6           => (753.0, 434.0 + B_Y_Offset),
+         B7           => (869.0, 434.0 + B_Y_Offset),
+         B8           => (985.0, 434.0 + B_Y_Offset),
+         Play         => (1114.0, 434.0 + B_Y_Offset),
+
+         Step_Button  => (45.0, 576.0 + B_Y_Offset),
+         B9           => (174.0, 576.0 + B_Y_Offset),
+         B10          => (290.0, 576.0 + B_Y_Offset),
+         B11          => (406.0, 576.0 + B_Y_Offset),
+         B12          => (522.0, 576.0 + B_Y_Offset),
+         B13          => (638.0, 576.0 + B_Y_Offset),
+         B14          => (753.0, 576.0 + B_Y_Offset),
+         B15          => (869.0, 576.0 + B_Y_Offset),
+         B16          => (985.0, 576.0 + B_Y_Offset),
+         Rec          => (1114.0, 576.0 + B_Y_Offset),
+
+         Encoder_L    => (79.0, 288.0),
+         Encoder_R    => (271.0, 288.0));
+
+   begin
+      setOutlineColor (Rect, Sf.Graphics.Color.sfBlack);
+      setOutlineThickness (Rect, 1.0);
+      setSize (Rect, (80.0, 80.0));
+
+      for B in SFML_Pressed'Range loop
+         if SFML_Pressed (B) or else Force_Pressed (B) then
+            setFillColor (Rect, Sf.Graphics.Color.sfBlue);
+            setPosition (Rect, Buttons_Offset (B));
+            drawRectangleShape (W, Rect);
+         end if;
+         Draw_Text (W, Buttons_Offset (B), Key_Image (To_SFML_Evt (B)));
+      end loop;
+   end Draw_Buttons;
 
    task Periodic_Update is
 
@@ -171,6 +312,14 @@ package body ASFML_Sim is
       end if;
 
       setTexture (BG_Sprite, BG_Texture);
+
+      Font := Sf.Graphics.Font.createFromFile
+        (Sim_Resources.Resource_Path & "/ZeroesOne.ttf");
+      if Font = null then
+         Put_Line ("Could not load font");
+         GNAT.OS_Lib.OS_Exit (1);
+      end if;
+
       Window := create (Mode, "PyGamer simulator",
                         sfResize or sfClose, Params);
       if Window = null then
@@ -249,6 +398,7 @@ package body ASFML_Sim is
          Draw_LEDS (Window);
          drawSprite (Window, BG_Sprite);
          drawSprite (Window, Screen_Sprite);
+         Draw_Buttons (Window);
 
          setView (Window, Letter_Box_View);
          display (Window);
@@ -261,6 +411,68 @@ package body ASFML_Sim is
          Put_Line (Ada.Exceptions.Exception_Message (E));
          GNAT.OS_Lib.OS_Exit (1);
    end Periodic_Update;
+
+   ----------------
+   -- Synth_Task --
+   ----------------
+
+   task body Synth_Task is
+   begin
+      loop
+         WNM.Synth.Next_Points (Flip_Out_Buffers (Flip),
+                                Flip_In_Buffers (Flip));
+
+         Ada.Synchronous_Task_Control.Suspend_Until_True (Synth_Trig);
+         Ada.Synchronous_Task_Control.Set_False (Synth_Trig);
+      end loop;
+   end Synth_Task;
+
+   -------------------------
+   -- SFML_Audio_Callback --
+   -------------------------
+
+   function SFML_Audio_Callback (chunk  : access sfSoundStreamChunk;
+                                 Unused : System.Address)
+                                 return sfBool
+   is
+      Stream_Data : array (1 .. WNM.Audio.Mono_Buffer'Length * 2)
+        of aliased sfInt16
+      with Address => Flip_Out_Buffers (Flip)'Address;
+   begin
+      chunk.Samples := Stream_Data (1)'Unchecked_Access;
+      chunk.NbSamples := Stream_Data'Length;
+
+      Flip := not Flip;
+
+      Ada.Synchronous_Task_Control.Set_True (Synth_Trig);
+      return True;
+   end SFML_Audio_Callback;
+
+   ----------------
+   -- Init_Audio --
+   ----------------
+
+   procedure Init_Audio is
+   begin
+
+      if GNAT.OS_Lib.Getenv ("OS").all = "Windows_NT" then
+         --  Select driver for openal on Windows
+         GNAT.OS_Lib.Setenv ("ALSOFT_DRIVERS", "dsound");
+      end if;
+
+      Stream := create (onGetData    => SFML_Audio_Callback'Access,
+                        onSeek       => null,
+                        channelCount => 2,
+                        sampleRate   => WNM.Sample_Frequency,
+                        userData     => System.Null_Address);
+
+      if Stream = null then
+         Ada.Text_IO.Put_Line ("Could not create audio stream");
+         GNAT.OS_Lib.OS_Exit (1);
+      else
+         play (Stream);
+      end if;
+   end Init_Audio;
 
 begin
 
@@ -286,4 +498,7 @@ begin
       when GNAT.Command_Line.Exit_From_Command_Line =>
          GNAT.OS_Lib.OS_Exit (0);
    end;
+
+   Init_Audio;
+
 end ASFML_Sim;
