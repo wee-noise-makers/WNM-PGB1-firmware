@@ -1,8 +1,0 @@
-EESchema-DOCLIB  Version 2.0
-#
-$CMP DOUBLE_SCH_KCOM_PMEG2005CT
-D Double diode Shottky Cathodes communes
-K DEV DIODE
-$ENDCMP
-#
-#End Doc Library
