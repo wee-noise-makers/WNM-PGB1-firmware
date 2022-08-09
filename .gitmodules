@@ -1,9 +1,0 @@
-[submodule "software/ada-synth-lib"]
-	path = software/ada-synth-lib
-	url = https://github.com/raph-amiard/ada-synth-lib.git
-[submodule "software/Giza"]
-	path = software/Giza
-	url = https://github.com/Fabien-Chouteau/Giza
-[submodule "software/Ada_Drivers_Library"]
-	path = software/Ada_Drivers_Library
-	url = https://github.com/AdaCore/Ada_Drivers_Library
