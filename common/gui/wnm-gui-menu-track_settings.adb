@@ -28,11 +28,114 @@ with WNM.Arpeggiator;
 
 package body WNM.GUI.Menu.Track_Settings is
 
-   package Settings_Next is new Enum_Next (Settings,
-                                           Wrap => False);
-   use Settings_Next;
-
    Track_Settings_Singleton : aliased Track_Settings_Menu;
+
+   Settings_Count_Cache : array (Track_Mode_Kind) of Natural :=
+     (others => 0);
+
+   Settings_Position_Cache : array (Track_Mode_Kind, Settings) of Integer :=
+     (others => (others => -1));
+
+   procedure Fix_Current_Setting (This : in out Track_Settings_Menu) is
+   begin
+      if not Valid_Setting (This.Current_Setting, Mode (Editing_Track)) then
+         Prev_Valid_Setting (This.Current_Setting, Mode (Editing_Track));
+      end if;
+   end Fix_Current_Setting;
+
+   --------------------
+   -- Settings_Count --
+   --------------------
+
+   function Settings_Count (M : Sequencer.Track_Mode_Kind) return Positive is
+   begin
+      if Settings_Count_Cache (M) = 0 then
+         --  I don't think there is a way to know the number of settings per
+         --  mode at compile time because it depends on the results of the
+         --  Valid_Setting function. So we compute the numbers here and cache
+         --  the result for futre calls.
+
+         for S in Settings loop
+            if Valid_Setting (S, M) then
+               Settings_Count_Cache (M) := Settings_Count_Cache (M) + 1;
+            end if;
+         end loop;
+      end if;
+
+      return Settings_Count_Cache (M);
+   end Settings_Count;
+
+   ----------------------
+   -- Setting_Position --
+   ----------------------
+
+   function Setting_Position (S : Settings;
+                              M : Sequencer.Track_Mode_Kind)
+                              return Natural
+   is
+   begin
+      if Settings_Position_Cache (M, S) = -1 then
+         --  Same as Settings_Count, we compute the numbers here and cache the
+         --  result for futre calls.
+
+         declare
+            Cnt : Natural := 0;
+         begin
+            for S in Settings loop
+               if Valid_Setting (S, M) then
+                  Settings_Position_Cache (M, S) := Cnt;
+                  Cnt := Cnt + 1;
+               end if;
+            end loop;
+         end;
+      end if;
+
+      return Settings_Position_Cache (M, S);
+   end Setting_Position;
+
+   ------------------------
+   -- Next_Valid_Setting --
+   ------------------------
+
+   procedure Next_Valid_Setting (S : in out Settings;
+                                 M : Sequencer.Track_Mode_Kind)
+   is
+      Result : Settings := S;
+   begin
+      while Result /= Settings'Last loop
+         Result := Settings'Succ (Result);
+         if Valid_Setting (Result, M) then
+            S := Result;
+            return;
+         end if;
+      end loop;
+
+      if Valid_Setting (Result, M) then
+         S := Result;
+      end if;
+   end Next_Valid_Setting;
+
+   ------------------------
+   -- Prev_Valid_Setting --
+   ------------------------
+
+   procedure Prev_Valid_Setting (S : in out Settings;
+                                 M : Sequencer.Track_Mode_Kind)
+   is
+      Result : Settings := S;
+   begin
+      while Result /= Settings'First loop
+         Result := Settings'Pred (Result);
+         if Valid_Setting (Result, M) then
+            S := Result;
+            return;
+         end if;
+      end loop;
+
+      if Valid_Setting (Result, M) then
+         S := Result;
+      end if;
+   end Prev_Valid_Setting;
 
    --------------
    -- To_CC_Id --
@@ -64,14 +167,23 @@ package body WNM.GUI.Menu.Track_Settings is
      (This : in out Track_Settings_Menu)
    is
    begin
-      Draw_Menu_Box ("Track settings",
-                     Count => Settings_Count,
-                     Index => Settings'Pos (This.Current_Setting));
-      case This.Current_Setting is
-         when Volume => Draw_Precentage ("Volume:",
-                                         WNM.Synth.Volume (Editing_Track));
+      This.Fix_Current_Setting;
 
-         when Pan    => Draw_Pan ("Pan:", WNM.Synth.Pan (Editing_Track) / 2);
+      Draw_Menu_Box ("Track settings",
+                     Count => Settings_Count (Mode (Editing_Track)),
+                     Index => Setting_Position (This.Current_Setting,
+                                                Mode (Editing_Track)));
+      case This.Current_Setting is
+         when Track_Mode =>
+            Draw_Title ("Track mode:", "");
+            Draw_Value (Img (Mode (Editing_Track)));
+
+         when Volume =>
+            Draw_Precentage ("Volume:",
+                             WNM.Synth.Volume (Editing_Track));
+
+         when Pan    =>
+            Draw_Pan ("Pan:", WNM.Synth.Pan (Editing_Track) / 2);
 
          when Arp_Mode =>
             Draw_Title ("Arpeggiator mode:", "");
@@ -126,6 +238,8 @@ package body WNM.GUI.Menu.Track_Settings is
       Event : Menu_Event)
    is
    begin
+      This.Fix_Current_Setting;
+
       case Event.Kind is
          when Left_Press =>
             case This.Current_Setting is
@@ -170,6 +284,13 @@ package body WNM.GUI.Menu.Track_Settings is
             null;
          when Encoder_Right =>
             case This.Current_Setting is
+               when Track_Mode =>
+                  if Event.Value > 0 then
+                     Sequencer.Mode_Next (Editing_Track);
+                  else
+                     Sequencer.Mode_Prev (Editing_Track);
+                  end if;
+
                when Volume =>
                   WNM.Synth.Change_Volume (Editing_Track, Event.Value);
 
@@ -234,9 +355,11 @@ package body WNM.GUI.Menu.Track_Settings is
             end case;
          when Encoder_Left =>
             if Event.Value > 0 then
-               Next (This.Current_Setting);
+               Next_Valid_Setting (This.Current_Setting,
+                                   Mode (Editing_Track));
             elsif Event.Value < 0 then
-               Prev (This.Current_Setting);
+               Prev_Valid_Setting (This.Current_Setting,
+                                   Mode (Editing_Track));
             end if;
       end case;
    end On_Event;
@@ -263,6 +386,8 @@ package body WNM.GUI.Menu.Track_Settings is
       Exit_Value : Window_Exit_Value)
    is
    begin
+      This.Fix_Current_Setting;
+
       if This.Current_Setting
           in CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D
       then

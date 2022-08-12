@@ -105,6 +105,20 @@ package WNM.Sequencer is
    procedure Velo_Next (Step : Sequencer_Steps);
    procedure Velo_Prev (Step : Sequencer_Steps);
 
+   type Track_Mode_Kind is (Sample_Mode, MIDI_Mode, Speak_Mode);
+   package Track_Mode_Kind_Next is new Enum_Next (Track_Mode_Kind);
+   use Track_Mode_Kind_Next;
+
+   function Img (M : Track_Mode_Kind) return String
+   is (case M is
+          when Sample_Mode => "Sample",
+          when MIDI_Mode   => "MIDI",
+          when Speak_Mode  => "Speak");
+
+   function Mode (T : Tracks) return Track_Mode_Kind;
+   procedure Mode_Next (T : Tracks);
+   procedure Mode_Prev (T : Tracks);
+
    function MIDI_Chan (T : Tracks) return MIDI.MIDI_Channel;
    procedure MIDI_Chan_Next (T : Tracks);
    procedure MIDI_Chan_Prev (T : Tracks);
@@ -181,7 +195,8 @@ package WNM.Sequencer is
    procedure Next_Value_Fast (S : User_Step_Settings);
    procedure Prev_Value_Fast (S : User_Step_Settings);
 
-   type Track_Setting_Kind is (Volume,
+   type Track_Setting_Kind is (Mode,
+                               Volume,
                                Pan,
                                Arp_Mode,
                                Arp_Notes,
@@ -194,26 +209,27 @@ package WNM.Sequencer is
                                CC_B_Label,
                                CC_C_Label,
                                CC_D_Label,
-                               Extended,
-                               Reserved);
+                               Reserved,
+                               Extended);
 
    for Track_Setting_Kind'Size use 4;
 
-   for Track_Setting_Kind use (Volume     => 0,
-                               Pan        => 1,
-                               Arp_Mode   => 2,
-                               Arp_Notes  => 3,
-                               MIDI_Chan  => 4,
-                               CC_A_Id    => 5,
-                               CC_B_Id    => 6,
-                               CC_C_Id    => 7,
-                               CC_D_Id    => 8,
-                               CC_A_Label => 9,
-                               CC_B_Label => 10,
-                               CC_C_Label => 11,
-                               CC_D_Label => 12,
-                               Extended   => 14,
-                               Reserved   => 15);
+   for Track_Setting_Kind use (Mode       => 0,
+                               Volume     => 1,
+                               Pan        => 2,
+                               Arp_Mode   => 3,
+                               Arp_Notes  => 4,
+                               MIDI_Chan  => 5,
+                               CC_A_Id    => 6,
+                               CC_B_Id    => 7,
+                               CC_C_Id    => 8,
+                               CC_D_Id    => 9,
+                               CC_A_Label => 10,
+                               CC_B_Label => 11,
+                               CC_C_Label => 12,
+                               CC_D_Label => 13,
+                               Reserved   => 14,
+                               Extended   => 15);
 private
 
    type CC_Val_Array is array (CC_Id) of MIDI.MIDI_Data;
@@ -255,13 +271,15 @@ private
    type CC_Setting_Array is array (CC_Id) of CC_Setting;
 
    type Track_Setting is record
+      Mode : Track_Mode_Kind := Sample_Mode;
       Chan : MIDI.MIDI_Channel := 0;
       CC : CC_Setting_Array;
       Sample : Sample_Library.Valid_Sample_Index := 1;
    end record;
 
    Track_Settings : array (Tracks) of Track_Setting
-     := (others => (Chan => 0,
+     := (others => (Mode => MIDI_Mode,
+                    Chan => 0,
                     CC => ((0, "Control 0        "),
                            (1, "Control 1        "),
                            (2, "Control 2        "),

@@ -1041,6 +1041,33 @@ package body WNM.Sequencer is
       end if;
    end Velo_Prev;
 
+   ----------
+   -- Mode --
+   ----------
+
+   function Mode (T : Tracks) return Track_Mode_Kind is
+   begin
+      return Track_Settings (T).Mode;
+   end Mode;
+
+   ---------------
+   -- Mode_Next --
+   ---------------
+
+   procedure Mode_Next (T : Tracks) is
+   begin
+      Next (Track_Settings (T).Mode);
+   end Mode_Next;
+
+   ---------------
+   -- Mode_Prev --
+   ---------------
+
+   procedure Mode_Prev (T : Tracks) is
+   begin
+      Prev (Track_Settings (T).Mode);
+   end Mode_Prev;
+
    ---------------
    -- MIDI_Chan --
    ---------------

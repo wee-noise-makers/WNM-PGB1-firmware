@@ -28,19 +28,44 @@ package WNM.GUI.Menu.Track_Settings is
 
 private
 
-   type Settings is (Volume,
+   type Settings is (Track_Mode,
+                     Sample,
+                     Volume,
                      Pan,
                      Arp_Mode,
                      Arp_Notes,
                      MIDI_Chan,
                      MIDI_Instrument,
-                     Sample,
                      CC_A, CC_Label_A,
                      CC_B, CC_Label_B,
                      CC_C, CC_Label_C,
                      CC_D, CC_Label_D);
 
-   function Settings_Count is new Enum_Count (Settings);
+   function Settings_Count (M : Sequencer.Track_Mode_Kind) return Positive;
+   function Setting_Position (S : Settings;
+                              M : Sequencer.Track_Mode_Kind)
+                              return Natural;
+
+   function Valid_Setting (S : Settings;
+                           M : Sequencer.Track_Mode_Kind)
+                           return Boolean
+   is (case M is
+          when Sequencer.Sample_Mode =>
+             S in Track_Mode | Sample | Volume | Pan | Arp_Mode | Arp_Notes,
+
+          when Sequencer.MIDI_Mode =>
+             S in Track_Mode | MIDI_Chan | MIDI_Instrument | Arp_Mode |
+                  Arp_Notes | CC_A .. CC_Label_D,
+
+          when Sequencer.Speak_Mode =>
+             S in Track_Mode | Volume | Pan | Arp_Mode | Arp_Notes);
+   --  Return True if the given setting is available for the given track mode.
+   --  For instance, volume setting is not available in MIDI mode.
+
+   procedure Next_Valid_Setting (S : in out Settings;
+                                 M : Sequencer.Track_Mode_Kind);
+   procedure Prev_Valid_Setting (S : in out Settings;
+                                 M : Sequencer.Track_Mode_Kind);
 
    type Track_Settings_Menu is new Menu_Window with record
       Current_Setting : Settings := Settings'First;
@@ -60,6 +85,16 @@ private
    overriding
    procedure On_Focus (This       : in out Track_Settings_Menu;
                        Exit_Value : Window_Exit_Value);
+
+   procedure Fix_Current_Setting (This : in out Track_Settings_Menu);
+   --  When the user changes current editing track it is possible that the
+   --  Current_Setting is invalid for the track mode of the new editing track.
+   --  For instance switching from a Sample track to a MIDI track when
+   --  Volume is the current setting.
+   --
+   --  This procedure will switch the Current_Setting to a valid setting for
+   --  the editing track.
+
 
    type MIDI_Instrument_Settings is record
       Name : Sequencer.Controller_Label;
