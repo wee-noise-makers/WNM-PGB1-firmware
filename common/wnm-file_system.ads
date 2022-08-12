@@ -15,17 +15,30 @@ package WNM.File_System is
 
    procedure Open_Read (FD : aliased in out File_Descriptor; Name : String);
 
-   function Size (FD : aliased in out File_Descriptor) return File_Signed_Size;
+   function Size (FD : aliased in out File_Descriptor)
+                  return File_Signed_Size;
 
    function Read (FD : aliased in out File_Descriptor;
                   A  : System.Address;
                   N  : File_Size)
                   return File_Signed_Size;
+   --  Read data from file
+   --
+   --  Takes a buffer and size indicating where to store the read data.
+   --
+   --  Returns the number of bytes read, or a negative error code on failure.
 
    function Write (FD : aliased in out File_Descriptor;
                    A  : System.Address;
                    N  : File_Size)
                    return File_Signed_Size;
+   --  Write data to file
+   --
+   --  Takes a buffer and size indicating the data to write. The file will not
+   --  actually be updated on the storage until either sync or close is called.
+   --
+   --  Returns the number of bytes written, or a negative error code on
+   --  failure.
 
    subtype Offset is Littlefs.LFS_Signed_Offset;
    subtype Seek_Whence is Littlefs.LFS_Whence_Flags;

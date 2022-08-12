@@ -39,6 +39,8 @@ package WNM_PS1_HAL_Params is
       Chord          => 2);
 
    package Storage is
+      pragma Style_Checks ("M120");
+
       Sector_Size : constant := 4096;
 
       Sample_Library_Sectors : constant := 2200;
@@ -48,5 +50,13 @@ package WNM_PS1_HAL_Params is
       FS_Size    : constant := Sector_Size * FS_Sectors;
 
       Total_Storage_Size : constant := Sample_Library_Size + FS_Size;
+
+      Nbr_Samples             : constant := 50;
+      Global_Sample_Byte_Size : constant := Sample_Library_Sectors * Sector_Size;
+      Sectors_Per_Sample      : constant := Sample_Library_Sectors / Nbr_Samples;
+      Single_Sample_Byte_Size : constant := Global_Sample_Byte_Size / Nbr_Samples;
+      Single_Sample_Point_Cnt : constant := Single_Sample_Byte_Size / 2;
+      Sample_Name_Lenght      : constant := 15;
+
    end Storage;
 end WNM_PS1_HAL_Params;

@@ -22,7 +22,6 @@
 with WNM.Sequencer.Storage;
 
 with Ada.Text_IO;
-with HAL; use HAL;
 
 package body WNM.Projects is
 
@@ -72,7 +71,6 @@ package body WNM.Projects is
                           Extended    => 14,
                           Reserved    => 15);
 
-
    ----------
    -- Open --
    ----------
@@ -108,7 +106,12 @@ package body WNM.Projects is
    ----------
 
    procedure Push (This : in out File_Out; A, B : UInt4) is
+      pragma Unreferenced (This);
+
       Result : constant UInt8 := Shift_Left (UInt8 (A), 4) or UInt8 (B);
+
+      pragma Unreferenced (Result);
+
       function To_Char (X : UInt4) return Character
       is (case X is
              when 0 => '0',

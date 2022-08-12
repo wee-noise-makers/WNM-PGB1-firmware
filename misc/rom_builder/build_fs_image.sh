@@ -9,7 +9,11 @@ if [ ! -d "samples_dl" ]; then
     unzip TR909all.zip
 
     for file in *.WAV; do
-        ffmpeg -i "$file" -ac 1 -f s16le -acodec pcm_s16le "$file.raw"
+        ffmpeg -i "$file" -ac 1 -ar 44100 -f s16le -acodec pcm_s16le "$file.wav"
+
+        # This is the only solution I found to have raw samples without the WAV
+        # header...
+        dd bs=44 skip=1 if="$file.wav" of="$file.raw"
     done
 
     cd ..

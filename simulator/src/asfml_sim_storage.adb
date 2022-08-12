@@ -1,3 +1,4 @@
+with System.Storage_Elements; use System.Storage_Elements;
 with Ada.Text_IO; use Ada.Text_IO;
 
 with Littlefs; use Littlefs;
@@ -15,6 +16,11 @@ with WNM_PS1_HAL_Params;
 package body ASFML_SIM_Storage is
 
    Sample_Data : WNM.Sample_Library.Global_Sample_Array;
+
+   LFS_Block_Size : constant := WNM_PS1_HAL_Params.Storage.Sector_Size;
+   LFS_Read_Buffer : Storage_Array (1 .. LFS_Block_Size);
+   LFS_Prog_Buffer : Storage_Array (1 .. LFS_Block_Size);
+   LFS_Lookahead_Buffer : Storage_Array (1 .. LFS_Block_Size);
 
    procedure Load_Sample_Data (FD : GNAT.OS_Lib.File_Descriptor);
 
@@ -155,18 +161,18 @@ package body ASFML_SIM_Storage is
          Ret.Prog := Prog'Access;
          Ret.Erase := Erase'Access;
          Ret.Sync := Sync'Access;
-         Ret.Block_Size := WNM_PS1_HAL_Params.Storage.Sector_Size;
-         Ret.Read_Size := Ret.Block_Size;
-         Ret.Prog_Size := Ret.Block_Size;
+         Ret.Block_Size := LFS_Block_Size;
+         Ret.Read_Size := LFS_Block_Size;
+         Ret.Prog_Size := LFS_Block_Size;
 
-         Ret.Block_Count := WNM_PS1_HAL_Params.Storage.FS_Sectors;
+         Ret.Block_Count := LFS_Block_Size;
 
          Ret.Block_Cycles := 700;
-         Ret.Cache_Size := Ret.Block_Size;
-         Ret.Lookahead_Size := Ret.Block_Size;
-         Ret.Read_Buffer := System.Null_Address;
-         Ret.Prog_Buffer := System.Null_Address;
-         Ret.Lookahead_Buffer := System.Null_Address;
+         Ret.Cache_Size := LFS_Block_Size;
+         Ret.Lookahead_Size := LFS_Block_Size;
+         Ret.Read_Buffer := LFS_Read_Buffer'Address;
+         Ret.Prog_Buffer := LFS_Prog_Buffer'Address;
+         Ret.Lookahead_Buffer := LFS_Lookahead_Buffer'Address;
          Ret.Name_Max := 0;
          Ret.File_Max := 0;
          Ret.Attr_Max := 0;

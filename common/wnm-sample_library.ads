@@ -62,8 +62,7 @@ is
    --
    --  The sample is then written back into flash.
 
-   Samples             : constant := 50;
-
+   Samples                 : constant := Storage.Nbr_Samples;
    Single_Sample_Byte_Size : constant := Storage.Sample_Library_Size / Samples;
    Single_Sample_Point_Cnt : constant := Single_Sample_Byte_Size / 2;
 

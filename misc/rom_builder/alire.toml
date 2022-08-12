@@ -13,4 +13,17 @@ fsmaker = "~0.0.0"
 hal = "~0.3.0"
 
 [[pins]]
-fsmaker = { url='https://github.com/Fabien-Chouteau/fsmaker' }
+fsmaker = { url="git@github.com:Fabien-Chouteau/fsmaker.git" }
+littlefs = { url = "git@github.com:Fabien-Chouteau/littlefs-ada.git" }
+
+[build-profiles]
+fsmaker = "Development"
+littlefs = "Development"
+
+[configuration.values]
+littlefs.Assert = true
+littlefs.Debug = true
+littlefs.Warn = true
+littlefs.Error = true
+littlefs.Trace = true
+littlefs.No_Malloc = false

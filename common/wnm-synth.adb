@@ -49,6 +49,7 @@ package body WNM.Synth is
 
    procedure Copy_Stereo_To_Mono (L, R : Mono_Buffer;
                                   Dst : out Mono_Buffer);
+   pragma Unreferenced (Copy_Stereo_To_Mono);
 
    procedure Process_MIDI_Events;
 

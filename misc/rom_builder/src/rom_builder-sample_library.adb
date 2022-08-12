@@ -24,14 +24,14 @@ package body ROM_Builder.Sample_Library is
       for Sector in 1 .. Sectors_Per_Sample loop
 
          Len := Src.Read (This.Data (Index).Bytes (Byte_Index)'Address,
-                          Flash_Sector_Size);
+                          WNM_PS1_HAL_Params.Storage.Sector_Size);
 
          Simple_Logging.Always ("Load sample data:" & Len'Img);
          Total_Len := Total_Len + Len;
 
-         exit when Len /= Flash_Sector_Size;
+         exit when Len /= WNM_PS1_HAL_Params.Storage.Sector_Size;
 
-         Byte_Index := Byte_Index + Flash_Sector_Size;
+         Byte_Index := Byte_Index + WNM_PS1_HAL_Params.Storage.Sector_Size;
       end loop;
 
       This.Info (Index).Len := Sample_Point_Count (Total_Len / 2);
@@ -153,10 +153,10 @@ package body ROM_Builder.Sample_Library is
    is
    begin
       for X in Valid_Sample_Index loop
-         File.Put_Line (X'Img & ":" &
-                          This.Info (X).Name & ":" &
-                          This.Info (X).Len'Img &
-                          ASCII.LF);
+         File.Put (X'Img & ":" &
+                     This.Info (X).Name & ":" &
+                     This.Info (X).Len'Img &
+                     ASCII.LF);
       end loop;
    end Write_Entry_Info;
 

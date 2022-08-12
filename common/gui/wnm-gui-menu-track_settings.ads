@@ -61,7 +61,6 @@ private
    procedure On_Focus (This       : in out Track_Settings_Menu;
                        Exit_Value : Window_Exit_Value);
 
-
    type MIDI_Instrument_Settings is record
       Name : Sequencer.Controller_Label;
       CC_A : MIDI.MIDI_Data;

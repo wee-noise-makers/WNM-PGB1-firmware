@@ -271,7 +271,6 @@ package body WNM.GUI.Menu.Track_Settings is
 
          if Exit_Value = Success then
             declare
-               use Sequencer;
                CC : constant CC_Id := To_CC_Id (This.Current_Setting);
                Output : constant String := WNM.GUI.Menu.Text_Dialog.Value;
                Label : Controller_Label := Empty_Controller_Label;

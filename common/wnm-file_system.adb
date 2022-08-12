@@ -1,3 +1,5 @@
+with System.Storage_Elements; use System.Storage_Elements;
+
 with Interfaces.C; use Interfaces.C;
 with Interfaces; use Interfaces;
 with Littlefs; use Littlefs;
@@ -6,7 +8,16 @@ with WNM.Screen;
 with WNM.GUI.Bitmap_Fonts;
 with WNM.Sample_Library;
 
+with Ada.Text_IO;
+
 package body WNM.File_System is
+
+   File_Buffer : Storage_Array
+     (1 .. Storage_Count (Get_LFS_Config.Block_Size));
+
+   File_Conf : aliased constant Littlefs.lfs_file_config :=
+     (Buffer => File_Buffer'Address,
+      others => <>);
 
    FS : aliased Littlefs.LFS_T;
 
@@ -95,12 +106,13 @@ package body WNM.File_System is
          if Query_User_To_Format then
             Err := Littlefs.Format (FS, Get_LFS_Config.all);
             if Err /= 0 then
-               raise Program_Error with "Format error: " & Err'Img;
+               raise Program_Error with "Format error: " & Error_Img (Err);
             end if;
 
             Err := Littlefs.Mount (FS, Get_LFS_Config.all);
             if Err /= 0 then
-               raise Program_Error with "Mount error after format: " & Err'Img;
+               raise Program_Error with "Mount error after format: " &
+                 Error_Img (Err);
             end if;
 
             Factory_Reset;
@@ -145,7 +157,8 @@ package body WNM.File_System is
    ---------------
 
    procedure Open_Read (FD : aliased in out File_Descriptor; Name : String) is
-      Result : constant int := Littlefs.Open (FS, FD, Name, LFS_O_RDONLY);
+      Result : constant int :=
+        Littlefs.Opencfg (FS, FD, Name, LFS_O_RDONLY, File_Conf);
    begin
       if Result /= 0 then
          raise Program_Error with "Open_Read ('" & Name & "') file error (" &

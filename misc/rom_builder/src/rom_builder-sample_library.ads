@@ -3,16 +3,13 @@ with TOML;
 with FSmaker.Sink;
 with FSmaker.Source.Text_Buffer;
 
+with WNM_PS1_HAL_Params;
+
 private with HAL;
 
 package ROM_Builder.Sample_Library is
 
-   Nbr_Samples             : constant := 50;
-   Global_Sample_Byte_Size : constant := Sample_Sectors * Flash_Sector_Size;
-   Sectors_Per_Sample      : constant := Sample_Sectors / Nbr_Samples;
-   Single_Sample_Byte_Size : constant := Global_Sample_Byte_Size / Nbr_Samples;
-   Single_Sample_Point_Cnt : constant := Single_Sample_Byte_Size / 2;
-   Sample_Name_Lenght      : constant := 15;
+   use WNM_PS1_HAL_Params.Storage;
 
    subtype Sample_Index is Natural range 0 .. Nbr_Samples;
    subtype Valid_Sample_Index is Sample_Index range 1 .. Sample_Index'Last;

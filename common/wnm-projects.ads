@@ -57,5 +57,4 @@ private
    procedure Flush (This : in out File_Out);
    procedure Close (This : in out File_Out);
 
-
 end WNM.Projects;

@@ -20,7 +20,6 @@ begin
 
    WNM.File_System.Mount;
    WNM.Sample_Library.Load;
-   --  WNM.Synth.Load_Samples;
 
    WNM.GUI.Menu.Track_Settings.Push_Window;
 

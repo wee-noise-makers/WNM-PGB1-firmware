@@ -19,9 +19,6 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Interfaces; use Interfaces;
-with System.Storage_Elements; use System.Storage_Elements;
-
 with WNM.Sample_Library; use WNM.Sample_Library;
 
 package body WNM.Sample_Stream is

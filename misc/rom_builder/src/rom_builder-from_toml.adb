@@ -73,9 +73,13 @@ package body ROM_Builder.From_TOML is
       declare
          TB : FSmaker.Source.Text_Buffer.Instance;
       begin
+         Simple_Logging.Always ("Building sample entries file");
          Lib.Write_Entry_Info (TB);
+         Simple_Logging.Always ("Writting sample entries file");
          FS.Import ("/sample_entries.txt", TB);
       end;
+
+      FS.Print_Tree;
 
       FS.Write_Data (Output);
       Lib.Write_Data (Output);

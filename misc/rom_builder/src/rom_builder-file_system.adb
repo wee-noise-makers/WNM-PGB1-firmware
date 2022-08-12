@@ -34,4 +34,13 @@ package body ROM_Builder.File_System is
       This.BD.Write_Data (File);
    end Write_Data;
 
+   ----------------
+   -- Print_Tree --
+   ----------------
+
+   procedure Print_Tree (This : in out Instance) is
+   begin
+      FSmaker.Pretty_Print (This.Target.Tree (FSmaker.Empty_Path));
+   end Print_Tree;
+
 end ROM_Builder.File_System;
