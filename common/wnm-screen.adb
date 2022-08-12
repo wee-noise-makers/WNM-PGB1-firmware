@@ -51,7 +51,7 @@ package body WNM.Screen is
         and then
          Pt.Y in Natural (Pix_Y'First) .. Natural (Pix_Y'Last)
       then
-         WNM_PS1_HAL.Set_Pixel (Pix_X (Pt.X), Pix_Y (Pt.Y), On);
+         WNM_HAL.Set_Pixel (Pix_X (Pt.X), Pix_Y (Pt.Y), On);
       else
          raise Program_Error with "Pixel out of bounds: (" & Pt.X'Img &
            ", " & Pt.Y'Img & ")";

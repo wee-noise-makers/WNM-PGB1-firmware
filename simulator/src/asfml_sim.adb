@@ -145,7 +145,7 @@ package body ASFML_Sim is
    Rect : constant sfRectangleShape_Ptr := create;
 
    procedure Draw_LEDS (W : Sf.Graphics.sfRenderWindow_Ptr) is
-      LED_Offset : constant array (WNM_PS1_HAL_Params.LED) of sfVector2f :=
+      LED_Offset : constant array (WNM_Configuration.LED) of sfVector2f :=
         (
          Menu           => (753.0, 293.0),
          Chord          => (869.0, 293.0),
@@ -194,7 +194,7 @@ package body ASFML_Sim is
 
       B_Y_Offset : constant := 40.0;
 
-      Buttons_Offset : constant array (WNM_PS1_HAL_Params.Button)
+      Buttons_Offset : constant array (WNM_Configuration.Button)
         of sfVector2f :=
         (
          Menu           => (753.0, 293.0 + B_Y_Offset),

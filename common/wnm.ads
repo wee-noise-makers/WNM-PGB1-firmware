@@ -21,10 +21,10 @@
 
 with Enum_Next;
 
-with WNM_PS1_HAL_Params; use WNM_PS1_HAL_Params;
 
 pragma Warnings (Off);
-with WNM_PS1_HAL; use WNM_PS1_HAL;
+with WNM_Configuration; use WNM_Configuration;
+with WNM_HAL;           use WNM_HAL;
 pragma Warnings (On);
 
 package WNM is

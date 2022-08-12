@@ -23,8 +23,8 @@ with Interfaces;
 
 package WNM.Screen is
 
-   Width  : constant := WNM_PS1_HAL_Params.Screen_Width;
-   Height : constant := WNM_PS1_HAL_Params.Screen_Height;
+   Width  : constant := WNM_Configuration.Screen_Width;
+   Height : constant := WNM_Configuration.Screen_Height;
 
    procedure Update;
 

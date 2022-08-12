@@ -66,12 +66,12 @@ package body WNM.File_System is
 
       loop
          declare
-            State : constant WNM_PS1_HAL.Buttons_State := WNM_PS1_HAL.State;
+            State : constant WNM_HAL.Buttons_State := WNM_HAL.State;
          begin
             Last_Play := Play;
             Last_Rec := Rec;
-            Play := State (WNM_PS1_HAL_Params.Play) = Down;
-            Rec := State (WNM_PS1_HAL_Params.Rec) = Down;
+            Play := State (WNM_Configuration.Play) = Down;
+            Rec := State (WNM_Configuration.Rec) = Down;
             if Last_Rec and then not Rec then
                return False;
             elsif Last_Play and then not Play then

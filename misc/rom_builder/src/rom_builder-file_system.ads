@@ -1,7 +1,7 @@
 with FSmaker.Source;
 with FSmaker.Sink;
 
-with WNM_PS1_HAL_Params;
+with WNM_Configuration;
 
 private with FSmaker.Target.LittleFS;
 private with FSmaker.Block_Device.RAM;
@@ -27,8 +27,8 @@ private
    type Instance is tagged record
       Target : FSmaker.Target.LittleFS.Instance;
       BD     : aliased FSmaker.Block_Device.RAM.Instance
-        (Block_Size       => WNM_PS1_HAL_Params.Storage.Sector_Size,
-         Number_Of_Blocks => WNM_PS1_HAL_Params.Storage.FS_Sectors);
+        (Block_Size       => WNM_Configuration.Storage.Sector_Size,
+         Number_Of_Blocks => WNM_Configuration.Storage.FS_Sectors);
    end record;
 
 end ROM_Builder.File_System;

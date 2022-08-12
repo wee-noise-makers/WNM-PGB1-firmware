@@ -11,13 +11,13 @@ with WNM.Sample_Library;
 
 with ASFML_Sim;
 
-with WNM_PS1_HAL_Params;
+with WNM_Configuration;
 
 package body ASFML_SIM_Storage is
 
    Sample_Data : WNM.Sample_Library.Global_Sample_Array;
 
-   LFS_Block_Size : constant := WNM_PS1_HAL_Params.Storage.Sector_Size;
+   LFS_Block_Size : constant := WNM_Configuration.Storage.Sector_Size;
    LFS_Read_Buffer : Storage_Array (1 .. LFS_Block_Size);
    LFS_Prog_Buffer : Storage_Array (1 .. LFS_Block_Size);
    LFS_Lookahead_Buffer : Storage_Array (1 .. LFS_Block_Size);
@@ -210,7 +210,7 @@ package body ASFML_SIM_Storage is
 
       GNAT.OS_Lib.Lseek
         (FD     => FD,
-         offset => Long_Integer (WNM_PS1_HAL_Params.Storage.FS_Size),
+         offset => Long_Integer (WNM_Configuration.Storage.FS_Size),
          origin => GNAT.OS_Lib.Seek_Set);
 
       if GNAT.OS_Lib.Read
@@ -240,7 +240,7 @@ begin
       begin
          if ftruncate (int (FD),
                        Long_Integer
-                         (WNM_PS1_HAL_Params.Storage.Total_Storage_Size)) /= 0
+                         (WNM_Configuration.Storage.Total_Storage_Size)) /= 0
          then
             raise Program_Error with "ftruncate error: " &
               GNAT.OS_Lib.Errno_Message;
@@ -271,7 +271,7 @@ begin
          OS_Exit (1);
       end if;
 
-      if File_Length (FD) /= WNM_PS1_HAL_Params.Storage.Total_Storage_Size
+      if File_Length (FD) /= WNM_Configuration.Storage.Total_Storage_Size
       then
          Put_Line ("Invalid size for image file '" & Image_Path & "'");
          OS_Exit (1);

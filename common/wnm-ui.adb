@@ -557,7 +557,7 @@ package body WNM.UI is
               when Encoder_R      => True);
    end Has_Long_Press;
 
-   Last_State    : WNM_PS1_HAL.Buttons_State := (others => Up);
+   Last_State    : WNM_HAL.Buttons_State := (others => Up);
    Pressed_Since : array (Button) of WNM.Time.Time_Microseconds :=
      (others => 0);
    Last_Event    : array (Button) of Buttton_Event := (others => On_Release);
@@ -573,7 +573,7 @@ package body WNM.UI is
 
       Now : constant Time.Time_Microseconds := Time.Clock;
 
-      State : WNM_PS1_HAL.Buttons_State;
+      State : WNM_HAL.Buttons_State;
    begin
       if Now < Next_Start then
          return Next_Start;
@@ -581,7 +581,7 @@ package body WNM.UI is
 
       Next_Start := Next_Start + UI_Task_Period_Microseconds;
 
-      State := WNM_PS1_HAL.State;
+      State := WNM_HAL.State;
 
       --  Handle buttons
       for B in Button loop
@@ -635,8 +635,8 @@ package body WNM.UI is
       -- Encoders --
       --------------
 
-      L_Enco := WNM_PS1_HAL.Left_Encoder;
-      R_Enco := WNM_PS1_HAL.Right_Encoder;
+      L_Enco := WNM_HAL.Left_Encoder;
+      R_Enco := WNM_HAL.Right_Encoder;
 
       case Current_Input_Mode is
          when Volume_BPM_Mute | Volume_BPM_Solo =>

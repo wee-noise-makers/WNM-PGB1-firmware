@@ -7,7 +7,7 @@ with Sf.Graphics.Color;
 with ASFML_Sim;
 with ASFML_SIM_Storage;
 
-package body WNM_PS1_HAL is
+package body WNM_HAL is
 
    LEDs_Internal : ASFML_Sim.SFML_LED_Strip := ASFML_Sim.SFML_LEDs;
 
@@ -211,4 +211,4 @@ package body WNM_PS1_HAL is
    function Sample_Data_Base return System.Address
    is (ASFML_SIM_Storage.Sample_Data_Base);
 
-end WNM_PS1_HAL;
+end WNM_HAL;

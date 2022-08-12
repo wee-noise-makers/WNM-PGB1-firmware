@@ -3,13 +3,13 @@ with TOML;
 with FSmaker.Sink;
 with FSmaker.Source.Text_Buffer;
 
-with WNM_PS1_HAL_Params;
+with WNM_Configuration;
 
 private with HAL;
 
 package ROM_Builder.Sample_Library is
 
-   use WNM_PS1_HAL_Params.Storage;
+   use WNM_Configuration.Storage;
 
    subtype Sample_Index is Natural range 0 .. Nbr_Samples;
    subtype Valid_Sample_Index is Sample_Index range 1 .. Sample_Index'Last;

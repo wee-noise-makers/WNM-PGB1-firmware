@@ -1,4 +1,4 @@
-package WNM_PS1_HAL_Params is
+package WNM_Configuration is
 
    Screen_Width  : constant := 128;
    Screen_Height : constant := 64;
@@ -59,4 +59,4 @@ package WNM_PS1_HAL_Params is
       Sample_Name_Lenght      : constant := 15;
 
    end Storage;
-end WNM_PS1_HAL_Params;
+end WNM_Configuration;

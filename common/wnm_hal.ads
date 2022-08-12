@@ -4,9 +4,9 @@ with HAL;
 
 with Littlefs;
 
-with WNM_PS1_HAL_Params; use WNM_PS1_HAL_Params;
+with WNM_Configuration; use WNM_Configuration;
 
-package WNM_PS1_HAL is
+package WNM_HAL is
 
    -------------
    -- Buttons --
@@ -91,4 +91,4 @@ package WNM_PS1_HAL is
 
    function Sample_Data_Base return System.Address;
 
-end WNM_PS1_HAL;
+end WNM_HAL;
