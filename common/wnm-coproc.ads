@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2021 Fabien Chouteau                    --
+--                     Copyright (C) 2022 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,51 +19,40 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Synth;
-with WNM.MIDI;
-with WNM.Time;
-with WNM.Sample_Library;
+with WNM_Configuration;
+with WNM_HAL;
+
 with WNM.Sample_Stream;
 
-package WNM.Short_Term_Sequencer is
+private with Ada.Unchecked_Conversion;
 
-   type Event_Kind is (Sampler_Event, MIDI_Event);
+package WNM.Coproc is
 
-   type Event_Data (Kind : Event_Kind := Sampler_Event) is record
+   type Message_Kind is (Sampler_Event)
+     with Size => 4;
+
+   type Message (Kind : Message_Kind := Sampler_Event) is record
       case Kind is
          when Sampler_Event =>
             Sampler_Evt : Sample_Stream.Sampler_Event_Rec;
-         when MIDI_Event =>
-            Msg : MIDI.Message;
       end case;
-   end record;
+   end record
+     with Pack, Size => WNM_Configuration.Coproc_Data_Size;
 
-   subtype Expiration_Time is Time.Time_Microseconds;
+   procedure Push (Msg : Message);
+   --  Send a message to the synth coprocessor. Fails silently if the message
+   --  cannot be pushed (e.g. queue is full).
 
-   procedure Push (D : Event_Data; Expiration : Expiration_Time);
-   procedure Pop (Now     :     Expiration_Time;
-                  D       : out Event_Data;
-                  Success : out Boolean);
-
-   --  procedure Print_Queue;
+   procedure Pop (Msg : out Message; Success : out Boolean);
+   --  Tentatively get a message for the synth coprocessor. Success is False
+   --  if no message is available.
 
 private
 
-   Max_Number_Of_Tracks  : constant := 16;
-   Max_Number_Of_Repeats : constant := 8;
-   Max_Number_Of_Notes   : constant := 4;
+   function To_Coproc_Data
+   is new Ada.Unchecked_Conversion (Message, WNM_HAL.Coproc_Data);
 
-   MAX_EVENT_NUMBER : constant :=
-     Max_Number_Of_Tracks * Max_Number_Of_Repeats * Max_Number_Of_Notes * 2;
+   function From_Coproc_Data
+   is new Ada.Unchecked_Conversion (WNM_HAL.Coproc_Data, Message);
 
-   type Event;
-
-   type Event_Access is access all Event;
-
-   type Event is record
-      D : Event_Data;
-      Expiration : Expiration_Time;
-      Next : Event_Access := null;
-   end record;
-
-end WNM.Short_Term_Sequencer;
+end WNM.Coproc;

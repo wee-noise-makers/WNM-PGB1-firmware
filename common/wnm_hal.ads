@@ -91,4 +91,19 @@ package WNM_HAL is
 
    function Sample_Data_Base return System.Address;
 
+   ---------------------
+   -- Coproc Messages --
+   ---------------------
+
+   type Coproc_Data is mod 2**Coproc_Data_Size
+     with size => Coproc_Data_Size;
+
+   procedure Push (D : Coproc_Data);
+   --  Send data to the synth coprocessor. Fails silently if the data cannot
+   --  be pushed (e.g. queue is full).
+
+   procedure Pop (D : out Coproc_Data; Success : out Boolean);
+   --  Tentatively get data for the synth coprocessor. Success is False if
+   --  no data is available.
+
 end WNM_HAL;

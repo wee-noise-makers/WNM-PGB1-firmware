@@ -4,10 +4,6 @@ package WNM.MIDI.Queues is
 
    procedure Sequencer_Push (Msg : Message);
 
-   generic
-      with procedure Process (Msg : Message);
-   procedure Synth_Pop;
-
    procedure MIDI_Out_Read (G   : in out BBqueue.Buffers.Read_Grant;
                             Max :        BBqueue.Count := BBqueue.Count'Last);
    procedure MIDI_Out_Release (G : in out BBqueue.Buffers.Read_Grant);
@@ -30,7 +26,6 @@ private
    function Pop (Q : in out Message_Queue) return Message
      with Pre => not Empty (Q);
 
-   Synth_Queue : Message_Queue (256);
    MIDI_Out_Queue : BBqueue.Buffers.Buffer (1024);
 
 end WNM.MIDI.Queues;

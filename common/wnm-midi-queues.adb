@@ -10,20 +10,9 @@ package body WNM.MIDI.Queues is
 
    procedure Sequencer_Push (Msg : Message) is
    begin
-      Push (Synth_Queue, Msg);
       Push_To_Out_Queue (Msg);
    end Sequencer_Push;
 
-   ---------------
-   -- Synth_Pop --
-   ---------------
-
-   procedure Synth_Pop is
-   begin
-      while not Empty (Synth_Queue) loop
-         Process (Pop (Synth_Queue));
-      end loop;
-   end Synth_Pop;
 
    ------------
    -- Inc_In --

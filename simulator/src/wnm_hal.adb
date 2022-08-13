@@ -1,6 +1,8 @@
 with Ada.Calendar; use Ada.Calendar;
 with Ada.Synchronous_Task_Control;
 
+with GNAT.Bounded_Buffers;
+
 with Sf;
 with Sf.Graphics.Color;
 
@@ -8,6 +10,12 @@ with ASFML_Sim;
 with ASFML_SIM_Storage;
 
 package body WNM_HAL is
+
+   package Coproc_BB is new GNAT.Bounded_Buffers (Coproc_Data);
+
+   Coproc_Queue : Coproc_BB.Bounded_Buffer
+     (Capacity => Coproc_Queue_Capacity,
+      Ceiling  => Coproc_BB.Default_Ceiling);
 
    LEDs_Internal : ASFML_Sim.SFML_LED_Strip := ASFML_Sim.SFML_LEDs;
 
@@ -210,5 +218,32 @@ package body WNM_HAL is
 
    function Sample_Data_Base return System.Address
    is (ASFML_SIM_Storage.Sample_Data_Base);
+
+   ----------
+   -- Push --
+   ----------
+
+   procedure Push (D : Coproc_Data) is
+   begin
+      if not Coproc_Queue.Full then
+         Coproc_Queue.Insert (D);
+      else
+         raise Program_Error with "Corproc queue is full";
+      end if;
+   end Push;
+
+   ---------
+   -- Pop --
+   ---------
+
+   procedure Pop (D : out Coproc_Data; Success : out Boolean) is
+   begin
+      if not Coproc_Queue.Empty then
+         Coproc_Queue.Remove (D);
+         Success := True;
+      else
+         Success := False;
+      end if;
+   end Pop;
 
 end WNM_HAL;

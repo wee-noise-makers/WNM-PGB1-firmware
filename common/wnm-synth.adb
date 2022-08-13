@@ -25,17 +25,14 @@ with WNM.Sample_Stream;          use WNM.Sample_Stream;
 with WNM;                        use WNM;
 with WNM.Sample_Library;         use WNM.Sample_Library;
 with WNM.Audio;                  use WNM.Audio;
-with WNM.File_System;            use WNM.File_System;
-with WNM.MIDI.Queues;
---  with Semihosting;
+with WNM.Coproc;
 
 with WNM.Sequencer;
 
 package body WNM.Synth is
 
-   Recording_File   : aliased File_Descriptor;
    Recording_Source : Rec_Source;
-   Recording_Size   : File_Signed_Size;
+   Recording_Size   : Natural;
 
    Pan_For_Track : array (WNM.Tracks) of Integer := (others => 0)
      with Atomic_Components;
@@ -51,7 +48,7 @@ package body WNM.Synth is
                                   Dst : out Mono_Buffer);
    pragma Unreferenced (Copy_Stereo_To_Mono);
 
-   procedure Process_MIDI_Events;
+   procedure Process_Coproc_Events;
 
    ------------------
    -- Sample_Clock --
@@ -84,32 +81,16 @@ package body WNM.Synth is
       end loop;
    end Copy_Stereo_To_Mono;
 
-   -----------
-   -- Event --
-   -----------
-
-   procedure Event (Msg : MIDI.Message) is
-      Track : constant WNM.Tracks := WNM.MIDI.To_Track (Msg.Chan);
-   begin
-
-      case Msg.Kind is
-         when MIDI.Note_On =>
-            Trig (Track);
-         when  MIDI.Note_Off =>
-            null;
-         when others =>
-            null;
-      end case;
-   end Event;
-
    ----------
    -- Trig --
    ----------
 
-   procedure Trig (Track : WNM.Tracks) is
+   procedure Trig (Track  : Sample_Stream.Stream_Track;
+                   Sample : Sample_Library.Valid_Sample_Index)
+   is
    begin
-      Start (Track       => To_Stream_Track (Track),
-             Sample      => Sequencer.Selected_Sample (Track),
+      Start (Track       => Track,
+             Sample      => Sample,
              Start_Point => Sample_Library.Sample_Point_Index'First,
              End_Point   => Sample_Library.Sample_Point_Index'Last,
              Looping     => False);
@@ -161,15 +142,27 @@ package body WNM.Synth is
    function Volume (Track : WNM.Tracks) return Natural
    is (Natural (Volume_For_Track (Track)));
 
-   -------------------------
-   -- Process_MIDI_Events --
-   -------------------------
+   ---------------------------
+   -- Process_Coproc_Events --
+   ---------------------------
 
-   procedure Process_MIDI_Events is
-      procedure Pop is new WNM.MIDI.Queues.Synth_Pop (Event);
+   procedure Process_Coproc_Events is
+      Msg : WNM.Coproc.Message;
+      Success : Boolean;
    begin
-      Pop;
-   end Process_MIDI_Events;
+      loop
+         WNM.Coproc.Pop (Msg, Success);
+
+         exit when not Success;
+
+         case Msg.Kind is
+            when WNM.Coproc.Sampler_Event =>
+               if Msg.Sampler_Evt.On then
+                  Trig (Msg.Sampler_Evt.Track, Msg.Sampler_Evt.Sample);
+               end if;
+         end case;
+      end loop;
+   end Process_Coproc_Events;
 
    ------------
    -- Update --
@@ -181,7 +174,7 @@ package body WNM.Synth is
       if Now >= Next_Start then
          Next_Start := Next_Start + 0;
 
-         Process_MIDI_Events;
+         Process_Coproc_Events;
 
          --  Generate_Audio;
       end if;
@@ -196,8 +189,6 @@ package body WNM.Synth is
    procedure Next_Points (Output : out Audio.Stereo_Buffer;
                           Input  :     Audio.Stereo_Buffer)
    is
-      --  Len : File_System.File_Signed_Size;
-
       procedure Mix (Mono_Points : Mono_Buffer;
                      ST          : Stream_Track);
 
@@ -335,7 +326,6 @@ package body WNM.Synth is
       end if;
 
       Recording_Source := Source;
-      Create_File (Recording_File, Filename);
       Recording_Size := 0;
    end Start_Recording;
 
@@ -345,7 +335,6 @@ package body WNM.Synth is
 
    procedure Stop_Recording is
    begin
-      Close (Recording_File);
       Recording_Source := None;
    end Stop_Recording;
 

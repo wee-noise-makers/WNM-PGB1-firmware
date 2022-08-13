@@ -30,46 +30,14 @@ package body WNM.Sample_Stream is
    ---------------------
 
    function To_Stream_Track (T : Tracks) return Stream_Track
-   is (case T is
-          when 1 => ST_1,
-          when 2 => ST_2,
-          when 3 => ST_3,
-          when 4 => ST_4,
-          when 5 => ST_5,
-          when 6 => ST_6,
-          when 7 => ST_7,
-          when 8 => ST_8,
-          when 9 => ST_9,
-          when 10 => ST_10,
-          when 11 => ST_11,
-          when 12 => ST_12,
-          when 13 => ST_13,
-          when 14 => ST_14,
-          when 15 => ST_15,
-          when 16 => ST_16);
+   is (Stream_Track (T));
 
    --------------
    -- To_Track --
    --------------
 
    function To_Track (ST : Stream_Track) return Tracks
-   is (case ST is
-          when ST_1   => 1,
-          when ST_2   => 2,
-          when ST_3   => 3,
-          when ST_4   => 4,
-          when ST_5   => 5,
-          when ST_6   => 6,
-          when ST_7   => 7,
-          when ST_8   => 8,
-          when ST_9   => 9,
-          when ST_10  => 10,
-          when ST_11  => 11,
-          when ST_12  => 12,
-          when ST_13  => 13,
-          when ST_14  => 14,
-          when ST_15  => 15,
-          when others => 16);
+   is (Tracks (ST));
 
    ------------------
    -- Close_Stream --
@@ -82,23 +50,6 @@ package body WNM.Sample_Stream is
          Streams (St).State := Ready;
       end if;
    end Close_Stream;
-
-   -------------------
-   -- Assign_Sample --
-   -------------------
-
-   procedure Assign_Sample (Track    : Stream_Track;
-                            Filepath : String)
-   is
-   begin
-      null;
-
-      --  Close_Stream (Track);
-      --
-      --  Open_Read (Streams (Track).FD, Filepath);
-      --
-      --  Streams (Track).State := Assigned;
-   end Assign_Sample;
 
    -----------
    -- Start --

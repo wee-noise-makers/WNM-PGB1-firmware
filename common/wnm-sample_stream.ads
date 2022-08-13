@@ -21,20 +21,26 @@
 
 with WNM.Audio;
 with WNM.Sample_Library;
+with WNM.MIDI;
 
 package WNM.Sample_Stream is
    pragma Elaborate_Body;
 
-   type Stream_Track is (Always_On, ST_1, ST_2, ST_3, ST_4, ST_5, ST_6, ST_7,
-                         ST_8, ST_9, ST_10, ST_11, ST_12, ST_13, ST_14, ST_15,
-                         ST_16);
+   type Stream_Track is range 0 .. Tracks'Last;
+   Always_On : constant Stream_Track := 0;
 
    function To_Stream_Track (T : Tracks) return Stream_Track;
    function To_Track (ST : Stream_Track) return Tracks
      with Pre => ST /= Always_On;
 
-   procedure Assign_Sample (Track    : Stream_Track;
-                            Filepath : String);
+   type Sampler_Event_Rec is record
+      On       : Boolean;
+      Track    : Stream_Track;
+      Sample   : Sample_Library.Valid_Sample_Index;
+      Key      : MIDI.MIDI_Key;
+      Velocity : MIDI.MIDI_Data;
+   end record
+     with Pack;
 
    procedure Start (Track       : Stream_Track;
                     Sample      : Sample_Library.Sample_Index;

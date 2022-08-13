@@ -24,7 +24,8 @@ with Interfaces;
 with WNM;
 with WNM.Time;
 with WNM.Audio;
-with WNM.MIDI;
+with WNM.Sample_Library;
+with WNM.Sample_Stream;
 
 package WNM.Synth is
 
@@ -34,9 +35,8 @@ package WNM.Synth is
    --  How many audio samples have been sent to the DAC so far.
    --  This number can be used to count time between two events.
 
-   procedure Trig (Track : WNM.Tracks);
-
-   procedure Event (Msg : MIDI.Message);
+   procedure Trig (Track  : Sample_Stream.Stream_Track;
+                   Sample : Sample_Library.Valid_Sample_Index);
 
    procedure Change_Pan (Track : WNM.Tracks;
                          Pan   : Integer);
