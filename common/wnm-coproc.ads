@@ -23,21 +23,30 @@ with WNM_Configuration;
 with WNM_HAL;
 
 with WNM.Sample_Stream;
+with WNM.Speech;
 
 private with Ada.Unchecked_Conversion;
 
 package WNM.Coproc is
 
-   type Message_Kind is (Sampler_Event)
+   type Message_Kind is (Sampler_Event, Speech_Event)
      with Size => 4;
 
    type Message (Kind : Message_Kind := Sampler_Event) is record
       case Kind is
          when Sampler_Event =>
             Sampler_Evt : Sample_Stream.Sampler_Event_Rec;
+         when Speech_Event =>
+            Speech_Evt : Speech.Speech_Event_Rec;
       end case;
    end record
-     with Pack, Size => WNM_Configuration.Coproc_Data_Size;
+     with Size => WNM_Configuration.Coproc_Data_Size;
+
+   for Message use record
+      Kind        at 0 range 0 .. 3;
+      Sampler_Evt at 0 range 6 .. 31;
+      Speech_Evt  at 0 range 6 .. 21;
+   end record;
 
    procedure Push (Msg : Message);
    --  Send a message to the synth coprocessor. Fails silently if the message

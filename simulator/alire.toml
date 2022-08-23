@@ -25,3 +25,7 @@ littlefs.Warn = true
 littlefs.Error = true
 littlefs.Trace = true
 littlefs.No_Malloc = true
+[[depends-on]]
+lpc_synth = "~0.1.0-dev"
+[[pins]]
+lpc_synth = { url='git@github.com:Fabien-Chouteau/lpc_synth.git' }

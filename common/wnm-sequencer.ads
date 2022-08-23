@@ -105,7 +105,7 @@ package WNM.Sequencer is
    procedure Velo_Next (Step : Sequencer_Steps);
    procedure Velo_Prev (Step : Sequencer_Steps);
 
-   type Track_Mode_Kind is (Sample_Mode, MIDI_Mode, Speak_Mode);
+   type Track_Mode_Kind is (Sample_Mode, MIDI_Mode, Speech_Mode);
    package Track_Mode_Kind_Next is new Enum_Next (Track_Mode_Kind);
    use Track_Mode_Kind_Next;
 
@@ -113,7 +113,7 @@ package WNM.Sequencer is
    is (case M is
           when Sample_Mode => "Sample",
           when MIDI_Mode   => "MIDI",
-          when Speak_Mode  => "Speak");
+          when Speech_Mode  => "Speech");
 
    function Mode (T : Tracks) return Track_Mode_Kind;
    procedure Mode_Next (T : Tracks);

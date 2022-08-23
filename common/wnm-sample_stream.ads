@@ -40,7 +40,7 @@ package WNM.Sample_Stream is
       Key      : MIDI.MIDI_Key;
       Velocity : MIDI.MIDI_Data;
    end record
-     with Pack;
+     with Pack, Size => 26;
 
    procedure Start (Track       : Stream_Track;
                     Sample      : Sample_Library.Sample_Index;
@@ -58,7 +58,8 @@ private
 
    type Stream_Info is record
       State       : Stream_State := Ready;
-      Sample      : Sample_Library.Sample_Index := Sample_Library.Invalid_Sample_Entry;
+      Sample      : Sample_Library.Sample_Index :=
+        Sample_Library.Invalid_Sample_Entry;
       Cursor      : Sample_Library.Sample_Point_Index;
       Start_Point : Sample_Library.Sample_Point_Index;
       End_Point   : Sample_Library.Sample_Point_Index;

@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2021 Fabien Chouteau                    --
+--                     Copyright (C) 2022 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -20,51 +20,25 @@
 -------------------------------------------------------------------------------
 
 with WNM.MIDI;
-with WNM.Time;
-with WNM.Sample_Stream;
-with WNM.Speech;
+with WNM.Audio;
 
-package WNM.Short_Term_Sequencer is
+package WNM.Speech is
 
-   type Event_Kind is (Sampler_Event, MIDI_Event, Speech_Event);
+   type Word is new WNM.MIDI.MIDI_Key;
 
-   type Event_Data (Kind : Event_Kind := Sampler_Event) is record
-      case Kind is
-         when Sampler_Event =>
-            Sampler_Evt : Sample_Stream.Sampler_Event_Rec;
-         when MIDI_Event =>
-            Msg : MIDI.Message;
-         when Speech_Event =>
-            Speech_Evt : Speech.Speech_Event_Rec;
-      end case;
-   end record;
+   function Img (W : Word) return String;
 
-   subtype Expiration_Time is Time.Time_Microseconds;
+   procedure Start (T : Tracks; W : Word);
 
-   procedure Push (D : Event_Data; Expiration : Expiration_Time);
-   procedure Pop (Now     :     Expiration_Time;
-                  D       : out Event_Data;
-                  Success : out Boolean);
+   procedure Stop (T : Tracks);
 
-   --  procedure Print_Queue;
+   procedure Next_Points (Buffer : in out Audio.Stereo_Buffer);
 
-private
+   type Speech_Event_Rec is record
+      On       : Boolean;
+      Track    : Tracks;
+      W        : Word;
+   end record
+     with Pack, Size => 16;
 
-   Max_Number_Of_Tracks  : constant := 16;
-   Max_Number_Of_Repeats : constant := 8;
-   Max_Number_Of_Notes   : constant := 4;
-
-   MAX_EVENT_NUMBER : constant :=
-     Max_Number_Of_Tracks * Max_Number_Of_Repeats * Max_Number_Of_Notes * 2;
-
-   type Event;
-
-   type Event_Access is access all Event;
-
-   type Event is record
-      D : Event_Data;
-      Expiration : Expiration_Time;
-      Next : Event_Access := null;
-   end record;
-
-end WNM.Short_Term_Sequencer;
+end WNM.Speech;

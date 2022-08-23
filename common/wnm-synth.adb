@@ -27,7 +27,7 @@ with WNM.Sample_Library;         use WNM.Sample_Library;
 with WNM.Audio;                  use WNM.Audio;
 with WNM.Coproc;
 
-with WNM.Sequencer;
+with WNM.Speech;
 
 package body WNM.Synth is
 
@@ -156,9 +156,17 @@ package body WNM.Synth is
          exit when not Success;
 
          case Msg.Kind is
+
             when WNM.Coproc.Sampler_Event =>
                if Msg.Sampler_Evt.On then
                   Trig (Msg.Sampler_Evt.Track, Msg.Sampler_Evt.Sample);
+               end if;
+
+            when WNM.Coproc.Speech_Event =>
+               if Msg.Speech_Evt.On then
+                  WNM.Speech.Start (Msg.Speech_Evt.Track, Msg.Speech_Evt.W);
+               else
+                  WNM.Speech.Stop (Msg.Speech_Evt.Track);
                end if;
          end case;
       end loop;
@@ -262,6 +270,9 @@ package body WNM.Synth is
          end loop;
       end;
 
+      -- Speech synth --
+      Speech.Next_Points (Output);
+
       -- Recording --
       --  if Recording_Source /= None then
       --     declare
@@ -319,7 +330,7 @@ package body WNM.Synth is
                               Source   : Rec_Source;
                               Max_Size : Positive)
    is
-      pragma Unreferenced (Max_Size);
+      pragma Unreferenced (Max_Size, Filename);
    begin
       if Recording_Source /= None then
          return;
@@ -343,6 +354,6 @@ package body WNM.Synth is
    -----------------
 
    function Record_Size return Natural
-   is (Natural (Recording_Size));
+   is (Recording_Size);
 
 end WNM.Synth;

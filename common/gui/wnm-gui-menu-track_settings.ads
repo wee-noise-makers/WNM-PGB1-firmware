@@ -57,7 +57,7 @@ private
              S in Track_Mode | MIDI_Chan | MIDI_Instrument | Arp_Mode |
                   Arp_Notes | CC_A .. CC_Label_D,
 
-          when Sequencer.Speak_Mode =>
+          when Sequencer.Speech_Mode =>
              S in Track_Mode | Volume | Pan | Arp_Mode | Arp_Notes);
    --  Return True if the given setting is available for the given track mode.
    --  For instance, volume setting is not available in MIDI mode.

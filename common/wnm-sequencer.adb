@@ -27,6 +27,7 @@ with WNM.UI; use WNM.UI;
 with WNM.MIDI.Queues;
 with WNM.Coproc;
 with WNM.Sample_Stream;
+with WNM.Speech;
 
 with HAL;                   use HAL;
 
@@ -45,10 +46,10 @@ package body WNM.Sequencer is
 
    procedure Process_Step (Pattern : Patterns; Step : Sequencer_Steps);
 
-   type Sequencer_State_Event is (Play_Event,
-                                  Rec_Event,
-                                  Rec_Long_Event,
-                                  Rec_Release_Event);
+   --  type Sequencer_State_Event is (Play_Event,
+   --                                 Rec_Event,
+   --                                 Rec_Long_Event,
+   --                                 Rec_Release_Event);
    procedure Do_Preview_Trigger (T : Tracks);
    procedure Play_Step (P : Patterns; T : Tracks; S : Sequencer_Steps;
                         Now : Time.Time_Microseconds := Time.Clock);
@@ -204,19 +205,19 @@ package body WNM.Sequencer is
                Current_Editing_Step := V;
             end if;
 
-            --  if UI.Recording and then Pattern_Sequencer.Playing then
-            --
-            --     --  Live record the trigger
-            --     Sequences (Current_Editing_Pattern) (V) (Current_Playing_Step).Trig
-            --       := Always;
-            --
-            --     if Microstep /= 1 then
-            --        --  If user play later than the step time, play a preview
-            --        Do_Preview_Trigger (V);
-            --     end if;
-            --  else
-            --     Do_Preview_Trigger (V);
-            --  end if;
+   --  if UI.Recording and then Pattern_Sequencer.Playing then
+   --
+   --     --  Live record the trigger
+   --     Sequences (Current_Editing_Pattern) (V) (Current_Playing_Step).Trig
+   --       := Always;
+   --
+   --     if Microstep /= 1 then
+   --        --  If user play later than the step time, play a preview
+   --        Do_Preview_Trigger (V);
+   --     end if;
+   --  else
+   --     Do_Preview_Trigger (V);
+   --  end if;
 
             if UI.Recording then
                declare
@@ -358,7 +359,7 @@ package body WNM.Sequencer is
       use WNM.Sample_Stream;
    begin
       case Mode (T) is
-         when Sample_Mode | Speak_Mode =>
+         when Sample_Mode =>
             WNM.Coproc.Push ((WNM.Coproc.Sampler_Event,
                               (On       => Kind = On,
                                Track    => To_Stream_Track (T),
@@ -366,6 +367,14 @@ package body WNM.Sequencer is
                                Key      => Key,
                                Velocity => Velo)
                               )
+                            );
+
+         when Speech_Mode =>
+            WNM.Coproc.Push ((WNM.Coproc.Speech_Event,
+                             (On => Kind = On,
+                              Track => T,
+                              W     => Speech.Word (Key))
+                             )
                             );
 
          when MIDI_Mode =>
@@ -393,7 +402,7 @@ package body WNM.Sequencer is
       use WNM.Sample_Stream;
    begin
       case Mode (T) is
-         when Sample_Mode | Speak_Mode =>
+         when Sample_Mode =>
             WNM.Short_Term_Sequencer.Push
               ((Short_Term_Sequencer.Sampler_Event,
                (On       => Kind = On,
@@ -403,6 +412,17 @@ package body WNM.Sequencer is
                 Velocity => Velo)
                ),
                Deadline);
+
+         when Speech_Mode =>
+            if Kind = On then
+               WNM.Short_Term_Sequencer.Push
+                 ((Short_Term_Sequencer.Speech_Event,
+                             (On => Kind = On,
+                              Track => T,
+                              W     => Speech.Word (Key))
+                             ),
+                  Deadline);
+            end if;
 
          when MIDI_Mode =>
             case Kind is
@@ -452,7 +472,6 @@ package body WNM.Sequencer is
 
    procedure Play_Note (T           : Tracks;
                         Key         : MIDI.MIDI_Key;
-                        Channel     : MIDI.MIDI_Channel;
                         Velo        : MIDI.MIDI_Data;
                         Rep         : WNM.Repeat;
                         Now         : Time.Time_Microseconds;
@@ -479,7 +498,6 @@ package body WNM.Sequencer is
    --------------
 
    procedure Play_Arp (T           : Tracks;
-                       Channel     : MIDI.MIDI_Channel;
                        Velo        : MIDI.MIDI_Data;
                        Rep         : WNM.Repeat;
                        Now         : Time.Time_Microseconds;
@@ -510,7 +528,6 @@ package body WNM.Sequencer is
    procedure Play_Chord (T           : Tracks;
                          Chord       : Chord_Sequencer.Chord_Notes;
                          Last_Note   : Chord_Sequencer.Chord_Index_Range;
-                         Channel     : MIDI.MIDI_Channel;
                          Velo        : MIDI.MIDI_Data;
                          Rep         : WNM.Repeat;
                          Now         : Time.Time_Microseconds;
@@ -559,8 +576,6 @@ package body WNM.Sequencer is
             when N_16th  => Microseconds_Per_Beat / 16,
             when N_32nd  => Microseconds_Per_Beat / 32);
 
-      Channel : constant MIDI.MIDI_Channel :=  Track_Settings (T).Chan;
-
       Repeat_Span : constant Time.Time_Microseconds :=
         Microseconds_Per_Beat / (case Step.Repeat_Rate
                                  is
@@ -587,35 +602,36 @@ package body WNM.Sequencer is
       case Step.Note_Mode is
          when Note =>
             Play_Note (T, Step.Note,
-                       Channel, Step.Velo, Step.Repeat,
+                       Step.Velo, Step.Repeat,
                        Now, Repeat_Duration, Repeat_Span);
 
          when Note_In_Chord =>
 
             Play_Note (T, Current_Chord (Chord_Index_Range (Step.Note)),
-                       Channel, Step.Velo, Step.Repeat,
+                       Step.Velo, Step.Repeat,
                        Now, Repeat_Duration, Repeat_Span);
 
          when Note_In_Scale =>
 
             Play_Note (T, Current_Scale (Scale_Range (Step.Note)),
-                       Channel, Step.Velo, Step.Repeat,
+                       Step.Velo, Step.Repeat,
                        Now, Repeat_Duration, Repeat_Span);
 
          when Arp =>
 
             Play_Arp (T,
-                      Channel, Step.Velo, Step.Repeat,
+                      Step.Velo, Step.Repeat,
                       Now, Repeat_Duration, Repeat_Span);
 
          when Chord =>
 
             Play_Chord
               (T, Chord_Sequencer.Current_Chord,
-               Chord_Index_Range (Integer'Min (Integer (Chord_Index_Range'Last),
+               Chord_Index_Range
+                 (Integer'Min (Integer (Chord_Index_Range'Last),
                  Integer (Step.Note))),
 
-               Channel, Step.Velo, Step.Repeat,
+               Step.Velo, Step.Repeat,
                Now, Repeat_Duration, Repeat_Span);
       end case;
 
@@ -628,13 +644,9 @@ package body WNM.Sequencer is
    procedure Process_Step (Pattern : Patterns;
                            Step : Sequencer_Steps)
    is
-      use Synth;
-
       Condition : Boolean := False;
 
       Now : constant Time.Time_Microseconds := Time.Clock;
-      Note_Duration : constant Time.Time_Microseconds :=
-        Microseconds_Per_Beat / 4;
 
       --  Now : constant Sample_Time := Sample_Clock;
       --  Note_Duration : constant Sample_Time := Samples_Per_Beat / 4;
@@ -698,7 +710,6 @@ package body WNM.Sequencer is
    ------------------
 
    procedure Execute_Step is
-      use Synth;
    begin
 
       Next_Start := Next_Start + (Microseconds_Per_Beat / Steps_Per_Beat) / 2;
@@ -753,6 +764,8 @@ package body WNM.Sequencer is
          case Data.Kind is
             when Short_Term_Sequencer.Sampler_Event =>
                WNM.Coproc.Push ((WNM.Coproc.Sampler_Event, Data.Sampler_Evt));
+            when Short_Term_Sequencer.Speech_Event =>
+               WNM.Coproc.Push ((WNM.Coproc.Speech_Event, Data.Speech_Evt));
             when Short_Term_Sequencer.MIDI_Event =>
                WNM.MIDI.Queues.Sequencer_Push (Data.Msg);
          end case;
