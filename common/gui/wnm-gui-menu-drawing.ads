@@ -22,7 +22,7 @@
 with WNM.MIDI;
 with WNM.Screen;
 with WNM.GUI.Bitmap_Fonts;
-with WNM.Chord_Sequencer;
+with WNM.Chord_Settings;
 with WNM.Sample_Library;
 with WNM.Speech;
 
@@ -59,10 +59,10 @@ package WNM.GUI.Menu.Drawing is
    procedure Draw_Duration (D        : Note_Duration;
                             Selected : Boolean);
 
-   procedure Draw_Scale_Mode (M        : Chord_Sequencer.Scale_Name;
+   procedure Draw_Scale_Mode (M        : Chord_Settings.Scale_Name;
                               Selected : Boolean);
 
-   procedure Draw_Chord_Duration (D        : Chord_Sequencer.Chord_Duration;
+   procedure Draw_Chord_Duration (D        : Chord_Settings.Chord_Duration;
                                   Selected : Boolean);
 
    procedure Draw_Chord_Kind (Str      : String;

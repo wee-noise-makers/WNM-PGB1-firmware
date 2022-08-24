@@ -331,7 +331,7 @@ package body WNM.GUI.Menu.Drawing is
    -- Draw_Scale_Mode --
    ---------------------
 
-   procedure Draw_Scale_Mode (M        : Chord_Sequencer.Scale_Name;
+   procedure Draw_Scale_Mode (M        : Chord_Settings.Scale_Name;
                               Selected : Boolean)
    is
       X : Integer := Box_Center.X + 10;
@@ -343,7 +343,7 @@ package body WNM.GUI.Menu.Drawing is
 
       Print (X_Offset    => X,
              Y_Offset    => Value_Text_Y,
-             Str         => Chord_Sequencer.Img (M));
+             Str         => Chord_Settings.Img (M));
 
    end Draw_Scale_Mode;
 
@@ -351,7 +351,7 @@ package body WNM.GUI.Menu.Drawing is
    -- Draw_Chord_Duration --
    -------------------------
 
-   procedure Draw_Chord_Duration (D        : Chord_Sequencer.Chord_Duration;
+   procedure Draw_Chord_Duration (D        : Chord_Settings.Chord_Duration;
                                   Selected : Boolean)
    is
       X : Integer := Box_Center.X + 10;
@@ -363,7 +363,7 @@ package body WNM.GUI.Menu.Drawing is
 
       Print (X_Offset    => X,
              Y_Offset    => Value_Text_Y,
-             Str         => Chord_Sequencer.Img (D));
+             Str         => Chord_Settings.Img (D));
    end Draw_Chord_Duration;
 
    ---------------------

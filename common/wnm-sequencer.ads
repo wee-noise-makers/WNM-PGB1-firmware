@@ -35,10 +35,12 @@ package WNM.Sequencer is
    function Editing_Step return Sequencer_Steps;
    function Editing_Track return Tracks;
    function Editing_Pattern return Patterns;
+   function Editing_Chord return Chords;
 
    procedure Set_Editing_Step    (S : Sequencer_Steps);
    procedure Set_Editing_Track   (T : Tracks);
    procedure Set_Editing_Pattern (P : Patterns);
+   procedure Set_Editing_Chord (C : Chords);
 
    procedure Play_Pause;
    --  Use it to signal a play/pause event
@@ -306,5 +308,6 @@ private
    Current_Editing_Pattern : Patterns := Patterns'First;
    Current_Editing_Track : Tracks := Tracks'First;
    Current_Editing_Step : Sequencer_Steps := Sequencer_Steps'First;
+   Current_Editing_Chord : Chords := Chords'First;
 
 end WNM.Sequencer;

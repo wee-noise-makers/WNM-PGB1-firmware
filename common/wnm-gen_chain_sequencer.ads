@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                  Copyright (C) 2016-2017 Fabien Chouteau                  --
+--                  Copyright (C) 2016-2020 Fabien Chouteau                  --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,55 +19,33 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-package WNM.GUI.Menu is
+--  This package provides a common implementation of chain sequencing that
+--  will be used for patterns as well as chords (maybe more in the future).
 
-   type Base_Menu_Kind is (Main_Menu, Step_Menu, Track_Menu, Pattern_Menu,
-                           Chord_Menu);
+with WNM.UI;
 
-   procedure Open (Kind : Base_Menu_Kind);
+generic
+   Max_Patterns_In_Sequence : Natural := 30;
+package WNM.Gen_Chain_Sequencer is
 
-   function In_Menu return Boolean;
-   procedure Draw;
+   procedure Start_Recording;
+   procedure End_Recording;
 
-   type Menu_Event_Kind is (Left_Press,
-                            Right_Press,
-                            Encoder_Left,
-                            Encoder_Right);
+   procedure Play_Pause;
+   function Playing return Boolean;
 
-   type Menu_Event (Kind : Menu_Event_Kind := Left_Press) is record
-      case Kind is
-         when Encoder_Left | Encoder_Right =>
-            Value : Integer;
-         when others =>
-            null;
-      end case;
-   end record;
+   procedure On_Press (Button : Keyboard_Button;
+                       Mode : WNM.UI.Main_Modes);
 
-   procedure On_Event (Event : Menu_Event);
+   procedure On_Release (Button : Keyboard_Button;
+                         Mode : WNM.UI.Main_Modes);
 
-   type Window_Exit_Value is (None, Success, Failure);
+   procedure Single_Play (K : Keyboard_Value);
 
-   type Menu_Window is interface;
+   function Playing return Keyboard_Value;
+   function Is_In_Sequence (K : Keyboard_Value) return Boolean;
 
-   type Any_Menu_Window is access all Menu_Window'Class;
+   procedure Signal_End_Of_Pattern;
+   procedure Signal_Mid_Pattern;
 
-   procedure Draw (This : in out Menu_Window)
-   is abstract;
-
-   procedure On_Event (This  : in out Menu_Window;
-                       Event : Menu_Event)
-   is abstract;
-
-   procedure On_Pushed (This  : in out Menu_Window)
-   is abstract;
-   procedure On_Focus (This       : in out Menu_Window;
-                       Exit_Value : Window_Exit_Value)
-   is abstract;
-
-   procedure Push (Window : not null Any_Menu_Window);
-   procedure Pop (Exit_Value : Window_Exit_Value);
-
-   procedure Exit_Menu;
-   --  Pop all the windows in stack with a None exit value
-
-end WNM.GUI.Menu;
+end WNM.Gen_Chain_Sequencer;

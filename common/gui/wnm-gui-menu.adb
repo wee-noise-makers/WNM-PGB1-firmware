@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                  Copyright (C) 2016-2017 Fabien Chouteau                  --
+--                  Copyright (C) 2016-2022 Fabien Chouteau                  --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -23,6 +23,7 @@ with WNM.GUI.Menu.Root;
 with WNM.GUI.Menu.Track_Settings;
 with WNM.GUI.Menu.Pattern_Settings;
 with WNM.GUI.Menu.Step_Settings;
+with WNM.GUI.Menu.Chord_Settings;
 
 package body WNM.GUI.Menu is
 
@@ -43,6 +44,8 @@ package body WNM.GUI.Menu is
             GUI.Menu.Track_Settings.Push_Window;
          when Pattern_Menu =>
             GUI.Menu.Pattern_Settings.Push_Window;
+         when Chord_Menu =>
+            GUI.Menu.Chord_Settings.Push_Window;
       end case;
    end Open;
 

@@ -46,7 +46,7 @@ is
          Step_Button => sfKeyA,
          Track_Button => sfKeyQ,
          Pattern_Button => sfKeyDash,
-         Chord => sfKeyNum0,
+         Chord_Button => sfKeyNum0,
          Encoder_L => sfKeyNum1,
          Encoder_R => sfKeyNum2);
 

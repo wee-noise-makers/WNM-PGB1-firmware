@@ -21,8 +21,9 @@
 
 with WNM.Short_Term_Sequencer;
 with WNM.Pattern_Sequencer;
-with WNM.Arpeggiator;
 with WNM.Chord_Sequencer;
+with WNM.Arpeggiator;
+with WNM.Chord_Settings;
 with WNM.UI; use WNM.UI;
 with WNM.MIDI.Queues;
 with WNM.Coproc;
@@ -100,7 +101,7 @@ package body WNM.Sequencer is
    ---------------------
 
    function Playing_Pattern return Patterns
-   is (Pattern_Sequencer.Playing_Pattern);
+   is (Pattern_Sequencer.Playing);
 
    -------------------
    -- Editing_Step --
@@ -122,6 +123,17 @@ package body WNM.Sequencer is
 
    function Editing_Pattern return Patterns
    is (Current_Editing_Pattern);
+
+   -------------------
+   -- Editing_Chord --
+   -------------------
+
+   function Editing_Chord return Chords
+   is (Current_Editing_Chord);
+
+   ----------------------
+   -- Set_Editing_Step --
+   ----------------------
 
    procedure Set_Editing_Step    (S : Sequencer_Steps) is
    begin
@@ -145,6 +157,15 @@ package body WNM.Sequencer is
    begin
       Current_Editing_Pattern := P;
    end Set_Editing_Pattern;
+
+   -----------------------
+   -- Set_Editing_Chord --
+   -----------------------
+
+   procedure Set_Editing_Chord (C : Chords) is
+   begin
+      Current_Editing_Chord := C;
+   end Set_Editing_Chord;
 
 --      Octave : MIDI.Octaves := 4;
 
@@ -195,6 +216,9 @@ package body WNM.Sequencer is
          when UI.Pattern_Mode =>
             Current_Editing_Pattern := V;
             Pattern_Sequencer.On_Press (Button, Mode);
+
+         when UI.Chord_Mode =>
+            Chord_Sequencer.On_Press (Button, Mode);
 
          when UI.Track_Mode | UI.Step_Mode =>
 
@@ -254,15 +278,6 @@ package body WNM.Sequencer is
    begin
       Pattern_Sequencer.On_Release (Button, Mode);
    end On_Release;
-
-   --------------------
-   -- Select_Channel --
-   --------------------
-
-   procedure Select_Track (Track : Tracks) is
-   begin
-      Current_Track := Track;
-   end Select_Track;
 
    -------------
    -- Do_Copy --
@@ -525,8 +540,8 @@ package body WNM.Sequencer is
    ----------------
 
    procedure Play_Chord (T           : Tracks;
-                         Chord       : Chord_Sequencer.Chord_Notes;
-                         Last_Note   : Chord_Sequencer.Chord_Index_Range;
+                         Chord       : Chord_Settings.Chord_Notes;
+                         Last_Note   : Chord_Settings.Chord_Index_Range;
                          Velo        : MIDI.MIDI_Data;
                          Rep         : WNM.Repeat;
                          Now         : Time.Time_Microseconds;
@@ -559,7 +574,7 @@ package body WNM.Sequencer is
    procedure Play_Step (P : Patterns; T : Tracks; S : Sequencer_Steps;
                         Now : Time.Time_Microseconds := Time.Clock)
    is
-      use Chord_Sequencer;
+      use Chord_Settings;
       use MIDI;
 
       Step : Step_Rec renames Sequences (P) (T) (S);
@@ -625,7 +640,7 @@ package body WNM.Sequencer is
          when Chord =>
 
             Play_Chord
-              (T, Chord_Sequencer.Current_Chord,
+              (T, Chord_Settings.Current_Chord,
                Chord_Index_Range
                  (Integer'Min (Integer (Chord_Index_Range'Last),
                  Integer (Step.Note))),
@@ -723,18 +738,19 @@ package body WNM.Sequencer is
 
                   if Current_Playing_Step = 8 then
                      Pattern_Sequencer.Signal_Mid_Pattern;
+                     Chord_Sequencer.Signal_Mid_Pattern;
                   end if;
 
                   Current_Playing_Step := Current_Playing_Step + 1;
                else
                   Current_Playing_Step := Sequencer_Steps'First;
                   Pattern_Sequencer.Signal_End_Of_Pattern;
+                  Chord_Sequencer.Signal_End_Of_Pattern;
                end if;
 
                --  At the middle of the step we play the recorded notes
             when 1 =>
-               Process_Step (Pattern_Sequencer.Playing_Pattern,
-                             Playing_Step);
+               Process_Step (Pattern_Sequencer.Playing, Playing_Step);
          end case;
 
          Microstep := Microstep + 1;
@@ -906,11 +922,11 @@ package body WNM.Sequencer is
          when Note =>
             S.Note := MIDI.C4;
          when Chord =>
-            S.Note := MIDI.MIDI_Key (Chord_Sequencer.Chord_Index_Range'Last);
+            S.Note := MIDI.MIDI_Key (Chord_Settings.Chord_Index_Range'Last);
          when Note_In_Chord =>
-            S.Note := MIDI.MIDI_Key (Chord_Sequencer.Chord_Index_Range'First);
+            S.Note := MIDI.MIDI_Key (Chord_Settings.Chord_Index_Range'First);
          when Note_In_Scale =>
-            S.Note := MIDI.MIDI_Key (Chord_Sequencer.Scale_Range'First);
+            S.Note := MIDI.MIDI_Key (Chord_Settings.Scale_Range'First);
          when Arp =>
             null;
       end case;
@@ -933,14 +949,14 @@ package body WNM.Sequencer is
             return S.Note;
          when Note_In_Chord =>
             declare
-               use Chord_Sequencer;
+               use Chord_Settings;
                Chord : constant Chord_Notes := Current_Chord;
             begin
                return Chord (Chord_Index_Range (S.Note));
             end;
          when Note_In_Scale =>
             declare
-               use Chord_Sequencer;
+               use Chord_Settings;
                Scale : constant Scale_Notes := Current_Scale;
             begin
                return Scale (Scale_Range (S.Note));
@@ -971,12 +987,12 @@ package body WNM.Sequencer is
             end if;
 
          when Chord | Note_In_Chord =>
-            if S.Note /= MIDI_Key (Chord_Sequencer.Chord_Index_Range'Last) then
+            if S.Note /= MIDI_Key (Chord_Settings.Chord_Index_Range'Last) then
                S.Note := S.Note + 1;
             end if;
 
          when Note_In_Scale =>
-            if S.Note /= MIDI_Key (Chord_Sequencer.Scale_Range'Last) then
+            if S.Note /= MIDI_Key (Chord_Settings.Scale_Range'Last) then
                S.Note := S.Note + 1;
             end if;
 

@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                  Copyright (C) 2016-2022 Fabien Chouteau                  --
+--                  Copyright (C) 2016-2017 Fabien Chouteau                  --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -23,7 +23,7 @@ with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
 
 with WNM.Chord_Settings;
 
-package body WNM.GUI.Menu.Pattern_Settings is
+package body WNM.GUI.Menu.Chord_Settings is
 
    package Sub_Settings_Next is new Enum_Next (Sub_Settings,
                                                Wrap => False);
@@ -60,10 +60,10 @@ package body WNM.GUI.Menu.Pattern_Settings is
    overriding
    procedure Draw (This : in out Pattern_Settings_Menu)
    is
-      use Chord_Settings;
+      use WNM.Chord_Settings;
       Top_Setting : constant Top_Settings := To_Top (This.Current_Setting);
    begin
-      Draw_Menu_Box ("Pattern settings",
+      Draw_Menu_Box ("Chord settings",
                      Count => Top_Settings_Count,
                      Index => Top_Settings'Pos
                        (To_Top (This.Current_Setting)));
@@ -77,7 +77,7 @@ package body WNM.GUI.Menu.Pattern_Settings is
             Draw_Title ("Key", "");
             Draw_MIDI_Note (Current_Scale_Key,
                             This.Current_Setting = Scale_Key);
-            Draw_Scale_Mode (Chord_Settings.Current_Scale_Name,
+            Draw_Scale_Mode (WNM.Chord_Settings.Current_Scale_Name,
                              This.Current_Setting = Scale_Mode);
          when Progression =>
             if This.Current_Setting = Progression_Add then
@@ -85,14 +85,14 @@ package body WNM.GUI.Menu.Pattern_Settings is
                            "Press L to add");
                Draw_Value ("chord.");
             else
-               Draw_Title ("Progression:" & Chord_Settings.Cursor'Img, "");
+               Draw_Title ("Progression:" & WNM.Chord_Settings.Cursor'Img, "");
 
                Draw_Chord_Kind
-                 (Chord_Settings.Chord_Kind,
+                 (WNM.Chord_Settings.Chord_Kind,
                   Selected => This.Current_Setting = Progression_Kind);
 
                Draw_Chord_Duration
-                 (Chord_Settings.Duration,
+                 (WNM.Chord_Settings.Duration,
                   Selected => This.Current_Setting = Progression_Dur);
             end if;
       end case;
@@ -107,16 +107,16 @@ package body WNM.GUI.Menu.Pattern_Settings is
    procedure On_Event (This  : in out Pattern_Settings_Menu;
                        Event : Menu_Event)
    is
-      use Chord_Settings;
+      use WNM.Chord_Settings;
    begin
       case Event.Kind is
          when Left_Press =>
             case This.Current_Setting is
                when Magic_Hat =>
-                  Chord_Settings.Randomly_Pick_A_Progression;
+                  WNM.Chord_Settings.Randomly_Pick_A_Progression;
 
                when Progression_Add =>
-                  Chord_Settings.Add_Chord;
+                  WNM.Chord_Settings.Add_Chord;
                   This.Current_Setting := Progression_Dur;
 
                when others =>
@@ -125,7 +125,7 @@ package body WNM.GUI.Menu.Pattern_Settings is
 
          when Right_Press =>
             if This.Current_Setting in Progression_Dur | Progression_Kind then
-               Chord_Settings.Remove_Chord;
+               WNM.Chord_Settings.Remove_Chord;
             end if;
 
          when Encoder_Right =>
@@ -135,30 +135,30 @@ package body WNM.GUI.Menu.Pattern_Settings is
 
                when Scale_Key =>
                   if Event.Value > 0 then
-                     Chord_Settings.Scale_Key_Next;
+                     WNM.Chord_Settings.Scale_Key_Next;
                   else
-                     Chord_Settings.Scale_Key_Prev;
+                     WNM.Chord_Settings.Scale_Key_Prev;
                   end if;
 
                when Scale_Mode =>
                   if Event.Value > 0 then
-                     Chord_Settings.Scale_Next;
+                     WNM.Chord_Settings.Scale_Next;
                   else
-                     Chord_Settings.Scale_Prev;
+                     WNM.Chord_Settings.Scale_Prev;
                   end if;
 
                when Progression_Kind =>
                   if Event.Value > 0 then
-                     Chord_Settings.Chord_Kind_Next;
+                     WNM.Chord_Settings.Chord_Kind_Next;
                   else
-                     Chord_Settings.Chord_Kind_Prev;
+                     WNM.Chord_Settings.Chord_Kind_Prev;
                   end if;
 
                when Progression_Dur =>
                   if Event.Value > 0 then
-                     Chord_Settings.Duration_Next;
+                     WNM.Chord_Settings.Duration_Next;
                   else
-                     Chord_Settings.Duration_Prev;
+                     WNM.Chord_Settings.Duration_Prev;
                   end if;
 
                when Progression_Add =>
@@ -174,24 +174,24 @@ package body WNM.GUI.Menu.Pattern_Settings is
                      Next (This.Current_Setting);
 
                   elsif Event.Value < 0 then
-                     if Chord_Settings.Cursor = Progression_Range'First
+                     if WNM.Chord_Settings.Cursor = Progression_Range'First
                      then
                         Prev (This.Current_Setting);
                      else
                         This.Current_Setting := Progression_Dur;
-                        Chord_Settings.Cursor_Prev;
+                        WNM.Chord_Settings.Cursor_Prev;
                      end if;
                   end if;
 
                when Progression_Dur =>
 
                   if Event.Value > 0 then
-                     if Chord_Settings.Cursor = Progression_Length
+                     if WNM.Chord_Settings.Cursor = Progression_Length
                      then
                         Next (This.Current_Setting);
                      else
                         This.Current_Setting := Progression_Kind;
-                        Chord_Settings.Cursor_Next;
+                        WNM.Chord_Settings.Cursor_Next;
                      end if;
 
                   elsif Event.Value < 0 then
@@ -231,4 +231,4 @@ package body WNM.GUI.Menu.Pattern_Settings is
       null;
    end On_Focus;
 
-end WNM.GUI.Menu.Pattern_Settings;
+end WNM.GUI.Menu.Chord_Settings;

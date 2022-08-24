@@ -22,7 +22,7 @@
 with HAL; use HAL;
 with WNM.MIDI; use WNM.MIDI;
 
-package body WNM.Chord_Sequencer is
+package body WNM.Chord_Settings is
 
    type Progression_Elt is record
       Index : Scale_Range := Scale_Range'First;
@@ -468,4 +468,4 @@ package body WNM.Chord_Sequencer is
       Progression.Key := Key;
    end Randomly_Pick_A_Progression;
 
-end WNM.Chord_Sequencer;
+end WNM.Chord_Settings;

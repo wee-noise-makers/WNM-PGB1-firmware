@@ -19,7 +19,7 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Chord_Sequencer;
+with WNM.Chord_Settings;
 
 package body WNM.Arpeggiator is
 
@@ -86,7 +86,7 @@ package body WNM.Arpeggiator is
    ---------------
 
    function Next_Note (T : Tracks) return MIDI.MIDI_Key is
-      use Chord_Sequencer;
+      use Chord_Settings;
 
       Arp : Arpeggiator_Rec renames Arpeggiators (T);
       Result : MIDI.MIDI_Key;

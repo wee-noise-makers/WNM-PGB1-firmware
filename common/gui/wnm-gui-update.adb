@@ -26,13 +26,11 @@ with WNM.Screen;
 with WNM.UI;
 with WNM.Sequencer;         use WNM.Sequencer;
 with WNM.Sequence_Copy;     use WNM.Sequence_Copy;
-with WNM.Pattern_Sequencer; use WNM.Pattern_Sequencer;
 with WNM.Master_Volume;
 with WNM.GUI.Menu;
 with WNM.GUI.Menu.Drawing;  use WNM.GUI.Menu.Drawing;
 with WNM.GUI.Logo;
 with WNM.GUI.Popup;
---  with WNM.Sample_Library;    use WNM.Sample_Library;
 
 package body WNM.GUI.Update is
 
@@ -91,9 +89,11 @@ package body WNM.GUI.Update is
             BPM := Integer (WNM.Sequencer.BPM);
             Volume := Integer (WNM.Master_Volume.Value);
 
-            WNM.GUI.Parameters.Print_Percentage (Slot  => WNM.GUI.Parameters.Up,
-                                                 Name  => "Volume",
-                                                 Value => Volume);
+            WNM.GUI.Parameters.Print_Percentage
+              (Slot  => WNM.GUI.Parameters.Up,
+               Name  => "Volume",
+               Value => Volume);
+
             WNM.GUI.Parameters.Print_Int (Slot  => WNM.GUI.Parameters.Down,
                                           Name  => "BPM",
                                           Value => BPM,
@@ -125,29 +125,26 @@ package body WNM.GUI.Update is
          --            Y_Offset    => Box_Top,
          --            Str         => "Step Mode");
 
-         when WNM.UI.Pattern_Chaining =>
-            B := 1;
-            Print (X_Offset    => B,
-                   Y_Offset    => Box_Top,
-                   Str         => "Chain patterns");
-            B := 1;
-            Print (X_Offset    => B,
-                   Y_Offset    => Box_Top + 9,
-                   Str         => "Current: " & Img (Sequencer.Playing_Pattern));
-         when WNM.UI.Pattern_Mode | WNM.UI.Track_Mode | WNM.UI.Step_Mode =>
+         when WNM.UI.Pattern_Mode |
+              WNM.UI.Track_Mode |
+              WNM.UI.Step_Mode |
+              WNM.UI.Chord_Mode =>
+
             Menu.Draw;
+
          when WNM.UI.FX_Alt =>
             B := 1;
             Print (X_Offset    => B,
                    Y_Offset    => Box_Top,
                    Str         => "FX/Copy",
                    Invert_From => 0);
+
          when WNM.UI.Copy =>
             declare
                Blink : constant Boolean := (Anim_Step mod 10) < 5;
                FB : constant String := (if Blink then "  " else "??");
                TB : constant String :=
-                 (if Is_Complete (WNM.UI.Copy_T.From) and then blink
+                 (if Is_Complete (WNM.UI.Copy_T.From) and then Blink
                   then "  " else "??");
             begin
                B := 1;
@@ -164,9 +161,13 @@ package body WNM.GUI.Update is
                       Str         => "To   " & Image (WNM.UI.Copy_T.To, TB));
             end;
 
-         when WNM.UI.Step_Select | WNM.UI.Track_Select | WNM.UI.Pattern_Select  =>
-            --  These mode are not expected for the GUI
-            raise Program_Error;
+         when WNM.UI.Step_Select |
+              WNM.UI.Track_Select |
+              WNM.UI.Pattern_Select |
+              WNM.UI.Chord_Select
+            =>
+            raise Program_Error with
+              "These mode are not expected for the GUI";
       end case;
 
       WNM.GUI.Popup.Update;

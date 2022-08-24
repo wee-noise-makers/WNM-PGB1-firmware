@@ -148,7 +148,7 @@ package body ASFML_Sim is
       LED_Offset : constant array (WNM_Configuration.LED) of sfVector2f :=
         (
          Menu           => (753.0, 293.0),
-         Chord          => (869.0, 293.0),
+         Chord_Button   => (869.0, 293.0),
          Pattern_Button => (985.0, 293.0),
          Func           => (1114.0, 293.0),
 
@@ -198,7 +198,7 @@ package body ASFML_Sim is
         of sfVector2f :=
         (
          Menu           => (753.0, 293.0 + B_Y_Offset),
-         Chord          => (869.0, 293.0 + B_Y_Offset),
+         Chord_Button   => (869.0, 293.0 + B_Y_Offset),
          Pattern_Button => (985.0, 293.0 + B_Y_Offset),
          Func           => (1114.0, 293.0 + B_Y_Offset),
 

@@ -19,19 +19,16 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Chord_Sequencer;
-
-package body WNM.Pattern_Sequencer is
-
-   Max_Patterns_In_Sequence : constant := 30;
+package body WNM.Gen_Chain_Sequencer is
 
    subtype Sequence_Range is Positive range 1 .. Max_Patterns_In_Sequence;
-   type Sequence is array (Sequence_Range) of Patterns;
-   type In_Seq_Array is array (Patterns) of Boolean;
+   type Sequence is array (Sequence_Range) of Keyboard_Value;
+   type In_Seq_Array is array (Keyboard_Value) of Boolean;
 
    type Pattern_Seq is record
-      Sequence_Of_Pattern : Sequence := (others => 1);
-      Is_In_Sequence      : In_Seq_Array :=  (1 => True, others => False);
+      Sequence_Of_Pattern : Sequence := (others => Keyboard_Value'First);
+      Is_In_Sequence      : In_Seq_Array :=  (Keyboard_Value'First => True,
+                                              others               => False);
       Playing             : Sequence_Range := 1;
       Last_In             : Sequence_Range := 1;
    end record;
@@ -47,24 +44,24 @@ package body WNM.Pattern_Sequencer is
    Recording_State : Recording_Kind := None;
 
    procedure Start (S : in out Pattern_Seq;
-                    P : Patterns);
-   --  Start a new sequence with the given pattern as a first pattern
+                    K : Keyboard_Value);
+   --  Start a new sequence with the given key as first
 
    -----------
    -- Start --
    -----------
 
    procedure Start (S : in out Pattern_Seq;
-                    P : Patterns)
+                    K : Keyboard_Value)
    is
    begin
       S.Playing := S.Sequence_Of_Pattern'First;
       S.Last_In := S.Playing;
 
       S.Is_In_Sequence := (others => False);
-      S.Is_In_Sequence (P) := True;
+      S.Is_In_Sequence (K) := True;
 
-      S.Sequence_Of_Pattern (S.Sequence_Of_Pattern'First) := P;
+      S.Sequence_Of_Pattern (S.Sequence_Of_Pattern'First) := K;
    end Start;
 
    ---------------------------
@@ -93,25 +90,25 @@ package body WNM.Pattern_Sequencer is
    -- Add_To_Sequence --
    ---------------------
 
-   procedure Add_To_Sequence (S       : in out Pattern_Seq;
-                              Pattern : Patterns)
+   procedure Add_To_Sequence (S : in out Pattern_Seq;
+                              K : Keyboard_Value)
    is
    begin
       if S.Last_In /= S.Sequence_Of_Pattern'Last then
          S.Last_In := S.Last_In + 1;
-         S.Sequence_Of_Pattern (S.Last_In) := Pattern;
-         S.Is_In_Sequence (Pattern) := True;
+         S.Sequence_Of_Pattern (S.Last_In) := K;
+         S.Is_In_Sequence (K) := True;
       end if;
    end Add_To_Sequence;
 
-   ---------------------
-   -- Playing_Pattern --
-   ---------------------
+   -------------
+   -- Playing --
+   -------------
 
-   function Playing_Pattern (S : Pattern_Seq) return Patterns is
+   function Playing (S : Pattern_Seq) return Keyboard_Value is
    begin
       return S.Sequence_Of_Pattern (S.Playing);
-   end Playing_Pattern;
+   end Playing;
 
    ---------------------
    -- Start_Recording --
@@ -170,8 +167,9 @@ package body WNM.Pattern_Sequencer is
    --------------
 
    procedure On_Press (Button : Keyboard_Button;
-                       Mode : WNM.UI.Main_Modes)
+                       Mode   : WNM.UI.Main_Modes)
    is
+      pragma Unreferenced (Mode);
       V : constant Keyboard_Value := To_Value (Button);
    begin
       case Recording_State is
@@ -208,42 +206,33 @@ package body WNM.Pattern_Sequencer is
    -- Single_Play --
    -----------------
 
-   procedure Single_Play (P : Patterns) is
+   procedure Single_Play (K : Keyboard_Value) is
    begin
 
       if Playing then
          Cue_Next := True;
-         Start (Sequences (not Seq_Flip), P);
+         Start (Sequences (not Seq_Flip), K);
       else
-         Start (Sequences (Seq_Flip), P);
+         Start (Sequences (Seq_Flip), K);
          Playing_State := Play_Loop;
       end if;
    end Single_Play;
 
    ---------------------
-   -- Add_To_Sequence --
-   ---------------------
-
-   procedure Add_To_Sequence (Pattern : Patterns) is
-   begin
-      Add_To_Sequence (Sequences (Seq_Flip), Pattern);
-   end Add_To_Sequence;
-
-   ---------------------
    -- Playing_Pattern --
    ---------------------
 
-   function Playing_Pattern return Patterns is
+   function Playing return Keyboard_Value is
    begin
-      return Playing_Pattern (Sequences (Seq_Flip));
-   end Playing_Pattern;
+      return Playing (Sequences (Seq_Flip));
+   end Playing;
 
-   ----------------------------
-   -- Is_In_Pattern_Sequence --
-   ----------------------------
+   --------------------
+   -- Is_In_Sequence --
+   --------------------
 
-   function Is_In_Pattern_Sequence (Pattern : Patterns) return Boolean
-   is (Sequences (Seq_Flip). Is_In_Sequence (Pattern));
+   function Is_In_Sequence (K : Keyboard_Value) return Boolean
+   is (Sequences (Seq_Flip). Is_In_Sequence (K));
 
    ---------------------------
    -- Signal_End_Of_Pattern --
@@ -251,8 +240,6 @@ package body WNM.Pattern_Sequencer is
 
    procedure Signal_End_Of_Pattern is
    begin
-
-      Chord_Sequencer.Signal_End_Of_Pattern;
 
       if Cue_Next then
 
@@ -280,7 +267,7 @@ package body WNM.Pattern_Sequencer is
 
    procedure Signal_Mid_Pattern is
    begin
-      Chord_Sequencer.Signal_Mid_Pattern;
+      null;
    end Signal_Mid_Pattern;
 
-end WNM.Pattern_Sequencer;
+end WNM.Gen_Chain_Sequencer;

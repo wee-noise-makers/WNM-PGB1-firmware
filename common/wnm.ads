@@ -21,7 +21,6 @@
 
 with Enum_Next;
 
-
 pragma Warnings (Off);
 with WNM_Configuration; use WNM_Configuration;
 with WNM_HAL;           use WNM_HAL;
@@ -38,6 +37,7 @@ package WNM is
 
    subtype Tracks is Keyboard_Value;
    subtype Patterns is Keyboard_Value;
+   subtype Chords is Keyboard_Value;
 
    type Trigger is (None, Always, Fill, Percent_25, Percent_50, Percent_75,
                     One_Of_Two, One_Of_Three);
