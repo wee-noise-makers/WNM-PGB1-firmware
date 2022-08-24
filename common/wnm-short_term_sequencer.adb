@@ -21,8 +21,6 @@
 
 with HAL; use HAL;
 
-with WNM.Synth; use WNM.Synth;
-
 package body WNM.Short_Term_Sequencer is
 
    type Any_Node_Index is range 0 .. MAX_EVENT_NUMBER;
@@ -191,7 +189,7 @@ package body WNM.Short_Term_Sequencer is
    --     Ada.Text_IO.Put_Line ("Short_Term_Sequencer Queue:");
    --     Node := List_Head;
    --     while Node /= null loop
-   --        Ada.Text_IO.Put_Line (Node.Expiration'Img & " " & MIDI.Img (Node.D));
+   --   Ada.Text_IO.Put_Line (Node.Expiration'Img & " " & MIDI.Img (Node.D));
    --        Node := Node.Next;
    --     end loop;
    --     Ada.Text_IO.Put_Line ("---------------------------");

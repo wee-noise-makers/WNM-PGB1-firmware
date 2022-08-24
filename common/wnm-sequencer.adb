@@ -27,7 +27,6 @@ with WNM.UI; use WNM.UI;
 with WNM.MIDI.Queues;
 with WNM.Coproc;
 with WNM.Sample_Stream;
-with WNM.Speech;
 
 with HAL;                   use HAL;
 
@@ -373,7 +372,8 @@ package body WNM.Sequencer is
             WNM.Coproc.Push ((WNM.Coproc.Speech_Event,
                              (On => Kind = On,
                               Track => T,
-                              W     => Speech.Word (Key))
+                              W     => Selected_Word (T),
+                              Key   => Key)
                              )
                             );
 
@@ -414,15 +414,14 @@ package body WNM.Sequencer is
                Deadline);
 
          when Speech_Mode =>
-            if Kind = On then
-               WNM.Short_Term_Sequencer.Push
-                 ((Short_Term_Sequencer.Speech_Event,
-                             (On => Kind = On,
-                              Track => T,
-                              W     => Speech.Word (Key))
-                             ),
-                  Deadline);
-            end if;
+            WNM.Short_Term_Sequencer.Push
+              ((Short_Term_Sequencer.Speech_Event,
+                          (On => Kind = On,
+                           Track => T,
+                           W     => Selected_Word (T),
+                           Key   => Key)
+                          ),
+               Deadline);
 
          when MIDI_Mode =>
             case Kind is
@@ -747,8 +746,6 @@ package body WNM.Sequencer is
    ------------
 
    function Update return Time.Time_Microseconds is
-      use Synth;
-
       Now      : constant Time.Time_Microseconds := Time.Clock;
       Success : Boolean;
       Data    : Short_Term_Sequencer.Event_Data;
@@ -1325,6 +1322,39 @@ package body WNM.Sequencer is
          Track_Settings (T).Sample := Track_Settings (T).Sample - 1;
       end if;
    end Prev_Sample;
+
+   -------------------
+   -- Selected_Word --
+   -------------------
+
+   function Selected_Word (T : Tracks) return Speech.Word is
+   begin
+      return Track_Settings (T).Word;
+   end Selected_Word;
+
+   ---------------
+   -- Next_Word --
+   ---------------
+
+   procedure Next_Word (T : Tracks) is
+      use Speech;
+   begin
+      if Track_Settings (T).Word /= Speech.Word'Last then
+         Track_Settings (T).Word := Track_Settings (T).Word + 1;
+      end if;
+   end Next_Word;
+
+   ---------------
+   -- Prev_Word --
+   ---------------
+
+   procedure Prev_Word (T : Tracks) is
+      use Speech;
+   begin
+      if Track_Settings (T).Word /= Speech.Word'First then
+         Track_Settings (T).Word := Track_Settings (T).Word - 1;
+      end if;
+   end Prev_Word;
 
    ----------------
    -- Next_Value --

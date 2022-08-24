@@ -69,7 +69,8 @@ package body WNM.GUI.Menu.Pattern_Settings is
    begin
       Draw_Menu_Box ("Pattern settings",
                      Count => Top_Settings_Count,
-                     Index => Top_Settings'Pos (To_Top (This.Current_Setting)));
+                     Index => Top_Settings'Pos
+                       (To_Top (This.Current_Setting)));
 
       case Top_Setting is
          when Magic_Hat =>
@@ -191,7 +192,7 @@ package body WNM.GUI.Menu.Pattern_Settings is
                   if Event.Value > 0 then
                      if Chord_Sequencer.Cursor = Progression_Length
                      then
-                     Next (This.Current_Setting);
+                        Next (This.Current_Setting);
                      else
                         This.Current_Setting := Progression_Kind;
                         Chord_Sequencer.Cursor_Next;

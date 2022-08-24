@@ -62,7 +62,9 @@ package body WNM.GUI.Menu.Drawing is
          end loop;
 
          Screen.Set_Pixel ((X_Offset + Index * 3, Scroll_Bar_Y_Offset + 1));
-         Screen.Set_Pixel ((X_Offset + Index * 3 + 1, Scroll_Bar_Y_Offset + 1));
+
+         Screen.Set_Pixel ((X_Offset + Index * 3 + 1,
+                           Scroll_Bar_Y_Offset + 1));
       end;
 
       if Index < Count - 1 then
@@ -196,8 +198,6 @@ package body WNM.GUI.Menu.Drawing is
    procedure Draw_Duration (D        : Note_Duration;
                             Selected : Boolean)
    is
-      X : Integer := Box_Center.X - 50;
-
       DX : constant Integer := Box_Center.X - 3;
       DY : constant := Box_Top + 22;
    begin
@@ -366,7 +366,6 @@ package body WNM.GUI.Menu.Drawing is
              Str         => Chord_Sequencer.Img (D));
    end Draw_Chord_Duration;
 
-
    ---------------------
    -- Draw_Chord_Kind --
    ---------------------
@@ -497,6 +496,45 @@ package body WNM.GUI.Menu.Drawing is
       end if;
    end Draw_Sample_Select;
 
+   ----------------------
+   -- Draw_Word_Select --
+   ----------------------
+
+   procedure Draw_Word_Select (Word : Speech.Word) is
+      use Speech;
+
+      X : Integer;
+
+      function Display_Text (Val : Speech.Word) return String is
+      begin
+         return Speech.Img (Val);
+      end Display_Text;
+
+      Left_Pos : constant Integer := Box_Left + 5;
+   begin
+
+      if Word /= Speech.Word'First then
+         X := Left_Pos;
+         Print (X_Offset => X,
+                Y_Offset => Value_Text_Y - 23,
+                Str      => Display_Text (Word - 1));
+      end if;
+
+      X := Left_Pos;
+      Print (X_Offset => X,
+             Y_Offset => Value_Text_Y - 11,
+             Str      => Display_Text (Word),
+             Invert_From => Box_Left,
+             Invert_To   => Box_Right);
+
+      if Word /= Speech.Word'Last then
+         X := Left_Pos;
+         Print (X_Offset => X,
+                Y_Offset => Value_Text_Y + 1,
+                Str      => Display_Text (Word + 1));
+      end if;
+   end Draw_Word_Select;
+
    -------------------
    -- Draw_Waveform --
    -------------------
@@ -519,7 +557,6 @@ package body WNM.GUI.Menu.Drawing is
       Print (X_Offset => X,
              Y_Offset => Box_Top,
              Str      => Point_Index_To_Seconds (Sample_Edit.Stop)'Img);
-
 
       X := Box_Left;
       for Elt of Sample_Edit.Waveform loop

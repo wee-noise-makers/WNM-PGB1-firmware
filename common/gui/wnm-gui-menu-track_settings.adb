@@ -205,6 +205,10 @@ package body WNM.GUI.Menu.Track_Settings is
 
             Draw_Sample_Select (Sequencer.Selected_Sample (Editing_Track));
 
+         when Speech_Word =>
+
+            Draw_Word_Select (Sequencer.Selected_Word (Editing_Track));
+
          when CC_A | CC_B | CC_C | CC_D =>
             declare
                CC : constant Sequencer.CC_Id :=
@@ -334,6 +338,13 @@ package body WNM.GUI.Menu.Track_Settings is
                      Sequencer.Next_Sample (Editing_Track);
                   else
                      Sequencer.Prev_Sample (Editing_Track);
+                  end if;
+
+               when Speech_Word =>
+                  if Event.Value > 0 then
+                     Sequencer.Next_Word (Editing_Track);
+                  else
+                     Sequencer.Prev_Word (Editing_Track);
                   end if;
 
                when CC_A | CC_B | CC_C | CC_D =>

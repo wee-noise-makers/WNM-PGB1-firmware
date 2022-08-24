@@ -25,6 +25,7 @@ with WNM.MIDI;
 with WNM.Sequence_Copy;
 with WNM.UI;
 with WNM.Sample_Library;
+with WNM.Speech;
 
 package WNM.Sequencer is
 
@@ -159,6 +160,10 @@ package WNM.Sequencer is
    procedure Next_Sample (T : Tracks);
    procedure Prev_Sample (T : Tracks);
 
+   function Selected_Word (T : Tracks) return Speech.Word;
+   procedure Next_Word (T : Tracks);
+   procedure Prev_Word (T : Tracks);
+
    type Step_Settings is (Condition,
                           Note,
                           Duration,
@@ -275,6 +280,7 @@ private
       Chan : MIDI.MIDI_Channel := 0;
       CC : CC_Setting_Array;
       Sample : Sample_Library.Valid_Sample_Index := 1;
+      Word   : Speech.Word := Speech.Word'First;
    end record;
 
    Track_Settings : array (Tracks) of Track_Setting
@@ -285,7 +291,8 @@ private
                            (2, "Control 2        "),
                            (3, "Control 3        ")
                           ),
-                    Sample => 1
+                    Sample => Sample_Library.Valid_Sample_Index'First,
+                    Word => Speech.Word'First
                    )
         );
 

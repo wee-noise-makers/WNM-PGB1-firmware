@@ -8,8 +8,6 @@ with WNM.Screen;
 with WNM.GUI.Bitmap_Fonts;
 with WNM.Sample_Library;
 
-with Ada.Text_IO;
-
 package body WNM.File_System is
 
    File_Buffer : Storage_Array

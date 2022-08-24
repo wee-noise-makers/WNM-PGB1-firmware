@@ -164,7 +164,9 @@ package body WNM.Synth is
 
             when WNM.Coproc.Speech_Event =>
                if Msg.Speech_Evt.On then
-                  WNM.Speech.Start (Msg.Speech_Evt.Track, Msg.Speech_Evt.W);
+                  WNM.Speech.Start (Msg.Speech_Evt.Track,
+                                    Msg.Speech_Evt.W,
+                                    Msg.Speech_Evt.Key);
                else
                   WNM.Speech.Stop (Msg.Speech_Evt.Track);
                end if;

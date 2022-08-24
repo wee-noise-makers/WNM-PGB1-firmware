@@ -24,6 +24,7 @@ with WNM.Screen;
 with WNM.GUI.Bitmap_Fonts;
 with WNM.Chord_Sequencer;
 with WNM.Sample_Library;
+with WNM.Speech;
 
 package WNM.GUI.Menu.Drawing is
 
@@ -34,7 +35,6 @@ package WNM.GUI.Menu.Drawing is
 
    Box_Center : constant Screen.Point := ((Box_Right + Box_Left) / 2,
                                           (Box_Top + Box_Bottom) / 2);
-
 
    procedure Draw_Menu_Box (Title : String;
                             Count : Positive;
@@ -81,6 +81,8 @@ package WNM.GUI.Menu.Drawing is
                         Value : Natural);
 
    procedure Draw_Sample_Select (Val : Sample_Library.Valid_Sample_Index);
+
+   procedure Draw_Word_Select (Word : Speech.Word);
 
    procedure Draw_Waveform;
 

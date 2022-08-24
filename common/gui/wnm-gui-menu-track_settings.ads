@@ -30,6 +30,7 @@ private
 
    type Settings is (Track_Mode,
                      Sample,
+                     Speech_Word,
                      Volume,
                      Pan,
                      Arp_Mode,
@@ -58,7 +59,8 @@ private
                   Arp_Notes | CC_A .. CC_Label_D,
 
           when Sequencer.Speech_Mode =>
-             S in Track_Mode | Volume | Pan | Arp_Mode | Arp_Notes);
+             S in Track_Mode | Speech_Word | Volume | Pan | Arp_Mode |
+                  Arp_Notes);
    --  Return True if the given setting is available for the given track mode.
    --  For instance, volume setting is not available in MIDI mode.
 
@@ -94,7 +96,6 @@ private
    --
    --  This procedure will switch the Current_Setting to a valid setting for
    --  the editing track.
-
 
    type MIDI_Instrument_Settings is record
       Name : Sequencer.Controller_Label;

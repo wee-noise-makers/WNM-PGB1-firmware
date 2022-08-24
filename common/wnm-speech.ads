@@ -28,7 +28,9 @@ package WNM.Speech is
 
    function Img (W : Word) return String;
 
-   procedure Start (T : Tracks; W : Word);
+   procedure Start (T : Tracks;
+                    W : Word;
+                    K : MIDI.MIDI_Key);
 
    procedure Stop (T : Tracks);
 
@@ -38,7 +40,8 @@ package WNM.Speech is
       On       : Boolean;
       Track    : Tracks;
       W        : Word;
+      Key      : MIDI.MIDI_Key;
    end record
-     with Pack, Size => 16;
+     with Pack, Size => 20;
 
 end WNM.Speech;
