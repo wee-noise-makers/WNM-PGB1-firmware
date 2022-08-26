@@ -20,13 +20,14 @@
 -------------------------------------------------------------------------------
 
 with WNM.MIDI;
+with WNM.Sequencer;
 
 package WNM.Chord_Settings is
 
-   subtype Tonic is MIDI.MIDI_Key;
-
    type Interval is (P1, min2, Maj2, min3, Maj3, P4,
-                     d5, P5, min6, d7, min7, Maj7, Octave);
+                     d5, P5, min6, d7, min7, Maj7, Octave,
+                     min9, Maj9, min10, Maj10, P11, P12, min13, Maj13,
+                     min14, Maj14, P15);
 
    for Interval use
      (P1     => 0,
@@ -41,7 +42,18 @@ package WNM.Chord_Settings is
       d7     => 9,
       min7   => 10,
       Maj7   => 11,
-      Octave => 12);
+      Octave => 12,
+      min9   => 13,
+      Maj9   => 14,
+      min10  => 15,
+      Maj10  => 16,
+      P11    => 17,
+      P12    => 19,
+      min13  => 20,
+      Maj13  => 21,
+      min14  => 22,
+      Maj14  => 23,
+      P15    => 24);
 
    type Chord_Index_Range is range 0 .. 3;
    --  Not trying to model the entire music theory, limiting chords to 4 notes
@@ -56,7 +68,9 @@ package WNM.Chord_Settings is
 
    type Chord_Name is (Maj_Triad, Min_Triad, Dim_Triad,
                        Maj_7th, Min_7th, Dim_7th,
-                       Sus2, Sus4);
+                       Sus2, Sus4,
+                       Maj_Inv1, Maj_Inv2,
+                       Min_Inv1, Min_Inv2);
 
    subtype Triads is Chord_Name range Maj_Triad .. Dim_Triad;
 
@@ -84,7 +98,11 @@ package WNM.Chord_Settings is
       Min_7th   => (P1, min3, P5, min7),
       Dim_7th   => (P1, min3, d5, d7),
       Sus2      => (P1, Maj2, P5, Octave),
-      Sus4      => (P1, P4, P5, Octave));
+      Sus4      => (P1, P4, P5, Octave),
+      Maj_Inv1  => (Maj3, P5, Octave, Maj10),
+      Maj_Inv2  => (P5, Octave, Maj10, P12),
+      Min_Inv1  => (min3, P5, Octave, min10),
+      Min_Inv2  => (P5, Octave, min10, P12));
    --  https://en.wikipedia.org/wiki/Chord_(music)
 
    type Substitution_Index is range 1 .. 4;
@@ -100,48 +118,34 @@ package WNM.Chord_Settings is
          Dim_Triad => (2, (Dim_Triad, Dim_7th, Dim_7th, Dim_7th)));
 
    procedure Play_Pause;
-   function Playing return Boolean;
-
    procedure Signal_End_Of_Pattern;
    procedure Signal_Mid_Pattern;
-
-   function Current_Scale_Key return MIDI.MIDI_Key;
-   procedure Scale_Key_Next;
-   procedure Scale_Key_Prev;
-
-   function Current_Scale_Name return Scale_Name;
-   procedure Scale_Next;
-   procedure Scale_Prev;
 
    function Current_Tonic return MIDI.MIDI_Key;
    function Current_Chord_Name return Chord_Name;
    function Current_Chord_Intervals return Chord_Intervals;
    function Current_Chord return Chord_Notes;
-   function Current_Scale_Intervals return Scale_Intervals;
-   function Current_Scale return Scale_Notes;
 
-   --  Progression edition --
+   -- Settings --
 
-   type Progression_Range is range 1 .. 12;
-   function Progression_Length return Progression_Range;
-   function Cursor return Progression_Range;
-   procedure Cursor_Next;
-   procedure Cursor_Prev;
+   type Chord_Settings is (Tonic,
+                           Name,
+                           Extended);
 
-   function Chord_Kind return String;
-   procedure Chord_Kind_Next;
-   procedure Chord_Kind_Prev;
+   for Chord_Settings'Size use 4;
+   for Chord_Settings use (Tonic       => 0,
+                           Name        => 1,
+                           Extended    => 15);
 
-   type Chord_Duration is (Whole_Bar, Half_Bar);
-   function Duration return Chord_Duration;
-   procedure Duration_Next;
-   procedure Duration_Prev;
+   subtype User_Chord_Settings is Chord_Settings range Tonic .. Name;
 
-   procedure Add_Chord;
-   --  Add a chord at the end of the progression
+   procedure Next_Value (S : User_Chord_Settings);
+   procedure Prev_Value (S : User_Chord_Settings);
 
-   procedure Remove_Chord;
-   --  Remove the currently selected chord in the progression
+   function Selected_Tonic (C : WNM.Chords := WNM.Sequencer.Editing_Chord)
+                            return MIDI.MIDI_Key;
+   function Selected_Name (C : WNM.Chords :=  WNM.Sequencer.Editing_Chord)
+                           return Chord_Name;
 
    procedure Randomly_Pick_A_Progression;
    --  a.k.a. The Magic Hat of Chord Progression
@@ -153,33 +157,29 @@ package WNM.Chord_Settings is
 
    function Img (N : Chord_Name) return String
    is (case N is
-       when Maj_Triad => "M",
-       when Min_Triad => "m",
-       when Dim_Triad => "*",
-       when Maj_7th   => "M7",
-       when Min_7th   => "m7",
-       when Dim_7th   => "*7",
-       when Sus2      => "sus2",
-       when Sus4      => "sus4");
+          when Maj_Triad => "M",
+          when Min_Triad => "m",
+          when Dim_Triad => "*",
+          when Maj_7th   => "M7",
+          when Min_7th   => "m7",
+          when Dim_7th   => "*7",
+          when Sus2      => "sus2",
+          when Sus4      => "sus4",
+          when Maj_Inv1  => "M/1",
+          when Maj_Inv2  => "M/2",
+          when Min_Inv1  => "m/1",
+          when Min_Inv2  => "m/2");
+
+   type Chord_Duration is (Whole_Bar, Half_Bar);
 
    function Img (D : Chord_Duration) return String
    is (case D is
           when Whole_Bar => "1 Bar",
           when Half_Bar  => "1/2 Bar");
 
-   package Scale_Name_Next is new Enum_Next (Scale_Name);
-   use Scale_Name_Next;
+   package Chord_Name_Next is new Enum_Next (Chord_Name);
+   use Chord_Name_Next;
 
-   package Chord_Duration_Next is new Enum_Next (Chord_Duration);
-   use Chord_Duration_Next;
-
-   pragma Inline (Current_Scale_Key);
-   pragma Inline (Scale_Key_Prev);
-   pragma Inline (Scale_Key_Next);
-   pragma Inline (Current_Scale_Name);
-   pragma Inline (Current_Scale);
-   pragma Inline (Scale_Next);
-   pragma Inline (Scale_Prev);
    pragma Inline (Current_Tonic);
    pragma Inline (Current_Chord_Intervals);
    pragma Inline (Current_Chord);

@@ -21,8 +21,6 @@
 
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
 
-with WNM.Chord_Settings;
-
 package body WNM.GUI.Menu.Pattern_Settings is
 
    package Sub_Settings_Next is new Enum_Next (Sub_Settings,
@@ -46,12 +44,7 @@ package body WNM.GUI.Menu.Pattern_Settings is
 
    function To_Top (S : Sub_Settings) return Top_Settings
    is (case S is
-          when Magic_Hat => Magic_Hat,
-          when Scale_Key => Scale,
-          when Scale_Mode => Scale,
-          when Progression_Kind => Progression,
-          when Progression_Dur => Progression,
-          when Progression_Add => Progression);
+          when Sub_Nothing => Top_Nothing);
 
    ----------
    -- Draw --
@@ -60,7 +53,6 @@ package body WNM.GUI.Menu.Pattern_Settings is
    overriding
    procedure Draw (This : in out Pattern_Settings_Menu)
    is
-      use Chord_Settings;
       Top_Setting : constant Top_Settings := To_Top (This.Current_Setting);
    begin
       Draw_Menu_Box ("Pattern settings",
@@ -69,32 +61,8 @@ package body WNM.GUI.Menu.Pattern_Settings is
                        (To_Top (This.Current_Setting)));
 
       case Top_Setting is
-         when Magic_Hat =>
-            Draw_Title ("Magic Hat Of Chord",
-                        "Progressions");
-
-         when Scale =>
-            Draw_Title ("Key", "");
-            Draw_MIDI_Note (Current_Scale_Key,
-                            This.Current_Setting = Scale_Key);
-            Draw_Scale_Mode (Chord_Settings.Current_Scale_Name,
-                             This.Current_Setting = Scale_Mode);
-         when Progression =>
-            if This.Current_Setting = Progression_Add then
-               Draw_Title ("Progression:",
-                           "Press L to add");
-               Draw_Value ("chord.");
-            else
-               Draw_Title ("Progression:" & Chord_Settings.Cursor'Img, "");
-
-               Draw_Chord_Kind
-                 (Chord_Settings.Chord_Kind,
-                  Selected => This.Current_Setting = Progression_Kind);
-
-               Draw_Chord_Duration
-                 (Chord_Settings.Duration,
-                  Selected => This.Current_Setting = Progression_Dur);
-            end if;
+         when Top_Nothing =>
+            Draw_Title ("Nothing here...", "");
       end case;
 
    end Draw;
@@ -107,104 +75,20 @@ package body WNM.GUI.Menu.Pattern_Settings is
    procedure On_Event (This  : in out Pattern_Settings_Menu;
                        Event : Menu_Event)
    is
-      use Chord_Settings;
    begin
       case Event.Kind is
          when Left_Press =>
-            case This.Current_Setting is
-               when Magic_Hat =>
-                  Chord_Settings.Randomly_Pick_A_Progression;
-
-               when Progression_Add =>
-                  Chord_Settings.Add_Chord;
-                  This.Current_Setting := Progression_Dur;
-
-               when others =>
-                  null;
-            end case;
-
+            null;
          when Right_Press =>
-            if This.Current_Setting in Progression_Dur | Progression_Kind then
-               Chord_Settings.Remove_Chord;
-            end if;
-
+            null;
          when Encoder_Right =>
-            case This.Current_Setting is
-               when Magic_Hat =>
-                  null;
-
-               when Scale_Key =>
-                  if Event.Value > 0 then
-                     Chord_Settings.Scale_Key_Next;
-                  else
-                     Chord_Settings.Scale_Key_Prev;
-                  end if;
-
-               when Scale_Mode =>
-                  if Event.Value > 0 then
-                     Chord_Settings.Scale_Next;
-                  else
-                     Chord_Settings.Scale_Prev;
-                  end if;
-
-               when Progression_Kind =>
-                  if Event.Value > 0 then
-                     Chord_Settings.Chord_Kind_Next;
-                  else
-                     Chord_Settings.Chord_Kind_Prev;
-                  end if;
-
-               when Progression_Dur =>
-                  if Event.Value > 0 then
-                     Chord_Settings.Duration_Next;
-                  else
-                     Chord_Settings.Duration_Prev;
-                  end if;
-
-               when Progression_Add =>
-                  null;
-            end case;
-
+            null;
          when Encoder_Left =>
-            case This.Current_Setting is
-
-               when Progression_Kind =>
-
-                  if Event.Value > 0 then
-                     Next (This.Current_Setting);
-
-                  elsif Event.Value < 0 then
-                     if Chord_Settings.Cursor = Progression_Range'First
-                     then
-                        Prev (This.Current_Setting);
-                     else
-                        This.Current_Setting := Progression_Dur;
-                        Chord_Settings.Cursor_Prev;
-                     end if;
-                  end if;
-
-               when Progression_Dur =>
-
-                  if Event.Value > 0 then
-                     if Chord_Settings.Cursor = Progression_Length
-                     then
-                        Next (This.Current_Setting);
-                     else
-                        This.Current_Setting := Progression_Kind;
-                        Chord_Settings.Cursor_Next;
-                     end if;
-
-                  elsif Event.Value < 0 then
-                     This.Current_Setting := Prev (This.Current_Setting);
-                  end if;
-
-               when others =>
-                  if Event.Value > 0 then
-                     This.Current_Setting := Next (This.Current_Setting);
-                  elsif Event.Value < 0 then
-                     This.Current_Setting := Prev (This.Current_Setting);
-                  end if;
-            end case;
+            if Event.Value > 0 then
+               Next (This.Current_Setting);
+            elsif Event.Value < 0 then
+               Prev (This.Current_Setting);
+            end if;
       end case;
    end On_Event;
 

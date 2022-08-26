@@ -19,17 +19,11 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-
-with HAL.Bitmap;           use HAL.Bitmap;
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
 with WNM.Sequencer;        use WNM.Sequencer;
-with WNM.UI;
 
 package body WNM.GUI.Menu.Step_Settings is
 
-   package Top_Settings_Next is new Enum_Next (Top_Settings,
-                                               Wrap => False);
-   use Top_Settings_Next;
    package Sub_Settings_Next is new Enum_Next (Sub_Settings,
                                                Wrap => False);
    use Sub_Settings_Next;
@@ -75,9 +69,10 @@ package body WNM.GUI.Menu.Step_Settings is
 
       Top_Setting : constant Top_Settings := To_Top (This.Current_Setting);
    begin
-      Draw_Menu_Box ("Step settings",
-                     Count => Top_Settings_Count,
-                     Index => Top_Settings'Pos (To_Top (This.Current_Setting)));
+      Draw_Menu_Box
+        ("Step settings",
+         Count => Top_Settings_Count,
+         Index => Top_Settings'Pos (To_Top (This.Current_Setting)));
 
       case Top_Setting is
          when Condition =>
@@ -97,7 +92,7 @@ package body WNM.GUI.Menu.Step_Settings is
             end case;
 
             case Sequencer.Note_Mode (Trig) is
-               when Note | Note_In_Chord | Note_In_Scale =>
+               when Note | Note_In_Chord =>
                   Draw_MIDI_Note (Sequencer.Note (Trig),
                                   This.Current_Setting = Note);
                when Chord =>
@@ -126,8 +121,9 @@ package body WNM.GUI.Menu.Step_Settings is
             Draw_Value (Sequencer.Repeat (Trig)'Img,
                         Selected => This.Current_Setting = Repeat);
 
-            Draw_Value_Left (Img (Sequencer.Repeat_Rate (Trig)),
-                             Selected => This.Current_Setting = Sequencer.Repeat_Rate);
+            Draw_Value_Left
+              (Img (Sequencer.Repeat_Rate (Trig)),
+               Selected => This.Current_Setting = Sequencer.Repeat_Rate);
 
          when CC_A .. CC_D =>
             declare

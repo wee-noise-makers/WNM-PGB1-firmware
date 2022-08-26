@@ -25,13 +25,10 @@ package WNM.GUI.Menu.Pattern_Settings is
 
 private
 
-   type Top_Settings is (Magic_Hat, Scale, Progression);
+   type Top_Settings is (Top_Nothing);
    function Top_Settings_Count is new Enum_Count (Top_Settings);
 
-   type Sub_Settings is (Magic_Hat,
-                         Scale_Key, Scale_Mode,
-                         Progression_Kind, Progression_Dur,
-                         Progression_Add);
+   type Sub_Settings is (Sub_Nothing);
    function Sub_Settings_Count is new Enum_Count (Sub_Settings);
 
    type Pattern_Settings_Menu is new Menu_Window with record

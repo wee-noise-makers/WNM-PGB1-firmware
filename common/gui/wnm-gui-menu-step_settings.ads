@@ -27,7 +27,6 @@ package WNM.GUI.Menu.Step_Settings is
 
 private
 
-
    type Top_Settings is (Condition, Note, Repeat, CC_A, CC_B, CC_C, CC_D);
    function Top_Settings_Count is new Enum_Count (Top_Settings);
 

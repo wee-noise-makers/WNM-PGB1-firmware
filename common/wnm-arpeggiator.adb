@@ -96,9 +96,6 @@ package body WNM.Arpeggiator is
          when Chord =>
             Result := Current_Chord (Chord_Index_Range (Arp.Next_Index));
             Last := Natural (Chord_Index_Range'Last);
-         when Scale =>
-            Result := Current_Scale (Scale_Range (Arp.Next_Index));
-            Last := Natural (Scale_Range'Last);
       end case;
 
       case Arp.Mode is

@@ -25,19 +25,17 @@ with WNM.Sequencer; use WNM.Sequencer;
 package WNM.Arpeggiator is
 
    type Arp_Mode is (Up, Down, Up_Down, Random);
-   type Arp_Notes is (Chord, Scale);
+   type Arp_Notes is (Chord);
 
    function Mode (T : Tracks := Editing_Track) return Arp_Mode;
    procedure Mode_Next (T : Tracks := Editing_Track);
    procedure Mode_Prev (T : Tracks := Editing_Track);
 
-
    function Notes (T : Tracks := Editing_Track) return Arp_Notes;
    procedure Notes_Next (T : Tracks := Editing_Track);
    procedure Notes_Prev (T : Tracks := Editing_Track);
 
-   function Next_Note (T : Tracks ) return MIDI.MIDI_Key;
-
+   function Next_Note (T : Tracks) return MIDI.MIDI_Key;
 
    function Img (M : Arp_Mode) return String
    is (case M is
@@ -48,8 +46,7 @@ package WNM.Arpeggiator is
 
    function Img (N : Arp_Notes) return String
    is (case N is
-          when Chord => "Notes of chord",
-          when Scale => "Notes of scale");
+          when Chord => "Notes of chord");
 
 private
 

@@ -80,7 +80,7 @@ package WNM.Sequencer is
    procedure Repeat_Rate_Prev (Step : Sequencer_Steps);
 
    type Note_Mode_Kind is (Note, Chord,
-                           Note_In_Chord, Note_In_Scale,
+                           Note_In_Chord,
                            Arp);
    package Note_Mode_Kind_Next is new Enum_Next (Note_Mode_Kind);
    use Note_Mode_Kind_Next;
@@ -90,7 +90,6 @@ package WNM.Sequencer is
           when Note          => "Note",
           when Chord         => "Chord",
           when Note_In_Chord => "Note in chord",
-          when Note_In_Scale => "Note in scale",
           when Arp           => "Arpeggiator");
 
    function Note_Mode (Step : Sequencer_Steps) return Note_Mode_Kind;
@@ -177,8 +176,7 @@ package WNM.Sequencer is
                           CC_C,
                           CC_D,
                           Note_Mode,
-                          Extended,
-                          Reserved);
+                          Extended);
 
    for Step_Settings'Size use 4;
    for Step_Settings use (Condition   => 0,
@@ -192,8 +190,7 @@ package WNM.Sequencer is
                           CC_C        => 8,
                           CC_D        => 9,
                           Note_Mode   => 10,
-                          Extended    => 14,
-                          Reserved    => 15);
+                          Extended    => 15);
 
    subtype User_Step_Settings is Step_Settings range Condition .. CC_D;
 

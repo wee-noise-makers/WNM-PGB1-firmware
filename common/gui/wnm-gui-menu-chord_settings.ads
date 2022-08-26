@@ -19,19 +19,18 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with WNM.Chord_Settings;
+
 package WNM.GUI.Menu.Chord_Settings is
 
    procedure Push_Window;
 
 private
 
-   type Top_Settings is (Magic_Hat, Scale, Progression);
+   type Top_Settings is (Chord_Type);
    function Top_Settings_Count is new Enum_Count (Top_Settings);
 
-   type Sub_Settings is (Magic_Hat,
-                         Scale_Key, Scale_Mode,
-                         Progression_Kind, Progression_Dur,
-                         Progression_Add);
+   subtype Sub_Settings is WNM.Chord_Settings.User_Chord_Settings;
    function Sub_Settings_Count is new Enum_Count (Sub_Settings);
 
    type Pattern_Settings_Menu is new Menu_Window with record
