@@ -24,7 +24,8 @@ with WNM.Audio;
 
 package WNM.Speech is
 
-   type Word is new WNM.MIDI.MIDI_Key;
+   type Word is range 1 .. 286
+     with size => 9;
 
    function Img (W : Word) return String;
 
@@ -42,6 +43,6 @@ package WNM.Speech is
       W        : Word;
       Key      : MIDI.MIDI_Key;
    end record
-     with Pack, Size => 20;
+     with Pack, Size => 22;
 
 end WNM.Speech;

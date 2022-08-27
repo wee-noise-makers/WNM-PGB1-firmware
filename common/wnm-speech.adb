@@ -21,7 +21,8 @@
 
 with WNM.Audio; use WNM.Audio;
 with LPC_Synth;
-with LPC_Synth.Vocab_US_TI99; use LPC_Synth.Vocab_US_TI99;
+
+with WNM.Speech_Dictionary;
 
 package body WNM.Speech is
 
@@ -30,30 +31,12 @@ package body WNM.Speech is
    Pitch : array (Tracks) of Float :=
      (others => MIDI.Key_To_Frequency (MIDI.C4));
 
-   Data : constant array (Word) of not null LPC_Synth.LPC_Data_Const_Acc
-     := (spt_WE'Access,
-         spt_MAKE'Access,
-         spt_COMPUTER'Access,
-         spt_TRY'Access,
-         spt_AGAIN'Access,
-         spt_ANSWER'Access,
-         others => spt_OTHER'Access);
-
-   Image : constant array (Word) of not null access String
-     := (new String'("We"),
-         new String'("Make"),
-         new String'("Computer"),
-         new String'("Try"),
-         new String'("Again"),
-         new String'("Answer"),
-        others => new String'("Other"));
-
    ---------
    -- Img --
    ---------
 
    function Img (W : Word) return String
-   is (Image (W).all);
+   is (WNM.Speech_Dictionary.Image (W).all);
 
    -----------
    -- Start --
@@ -61,7 +44,7 @@ package body WNM.Speech is
 
    procedure Start (T : Tracks; W : Word; K : MIDI.MIDI_Key) is
    begin
-      LPC_Synth.Set_Data (LPC_Arr (T), Data (W));
+      LPC_Synth.Set_Data (LPC_Arr (T), WNM.Speech_Dictionary.Data (W));
       Pitch (T) := MIDI.Key_To_Frequency (K);
    end Start;
 

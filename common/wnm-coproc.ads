@@ -45,7 +45,7 @@ package WNM.Coproc is
    for Message use record
       Kind        at 0 range 0 .. 3;
       Sampler_Evt at 0 range 6 .. 31;
-      Speech_Evt  at 0 range 6 .. 25;
+      Speech_Evt  at 0 range 6 .. 31;
    end record;
 
    procedure Push (Msg : Message);
