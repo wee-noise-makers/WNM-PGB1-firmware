@@ -1,9 +1,8 @@
 with System;
+with System.Storage_Elements;
 
 with HAL;
-
 with Littlefs;
-
 with WNM_Configuration; use WNM_Configuration;
 
 package WNM_HAL is
@@ -105,5 +104,11 @@ package WNM_HAL is
    procedure Pop (D : out Coproc_Data; Success : out Boolean);
    --  Tentatively get data for the synth coprocessor. Success is False if
    --  no data is available.
+
+   ----------
+   -- MIDI --
+   ----------
+
+   procedure Send_MIDI (Data : System.Storage_Elements.Storage_Array);
 
 end WNM_HAL;

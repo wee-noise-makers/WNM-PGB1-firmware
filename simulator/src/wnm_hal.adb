@@ -1,3 +1,5 @@
+with Interfaces;
+
 with Ada.Calendar; use Ada.Calendar;
 with Ada.Synchronous_Task_Control;
 
@@ -246,4 +248,22 @@ package body WNM_HAL is
       end if;
    end Pop;
 
+   ---------------
+   -- Send_MIDI --
+   ---------------
+
+   procedure Send_MIDI (Data : System.Storage_Elements.Storage_Array) is
+      procedure RTMIDI_Send (Addr : System.Address;
+                             Len  : Interfaces.Unsigned_32);
+      pragma Import (C, RTMIDI_Send, "wnm_hal_rtmidi_send");
+
+   begin
+      RTMIDI_Send (Data'Address, Data'Length);
+   end Send_MIDI;
+
+   procedure RTMIDI_Init;
+   pragma Import (C, RTMIDI_Init, "wnm_hal_rtmidi_init");
+
+begin
+   RTMIDI_Init;
 end WNM_HAL;

@@ -1,6 +1,7 @@
 with "config/wnm_ps1_simulator_config.gpr";
 project Wnm_Ps1_Simulator is
 
+   for Languages use ("Ada", "C");
    for Source_Dirs use ("src/", "config/", "../common/**");
    for Object_Dir use "obj/" & Wnm_Ps1_Simulator_Config.Build_Profile;
    for Create_Missing_Dirs use "True";
@@ -14,6 +15,10 @@ project Wnm_Ps1_Simulator is
    package Compiler is
       for Default_Switches ("Ada") use Wnm_Ps1_Simulator_Config.Ada_Compiler_Switches;
    end Compiler;
+
+   package Linker is
+      for Switches ("Ada") use ("-lrtmidi");
+   end Linker;
 
    package Binder is
       for Switches ("Ada") use ("-Es"); --  Symbolic traceback
