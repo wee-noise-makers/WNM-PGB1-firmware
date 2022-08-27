@@ -105,7 +105,7 @@ package WNM.Chord_Settings is
       Min_Inv2  => (P5, Octave, min10, P12));
    --  https://en.wikipedia.org/wiki/Chord_(music)
 
-   type Substitution_Index is range 1 .. 4;
+   type Substitution_Index is range 1 .. 5;
    type Substitution_Array is array (Substitution_Index) of Chord_Name;
    type Substitution_Rec is record
       Last : Substitution_Index;
@@ -113,9 +113,9 @@ package WNM.Chord_Settings is
    end record;
 
    Substitutions : array (Triads) of Substitution_Rec
-     := (Maj_Triad => (4, (Maj_Triad, Maj_7th, Sus2, Sus4)),
-         Min_Triad => (4, (Min_Triad, Min_7th, Sus2, Sus4)),
-         Dim_Triad => (2, (Dim_Triad, Dim_7th, Dim_7th, Dim_7th)));
+     := (Maj_Triad => (4, (Maj_Triad, Maj_7th, Maj_Inv2, Sus2, Sus4)),
+         Min_Triad => (4, (Min_Triad, Min_7th, Min_Inv2, Sus2, Sus4)),
+         Dim_Triad => (2, (Dim_Triad, Dim_7th, Dim_7th, Dim_7th, Dim_7th)));
 
    procedure Play_Pause;
    procedure Signal_End_Of_Pattern;

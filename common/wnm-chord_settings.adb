@@ -30,7 +30,9 @@ package body WNM.Chord_Settings is
    --  Update the current tonic, name, and chord notes
 
    function "+" (K : MIDI_Key; I : Interval) return MIDI_Key
-     with Inline;
+   is (K + I'Enum_Rep)
+   with Inline;
+
    function "+" (K : MIDI_Key; I : Chord_Intervals) return Chord_Notes
      with Inline;
 
@@ -38,12 +40,62 @@ package body WNM.Chord_Settings is
    C_Chord_Name : Chord_Name := Chord_Name'First;
    C_Chord : Chord_Notes := (others => MIDI.C4);
 
-   ---------
-   -- "+" --
-   ---------
+   type Settings_Rec is record
+      Tonic : MIDI.MIDI_Key := MIDI.C4;
+      Name  : Chord_Name := Chord_Name'First;
+   end record;
 
-   function "+" (K : MIDI_Key; I : Interval) return MIDI_Key
-   is (K + I'Enum_Rep);
+   Init_Scale_Root : constant MIDI.MIDI_Key := MIDI.C4;
+   Init_Scale      : constant Scale_Name := Minor_Scale;
+   Settings_Arr : array (WNM.Chords) of Settings_Rec :=
+     (1 => (Init_Scale_Root + Scales (Init_Scale)(0),
+            Substitutions (Scale_Chords (Init_Scale)(0)).Sub (1)),
+
+      2 => (Init_Scale_Root + Scales (Init_Scale)(1),
+            Substitutions (Scale_Chords (Init_Scale)(1)).Sub (1)),
+
+      3 => (Init_Scale_Root + Scales (Init_Scale)(2),
+            Substitutions (Scale_Chords (Init_Scale)(2)).Sub (1)),
+
+      4 => (Init_Scale_Root + Scales (Init_Scale)(3),
+            Substitutions (Scale_Chords (Init_Scale)(3)).Sub (1)),
+
+      5 => (Init_Scale_Root + Scales (Init_Scale)(4),
+            Substitutions (Scale_Chords (Init_Scale)(4)).Sub (1)),
+
+      6 => (Init_Scale_Root + Scales (Init_Scale)(5),
+            Substitutions (Scale_Chords (Init_Scale)(5)).Sub (1)),
+
+      7 => (Init_Scale_Root + Scales (Init_Scale)(6),
+            Substitutions (Scale_Chords (Init_Scale)(6)).Sub (1)),
+
+      8 => (Init_Scale_Root + Scales (Init_Scale)(0),
+            Substitutions (Scale_Chords (Init_Scale)(0)).Sub (3)),
+
+      9 => (Init_Scale_Root + Scales (Init_Scale)(0),
+            Substitutions (Scale_Chords (Init_Scale)(0)).Sub (2)),
+
+      10 => (Init_Scale_Root + Scales (Init_Scale)(1),
+            Substitutions (Scale_Chords (Init_Scale)(1)).Sub (2)),
+
+      11 => (Init_Scale_Root + Scales (Init_Scale)(2),
+            Substitutions (Scale_Chords (Init_Scale)(2)).Sub (2)),
+
+      12 => (Init_Scale_Root + Scales (Init_Scale)(3),
+            Substitutions (Scale_Chords (Init_Scale)(3)).Sub (2)),
+
+      13 => (Init_Scale_Root + Scales (Init_Scale)(4),
+            Substitutions (Scale_Chords (Init_Scale)(4)).Sub (2)),
+
+      14 => (Init_Scale_Root + Scales (Init_Scale)(5),
+            Substitutions (Scale_Chords (Init_Scale)(5)).Sub (2)),
+
+      15 => (Init_Scale_Root + Scales (Init_Scale)(6),
+            Substitutions (Scale_Chords (Init_Scale)(6)).Sub (2)),
+
+      16 => (Init_Scale_Root + Scales (Init_Scale)(0),
+            Substitutions (Scale_Chords (Init_Scale)(0)).Sub (4))
+     );
 
    ---------
    -- "+" --
@@ -131,15 +183,6 @@ package body WNM.Chord_Settings is
       --  Progression.Key := Key;
       raise Program_Error with "TODO...";
    end Randomly_Pick_A_Progression;
-
-   -- Settings --
-
-   type Settings_Rec is record
-      Tonic : MIDI.MIDI_Key := MIDI.C4;
-      Name  : Chord_Name := Chord_Name'First;
-   end record;
-
-   Settings_Arr : array (WNM.Chords) of Settings_Rec;
 
    --------------------
    -- Update_Current --
