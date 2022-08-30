@@ -747,6 +747,7 @@ package body WNM.UI is
          when others =>
             case Last_Main_Mode is
             when Pattern_Mode =>
+               LEDs.Turn_On (Pattern_Button);
                for B in B1 .. B16 loop
                   if Pattern_Sequencer.Is_In_Sequence (To_Value (B))
                   then
@@ -764,6 +765,7 @@ package body WNM.UI is
                end if;
 
             when Chord_Mode =>
+               LEDs.Turn_On (Chord_Button);
                for B in B1 .. B16 loop
                   if Chord_Sequencer.Is_In_Sequence (To_Value (B))
                   then
@@ -781,6 +783,13 @@ package body WNM.UI is
                end if;
 
             when Track_Mode | Step_Mode =>
+
+               if Last_Main_Mode = Step_Mode then
+                  LEDs.Turn_On (Step_Button);
+               else
+                  LEDs.Turn_On (Track_Button);
+               end if;
+
                if Pattern_Sequencer.Playing  then
                   LEDs.Turn_On (To_Button (Sequencer.Playing_Step));
                end if;
