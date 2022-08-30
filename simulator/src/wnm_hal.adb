@@ -1,5 +1,3 @@
-with Interfaces;
-
 with Ada.Calendar; use Ada.Calendar;
 with Ada.Synchronous_Task_Control;
 
@@ -10,6 +8,8 @@ with Sf.Graphics.Color;
 
 with ASFML_Sim;
 with ASFML_SIM_Storage;
+
+with RtMIDI;
 
 package body WNM_HAL is
 
@@ -25,6 +25,8 @@ package body WNM_HAL is
 
    Pixels_Internal : array (Pix_X, Pix_Y) of Boolean :=
      (others => (others => False));
+
+   MIDI_Out : constant RtMIDI.MIDI_Out := RtMIDI.Create ("WNM Simulator");
 
    -----------
    -- State --
@@ -253,17 +255,19 @@ package body WNM_HAL is
    ---------------
 
    procedure Send_MIDI (Data : System.Storage_Elements.Storage_Array) is
-      procedure RTMIDI_Send (Addr : System.Address;
-                             Len  : Interfaces.Unsigned_32);
-      pragma Import (C, RTMIDI_Send, "wnm_hal_rtmidi_send");
-
+      Success : Boolean;
    begin
-      RTMIDI_Send (Data'Address, Data'Length);
+      RtMIDI.Send_Message (MIDI_Out, Data, Success);
+
+      if not Success then
+         raise Program_Error with "MIDI OUT error";
+      end if;
    end Send_MIDI;
 
-   procedure RTMIDI_Init;
-   pragma Import (C, RTMIDI_Init, "wnm_hal_rtmidi_init");
-
 begin
-   RTMIDI_Init;
+   if not RtMIDI.Valid (MIDI_Out) then
+      raise Program_Error with "Cannot create MIDI device";
+   end if;
+
+   RtMIDI.Open_Port (MIDI_Out, 0, "Output");
 end WNM_HAL;

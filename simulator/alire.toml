@@ -14,6 +14,8 @@ hal = "~0.3.0"
 bbqueue = "~0.3.0"
 resources = "~0.1.0"
 littlefs = "~0.1.0"
+lpc_synth = "~0.1.0-dev"
+rtmidi = "~0.1.0"
 
 [[pins]]
 littlefs = { url = "git@github.com:Fabien-Chouteau/littlefs-ada.git", branch="release/0.3" }
@@ -25,7 +27,6 @@ littlefs.Warn = true
 littlefs.Error = true
 littlefs.Trace = true
 littlefs.No_Malloc = true
-[[depends-on]]
-lpc_synth = "~0.1.0-dev"
+
 [[pins]]
 lpc_synth = { url='git@github.com:Fabien-Chouteau/lpc_synth.git' }
