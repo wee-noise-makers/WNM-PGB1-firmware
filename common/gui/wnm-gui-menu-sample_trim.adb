@@ -19,12 +19,6 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.GUI.Bitmap_Fonts;     use WNM.GUI.Bitmap_Fonts;
-with WNM.Sample_Stream;
-with WNM.Screen;
-with WNM.Sample_Library; use WNM.Sample_Library;
-with WNM.Synth;
-
 with WNM.Sample_Edit;
 with WNM.GUI.Menu.Drawing;
 

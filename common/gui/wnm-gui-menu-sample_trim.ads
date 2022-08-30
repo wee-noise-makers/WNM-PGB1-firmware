@@ -19,8 +19,6 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Sample_Library;
-
 package WNM.GUI.Menu.Sample_Trim is
 
    procedure Push_Window;

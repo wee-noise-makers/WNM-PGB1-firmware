@@ -20,7 +20,6 @@
 -------------------------------------------------------------------------------
 
 with WNM.Sample_Library; use WNM.Sample_Library;
-with WNM.Audio;
 
 package WNM.GUI.Menu.Sample_Edit is
 

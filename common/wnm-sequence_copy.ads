@@ -54,8 +54,8 @@ package WNM.Sequence_Copy is
              when None => "P" & Q & "-T__-S__",
              when Pattern => "P" & Img (A.P) & "-T" & Q & "-S__",
              when Track => "P" & Img (A.P) & "-T" & Img (A.T) & "-S" & Q,
-             when Step => "P" & Img (A.P) & "-T" & Img (A.T) & "-S" & Img (A.S)));
-
+             when Step => "P" & Img (A.P) & "-T" & Img (A.T) & "-S" &
+            Img (A.S)));
 
    type Copy_Transaction is record
       From, To : Copy_Addr;

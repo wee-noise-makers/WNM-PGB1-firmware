@@ -19,8 +19,6 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with HAL.Bitmap;
-
 with WNM.Screen;
 
 package WNM.GUI.Bitmap_Fonts is

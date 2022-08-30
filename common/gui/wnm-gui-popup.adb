@@ -26,7 +26,8 @@ with WNM.Screen;
 
 package body WNM.GUI.Popup is
 
-   Text_Left : constant := (Screen.Width - (Text_Length * Bitmap_Fonts.Width)) / 2;
+   Text_Left : constant :=
+     (Screen.Width - (Text_Length * Bitmap_Fonts.Width)) / 2;
    Text_Top  : constant := (Screen.Height - Bitmap_Fonts.Height) / 2;
 
    Rect_Left   : constant := Text_Left - 4;

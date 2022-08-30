@@ -11,7 +11,6 @@ executables = ["wnm_ps1_simulator"]
 [[depends-on]]
 asfml = "^2.5.2"
 hal = "~0.3.0"
-bbqueue = "~0.3.0"
 resources = "~0.1.0"
 littlefs = "~0.1.0"
 lpc_synth = "~0.1.0-dev"

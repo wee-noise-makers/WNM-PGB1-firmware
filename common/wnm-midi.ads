@@ -204,7 +204,6 @@ package WNM.MIDI is
    As8 : constant MIDI_Key := 16#76#;
    B8  : constant MIDI_Key := 16#77#;
 
-
    subtype Key_Img_Str is String (1 .. 3);
    function Key_Img (V : MIDI_Key) return Key_Img_Str
    is (case V is
@@ -313,8 +312,10 @@ package WNM.MIDI is
    is (case M.Kind is
           when Note_On => "On " & Key_Img (M.Key) & " " & M.Velocity'Img,
           when Note_Off => "Off " & Key_Img (M.Key) & " " & M.Velocity'Img,
-          when Aftertouch => "Aftertouch " & Key_Img (M.Key) & " " & M.Velocity'Img,
-          when Continous_Controller => "CC " & M.Controller'Img & M.Controller_Value'Img,
+          when Aftertouch =>
+             "Aftertouch " & Key_Img (M.Key) & " " & M.Velocity'Img,
+          when Continous_Controller =>
+             "CC " & M.Controller'Img & M.Controller_Value'Img,
           when Patch_Change => "Patch change" & M.Instrument'Img,
           when Channel_Pressure => "Pressure" & M.Pressure'Img,
           when Pitch_Bend => "Pitch Bend" & M.Bend'Img

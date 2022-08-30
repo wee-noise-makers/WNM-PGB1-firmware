@@ -104,5 +104,4 @@ package body WNM.GUI.Menu.Assign_To_Track is
       This.Track := Sequencer.Editing_Track;
    end On_Pushed;
 
-
 end WNM.GUI.Menu.Assign_To_Track;

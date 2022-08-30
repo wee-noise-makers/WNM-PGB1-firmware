@@ -19,10 +19,7 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with HAL.Bitmap;           use HAL.Bitmap;
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
-with WNM.Synth;
-with WNM.Sequencer;
 
 package body WNM.GUI.Menu.Sample_Select is
 

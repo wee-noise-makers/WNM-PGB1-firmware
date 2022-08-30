@@ -34,8 +34,6 @@ package body WNM.UI is
    procedure Signal_Event (B : Button; Evt : Buttton_Event);
 
    procedure Toggle_FX (B : Keyboard_Button);
-   procedure Mute (Track : WNM.Tracks);
-   procedure Unmute (Track : WNM.Tracks);
    procedure Toggle_Mute (Track : WNM.Tracks);
    procedure Toggle_Solo (Track : WNM.Tracks);
    function In_Solo return Boolean;
@@ -807,24 +805,6 @@ package body WNM.UI is
 
       return Next_Start;
    end Update;
-
-   ----------
-   -- Mute --
-   ----------
-
-   procedure Mute (Track : WNM.Tracks) is
-   begin
-      Track_Muted (Track) := True;
-   end Mute;
-
-   ------------
-   -- Unmute --
-   ------------
-
-   procedure Unmute (Track : WNM.Tracks) is
-   begin
-      Track_Muted (Track) := False;
-   end Unmute;
 
    -----------------
    -- Toggle_Mute --

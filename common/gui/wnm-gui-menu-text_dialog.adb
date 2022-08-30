@@ -20,7 +20,6 @@
 -------------------------------------------------------------------------------
 
 with WNM.GUI.Bitmap_Fonts; use WNM.GUI.Bitmap_Fonts;
-with HAL.Bitmap;           use HAL.Bitmap;
 
 package body WNM.GUI.Menu.Text_Dialog is
 
@@ -57,28 +56,39 @@ package body WNM.GUI.Menu.Text_Dialog is
    procedure Set_Title (Title : String) is
    begin
       if Title'Length <= Title_Max_Len then
-         Dialog_Title (Dialog_Title'First .. Dialog_Title'First + Title'Length - 1) := Title;
-         Dialog_Title (Dialog_Title'First + Title'Length .. Dialog_Title'Last) := (others => ' ');
+
+         Dialog_Title
+           (Dialog_Title'First .. Dialog_Title'First + Title'Length - 1) :=
+           Title;
+
+         Dialog_Title
+           (Dialog_Title'First + Title'Length .. Dialog_Title'Last) :=
+           (others => ' ');
       end if;
    end Set_Title;
-
 
    -----------
    -- Value --
    -----------
 
    function Value return String
-   is (Text_Dialog.Text (Text_Dialog.Text'First .. Text_Dialog.Text'First + Text_Dialog.Len - 1));
+   is (Text_Dialog.Text
+       (Text_Dialog.Text'First ..
+            Text_Dialog.Text'First + Text_Dialog.Len - 1));
 
    ---------------
    -- Set_Value --
    ---------------
 
    procedure Set_Value (Str : String) is
-      Len : Natural := Natural'Min (Str'Length, Text_Dialog.Text'Length);
+      Len : constant Natural :=
+        Natural'Min (Str'Length, Text_Dialog.Text'Length);
    begin
       Text_Dialog.Len := Len;
-      Text_Dialog.Text (1 .. Len - 1) := Str (Str'First .. Str'First + Len - 1);
+
+      Text_Dialog.Text
+        (1 .. Len - 1) := Str (Str'First .. Str'First + Len - 1);
+
       Text_Dialog.Index := Len;
    end Set_Value;
 
@@ -100,7 +110,8 @@ package body WNM.GUI.Menu.Text_Dialog is
       X := 1;
       Print (X_Offset    => X,
              Y_Offset    => 9 + 8,
-             Str         => This.Text (This.Text'First .. This.Text'First + This.Len - 1),
+             Str         =>
+               This.Text (This.Text'First .. This.Text'First + This.Len - 1),
              Invert_From => (Select_X - 1),
              Invert_To   => (Select_X + 5));
    end Draw;
@@ -150,9 +161,11 @@ package body WNM.GUI.Menu.Text_Dialog is
             end if;
          when Encoder_Left =>
             if Event.Value > 0 then
-               This.Text (This.Index) := Character'Succ (This.Text (This.Index));
+               This.Text (This.Index) :=
+                 Character'Succ (This.Text (This.Index));
             elsif Event.Value < 0 then
-               This.Text (This.Index) := Character'Pred (This.Text (This.Index));
+               This.Text (This.Index) :=
+                 Character'Pred (This.Text (This.Index));
             end if;
       end case;
    end On_Event;

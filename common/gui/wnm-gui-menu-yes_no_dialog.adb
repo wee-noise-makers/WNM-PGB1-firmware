@@ -20,7 +20,6 @@
 -------------------------------------------------------------------------------
 
 with WNM.GUI.Bitmap_Fonts; use WNM.GUI.Bitmap_Fonts;
-with HAL.Bitmap;           use HAL.Bitmap;
 
 package body WNM.GUI.Menu.Yes_No_Dialog is
 
@@ -41,10 +40,12 @@ package body WNM.GUI.Menu.Yes_No_Dialog is
    ---------------
 
    procedure Set_Title (Title : String) is
+      T : String renames Dialog_Title;
    begin
       if Title'Length <= Title_Max_Len then
-         Dialog_Title (Dialog_Title'First .. Dialog_Title'First + Title'Length - 1) := Title;
-         Dialog_Title (Dialog_Title'First + Title'Length .. Dialog_Title'Last) := (others => ' ');
+         T (T'First .. T'First + Title'Length - 1) := Title;
+
+         T (T'First + Title'Length .. T'Last) := (others => ' ');
       end if;
    end Set_Title;
 

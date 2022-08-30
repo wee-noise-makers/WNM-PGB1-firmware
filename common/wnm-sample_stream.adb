@@ -23,8 +23,6 @@ with WNM.Sample_Library; use WNM.Sample_Library;
 
 package body WNM.Sample_Stream is
 
-   procedure Close_Stream (ST : Stream_Track);
-
    ---------------------
    -- To_Stream_Track --
    ---------------------
@@ -38,18 +36,6 @@ package body WNM.Sample_Stream is
 
    function To_Track (ST : Stream_Track) return Tracks
    is (Tracks (ST));
-
-   ------------------
-   -- Close_Stream --
-   ------------------
-
-   procedure Close_Stream (ST : Stream_Track) is
-   begin
-      if Streams (St).State /= Ready then
-
-         Streams (St).State := Ready;
-      end if;
-   end Close_Stream;
 
    -----------
    -- Start --
@@ -125,7 +111,6 @@ package body WNM.Sample_Stream is
             Success := False;
          end if;
       end;
-
 
       if not Success
         or else

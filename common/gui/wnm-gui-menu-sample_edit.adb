@@ -20,13 +20,9 @@
 -------------------------------------------------------------------------------
 
 with WNM.GUI.Menu.Sample_Select;
-with WNM.GUI.Menu.Recording;
 with WNM.GUI.Menu.Sample_Trim;
 with WNM.GUI.Menu.Text_Dialog;
-with WNM.GUI.Menu.Assign_To_Track;
 with WNM.GUI.Menu.Yes_No_Dialog;
-with WNM.Sample_Stream;
-with WNM.Synth;
 
 with WNM.Sample_Edit;
 
@@ -68,7 +64,6 @@ package body WNM.GUI.Menu.Sample_Edit is
       Exit_Value : Window_Exit_Value)
    is
       New_State : Edit_Sample_State;
-      use WNM.Audio;
    begin
 
       --  Transition to the new state

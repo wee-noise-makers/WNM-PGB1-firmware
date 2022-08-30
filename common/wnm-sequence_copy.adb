@@ -91,7 +91,6 @@ package body WNM.Sequence_Copy is
                           P => Current_Pattern,
                           others => <>));
 
-
    ---------------------
    -- Start_Copy_Step --
    ---------------------
@@ -106,6 +105,5 @@ package body WNM.Sequence_Copy is
                           P => Current_Pattern,
                           T => Current_Track,
                           others => <>));
-
 
 end WNM.Sequence_Copy;

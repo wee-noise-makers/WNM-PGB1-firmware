@@ -47,6 +47,7 @@ package body WNM.Screen is
 
    procedure Set_Pixel (Pt : Point; On : Boolean := True) is
    begin
+      pragma Warnings (Off, "lower bound check");
       if Pt.X in Natural (Pix_X'First) .. Natural (Pix_X'Last)
         and then
          Pt.Y in Natural (Pix_Y'First) .. Natural (Pix_Y'Last)
@@ -56,6 +57,7 @@ package body WNM.Screen is
          raise Program_Error with "Pixel out of bounds: (" & Pt.X'Img &
            ", " & Pt.Y'Img & ")";
       end if;
+      pragma Warnings (On, "lower bound check");
    end Set_Pixel;
 
    ---------------
