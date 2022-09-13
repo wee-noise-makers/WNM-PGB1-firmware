@@ -19,7 +19,7 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Chord_Settings;
+with WNM.Project;
 
 package WNM.GUI.Menu.Chord_Settings is
 
@@ -30,7 +30,7 @@ private
    type Top_Settings is (Chord_Type);
    function Top_Settings_Count is new Enum_Count (Top_Settings);
 
-   subtype Sub_Settings is WNM.Chord_Settings.User_Chord_Settings;
+   subtype Sub_Settings is WNM.Project.User_Chord_Settings;
    function Sub_Settings_Count is new Enum_Count (Sub_Settings);
 
    type Pattern_Settings_Menu is new Menu_Window with record

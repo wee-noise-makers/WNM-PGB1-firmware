@@ -153,7 +153,7 @@ package body WNM.GUI.Menu.Create_Sample is
             Sample_Src_Select.Push_Window;
          when Rec_In_Progress =>
             Synth.Start_Recording
-              (Filename => Sample_Rec_Filepath,
+              (Filename => "",
                Source   => Sample_Src_Select.Src,
                Max_Size => 332000 * 10 * 2);
             Recording.Push_Window;

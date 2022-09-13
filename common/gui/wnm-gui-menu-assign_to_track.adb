@@ -20,7 +20,7 @@
 -------------------------------------------------------------------------------
 
 with WNM.GUI.Bitmap_Fonts; use WNM.GUI.Bitmap_Fonts;
-with WNM.Sequencer;
+with WNM.Project;
 with Enum_Next;
 
 package body WNM.GUI.Menu.Assign_To_Track is
@@ -101,7 +101,7 @@ package body WNM.GUI.Menu.Assign_To_Track is
    procedure On_Pushed (This  : in out Assign_To_Track_Window)
    is
    begin
-      This.Track := Sequencer.Editing_Track;
+      This.Track := Project.Editing_Track;
    end On_Pushed;
 
 end WNM.GUI.Menu.Assign_To_Track;

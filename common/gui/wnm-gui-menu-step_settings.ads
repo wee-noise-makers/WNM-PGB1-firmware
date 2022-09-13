@@ -19,7 +19,7 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Sequencer;
+with WNM.Project;
 
 package WNM.GUI.Menu.Step_Settings is
 
@@ -30,7 +30,7 @@ private
    type Top_Settings is (Condition, Note, Repeat, CC_A, CC_B, CC_C, CC_D);
    function Top_Settings_Count is new Enum_Count (Top_Settings);
 
-   subtype Sub_Settings is WNM.Sequencer.User_Step_Settings;
+   subtype Sub_Settings is Project.User_Step_Settings;
 
    function Sub_Settings_Count is new Enum_Count (Sub_Settings);
 

@@ -20,7 +20,7 @@
 -------------------------------------------------------------------------------
 
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
-with WNM.Sequencer;        use WNM.Sequencer;
+with WNM.Project;          use WNM.Project;
 
 package body WNM.GUI.Menu.Step_Settings is
 
@@ -45,16 +45,16 @@ package body WNM.GUI.Menu.Step_Settings is
 
    function To_Top (S : Sub_Settings) return Top_Settings
    is (case S is
-          when Sequencer.Condition => Condition,
-          when Sequencer.Note => Note,
-          when Sequencer.Duration => Note,
-          when Sequencer.Velo => Note,
-          when Sequencer.Repeat => Repeat,
-          when Sequencer.Repeat_Rate => Repeat,
-          when Sequencer.CC_A => CC_A,
-          when Sequencer.CC_B => CC_B,
-          when Sequencer.CC_C => CC_C,
-          when Sequencer.CC_D => CC_D);
+          when Project.Condition => Condition,
+          when Project.Note => Note,
+          when Project.Duration => Note,
+          when Project.Velo => Note,
+          when Project.Repeat => Repeat,
+          when Project.Repeat_Rate => Repeat,
+          when Project.CC_A => CC_A,
+          when Project.CC_B => CC_B,
+          when Project.CC_C => CC_C,
+          when Project.CC_D => CC_D);
 
    ----------
    -- Draw --
@@ -64,9 +64,7 @@ package body WNM.GUI.Menu.Step_Settings is
    procedure Draw
      (This : in out Step_Settings_Menu)
    is
-
-      Trig : constant Sequencer_Steps := Sequencer.Editing_Step;
-
+      Step : constant Sequencer_Steps := Editing_Step;
       Top_Setting : constant Top_Settings := To_Top (This.Current_Setting);
    begin
       Draw_Menu_Box
@@ -77,68 +75,68 @@ package body WNM.GUI.Menu.Step_Settings is
       case Top_Setting is
          when Condition =>
             Draw_Title ("Condition", "");
-            Draw_Value (Img (Sequencer.Trig (Trig)));
+            Draw_Value (Project.Img (Project.Trigger));
 
-         when Note      =>
+         when Note =>
             case This.Current_Setting is
-               when Note =>
-                  Draw_Title (Img (Sequencer.Note_Mode (Trig)), "");
-               when Sequencer.Duration =>
+               when Project.Note =>
+                  Draw_Title (Project.Img (Project.Note_Mode), "");
+               when Project.Duration =>
                   Draw_Title ("Duration", "");
-               when Velo =>
+               when Project.Velo =>
                   Draw_Title ("Velocity", "");
                when others =>
                   raise Program_Error;
             end case;
 
-            case Sequencer.Note_Mode (Trig) is
-               when Note | Note_In_Chord =>
-                  Draw_MIDI_Note (Sequencer.Note (Trig),
-                                  This.Current_Setting = Note);
-               when Chord =>
-                  Draw_Value (Sequencer.Note (Trig)'Img);
+            case Project.Note_Mode (Step) is
+               when Project.Note | Project.Note_In_Chord =>
+                  Draw_MIDI_Note (Project.Note,
+                                  This.Current_Setting = Project.Note);
+               when Project.Chord =>
+                  Draw_Value (Project.Note (Step)'Img);
 
-               when Arp =>
+               when Project.Arp =>
                   Draw_Value ("---");
             end case;
 
-            Draw_Duration (Sequencer.Duration (Trig),
-                           This.Current_Setting = Sequencer.Duration);
+            Draw_Duration (Project.Duration (Step),
+                           This.Current_Setting = Project.Duration);
 
-            Draw_MIDI_Val (Sequencer.Velo (Trig),
+            Draw_MIDI_Val (Project.Velocity (Step),
                            This.Current_Setting = Velo);
 
          when Repeat =>
             case This.Current_Setting is
                when Repeat =>
                   Draw_Title ("Repeat Count", "");
-               when Sequencer.Repeat_Rate =>
+               when Project.Repeat_Rate =>
                   Draw_Title ("Repeat Rate", "");
                when others =>
                   raise Program_Error;
             end case;
 
-            Draw_Value (Sequencer.Repeat (Trig)'Img,
+            Draw_Value (Repeat (Step)'Img,
                         Selected => This.Current_Setting = Repeat);
 
             Draw_Value_Left
-              (Img (Sequencer.Repeat_Rate (Trig)),
-               Selected => This.Current_Setting = Sequencer.Repeat_Rate);
+              (Project.Img (Repeat_Rate (Step)),
+               Selected => This.Current_Setting = Project.Repeat_Rate);
 
          when CC_A .. CC_D =>
             declare
-               Id : constant Sequencer.CC_Id :=
+               Id : constant Project.CC_Id :=
                  (case This.Current_Setting is
-                  when CC_A => Sequencer.A,
-                  when CC_B => Sequencer.B,
-                  when CC_C => Sequencer.C,
-                  when others => Sequencer.D);
+                  when CC_A => Project.A,
+                  when CC_B => Project.B,
+                  when CC_C => Project.C,
+                  when others => Project.D);
             begin
-               Draw_Title (Sequencer.CC_Controller_Label (Editing_Track, Id),
+               Draw_Title (CC_Controller_Label (Editing_Track, Id),
                            "");
 
-               if Sequencer.CC_Enabled (Trig, Id) then
-                  Draw_MIDI_Val (Sequencer.CC_Value (Trig, Id),
+               if CC_Enabled (Step, Id) then
+                  Draw_MIDI_Val (CC_Value (Step, Id),
                                 Selected => False);
                else
                   Draw_Value ("- Disabled -");
@@ -156,28 +154,28 @@ package body WNM.GUI.Menu.Step_Settings is
      (This  : in out Step_Settings_Menu;
       Event : Menu_Event)
    is
-      Trig : constant Sequencer_Steps := Sequencer.Editing_Step;
+      Step : constant Sequencer_Steps := Editing_Step;
    begin
       case Event.Kind is
          when Left_Press =>
             null;
          when Right_Press =>
             case This.Current_Setting is
-               when CC_A => Sequencer.CC_Toggle (Trig, A);
-               when CC_B => Sequencer.CC_Toggle (Trig, B);
-               when CC_C => Sequencer.CC_Toggle (Trig, C);
-               when CC_D => Sequencer.CC_Toggle (Trig, D);
+               when CC_A => Project.CC_Toggle (Step, A);
+               when CC_B => Project.CC_Toggle (Step, B);
+               when CC_C => Project.CC_Toggle (Step, C);
+               when CC_D => Project.CC_Toggle (Step, D);
 
-               when Note => Sequencer.Note_Mode_Next (Trig);
+               when Note => Note_Mode_Next;
 
                when others => null;
             end case;
 
          when Encoder_Right =>
             if Event.Value > 0 then
-               WNM.Sequencer.Next_Value (This.Current_Setting);
+               Next_Value (This.Current_Setting);
             else
-               WNM.Sequencer.Prev_Value (This.Current_Setting);
+               Prev_Value (This.Current_Setting);
             end if;
 
          when Encoder_Left =>

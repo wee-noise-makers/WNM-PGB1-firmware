@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2021 Fabien Chouteau                    --
+--                     Copyright (C) 2022 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -20,11 +20,9 @@
 -------------------------------------------------------------------------------
 
 with HAL; use HAL;
-
 with WNM.MIDI; use WNM.MIDI;
-with WNM.Chord_Sequencer;
 
-package body WNM.Chord_Settings is
+package body WNM.Project.Chord_Sequencer is
 
    procedure Update_Current;
    --  Update the current tonic, name, and chord notes
@@ -40,14 +38,9 @@ package body WNM.Chord_Settings is
    C_Chord_Name : Chord_Name := Chord_Name'First;
    C_Chord : Chord_Notes := (others => MIDI.C4);
 
-   type Settings_Rec is record
-      Tonic : MIDI.MIDI_Key := MIDI.C4;
-      Name  : Chord_Name := Chord_Name'First;
-   end record;
-
    Init_Scale_Root : constant MIDI.MIDI_Key := MIDI.C4;
    Init_Scale      : constant Scale_Name := Minor_Scale;
-   Settings_Arr : array (WNM.Chords) of Settings_Rec :=
+   Init_Chords     : constant Chord_Settings :=
      (1 => (Init_Scale_Root + Scales (Init_Scale)(0),
             Substitutions (Scale_Chords (Init_Scale)(0)).Sub (1)),
 
@@ -116,6 +109,7 @@ package body WNM.Chord_Settings is
 
    procedure Play_Pause is
    begin
+      Chain.Play_Pause;
       Update_Current;
    end Play_Pause;
 
@@ -125,6 +119,7 @@ package body WNM.Chord_Settings is
 
    procedure Signal_End_Of_Pattern is
    begin
+      Chain.Signal_End_Of_Pattern;
       Update_Current;
    end Signal_End_Of_Pattern;
 
@@ -134,6 +129,7 @@ package body WNM.Chord_Settings is
 
    procedure Signal_Mid_Pattern is
    begin
+      Chain.Signal_Mid_Pattern;
       Update_Current;
    end Signal_Mid_Pattern;
 
@@ -157,7 +153,7 @@ package body WNM.Chord_Settings is
 
    function Current_Chord_Intervals return Chord_Intervals is
    begin
-      return Chords (Current_Chord_Name);
+      return WNM.Chord_Settings.Chords (Current_Chord_Name);
    end Current_Chord_Intervals;
 
    -------------------
@@ -167,85 +163,19 @@ package body WNM.Chord_Settings is
    function Current_Chord return Chord_Notes
    is (C_Chord);
 
-   ---------------------------------
-   -- Randomly_Pick_A_Progression --
-   ---------------------------------
-
-   procedure Randomly_Pick_A_Progression is
-      --  R     : constant Rand_Percent := Random;
-      --  Len   : constant Natural := Builtin_Chord_Progressions'Length;
-      --  First : constant Natural := Builtin_Chord_Progressions'First;
-      --  Index : constant Natural := First + (Natural (R) mod Len);
-      --
-      --  Key : constant MIDI.MIDI_Key := MIDI.C4 + MIDI_Key (Random mod 12);
-   begin
-      --  Progression := Builtin_Chord_Progressions (Index);
-      --  Progression.Key := Key;
-      raise Program_Error with "TODO...";
-   end Randomly_Pick_A_Progression;
-
    --------------------
    -- Update_Current --
    --------------------
 
    procedure Update_Current is
-      C : constant WNM.Chords := Chord_Sequencer.Playing;
+      C : constant WNM.Chords := Chain.Playing;
    begin
-      C_Tonic := Settings_Arr (C).Tonic;
-      C_Chord_Name := Settings_Arr (C).Name;
-      C_Chord := C_Tonic + Chords (C_Chord_Name);
+      C_Tonic := G_Project.Chords (C).Tonic;
+      C_Chord_Name := G_Project.Chords (C).Name;
+      C_Chord := C_Tonic + WNM.Chord_Settings.Chords (C_Chord_Name);
    end Update_Current;
 
-   ----------------
-   -- Next_Value --
-   ----------------
-
-   procedure Next_Value (S : User_Chord_Settings) is
-      C : constant WNM.Chords := WNM.Sequencer.Editing_Chord;
-   begin
-      case S is
-         when Tonic =>
-            if Settings_Arr (C).Tonic /= MIDI_Key'Last then
-               Settings_Arr (C).Tonic := Settings_Arr (C).Tonic + 1;
-            end if;
-
-         when Name =>
-            Next (Settings_Arr (C).Name);
-      end case;
-   end Next_Value;
-
-   ----------------
-   -- Prev_Value --
-   ----------------
-
-   procedure Prev_Value (S : User_Chord_Settings) is
-      C : constant WNM.Chords := WNM.Sequencer.Editing_Chord;
-   begin
-      case S is
-         when Tonic =>
-            if Settings_Arr (C).Tonic /= MIDI_Key'First then
-               Settings_Arr (C).Tonic := Settings_Arr (C).Tonic - 1;
-            end if;
-
-         when Name =>
-            Prev (Settings_Arr (C).Name);
-      end case;
-   end Prev_Value;
-
-   --------------------
-   -- Selected_Tonic --
-   --------------------
-
-   function Selected_Tonic (C : WNM.Chords := WNM.Sequencer.Editing_Chord)
-                            return MIDI.MIDI_Key
-   is (Settings_Arr (C).Tonic);
-
-   -------------------
-   -- Selected_Name --
-   -------------------
-
-   function Selected_Name (C : WNM.Chords := WNM.Sequencer.Editing_Chord)
-                           return Chord_Name
-   is (Settings_Arr (C).Name);
-
-end WNM.Chord_Settings;
+begin
+   --  Set default values for chords
+   G_Project.Chords := Init_Chords;
+end WNM.Project.Chord_Sequencer;

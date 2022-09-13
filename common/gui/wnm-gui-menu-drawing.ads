@@ -22,9 +22,9 @@
 with WNM.MIDI;
 with WNM.Screen;
 with WNM.GUI.Bitmap_Fonts;
-with WNM.Chord_Settings;
 with WNM.Sample_Library;
 with WNM.Speech;
+with WNM.Project;
 
 package WNM.GUI.Menu.Drawing is
 
@@ -40,15 +40,11 @@ package WNM.GUI.Menu.Drawing is
                             Count : Positive;
                             Index : Natural);
 
-   subtype Percentage is Natural range 0 .. 100;
-
-   procedure Draw_Precentage (Title : String;
-                              Val : Percentage);
-
-   subtype Pan is Integer range -50 .. 50;
+   procedure Draw_Volume (Title : String;
+                          Val : Project.Audio_Volume);
 
    procedure Draw_Pan (Title : String;
-                       Val : Pan);
+                       Val : Project.Audio_Pan);
 
    procedure Draw_MIDI_Val (Val      : MIDI.MIDI_Data;
                             Selected : Boolean);
@@ -56,14 +52,8 @@ package WNM.GUI.Menu.Drawing is
    procedure Draw_MIDI_Note (Key     : MIDI.MIDI_Key;
                             Selected : Boolean);
 
-   procedure Draw_Duration (D        : Note_Duration;
+   procedure Draw_Duration (D        : Project.Note_Duration;
                             Selected : Boolean);
-
-   procedure Draw_Scale_Mode (M        : Chord_Settings.Scale_Name;
-                              Selected : Boolean);
-
-   procedure Draw_Chord_Duration (D        : Chord_Settings.Chord_Duration;
-                                  Selected : Boolean);
 
    procedure Draw_Chord_Kind (Str      : String;
                               Selected : Boolean);

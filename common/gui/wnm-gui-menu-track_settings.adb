@@ -20,11 +20,8 @@
 -------------------------------------------------------------------------------
 
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
-with WNM.Synth;
-with WNM.Sequencer;        use WNM.Sequencer;
 with WNM.GUI.Popup;
 with WNM.GUI.Menu.Text_Dialog;
-with WNM.Arpeggiator;
 
 package body WNM.GUI.Menu.Track_Settings is
 
@@ -47,7 +44,7 @@ package body WNM.GUI.Menu.Track_Settings is
    -- Settings_Count --
    --------------------
 
-   function Settings_Count (M : Sequencer.Track_Mode_Kind) return Positive is
+   function Settings_Count (M : Project.Track_Mode_Kind) return Positive is
    begin
       if Settings_Count_Cache (M) = 0 then
          --  I don't think there is a way to know the number of settings per
@@ -70,7 +67,7 @@ package body WNM.GUI.Menu.Track_Settings is
    ----------------------
 
    function Setting_Position (S : Settings;
-                              M : Sequencer.Track_Mode_Kind)
+                              M : Project.Track_Mode_Kind)
                               return Natural
    is
    begin
@@ -98,7 +95,7 @@ package body WNM.GUI.Menu.Track_Settings is
    ------------------------
 
    procedure Next_Valid_Setting (S : in out Settings;
-                                 M : Sequencer.Track_Mode_Kind)
+                                 M : Project.Track_Mode_Kind)
    is
       Result : Settings := S;
    begin
@@ -120,7 +117,7 @@ package body WNM.GUI.Menu.Track_Settings is
    ------------------------
 
    procedure Prev_Valid_Setting (S : in out Settings;
-                                 M : Sequencer.Track_Mode_Kind)
+                                 M : Project.Track_Mode_Kind)
    is
       Result : Settings := S;
    begin
@@ -141,7 +138,7 @@ package body WNM.GUI.Menu.Track_Settings is
    -- To_CC_Id --
    --------------
 
-   function To_CC_Id (S : Settings) return Sequencer.CC_Id
+   function To_CC_Id (S : Settings) return Project.CC_Id
    is (case S is
           when CC_A | CC_Label_A => A,
           when CC_B | CC_Label_B => B,
@@ -179,23 +176,22 @@ package body WNM.GUI.Menu.Track_Settings is
             Draw_Value (Img (Mode (Editing_Track)));
 
          when Volume =>
-            Draw_Precentage ("Volume:",
-                             WNM.Synth.Volume (Editing_Track));
+            Draw_Volume ("Volume:", Project.Track_Volume);
 
-         when Pan    =>
-            Draw_Pan ("Pan:", WNM.Synth.Pan (Editing_Track) / 2);
+         when Project.Pan =>
+            Draw_Pan ("Pan:", Project.Track_Pan);
 
          when Arp_Mode =>
             Draw_Title ("Arpeggiator mode:", "");
-            Draw_Value (Arpeggiator.Img (Arpeggiator.Mode));
+            Draw_Value (Project.Img (Project.Arp_Mode));
 
          when Arp_Notes =>
             Draw_Title ("Arpeggiator notes:", "");
-            Draw_Value (Arpeggiator.Img (Arpeggiator.Notes));
+            Draw_Value (Project.Img (Project.Arp_Notes));
 
          when MIDI_Chan =>
             Draw_Title ("MIDI Channel:", "");
-            Draw_Value (Sequencer.MIDI_Chan (Editing_Track)'Img);
+            Draw_Value (Project.MIDI_Chan (Editing_Track)'Img);
 
          when MIDI_Instrument =>
             Draw_Title ("MIDI instrument:", "");
@@ -203,30 +199,30 @@ package body WNM.GUI.Menu.Track_Settings is
 
          when Sample =>
 
-            Draw_Sample_Select (Sequencer.Selected_Sample (Editing_Track));
+            Draw_Sample_Select (Project.Selected_Sample (Editing_Track));
 
          when Speech_Word =>
 
-            Draw_Word_Select (Sequencer.Selected_Word (Editing_Track));
+            Draw_Word_Select (Project.Selected_Word (Editing_Track));
 
          when CC_A | CC_B | CC_C | CC_D =>
             declare
-               CC : constant Sequencer.CC_Id :=
+               CC : constant Project.CC_Id :=
                  To_CC_Id (This.Current_Setting);
             begin
-               Draw_Title ("MIDI CC " & Sequencer.CC_Letter (CC) & ":", "");
+               Draw_Title ("MIDI CC " & Project.CC_Letter (CC) & ":", "");
                Draw_Value ("Controller:" &
-                             Sequencer.CC_Controller (Editing_Track, CC)'Img);
+                             Project.CC_Controller (Editing_Track, CC)'Img);
             end;
 
          when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D =>
             declare
-               CC : constant Sequencer.CC_Id :=
+               CC : constant Project.CC_Id :=
                  To_CC_Id (This.Current_Setting);
             begin
-               Draw_Title ("MIDI CC " & Sequencer.CC_Letter (CC) & " Label:",
+               Draw_Title ("MIDI CC " & Project.CC_Letter (CC) & " Label:",
                            "");
-               Draw_Value (Sequencer.CC_Controller_Label (Editing_Track, CC));
+               Draw_Value (Project.CC_Controller_Label (Editing_Track, CC));
             end;
       end case;
 
@@ -270,13 +266,13 @@ package body WNM.GUI.Menu.Track_Settings is
                   --  Push text edit dialog
 
                   declare
-                     CC : constant Sequencer.CC_Id :=
+                     CC : constant Project.CC_Id :=
                        To_CC_Id (This.Current_Setting);
                   begin
                      WNM.GUI.Menu.Text_Dialog.Set_Title
-                       ("CC " & Sequencer.CC_Letter (CC) & " Label");
+                       ("CC " & Project.CC_Letter (CC) & " Label");
                      WNM.GUI.Menu.Text_Dialog.Push_Window
-                       (Sequencer.CC_Controller_Label (Editing_Track, CC));
+                       (Project.CC_Controller_Label (Editing_Track, CC));
                   end;
 
                when others =>
@@ -287,41 +283,8 @@ package body WNM.GUI.Menu.Track_Settings is
             --  Never exit the step settings
             null;
          when Encoder_Right =>
+
             case This.Current_Setting is
-               when Track_Mode =>
-                  if Event.Value > 0 then
-                     Sequencer.Mode_Next (Editing_Track);
-                  else
-                     Sequencer.Mode_Prev (Editing_Track);
-                  end if;
-
-               when Volume =>
-                  WNM.Synth.Change_Volume (Editing_Track, Event.Value);
-
-               when Pan =>
-                  Synth.Change_Pan (Editing_Track, Event.Value);
-
-               when Arp_Mode =>
-                  if Event.Value > 0 then
-                     Arpeggiator.Mode_Next;
-                  else
-                     Arpeggiator.Mode_Prev;
-                  end if;
-
-               when Arp_Notes =>
-                  if Event.Value > 0 then
-                     Arpeggiator.Notes_Next;
-                  else
-                     Arpeggiator.Notes_Prev;
-                  end if;
-
-               when MIDI_Chan =>
-                  if Event.Value > 0 then
-                     Sequencer.MIDI_Chan_Next (Editing_Track);
-                  else
-                     Sequencer.MIDI_Chan_Prev (Editing_Track);
-                  end if;
-
                when MIDI_Instrument =>
                   if Event.Value > 0 then
                      if This.Instrument < Builtin_Instruments'Last then
@@ -333,36 +296,15 @@ package body WNM.GUI.Menu.Track_Settings is
                      end if;
                   end if;
 
-               when Sample =>
-                  if Event.Value > 0 then
-                     Sequencer.Next_Sample (Editing_Track);
-                  else
-                     Sequencer.Prev_Sample (Editing_Track);
-                  end if;
-
-               when Speech_Word =>
-                  if Event.Value > 0 then
-                     Sequencer.Next_Word (Editing_Track);
-                  else
-                     Sequencer.Prev_Word (Editing_Track);
-                  end if;
-
-               when CC_A | CC_B | CC_C | CC_D =>
-                  declare
-                     CC : constant Sequencer.CC_Id :=
-                       To_CC_Id (This.Current_Setting);
-                  begin
-
-                     if Event.Value > 0 then
-                        Sequencer.CC_Controller_Next (Editing_Track, CC);
-                     else
-                        Sequencer.CC_Controller_Prev (Editing_Track, CC);
-                     end if;
-                  end;
-
                when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D =>
                   GUI.Popup.Display ("L press to edit ", 500_000);
 
+               when others =>
+                  if Event.Value > 0 then
+                     Project.Next_Value (This.Current_Setting);
+                  else
+                     Project.Prev_Value (This.Current_Setting);
+                  end if;
             end case;
          when Encoder_Left =>
             if Event.Value > 0 then
@@ -418,7 +360,7 @@ package body WNM.GUI.Menu.Track_Settings is
                   Label (Label'First .. Label'First + Output'Length - 1) :=
                  Output;
                end if;
-               Sequencer.Set_CC_Controller_Label (Editing_Track, CC, Label);
+               Project.Set_CC_Controller_Label (Editing_Track, CC, Label);
             end;
          end if;
       else

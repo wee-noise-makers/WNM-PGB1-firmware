@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                  Copyright (C) 2016-2022 Fabien Chouteau                  --
+--                     Copyright (C) 2022 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -20,5 +20,24 @@
 -------------------------------------------------------------------------------
 
 with WNM.Gen_Chain_Sequencer;
+with WNM.Chord_Settings; use WNM.Chord_Settings;
 
-package WNM.Chord_Sequencer is new WNM.Gen_Chain_Sequencer;
+package WNM.Project.Chord_Sequencer is
+
+   package Chain is new WNM.Gen_Chain_Sequencer;
+
+   procedure Play_Pause;
+   procedure Signal_End_Of_Pattern;
+   procedure Signal_Mid_Pattern;
+
+   function Current_Tonic return MIDI.MIDI_Key;
+   function Current_Chord_Name return Chord_Name;
+   function Current_Chord_Intervals return Chord_Intervals;
+   function Current_Chord return Chord_Notes;
+
+   pragma Inline (Current_Tonic);
+   pragma Inline (Current_Chord_Name);
+   pragma Inline (Current_Chord_Intervals);
+   pragma Inline (Current_Chord);
+
+end WNM.Project.Chord_Sequencer;

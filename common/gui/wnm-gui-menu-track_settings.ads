@@ -19,7 +19,7 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-private with WNM.Sequencer;
+with WNM.Project; use WNM.Project;
 private with WNM.MIDI;
 
 package WNM.GUI.Menu.Track_Settings is
@@ -28,46 +28,34 @@ package WNM.GUI.Menu.Track_Settings is
 
 private
 
-   type Settings is (Track_Mode,
-                     Sample,
-                     Speech_Word,
-                     Volume,
-                     Pan,
-                     Arp_Mode,
-                     Arp_Notes,
-                     MIDI_Chan,
-                     MIDI_Instrument,
-                     CC_A, CC_Label_A,
-                     CC_B, CC_Label_B,
-                     CC_C, CC_Label_C,
-                     CC_D, CC_Label_D);
+   subtype Settings is Project.User_Track_Settings;
 
-   function Settings_Count (M : Sequencer.Track_Mode_Kind) return Positive;
+   function Settings_Count (M : Project.Track_Mode_Kind) return Positive;
    function Setting_Position (S : Settings;
-                              M : Sequencer.Track_Mode_Kind)
+                              M : Project.Track_Mode_Kind)
                               return Natural;
 
    function Valid_Setting (S : Settings;
-                           M : Sequencer.Track_Mode_Kind)
+                           M : Project.Track_Mode_Kind)
                            return Boolean
    is (case M is
-          when Sequencer.Sample_Mode =>
+          when Project.Sample_Mode =>
              S in Track_Mode | Sample | Volume | Pan | Arp_Mode | Arp_Notes,
 
-          when Sequencer.MIDI_Mode =>
+          when Project.MIDI_Mode =>
              S in Track_Mode | MIDI_Chan | MIDI_Instrument | Arp_Mode |
                   Arp_Notes | CC_A .. CC_Label_D,
 
-          when Sequencer.Speech_Mode =>
+          when Project.Speech_Mode =>
              S in Track_Mode | Speech_Word | Volume | Pan | Arp_Mode |
                   Arp_Notes);
    --  Return True if the given setting is available for the given track mode.
    --  For instance, volume setting is not available in MIDI mode.
 
    procedure Next_Valid_Setting (S : in out Settings;
-                                 M : Sequencer.Track_Mode_Kind);
+                                 M : Project.Track_Mode_Kind);
    procedure Prev_Valid_Setting (S : in out Settings;
-                                 M : Sequencer.Track_Mode_Kind);
+                                 M : Project.Track_Mode_Kind);
 
    type Track_Settings_Menu is new Menu_Window with record
       Current_Setting : Settings := Settings'First;
@@ -98,15 +86,15 @@ private
    --  the editing track.
 
    type MIDI_Instrument_Settings is record
-      Name : Sequencer.Controller_Label;
+      Name : Project.Controller_Label;
       CC_A : MIDI.MIDI_Data;
-      CC_A_Label : Sequencer.Controller_Label;
+      CC_A_Label : Project.Controller_Label;
       CC_B : MIDI.MIDI_Data;
-      CC_B_Label : Sequencer.Controller_Label;
+      CC_B_Label : Project.Controller_Label;
       CC_C : MIDI.MIDI_Data;
-      CC_C_Label : Sequencer.Controller_Label;
+      CC_C_Label : Project.Controller_Label;
       CC_D : MIDI.MIDI_Data;
-      CC_D_Label : Sequencer.Controller_Label;
+      CC_D_Label : Project.Controller_Label;
    end record;
 
    Builtin_Instruments : array (Natural range <>) of MIDI_Instrument_Settings

@@ -20,7 +20,6 @@
 -------------------------------------------------------------------------------
 
 with WNM.MIDI;
-with WNM.Sequencer;
 
 package WNM.Chord_Settings is
 
@@ -117,39 +116,39 @@ package WNM.Chord_Settings is
          Min_Triad => (4, (Min_Triad, Min_7th, Min_Inv2, Sus2, Sus4)),
          Dim_Triad => (2, (Dim_Triad, Dim_7th, Dim_7th, Dim_7th, Dim_7th)));
 
-   procedure Play_Pause;
-   procedure Signal_End_Of_Pattern;
-   procedure Signal_Mid_Pattern;
+   --  procedure Play_Pause;
+   --  procedure Signal_End_Of_Pattern;
+   --  procedure Signal_Mid_Pattern;
+   --
+   --  function Current_Tonic return MIDI.MIDI_Key;
+   --  function Current_Chord_Name return Chord_Name;
+   --  function Current_Chord_Intervals return Chord_Intervals;
+   --  function Current_Chord return Chord_Notes;
 
-   function Current_Tonic return MIDI.MIDI_Key;
-   function Current_Chord_Name return Chord_Name;
-   function Current_Chord_Intervals return Chord_Intervals;
-   function Current_Chord return Chord_Notes;
-
-   -- Settings --
-
-   type Chord_Settings is (Tonic,
-                           Name,
-                           Extended);
-
-   for Chord_Settings'Size use 4;
-   for Chord_Settings use (Tonic       => 0,
-                           Name        => 1,
-                           Extended    => 15);
-
-   subtype User_Chord_Settings is Chord_Settings range Tonic .. Name;
-
-   procedure Next_Value (S : User_Chord_Settings);
-   procedure Prev_Value (S : User_Chord_Settings);
-
-   function Selected_Tonic (C : WNM.Chords := WNM.Sequencer.Editing_Chord)
-                            return MIDI.MIDI_Key;
-   function Selected_Name (C : WNM.Chords :=  WNM.Sequencer.Editing_Chord)
-                           return Chord_Name;
-
-   procedure Randomly_Pick_A_Progression;
-   --  a.k.a. The Magic Hat of Chord Progression
-
+   --  -- Settings --
+   --
+   --  type Chord_Settings is (Tonic,
+   --                          Name,
+   --                          Extended);
+   --
+   --  for Chord_Settings'Size use 4;
+   --  for Chord_Settings use (Tonic       => 0,
+   --                          Name        => 1,
+   --                          Extended    => 15);
+   --
+   --  subtype User_Chord_Settings is Chord_Settings range Tonic .. Name;
+   --
+   --  procedure Next_Value (S : User_Chord_Settings);
+   --  procedure Prev_Value (S : User_Chord_Settings);
+   --
+   --  function Selected_Tonic (C : WNM.Chords := WNM.Sequencer.Editing_Chord)
+   --                           return MIDI.MIDI_Key;
+   --  function Selected_Name (C : WNM.Chords :=  WNM.Sequencer.Editing_Chord)
+   --                          return Chord_Name;
+   --
+   --  procedure Randomly_Pick_A_Progression;
+   --  --  a.k.a. The Magic Hat of Chord Progression
+   --
    function Img (S : Scale_Name) return String
    is (case S is
           when Major_Scale => "Major",
@@ -170,17 +169,14 @@ package WNM.Chord_Settings is
           when Min_Inv1  => "m/1",
           when Min_Inv2  => "m/2");
 
-   type Chord_Duration is (Whole_Bar, Half_Bar);
+   --  type Chord_Duration is (Whole_Bar, Half_Bar);
+   --
+   --  function Img (D : Chord_Duration) return String
+   --  is (case D is
+   --         when Whole_Bar => "1 Bar",
+   --         when Half_Bar  => "1/2 Bar");
+   --
+   --  package Chord_Name_Next is new Enum_Next (Chord_Name);
+   --  use Chord_Name_Next;
 
-   function Img (D : Chord_Duration) return String
-   is (case D is
-          when Whole_Bar => "1 Bar",
-          when Half_Bar  => "1/2 Bar");
-
-   package Chord_Name_Next is new Enum_Next (Chord_Name);
-   use Chord_Name_Next;
-
-   pragma Inline (Current_Tonic);
-   pragma Inline (Current_Chord_Intervals);
-   pragma Inline (Current_Chord);
 end WNM.Chord_Settings;

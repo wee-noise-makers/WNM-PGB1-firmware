@@ -73,4 +73,49 @@ package body Enum_Next is
       Elt := Prev (Elt);
    end Prev;
 
+   ---------------
+   -- Next_Fast --
+   ---------------
+
+   function Next_Fast (Elt : T) return T is
+      Result : T := Elt;
+   begin
+      --  Naive implementation using a loop, not sure if we can do better
+      for Cnt in 1 .. 10 loop
+         Next (Result);
+      end loop;
+      return Result;
+   end Next_Fast;
+
+   ---------------
+   -- Prev_Fast --
+   ---------------
+
+   function Prev_Fast (Elt : T) return T is
+      Result : T := Elt;
+   begin
+      --  Naive implementation using a loop, not sure if we can do better
+      for Cnt in 1 .. 10 loop
+         Prev (Result);
+      end loop;
+      return Result;
+   end Prev_Fast;
+
+   ---------------
+   -- Next_Fast --
+   ---------------
+
+   procedure Next_Fast (Elt : in out T) is
+   begin
+      Elt := Next_Fast (Elt);
+   end Next_Fast;
+
+   ---------------
+   -- Prev_Fast --
+   ---------------
+
+   procedure Prev_Fast (Elt : in out T) is
+   begin
+      Elt := Prev_Fast (Elt);
+   end Prev_Fast;
 end Enum_Next;

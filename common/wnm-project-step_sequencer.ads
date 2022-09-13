@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2021 Fabien Chouteau                    --
+--                     Copyright (C) 2022 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,52 +19,32 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.MIDI;
-with WNM.Sequencer; use WNM.Sequencer;
+with WNM.UI;
 
-package WNM.Arpeggiator is
+package WNM.Project.Step_Sequencer is
 
-   type Arp_Mode is (Up, Down, Up_Down, Random);
-   type Arp_Notes is (Chord);
+   function Playing_Step return Sequencer_Steps;
 
-   function Mode (T : Tracks := Editing_Track) return Arp_Mode;
-   procedure Mode_Next (T : Tracks := Editing_Track);
-   procedure Mode_Prev (T : Tracks := Editing_Track);
+   function Playing_Pattern return Patterns;
 
-   function Notes (T : Tracks := Editing_Track) return Arp_Notes;
-   procedure Notes_Next (T : Tracks := Editing_Track);
-   procedure Notes_Prev (T : Tracks := Editing_Track);
+   procedure Play_Pause;
+   --  Use it to signal a play/pause event
 
-   function Next_Note (T : Tracks) return MIDI.MIDI_Key;
+   procedure On_Press (Button : Keyboard_Button;
+                       Mode : WNM.UI.Main_Modes);
 
-   function Img (M : Arp_Mode) return String
-   is (case M is
-          when Up => "Up",
-          when Down => "Down",
-          when Up_Down => "Up and Down",
-          when Random => "Random");
+   procedure On_Release (Button : Keyboard_Button;
+                         Mode : WNM.UI.Main_Modes);
 
-   function Img (N : Arp_Notes) return String
-   is (case N is
-          when Chord => "Notes of chord");
+   procedure Execute_Step;
+
+   function Update return Time.Time_Microseconds;
 
 private
 
-   package Arp_Notes_Next is new Enum_Next (Arp_Notes);
-   use Arp_Notes_Next;
+   Current_Playing_Step : Sequencer_Steps := Sequencer_Steps'First with Atomic;
 
-   package Arp_Mode_Next is new Enum_Next (Arp_Mode);
-   use Arp_Mode_Next;
+   --  Current_Seq_State : Sequencer_State := Pause with Atomic;
+   Current_Track     : Tracks := Tracks'First with Atomic;
 
-   type Arpeggiator_Rec is record
-      Mode : Arp_Mode := Up;
-      Notes : Arp_Notes := Chord;
-
-      Going_Up : Boolean := True;
-
-      Next_Index : Natural := 0;
-   end record;
-
-   Arpeggiators : array (Tracks) of Arpeggiator_Rec;
-
-end WNM.Arpeggiator;
+end WNM.Project.Step_Sequencer;

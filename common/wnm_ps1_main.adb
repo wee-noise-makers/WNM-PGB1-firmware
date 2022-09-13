@@ -2,7 +2,7 @@ with Ada.Text_IO;
 with Ada.Exceptions;
 with GNAT.OS_Lib;
 
-with WNM.Sequencer;
+with WNM.Project.Step_Sequencer;
 with WNM.UI;
 with WNM.LEDs;
 with WNM.GUI.Update;
@@ -29,7 +29,8 @@ begin
       Next_Start := Time_Microseconds'Last;
 
       Next_Start := Time_Microseconds'Min (WNM.Synth.Update, Next_Start);
-      Next_Start := Time_Microseconds'Min (WNM.Sequencer.Update, Next_Start);
+      Next_Start := Time_Microseconds'Min (WNM.Project.Step_Sequencer.Update,
+                                           Next_Start);
       Next_Start := Time_Microseconds'Min (WNM.UI.Update, Next_Start);
       Next_Start := Time_Microseconds'Min (WNM.LEDs.Update, Next_Start);
       Next_Start := Time_Microseconds'Min (WNM.GUI.Update.Update, Next_Start);

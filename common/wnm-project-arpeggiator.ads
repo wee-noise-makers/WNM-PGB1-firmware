@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                  Copyright (C) 2016-2017 Fabien Chouteau                  --
+--                     Copyright (C) 2022 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,27 +19,17 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-generic
-   type T is (<>);
-   Wrap : Boolean := True;
-package Enum_Next is
-   function Next (Elt : T) return T with Inline_Always;
-   --  Return the next value of type T, wraps to the first value of the type
-   --  if Wrap is True.
+package WNM.Project.Arpeggiator is
 
-   function Prev (Elt : T) return T with Inline_Always;
-   --  Return the previous value of type T, wraps to the last value of the
-   --  type if Wrap is True.
+   function Next_Note (T : Tracks) return MIDI.MIDI_Key;
 
-   procedure Next (Elt : in out T) with Inline_Always;
-   procedure Prev (Elt : in out T) with Inline_Always;
+private
 
-   function Next_Fast (Elt : T) return T with Inline_Always;
-   --  Same as Next but jumping over 10 values
+   type Arpeggiator_Rec is record
+      Going_Up : Boolean := True;
+      Next_Index : Natural := 0;
+   end record;
 
-   function Prev_Fast (Elt : T) return T with Inline_Always;
-   --  Same as Prev but jumping over 10 values
+   Arpeggiators : array (Tracks) of Arpeggiator_Rec;
 
-   procedure Next_Fast (Elt : in out T) with Inline_Always;
-   procedure Prev_Fast (Elt : in out T) with Inline_Always;
-end Enum_Next;
+end WNM.Project.Arpeggiator;

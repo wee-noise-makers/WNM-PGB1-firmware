@@ -26,8 +26,6 @@ with WNM.GUI.Menu.Sample_Edit;
 with WNM.GUI.Menu.Create_Sample;
 with WNM.GUI.Menu.Passthrough;
 
-with WNM.Projects;
-
 package body WNM.GUI.Menu.Root is
 
    Root_Window_Singleton : aliased Root_Menu;
@@ -83,9 +81,9 @@ package body WNM.GUI.Menu.Root is
          when Left_Press =>
             case This.Item is
                when Save_Project =>
-                  WNM.Projects.Save;
+                  null;
                when Load_Project =>
-                  WNM.Projects.Load;
+                  null;
                when Edit_Sample =>
                   Menu.Sample_Edit.Push_Window;
                when Create_Sample =>

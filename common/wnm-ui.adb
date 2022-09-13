@@ -19,10 +19,11 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Sequencer;              use WNM.Sequencer;
-with WNM.Master_Volume;
+with WNM.Project;
+with WNM.Project.Step_Sequencer;
+with WNM.Project.Chord_Sequencer;
 with WNM.Pattern_Sequencer;
-with WNM.Chord_Sequencer;
+with WNM.Master_Volume;
 with WNM.GUI.Menu;
 with WNM.LEDs;
 with HAL; use HAL;
@@ -125,7 +126,7 @@ package body WNM.UI is
                      GUI.Menu.Open (GUI.Menu.Main_Menu);
 
                   when Play =>
-                     Sequencer.Play_Pause;
+                     Project.Step_Sequencer.Play_Pause;
 
                   when Rec =>
                      case Current_Input_Mode is
@@ -137,9 +138,9 @@ package body WNM.UI is
                            end if;
                         when Chord_Mode =>
                            if Recording then
-                              Chord_Sequencer.End_Recording;
+                              Project.Chord_Sequencer.Chain.End_Recording;
                            else
-                              Chord_Sequencer.Start_Recording;
+                              Project.Chord_Sequencer.Chain.Start_Recording;
                            end if;
                         when others =>
                            null;
@@ -149,7 +150,7 @@ package body WNM.UI is
 
                   when Keyboard_Button =>
 
-                     Sequencer.On_Press (B, Current_Input_Mode);
+                     Project.Step_Sequencer.On_Press (B, Current_Input_Mode);
 
                   when others =>
                      null;
@@ -180,7 +181,7 @@ package body WNM.UI is
                when On_Release =>
                   case B is
                   when Keyboard_Button =>
-                     Sequencer.On_Release (B, Current_Input_Mode);
+                     Project.Step_Sequencer.On_Release (B, Current_Input_Mode);
                   when others => null;
                   end case;
                when others => null;
@@ -189,7 +190,7 @@ package body WNM.UI is
          when Pattern_Select =>
             case B is
                when Keyboard_Button =>
-                  Sequencer.Set_Editing_Pattern (To_Value (B));
+                  Project.Editing_Pattern := To_Value (B);
                   Select_Done := True;
 
                when Pattern_Button =>
@@ -215,7 +216,7 @@ package body WNM.UI is
          when Track_Select =>
             case B is
                when Keyboard_Button =>
-                  Sequencer.Set_Editing_Track (To_Value (B));
+                  Project.Editing_Track := To_Value (B);
                   Select_Done := True;
 
                when Track_Button =>
@@ -241,7 +242,7 @@ package body WNM.UI is
          when Step_Select =>
             case B is
                when Keyboard_Button =>
-                  Sequencer.Set_Editing_Step (To_Value (B));
+                  Project.Editing_Step := To_Value (B);
                   Select_Done := True;
 
                when Step_Button =>
@@ -267,7 +268,7 @@ package body WNM.UI is
          when Chord_Select =>
             case B is
                when Keyboard_Button =>
-                  Sequencer.Set_Editing_Chord (To_Value (B));
+                  Project.Editing_Chord := To_Value (B);
                   Select_Done := True;
 
                when Chord_Button =>
@@ -301,13 +302,13 @@ package body WNM.UI is
                         Current_Input_Mode := Copy;
                      when Track_Button =>
                         Copy_T := WNM.Sequence_Copy.Start_Copy_Track
-                          (Sequencer.Editing_Pattern);
+                          (Project.Editing_Pattern);
 
                         Current_Input_Mode := Copy;
                      when Step_Button =>
                         Copy_T := WNM.Sequence_Copy.Start_Copy_Step
-                          (Sequencer.Editing_Pattern,
-                           Sequencer.Editing_Track);
+                          (Project.Editing_Pattern,
+                           Project.Editing_Track);
 
                         Current_Input_Mode := Copy;
                      when others =>
@@ -327,7 +328,7 @@ package body WNM.UI is
             elsif Evt = On_Press then
                WNM.Sequence_Copy.Apply (Copy_T, B);
                if WNM.Sequence_Copy.Is_Complete (Copy_T) then
-                  WNM.Sequencer.Do_Copy (Copy_T);
+                  WNM.Project.Do_Copy (Copy_T);
                   WNM.GUI.Popup.Display ("     copied     ", 500_000);
                end if;
             end if;
@@ -663,7 +664,7 @@ package body WNM.UI is
 
       case Current_Input_Mode is
          when Volume_BPM_Mute | Volume_BPM_Solo =>
-            WNM.Sequencer.Change_BPM (R_Enco);
+            WNM.Project.Change_BPM (R_Enco);
             WNM.Master_Volume.Change (L_Enco);
          when others =>
             if L_Enco /= 0 then
@@ -690,7 +691,7 @@ package body WNM.UI is
       -- Play LED --
       if Pattern_Sequencer.Playing then
          LEDs.Turn_On (Play);
-         if Sequencer.Playing_Step in 1 | 5 | 9 | 13 then
+         if Project.Step_Sequencer.Playing_Step in 1 | 5 | 9 | 13 then
             LEDs.Turn_On (Play);
          end if;
       end if;
@@ -711,7 +712,7 @@ package body WNM.UI is
             -- Step select mode --
          when Step_Select =>
             for B in B1 .. B16 loop
-               if Editing_Step = To_Value (B) then
+               if Project.Editing_Step = To_Value (B) then
                   LEDs.Turn_On (B);
                end if;
             end loop;
@@ -719,7 +720,7 @@ package body WNM.UI is
             -- Track assign mode --
          when Track_Select =>
             for B in B1 .. B16 loop
-               if Editing_Track = To_Value (B) then
+               if Project.Editing_Track = To_Value (B) then
                   LEDs.Turn_On (B);
                end if;
             end loop;
@@ -727,7 +728,7 @@ package body WNM.UI is
             --  Pattern select --
          when Pattern_Select =>
             for B in B1 .. B16 loop
-               if Editing_Pattern = To_Value (B) then
+               if Project.Editing_Pattern = To_Value (B) then
                   LEDs.Turn_On (B);
                end if;
             end loop;
@@ -757,7 +758,8 @@ package body WNM.UI is
 
                --  Blinking playing pattern
                if Pattern_Sequencer.Playing then
-                  if Sequencer.Playing_Step in 1 | 5 | 9 | 13 then
+                  if Project.Step_Sequencer.Playing_Step in 1 | 5 | 9 | 13
+                  then
                      LEDs.Turn_On (To_Button (Pattern_Sequencer.Playing));
                   else
                      LEDs.Turn_Off (To_Button (Pattern_Sequencer.Playing));
@@ -767,18 +769,22 @@ package body WNM.UI is
             when Chord_Mode =>
                LEDs.Turn_On (Chord_Button);
                for B in B1 .. B16 loop
-                  if Chord_Sequencer.Is_In_Sequence (To_Value (B))
+                  if Project.Chord_Sequencer.Chain.Is_In_Sequence
+                    (To_Value (B))
                   then
                      LEDs.Turn_On (B);
                   end if;
                end loop;
 
                --  Blinking playing Chord
-               if Chord_Sequencer.Playing then
-                  if Sequencer.Playing_Step in 1 | 5 | 9 | 13 then
-                     LEDs.Turn_On (To_Button (Chord_Sequencer.Playing));
+               if Project.Chord_Sequencer.Chain.Playing then
+                  if Project.Step_Sequencer.Playing_Step in 1 | 5 | 9 | 13
+                  then
+                     LEDs.Turn_On
+                       (To_Button (Project.Chord_Sequencer.Chain.Playing));
                   else
-                     LEDs.Turn_Off (To_Button (Chord_Sequencer.Playing));
+                     LEDs.Turn_Off
+                       (To_Button (Project.Chord_Sequencer.Chain.Playing));
                   end if;
                end if;
 
@@ -791,18 +797,20 @@ package body WNM.UI is
                end if;
 
                if Pattern_Sequencer.Playing  then
-                  LEDs.Turn_On (To_Button (Sequencer.Playing_Step));
+                  LEDs.Turn_On
+                    (To_Button (Project.Step_Sequencer.Playing_Step));
                end if;
 
                if Last_Main_Mode = Step_Mode or else Recording then
                   for B in Keyboard_Button loop
-                     if Sequencer.Set (To_Value (B)) then
+                     if Project.Set (To_Value (B)) then
                         LEDs.Turn_On (B);
                      end if;
                   end loop;
                else
                   for B in Keyboard_Button loop
-                     if Sequencer.Set (To_Value (B), Sequencer.Playing_Step)
+                     if Project.Set (To_Value (B),
+                                     Project.Step_Sequencer.Playing_Step)
                      then
                         LEDs.Turn_On (B);
                      end if;

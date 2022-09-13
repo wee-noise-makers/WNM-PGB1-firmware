@@ -20,6 +20,7 @@
 -------------------------------------------------------------------------------
 
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
+with WNM.Chord_Settings;
 
 package body WNM.GUI.Menu.Chord_Settings is
 
@@ -44,8 +45,8 @@ package body WNM.GUI.Menu.Chord_Settings is
 
    function To_Top (S : Sub_Settings) return Top_Settings
    is (case S is
-          when WNM.Chord_Settings.Tonic => Chord_Type,
-          when WNM.Chord_Settings.Name => Chord_Type);
+          when WNM.Project.Tonic => Chord_Type,
+          when WNM.Project.Name => Chord_Type);
 
    ----------
    -- Draw --
@@ -54,7 +55,7 @@ package body WNM.GUI.Menu.Chord_Settings is
    overriding
    procedure Draw (This : in out Pattern_Settings_Menu)
    is
-      use WNM.Chord_Settings;
+      use WNM.Project;
 
       Top_Setting : constant Top_Settings := To_Top (This.Current_Setting);
    begin
@@ -65,12 +66,12 @@ package body WNM.GUI.Menu.Chord_Settings is
 
       case Top_Setting is
          when Chord_Type =>
-            Draw_MIDI_Note (WNM.Chord_Settings.Selected_Tonic,
-                            This.Current_Setting = WNM.Chord_Settings.Tonic);
+            Draw_MIDI_Note (WNM.Project.Selected_Tonic,
+                            This.Current_Setting = WNM.Project.Tonic);
 
             Draw_Value_Left (WNM.Chord_Settings.Img
-                             (WNM.Chord_Settings.Selected_Name),
-                        This.Current_Setting = WNM.Chord_Settings.Name);
+                             (WNM.Project.Selected_Name),
+                             This.Current_Setting = WNM.Project.Name);
       end case;
 
    end Draw;
@@ -92,9 +93,9 @@ package body WNM.GUI.Menu.Chord_Settings is
 
          when Encoder_Right =>
             if Event.Value > 0 then
-               WNM.Chord_Settings.Next_Value (This.Current_Setting);
+               WNM.Project.Next_Value (This.Current_Setting);
             else
-               WNM.Chord_Settings.Prev_Value (This.Current_Setting);
+               WNM.Project.Prev_Value (This.Current_Setting);
             end if;
 
          when Encoder_Left =>

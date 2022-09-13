@@ -101,12 +101,12 @@ package body WNM.GUI.Menu.Drawing is
       end if;
    end Draw_Menu_Box;
 
-   ---------------------
-   -- Draw_Precentage --
-   ---------------------
+   -----------------
+   -- Draw_Volume --
+   -----------------
 
-   procedure Draw_Precentage (Title : String;
-                              Val : Percentage)
+   procedure Draw_Volume (Title : String;
+                          Val   : Project.Audio_Volume)
    is
       X : Integer := Box_Left + 4;
    begin
@@ -117,22 +117,22 @@ package body WNM.GUI.Menu.Drawing is
       Screen.Draw_Line ((Box_Center.X - 50, Box_Center.Y),
                         (Box_Center.X + 50, Box_Center.Y));
 
-      Screen.Draw_Line ((Box_Center.X - 50 + Val, Box_Center.Y - 2),
-                        (Box_Center.X - 50 + Val, Box_Center.Y + 2));
+      Screen.Draw_Line ((Box_Center.X - 50 + Integer (Val), Box_Center.Y - 2),
+                        (Box_Center.X - 50 + Integer (Val), Box_Center.Y + 2));
 
       X := Box_Center.X - 11;
       Print (X_Offset    => X,
              Y_Offset    => Value_Text_Y,
              Str         => Val'Img & "%");
 
-   end Draw_Precentage;
+   end Draw_Volume;
 
    --------------
    -- Draw_Pan --
    --------------
 
    procedure Draw_Pan (Title : String;
-                       Val : Pan)
+                       Val   : Project.Audio_Pan)
    is
       X : Integer := Box_Left + 4;
    begin
@@ -143,8 +143,8 @@ package body WNM.GUI.Menu.Drawing is
       Screen.Draw_Line ((Box_Center.X - 50, Box_Center.Y),
                         (Box_Center.X + 50, Box_Center.Y));
 
-      Screen.Draw_Line ((Box_Center.X + Val, Box_Center.Y - 2),
-                        (Box_Center.X + Val, Box_Center.Y + 2));
+      Screen.Draw_Line ((Box_Center.X + Integer (Val), Box_Center.Y - 2),
+                        (Box_Center.X + Integer (Val), Box_Center.Y + 2));
 
       X := Box_Center.X - 8;
       Print (X_Offset    => X,
@@ -195,9 +195,11 @@ package body WNM.GUI.Menu.Drawing is
    -- Draw_Duration --
    -------------------
 
-   procedure Draw_Duration (D        : Note_Duration;
+   procedure Draw_Duration (D        : Project.Note_Duration;
                             Selected : Boolean)
    is
+      use WNM.Project;
+
       DX : constant Integer := Box_Center.X - 3;
       DY : constant := Box_Top + 22;
    begin
@@ -326,45 +328,6 @@ package body WNM.GUI.Menu.Drawing is
          Screen.Set_Pixel ((DX + 6, DY + 5));
       end if;
    end Draw_Duration;
-
-   ---------------------
-   -- Draw_Scale_Mode --
-   ---------------------
-
-   procedure Draw_Scale_Mode (M        : Chord_Settings.Scale_Name;
-                              Selected : Boolean)
-   is
-      X : Integer := Box_Center.X + 10;
-   begin
-      if Selected then
-         Screen.Draw_Line ((X - 1, Select_Line_Y),
-                           (X + 6 * 6, Select_Line_Y));
-      end if;
-
-      Print (X_Offset    => X,
-             Y_Offset    => Value_Text_Y,
-             Str         => Chord_Settings.Img (M));
-
-   end Draw_Scale_Mode;
-
-   -------------------------
-   -- Draw_Chord_Duration --
-   -------------------------
-
-   procedure Draw_Chord_Duration (D        : Chord_Settings.Chord_Duration;
-                                  Selected : Boolean)
-   is
-      X : Integer := Box_Center.X + 10;
-   begin
-      if Selected then
-         Screen.Draw_Line ((X - 1, Select_Line_Y),
-                           (X + 3 * 6, Select_Line_Y));
-      end if;
-
-      Print (X_Offset    => X,
-             Y_Offset    => Value_Text_Y,
-             Str         => Chord_Settings.Img (D));
-   end Draw_Chord_Duration;
 
    ---------------------
    -- Draw_Chord_Kind --

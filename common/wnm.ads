@@ -19,11 +19,10 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Enum_Next;
-
 pragma Warnings (Off);
 with WNM_Configuration; use WNM_Configuration;
 with WNM_HAL;           use WNM_HAL;
+with Enum_Next;
 pragma Warnings (On);
 
 package WNM is
@@ -39,28 +38,9 @@ package WNM is
    subtype Patterns is Keyboard_Value;
    subtype Chords is Keyboard_Value;
 
-   type Trigger is (None, Always, Fill, Percent_25, Percent_50, Percent_75,
-                    One_Of_Two, One_Of_Three);
-   function Img (T : Trigger) return String;
-
-   type Note_Duration is (Double, Whole, Half, Quarter, N_8th,
-                          N_16th, N_32nd);
-   function Img (D : Note_Duration) return String;
-
-   type Repeat is mod 8;
-
-   type Repeat_Rate is (Rate_1_2, Rate_1_3, Rate_1_4, Rate_1_5,
-                        Rate_1_6, Rate_1_8, Rate_1_10, Rate_1_12, Rate_1_16,
-                        Rate_1_20, Rate_1_24, Rate_1_32);
-   function Img (R : Repeat_Rate) return String;
-
-   --  function To_Track (Chan : MIDI.MIDI_Channel) return Tracks
-   --    with Inline_Always;
-   --  function To_MIDI_Channel (Chan : Tracks) return MIDI.MIDI_Channel
-   --    with Inline_Always;
-
    subtype Beat_Per_Minute is Positive range 50 .. 200;
    subtype Sequencer_Steps is Keyboard_Value;
+
    Steps_Per_Beat      : constant := 4;
    Max_Events_Per_Step : constant := 6;
 
@@ -78,26 +58,6 @@ package WNM is
    Stereo_Buffer_Size_In_Bytes : constant := Samples_Per_Buffer * 4;
 
    Audio_Queue_Size : constant := 3;
-
-   Sample_Rec_Filepath : constant String := "/sample_rec.raw";
-
-   --  Enums utils --
-   pragma Warnings (Off, "use clause for package");
-   package Trigger_Next is new Enum_Next (Trigger,
-                                          Wrap => False);
-   use Trigger_Next;
-
-   package Repeat_Next is new Enum_Next (Repeat,
-                                         Wrap => False);
-   use Repeat_Next;
-
-   package Repeat_Rate_Next is new Enum_Next (Repeat_Rate,
-                                              Wrap => False);
-   use Repeat_Rate_Next;
-   package Note_Duration_Next is new Enum_Next (Note_Duration,
-                                                Wrap => False);
-   use Note_Duration_Next;
-   pragma Warnings (On, "use clause for package");
 
    function Img (V : Keyboard_Value) return String
    is (case V is
