@@ -274,6 +274,9 @@ begin
       if File_Length (FD) /= WNM_Configuration.Storage.Total_Storage_Size
       then
          Put_Line ("Invalid size for image file '" & Image_Path & "'");
+         Put_Line ("Expected: " &
+                     WNM_Configuration.Storage.Total_Storage_Size'Img);
+         Put_Line ("Actual: " & File_Length (FD)'Img);
          OS_Exit (1);
       end if;
    end;
