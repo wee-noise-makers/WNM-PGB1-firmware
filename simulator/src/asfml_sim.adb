@@ -425,6 +425,10 @@ package body ASFML_Sim is
          Ada.Synchronous_Task_Control.Suspend_Until_True (Synth_Trig);
          Ada.Synchronous_Task_Control.Set_False (Synth_Trig);
       end loop;
+   exception
+      when E : others =>
+         Ada.Text_IO.Put_Line (Ada.Exceptions.Exception_Information (E));
+         GNAT.OS_Lib.OS_Exit (42);
    end Synth_Task;
 
    -------------------------
