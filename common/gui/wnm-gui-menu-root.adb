@@ -26,6 +26,8 @@ with WNM.GUI.Menu.Sample_Edit;
 with WNM.GUI.Menu.Create_Sample;
 with WNM.GUI.Menu.Passthrough;
 
+with WNM.Project.Storage;
+
 package body WNM.GUI.Menu.Root is
 
    Root_Window_Singleton : aliased Root_Menu;
@@ -81,7 +83,11 @@ package body WNM.GUI.Menu.Root is
          when Left_Press =>
             case This.Item is
                when Save_Project =>
-                  null;
+                  declare
+                     Unused : Project.Storage.Storage_Error;
+                  begin
+                     Unused := Project.Storage.Save ("project_abcdefg");
+                  end;
                when Load_Project =>
                   null;
                when Edit_Sample =>

@@ -142,7 +142,7 @@ package body WNM.File_System is
    procedure Create_File (FD : aliased in out File_Descriptor; Name : String)
    is
       Result : constant int :=
-        Littlefs.Open (FS, FD, Name, LFS_O_WRONLY + LFS_O_CREAT);
+        Littlefs.Opencfg (FS, FD, Name, LFS_O_WRONLY + LFS_O_CREAT, File_Conf);
    begin
       if Result /= 0 then
          raise Program_Error with "Create ('" & Name & "') file error (" &

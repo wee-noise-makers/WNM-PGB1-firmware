@@ -158,9 +158,10 @@ package WNM.Project is
                           CC_C,
                           CC_D,
                           Note_Mode,
-                          Extended);
+                          Extended,
+                          Reserved);
 
-   for Step_Settings'Size use 4;
+   for Step_Settings'Size use 8;
    for Step_Settings use (Condition   => 0,
                           Note        => 1,
                           Duration    => 2,
@@ -172,7 +173,15 @@ package WNM.Project is
                           CC_C        => 8,
                           CC_D        => 9,
                           Note_Mode   => 10,
-                          Extended    => 15);
+
+                          --  This value is reseved for future extensions of
+                          --  step settings.
+                          Extended        => 254,
+
+                          --  This value is reseved for the end of section
+                          --  token in storage.
+                          Reserved        => 255
+                         );
 
    subtype User_Step_Settings is Step_Settings range Condition .. CC_D;
 
@@ -245,7 +254,8 @@ package WNM.Project is
                            CC_B, CC_Label_B,
                            CC_C, CC_Label_C,
                            CC_D, CC_Label_D,
-                           Extended);
+                           Extended,
+                           Reserved);
 
    for Track_Settings'Size use 8;
    for Track_Settings use (Track_Mode      => 0,
@@ -265,7 +275,15 @@ package WNM.Project is
                            CC_Label_C      => 14,
                            CC_D            => 15,
                            CC_Label_D      => 16,
-                           Extended        => 255);
+
+                           --  This value is reseved for future extensions of
+                           --  track settings.
+                           Extended        => 254,
+
+                           --  This value is reseved for the end of section
+                           --  token in storage.
+                           Reserved        => 255
+                          );
 
    subtype User_Track_Settings
      is Track_Settings range Track_Mode .. CC_Label_D;
@@ -287,12 +305,21 @@ package WNM.Project is
 
    type Chord_Setting_Kind is (Tonic,
                                Name,
-                               Extended);
+                               Extended,
+                               Reserved);
 
-   for Chord_Setting_Kind'Size use 4;
+   for Chord_Setting_Kind'Size use 8;
    for Chord_Setting_Kind use (Tonic       => 0,
                                Name        => 1,
-                               Extended    => 15);
+
+                               --  This value is reseved for future extensions
+                               --  of chord settings.
+                               Extended        => 254,
+
+                               --  This value is reseved for the end of
+                               --  section token in storage.
+                               Reserved        => 255
+                              );
 
    subtype User_Chord_Settings is Chord_Setting_Kind range Tonic .. Name;
 
