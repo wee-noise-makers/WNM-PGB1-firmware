@@ -28,16 +28,18 @@ with WNM.Audio;                  use WNM.Audio;
 with WNM.Coproc;
 
 with WNM.Speech;
+with WNM.Project;
 
 package body WNM.Synth is
 
    Recording_Source : Rec_Source;
    Recording_Size   : Natural;
 
-   Pan_For_Track : array (WNM.Tracks) of Integer := (others => 0)
-     with Atomic_Components;
-   Volume_For_Track : array (WNM.Tracks) of Integer := (others => 50)
-     with Atomic_Components;
+   Pan_For_Track : array (WNM.Tracks) of Project.Audio_Pan :=
+     (others => 0);
+
+   Volume_For_Track : array (WNM.Tracks) of Project.Audio_Volume :=
+     (others => 50);
 
    Passthrough : Audio_Input_Kind := Line_In;
 
@@ -96,52 +98,6 @@ package body WNM.Synth is
              Looping     => False);
    end Trig;
 
-   ----------------
-   -- Change_Pan --
-   ----------------
-
-   procedure Change_Pan (Track : WNM.Tracks;
-                         Pan   : Integer)
-   is
-   begin
-      Pan_For_Track (Track) := Pan_For_Track (Track) + Pan * 10;
-      if Pan_For_Track (Track) > 100 then
-         Pan_For_Track (Track) := 100;
-      elsif Pan_For_Track (Track) < -100 then
-         Pan_For_Track (Track) := -100;
-      end if;
-   end Change_Pan;
-
-   ---------
-   -- Pan --
-   ---------
-
-   function Pan (Track : WNM.Tracks) return Integer
-   is (Pan_For_Track (Track));
-
-   -------------------
-   -- Change_Volume --
-   -------------------
-
-   procedure Change_Volume (Track  : WNM.Tracks;
-                            Volume : Integer)
-   is
-   begin
-      Volume_For_Track (Track) := Volume_For_Track (Track) + Volume;
-      if Volume_For_Track (Track) > 100 then
-         Volume_For_Track (Track) := 100;
-      elsif Volume_For_Track (Track) < 0 then
-         Volume_For_Track (Track) := 0;
-      end if;
-   end Change_Volume;
-
-   ------------
-   -- Volume --
-   ------------
-
-   function Volume (Track : WNM.Tracks) return Natural
-   is (Natural (Volume_For_Track (Track)));
-
    ---------------------------
    -- Process_Coproc_Events --
    ---------------------------
@@ -170,6 +126,10 @@ package body WNM.Synth is
                else
                   WNM.Speech.Stop (Msg.Speech_Evt.Track);
                end if;
+
+            when WNM.Coproc.Track_Vol_Pan =>
+               Volume_For_Track (Msg.TVP_Track) := Msg.TVP_Vol;
+               Pan_For_Track (Msg.TVP_Track) := Msg.TVP_Pan;
          end case;
       end loop;
    end Process_Coproc_Events;
@@ -235,7 +195,7 @@ package body WNM.Synth is
             Val := Integer_32 (Output (Index).L) + Integer_32 (Left);
             if Val > Integer_32 (Mono_Point'Last) then
                Output (Index).L := Mono_Point'Last;
-            elsif Val < Integer_32 (Integer_16'First) then
+            elsif Val < Integer_32 (Mono_Point'First) then
                Output (Index).L := Mono_Point'First;
             else
                Output (Index).L := Mono_Point (Val);
@@ -244,7 +204,7 @@ package body WNM.Synth is
             Val := Integer_32 (Output (Index).R) + Integer_32 (Right);
             if Val > Integer_32 (Mono_Point'Last) then
                Output (Index).R := Mono_Point'Last;
-            elsif Val < Integer_32 (Integer_16'First) then
+            elsif Val < Integer_32 (Mono_Point'First) then
                Output (Index).R := Mono_Point'First;
             else
                Output (Index).R := Mono_Point (Val);

@@ -19,6 +19,8 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with Interfaces;
+
 with WNM.Audio; use WNM.Audio;
 with LPC_Synth;
 
@@ -62,6 +64,9 @@ package body WNM.Speech is
    -----------------
 
    procedure Next_Points (Buffer : in out Audio.Stereo_Buffer) is
+      use Interfaces;
+
+      Val : Integer_32;
    begin
       for T in Tracks loop
          declare
@@ -73,10 +78,26 @@ package body WNM.Speech is
                                       Pitch => Pitch (T));
 
                for Idx in Buffer'Range loop
-                  Buffer (Idx).L :=
-                    Buffer (Idx).L + Mono_Point (LPC_Out (Idx));
-                  Buffer (Idx).R :=
-                    Buffer (Idx).R + Mono_Point (LPC_Out (Idx));
+                  Val :=
+                    Integer_32 (Buffer (Idx).L) + Integer_32 (LPC_Out (Idx));
+                  if Val > Integer_32 (Mono_Point'Last) then
+                     Buffer (Idx).L := Mono_Point'Last;
+                  elsif Val < Integer_32 (Mono_Point'First) then
+                     Buffer (Idx).L := Mono_Point'First;
+                  else
+                     Buffer (Idx).L := Mono_Point (Val);
+                  end if;
+
+
+                  Val :=
+                    Integer_32 (Buffer (Idx).R) + Integer_32 (LPC_Out (Idx));
+                  if Val > Integer_32 (Mono_Point'Last) then
+                     Buffer (Idx).R := Mono_Point'Last;
+                  elsif Val < Integer_32 (Mono_Point'First) then
+                     Buffer (Idx).R := Mono_Point'First;
+                  else
+                     Buffer (Idx).R := Mono_Point (Val);
+                  end if;
                end loop;
             end if;
          end;

@@ -24,20 +24,27 @@ with WNM_HAL;
 
 with WNM.Sample_Stream;
 with WNM.Speech;
+with WNM.Project;
 
 private with Ada.Unchecked_Conversion;
 
 package WNM.Coproc is
 
-   type Message_Kind is (Sampler_Event, Speech_Event)
+   type Message_Kind is (Sampler_Event, Speech_Event, Track_Vol_Pan)
      with Size => 4;
 
    type Message (Kind : Message_Kind := Sampler_Event) is record
       case Kind is
          when Sampler_Event =>
             Sampler_Evt : Sample_Stream.Sampler_Event_Rec;
+
          when Speech_Event =>
             Speech_Evt : Speech.Speech_Event_Rec;
+
+         when Track_Vol_Pan =>
+            TVP_Track : Tracks;
+            TVP_Vol : Project.Audio_Volume;
+            TVP_Pan : Project.Audio_Pan;
       end case;
    end record
      with Size => WNM_Configuration.Coproc_Data_Size;

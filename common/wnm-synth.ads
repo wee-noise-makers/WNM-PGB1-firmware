@@ -38,14 +38,6 @@ package WNM.Synth is
    procedure Trig (Track  : Sample_Stream.Stream_Track;
                    Sample : Sample_Library.Valid_Sample_Index);
 
-   procedure Change_Pan (Track : WNM.Tracks;
-                         Pan   : Integer);
-   function Pan (Track : WNM.Tracks) return Integer;
-
-   procedure Change_Volume (Track  : WNM.Tracks;
-                            Volume : Integer);
-   function Volume (Track : WNM.Tracks) return Natural;
-
    function Update return WNM.Time.Time_Microseconds;
 
    procedure Next_Points (Output : out Audio.Stereo_Buffer;

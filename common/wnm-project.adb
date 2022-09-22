@@ -22,8 +22,12 @@
 with HAL; use HAL;
 
 with WNM.Project.Chord_Sequencer;
+with WNM.Coproc;
 
 package body WNM.Project is
+
+   procedure Update_Coproc_Vol_Pan (T : Tracks);
+   --  Send a message to coproc with Volume and pan value for the track
 
    -------------
    -- Do_Copy --
@@ -533,6 +537,19 @@ package body WNM.Project is
    function Arp_Notes (T : Tracks := Editing_Track) return Arp_Notes_Kind
    is (G_Project.Tracks (T).Arp_Notes);
 
+   ---------------------------
+   -- Update_Coproc_Vol_Pan --
+   ---------------------------
+
+   procedure Update_Coproc_Vol_Pan (T : Tracks) is
+      use WNM.Coproc;
+   begin
+      Coproc.Push ((Kind       => Track_Vol_Pan,
+                    TVP_Track  => T,
+                    TVP_Vol    => G_Project.Tracks (T).Volume,
+                    TVP_Pan    => G_Project.Tracks (T).Pan));
+   end Update_Coproc_Vol_Pan;
+
    ----------------
    -- Next_Value --
    ----------------
@@ -556,6 +573,10 @@ package body WNM.Project is
          when CC_D            => Next (Track.CC (D).Controller);
          when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D => null;
       end case;
+
+      if S in Pan | Volume then
+         Update_Coproc_Vol_Pan (Editing_Track);
+      end if;
    end Next_Value;
 
    ----------------
@@ -581,6 +602,10 @@ package body WNM.Project is
          when CC_D            => Prev (Track.CC (D).Controller);
          when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D => null;
       end case;
+
+      if S in Pan | Volume then
+         Update_Coproc_Vol_Pan (Editing_Track);
+      end if;
    end Prev_Value;
 
    ---------------------
