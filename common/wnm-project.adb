@@ -220,6 +220,39 @@ package body WNM.Project is
                       return MIDI.MIDI_Data
    is (G_Project.Seqs (Editing_Pattern) (Editing_Track) (Step).CC_Val (Id));
 
+   --------------
+   -- CC_Image --
+   --------------
+
+   function CC_Image (Step : Sequencer_Steps := Editing_Step;
+                      Id : CC_Id)
+                      return String
+   is
+   begin
+      case Mode (Editing_Track) is
+         when MIDI_Mode =>
+            return CC_Value (Step, Id)'Img;
+
+         when Sample_Mode =>
+            return "N/A";
+
+         when Speech_Mode =>
+            case Id is
+               when A =>
+                  declare
+                     type Stretch_Img is delta 0.01 range 0.0 .. 10.0;
+                     --  Use a fixed point time to get a 'Img without
+                     --  scientific notation and only two decimals ^^
+                  begin
+                     return Stretch_Img
+                       (Speech.MIDI_To_Stretch (CC_Value (Step, Id)))'Img;
+                  end;
+               when others =>
+                  return "N/A";
+            end case;
+      end case;
+   end CC_Image;
+
    --------------------
    -- Note_Mode_Next --
    --------------------
@@ -506,7 +539,24 @@ package body WNM.Project is
    function CC_Controller_Label (T    : Tracks := Editing_Track;
                                  Id   : CC_Id)
                                  return Controller_Label
-   is (G_Project.Tracks (T).CC (Id).Label);
+   is
+   begin
+      case Mode (T) is
+         when MIDI_Mode =>
+            return G_Project.Tracks (T).CC (Id).Label;
+
+         when Sample_Mode =>
+            return "Not Applicable   ";
+
+         when Speech_Mode =>
+            case Id is
+               when A =>
+                  return "Time Stretch     ";
+               when others =>
+                  return "Not Applicable   ";
+            end case;
+      end case;
+   end CC_Controller_Label;
 
    ---------------------
    -- Selected_Sample --

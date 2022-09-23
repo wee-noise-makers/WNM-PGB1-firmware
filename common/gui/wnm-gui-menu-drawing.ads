@@ -50,7 +50,7 @@ package WNM.GUI.Menu.Drawing is
                             Selected : Boolean);
 
    procedure Draw_MIDI_Note (Key     : MIDI.MIDI_Key;
-                            Selected : Boolean);
+                             Selected : Boolean);
 
    procedure Draw_Duration (D        : Project.Note_Duration;
                             Selected : Boolean);

@@ -30,7 +30,10 @@ private with Ada.Unchecked_Conversion;
 
 package WNM.Coproc is
 
-   type Message_Kind is (Sampler_Event, Speech_Event, Track_Vol_Pan)
+   type Message_Kind is (Sampler_Event,
+                         Speech_Event,
+                         Speech_CC_Event,
+                         Track_Vol_Pan)
      with Size => 4;
 
    type Message (Kind : Message_Kind := Sampler_Event) is record
@@ -40,6 +43,9 @@ package WNM.Coproc is
 
          when Speech_Event =>
             Speech_Evt : Speech.Speech_Event_Rec;
+
+         when Speech_CC_Event =>
+            Speech_CC_Evt : Speech.Speech_CC_Event_Rec;
 
          when Track_Vol_Pan =>
             TVP_Track : Tracks;

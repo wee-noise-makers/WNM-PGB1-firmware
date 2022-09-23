@@ -143,6 +143,10 @@ package WNM.Project is
                       Id : CC_Id)
                       return MIDI.MIDI_Data;
 
+   function CC_Image (Step : Sequencer_Steps := Editing_Step;
+                      Id : CC_Id)
+                      return String;
+
    procedure Note_Mode_Next (Step : Sequencer_Steps := Editing_Step);
 
    procedure CC_Toggle (Step : Sequencer_Steps; Id : CC_Id);

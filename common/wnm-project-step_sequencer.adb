@@ -452,6 +452,39 @@ package body WNM.Project.Step_Sequencer is
 
    end Play_Step;
 
+   -----------------------
+   -- Process_CC_Values --
+   -----------------------
+
+   procedure Process_CC_Values (T : Tracks; S : Step_Rec) is
+      Channel : constant MIDI.MIDI_Channel :=
+        G_Project.Tracks (T).Chan;
+   begin
+      case Mode (T) is
+
+      when MIDI_Mode =>
+         for Id in CC_Id loop
+            if S.CC_Ena (Id) then
+               WNM.MIDI.Queues.Sequencer_Push
+                 ((MIDI.Continous_Controller,
+                  Channel,
+                  G_Project.Tracks (T).CC (Id).Controller,
+                  S.CC_Val (Id)));
+            end if;
+         end loop;
+
+         when Speech_Mode =>
+            if S.CC_Ena (A) then
+               WNM.Coproc.Push ((Kind => WNM.Coproc.Speech_CC_Event,
+                                 Speech_CC_Evt => (T, S.CC_Val (A))));
+            end if;
+
+
+         when Sample_Mode =>
+            null;
+      end case;
+   end Process_CC_Values;
+
    ------------------
    -- Process_Step --
    ------------------
@@ -475,22 +508,7 @@ package body WNM.Project.Step_Sequencer is
             S : Step_Rec renames G_Project.Seqs (Pattern) (Track) (Step);
          begin
             --  Send CC first
-            if Mode (Track) = MIDI_Mode then
-               declare
-                  Channel : constant MIDI.MIDI_Channel :=
-                    G_Project.Tracks (Track).Chan;
-               begin
-                  for Id in CC_Id loop
-                     if S.CC_Ena (Id) then
-                        WNM.MIDI.Queues.Sequencer_Push
-                          ((MIDI.Continous_Controller,
-                           Channel,
-                           G_Project.Tracks (Track).CC (Id).Controller,
-                           S.CC_Val (Id)));
-                     end if;
-                  end loop;
-               end;
-            end if;
+            Process_CC_Values (Track, S);
 
             case S.Trig is
             when None =>

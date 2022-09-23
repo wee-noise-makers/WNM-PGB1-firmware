@@ -21,6 +21,7 @@
 
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
 with WNM.Project;          use WNM.Project;
+with WNM.Speech;
 
 package body WNM.GUI.Menu.Step_Settings is
 
@@ -132,12 +133,11 @@ package body WNM.GUI.Menu.Step_Settings is
                   when CC_C => Project.C,
                   when others => Project.D);
             begin
-               Draw_Title (CC_Controller_Label (Editing_Track, Id),
-                           "");
+
+               Draw_Title (CC_Controller_Label (Editing_Track, Id), "");
 
                if CC_Enabled (Step, Id) then
-                  Draw_MIDI_Val (CC_Value (Step, Id),
-                                Selected => False);
+                  Draw_Value (CC_Image (Step, Id));
                else
                   Draw_Value ("- Disabled -");
                end if;

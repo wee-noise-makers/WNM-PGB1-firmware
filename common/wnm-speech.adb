@@ -24,6 +24,7 @@ with Interfaces;
 with WNM.Audio; use WNM.Audio;
 with LPC_Synth;
 
+with WNM.MIDI;
 with WNM.Speech_Dictionary;
 
 package body WNM.Speech is
@@ -32,6 +33,9 @@ package body WNM.Speech is
    LPC_Arr : array (Tracks) of LPC_Synth.Instance;
    Pitch : array (Tracks) of Float :=
      (others => MIDI.Key_To_Frequency (MIDI.C4));
+
+   Stretch : array (Tracks) of LPC_Synth.Time_Stretch_Factor
+     := (others => MIDI_To_Stretch (No_Strech_MIDI_Val));
 
    ---------
    -- Img --
@@ -60,6 +64,15 @@ package body WNM.Speech is
    end Stop;
 
    -----------------
+   -- Set_Stretch --
+   -----------------
+
+   procedure Set_Stretch (T : Tracks; V : MIDI.MIDI_Data) is
+   begin
+      Stretch (T) := MIDI_To_Stretch (V);
+   end Set_Stretch;
+
+   -----------------
    -- Next_Points --
    -----------------
 
@@ -75,7 +88,8 @@ package body WNM.Speech is
             if LPC_Synth.Has_Data (LPC) then
                LPC_Synth.Next_Points (LPC, LPC_Out,
                                       Sample_Rate => WNM.Sample_Frequency,
-                                      Pitch => Pitch (T));
+                                      Pitch => Pitch (T),
+                                      Time_Stretch => Stretch (T));
 
                for Idx in Buffer'Range loop
                   Val :=

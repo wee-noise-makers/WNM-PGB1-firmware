@@ -127,6 +127,11 @@ package body WNM.Synth is
                   WNM.Speech.Stop (Msg.Speech_Evt.Track);
                end if;
 
+            when WNM.Coproc.Speech_CC_Event =>
+
+               WNM.Speech.Set_Stretch (Msg.Speech_CC_Evt.Track,
+                                       Msg.Speech_CC_Evt.Stretch);
+
             when WNM.Coproc.Track_Vol_Pan =>
                Volume_For_Track (Msg.TVP_Track) := Msg.TVP_Vol;
                Pan_For_Track (Msg.TVP_Track) := Msg.TVP_Pan;
