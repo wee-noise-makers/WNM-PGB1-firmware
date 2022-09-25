@@ -89,7 +89,11 @@ package body WNM.GUI.Menu.Root is
                      Unused := Project.Storage.Save ("project_abcdefg");
                   end;
                when Load_Project =>
-                  null;
+                  declare
+                     Unused : Project.Storage.Storage_Error;
+                  begin
+                     Unused := Project.Storage.Load ("project_abcdefg");
+                  end;
                when Edit_Sample =>
                   Menu.Sample_Edit.Push_Window;
                when Create_Sample =>

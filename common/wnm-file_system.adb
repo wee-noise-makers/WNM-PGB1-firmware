@@ -6,7 +6,6 @@ with Littlefs; use Littlefs;
 
 with WNM.Screen;
 with WNM.GUI.Bitmap_Fonts;
-with WNM.Sample_Library;
 
 package body WNM.File_System is
 
@@ -18,6 +17,9 @@ package body WNM.File_System is
       others => <>);
 
    FS : aliased Littlefs.LFS_T;
+
+   G_FD : aliased Littlefs.LFS_File;
+   G_FD_Mode : File_Mode := Closed;
 
    ---------------
    -- Error_Img --
@@ -84,12 +86,8 @@ package body WNM.File_System is
    -------------------
 
    procedure Factory_Reset is
-      FD : aliased File_Descriptor;
    begin
-
-      Create_File (FD, Sample_Library.Sample_Entries_Filename);
-      Close (FD);
-
+      null;
    end Factory_Reset;
 
    -----------
@@ -122,94 +120,127 @@ package body WNM.File_System is
 
    end Mount;
 
-   -----------
-   -- Close --
-   -----------
+   ------------
+   -- Status --
+   ------------
 
-   procedure Close (FD : aliased in out File_Descriptor) is
-      Result : constant int := Littlefs.Close (FS, FD);
-   begin
-      if Result /= 0 then
-         raise Program_Error with "Close file error (" &
-           Error_Img (Result) & ")";
-      end if;
-   end Close;
-
-   -----------------
-   -- Create_File --
-   -----------------
-
-   procedure Create_File (FD : aliased in out File_Descriptor; Name : String)
-   is
-      Result : constant int :=
-        Littlefs.Opencfg (FS, FD, Name, LFS_O_WRONLY + LFS_O_CREAT, File_Conf);
-   begin
-      if Result /= 0 then
-         raise Program_Error with "Create ('" & Name & "') file error (" &
-           Error_Img (Result) & ")";
-      end if;
-   end Create_File;
-
-   ---------------
-   -- Open_Read --
-   ---------------
-
-   procedure Open_Read (FD : aliased in out File_Descriptor; Name : String) is
-      Result : constant int :=
-        Littlefs.Opencfg (FS, FD, Name, LFS_O_RDONLY, File_Conf);
-   begin
-      if Result /= 0 then
-         raise Program_Error with "Open_Read ('" & Name & "') file error (" &
-           Error_Img (Result) & ")...";
-      end if;
-   end Open_Read;
+   function Status return File_Mode
+   is (G_FD_Mode);
 
    ----------
    -- Size --
    ----------
 
-   function Size (FD : aliased in out File_Descriptor) return File_Signed_Size
-   is (Littlefs.Size (FS, FD));
+   function Size return File_Signed_Size
+   is (if Status = Closed then 0 else Littlefs.Size (FS, G_FD));
+
+   ---------------
+   -- Open_Read --
+   ---------------
+
+   function Open_Read (Path : String) return Open_Read_Result is
+   begin
+      if Status /= Closed then
+         return Already_Open;
+      end if;
+
+      declare
+         Result : constant int :=
+           Littlefs.Opencfg (FS, G_FD, Path, LFS_O_RDONLY, File_Conf);
+      begin
+         case Result is
+            when 0 =>
+               G_FD_Mode := Read_Only;
+               return Ok;
+            when Littlefs.LFS_ERR_NOENT =>
+               return Not_Found;
+            when others =>
+               return Cannot_Open;
+         end case;
+      end;
+   end Open_Read;
+
+   ----------------
+   -- Open_Write --
+   ----------------
+
+   function Open_Write (Path : String) return Open_Read_Result is
+   begin
+      if Status /= Closed then
+         return Already_Open;
+      end if;
+
+      declare
+         Result : constant int :=
+           Littlefs.Opencfg (FS, G_FD, Path, LFS_O_WRONLY + LFS_O_CREAT,
+                             File_Conf);
+      begin
+         case Result is
+            when 0 =>
+               G_FD_Mode := Write_Only;
+               return Ok;
+            when others =>
+               return Cannot_Open;
+         end case;
+      end;
+   end Open_Write;
+
+   -----------
+   -- Close --
+   -----------
+
+   procedure Close is
+   begin
+      if Status = Closed then
+         return;
+      end if;
+
+      declare
+         Result : constant int := Littlefs.Close (FS, G_FD);
+      begin
+         if Result /= 0 then
+            raise Program_Error with "Close file error (" &
+              Error_Img (Result) & ")";
+         end if;
+      end;
+
+      G_FD_Mode := Closed;
+   end Close;
 
    ----------
    -- Read --
    ----------
 
-   function Read (FD : aliased in out File_Descriptor;
-                  A  : System.Address;
+   function Read (A  : System.Address;
                   N  : File_Size)
                   return File_Signed_Size
+   is (Littlefs.Read (FS, G_FD, A, N));
+
+   ---------------
+   -- Read_Line --
+   ---------------
+
+   procedure Read_Line (Item : out String;
+                        Last : out Natural)
    is
    begin
-      return Littlefs.Read (FS, FD, A, N);
-   end Read;
+      Last := Item'First - 1;
+      for Elt of Item loop
+
+         exit when Read (Elt'Address, 1) /= 1;
+         Last := Last + 1;
+         exit when Elt = ASCII.LF;
+      end loop;
+   end Read_Line;
 
    -----------
    -- Write --
    -----------
 
-   function Write (FD : aliased in out File_Descriptor;
-                   A  : System.Address;
+   function Write (A  : System.Address;
                    N  : File_Size)
                    return File_Signed_Size
-   is
-   begin
-      return Littlefs.Write (FS, FD, A, N);
-   end Write;
-
-   ----------
-   -- Seek --
-   ----------
-
-   procedure Seek (FD     : aliased in out File_Descriptor;
-                   Off    : Offset;
-                   Whence : Seek_Whence)
-   is
-   begin
-      if Littlefs.Seek (FS, FD, Off, Whence'Enum_Rep) < 0 then
-         raise Program_Error with "Seek error...";
-      end if;
-   end Seek;
+   is (Littlefs.Write (FS, G_FD, A, N));
 
    ---------------
    -- Available --
@@ -219,25 +250,6 @@ package body WNM.File_System is
    begin
       return Storage.FS_Size - Littlefs.Size (FS) * Storage.Sector_Size;
    end Available;
-
-   --------------
-   -- Get_Line --
-   --------------
-
-   procedure Get_Line
-     (FD   : aliased in out File_Descriptor;
-      Item : out String;
-      Last : out Natural)
-   is
-   begin
-      Last := Item'First - 1;
-      for Elt of Item loop
-
-         exit when Read (FD, Elt'Address, 1) /= 1;
-         Last := Last + 1;
-         exit when Elt = ASCII.LF;
-      end loop;
-   end Get_Line;
 
    --------------------------
    -- For_Each_File_In_Dir --
@@ -263,5 +275,91 @@ package body WNM.File_System is
          Err := Close (FS, Dir);
       end if;
    end For_Each_File_In_Dir;
+
+   -----------
+   -- Write --
+   -----------
+
+   procedure Write (This    : in out Flux_Sink_Instance;
+                    Data    :        System.Storage_Elements.Storage_Element;
+                    Success :    out Boolean)
+   is
+      pragma Unreferenced (This);
+   begin
+      if Status /= Write_Only then
+         Success := False;
+         return;
+      end if;
+
+      Success := Write (Data'Address, 1) = 1;
+   end Write;
+
+   -----------
+   -- Write --
+   -----------
+
+   procedure Write (This : in out Flux_Sink_Instance;
+                    Data :        System.Storage_Elements.Storage_Array;
+                    Last :    out System.Storage_Elements.Storage_Count)
+   is
+      pragma Unreferenced (This);
+      Result : File_Signed_Size;
+   begin
+      if Status /= Write_Only then
+         Last := Data'First;
+         return;
+      end if;
+
+      Result := Write (Data'Address, Data'Length);
+
+      if Result < 0 then
+         Last := Data'First;
+      else
+         Last := Data'First + Storage_Offset (Result);
+      end if;
+   end Write;
+
+   ----------
+   -- Read --
+   ----------
+
+   procedure Read (This    : in out Flux_Source_Instance;
+                   Data    :    out System.Storage_Elements.Storage_Element;
+                   Success :    out Boolean)
+   is
+      pragma Unreferenced (This);
+   begin
+      if Status /= Read_Only then
+         Success := False;
+         return;
+      end if;
+
+      Success := Read (Data'Address, 1) = 1;
+   end Read;
+
+   ----------
+   -- Read --
+   ----------
+
+   procedure Read (This : in out Flux_Source_Instance;
+                   Data :    out System.Storage_Elements.Storage_Array;
+                   Last :    out System.Storage_Elements.Storage_Count)
+   is
+      pragma Unreferenced (This);
+      Result : File_Signed_Size;
+   begin
+      if Status /= Write_Only then
+         Last := Data'First;
+         return;
+      end if;
+
+      Result := Read (Data'Address, Data'Length);
+
+      if Result < 0 then
+         Last := Data'First;
+      else
+         Last := Data'First + Storage_Offset (Result);
+      end if;
+   end Read;
 
 end WNM.File_System;

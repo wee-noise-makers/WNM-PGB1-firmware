@@ -19,9 +19,7 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with HAL;
-
-private package WNM.Project.Storage.File_Out is
+private package WNM.Project.Storage.File_In is
 
    type Instance
    is tagged limited
@@ -33,39 +31,32 @@ private package WNM.Project.Storage.File_Out is
 
    function Status (This : Instance) return Storage_Error;
 
-   procedure Start_Global (This : in out Instance);
+   procedure Set_Format_Error (This : in out Instance);
 
-   procedure Start_Chord_Settings (This : in out Instance; C : Chords);
-   procedure Start_Track_Settings (This : in out Instance; T : Tracks);
+   generic
+      type T is range <>;
+   procedure Read_Gen_Int (This : in out Instance; A : out T);
 
-   procedure Start_Sequence (This : in out Instance);
-   procedure Start_Step_Settings (This : in out Instance;
-                                  S : Sequencer_Steps);
-   procedure Change_Pattern_In_Seq (This : in out Instance; P : Patterns);
-   procedure Change_Track_In_Seq (This : in out Instance; T : Tracks);
-   procedure End_Section (This : in out Instance);
-   procedure End_File (This : in out Instance);
+   generic
+      type T is mod <>;
+   procedure Read_Gen_Mod (This : in out Instance; A : out T);
 
    generic
       type T is (<>);
-   procedure Push_Gen (This : in out Instance; A : T);
+   procedure Read_Gen_Enum (This : in out Instance; A : out T);
 
-   procedure Push (This : in out Instance; A : HAL.UInt32);
-   procedure Push (This : in out Instance; A : Character);
-   procedure Push (This : in out Instance; A : String);
-   procedure Push (This : in out Instance; A : Beat_Per_Minute);
-   procedure Push (This : in out Instance; A : Step_Settings);
-   procedure Push (This : in out Instance; A : Track_Settings);
-   procedure Push (This : in out Instance; A : Chord_Setting_Kind);
+   procedure Read (This : in out Instance; A : out In_UInt);
+   procedure Read (This : in out Instance; A : out Token_Kind);
+   procedure Read (This : in out Instance; A : out Keyboard_Value);
+
+   procedure Read (This : in out Instance; A : out String);
 
 private
 
    type Instance
    is tagged limited
-           record
-              Error : Storage_Error := Ok;
-           end record;
+   record
+      Error : Storage_Error := Ok;
+   end record;
 
-   procedure Push (This : in out Instance; A : Token_Kind);
-
-end WNM.Project.Storage.File_Out;
+end WNM.Project.Storage.File_In;

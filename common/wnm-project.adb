@@ -82,11 +82,11 @@ package body WNM.Project is
       end if;
    end Change_BPM;
 
-   ---------
-   -- BPM --
-   ---------
+   -------------
+   -- Get_BPM --
+   -------------
 
-   function BPM return Beat_Per_Minute
+   function Get_BPM return Beat_Per_Minute
    is (G_Project.BPM);
 
    ----------------------
@@ -98,7 +98,7 @@ package body WNM.Project is
 
       Samples_Per_Minute : constant Sample_Time := 60 * Sample_Frequency;
    begin
-      return Samples_Per_Minute / Sample_Time (BPM);
+      return Samples_Per_Minute / Sample_Time (Get_BPM);
    end Samples_Per_Beat;
 
    ---------------------------
@@ -107,7 +107,7 @@ package body WNM.Project is
 
    function Microseconds_Per_Beat return Time.Time_Microseconds is
    begin
-      return (60 * 1_000 * 1_000) / Time.Time_Microseconds (BPM);
+      return (60 * 1_000 * 1_000) / Time.Time_Microseconds (Get_BPM);
    end Microseconds_Per_Beat;
 
    ---------
@@ -750,7 +750,7 @@ package body WNM.Project is
    ----------------
 
    procedure Next_Value (S : User_Chord_Settings) is
-      Chord : Chord_Setting renames G_Project.Chords (Editing_Chord);
+      Chord : Chord_Rec renames G_Project.Chords (Editing_Chord);
    begin
       case S is
          when Tonic => Next (Chord.Tonic);
@@ -763,7 +763,7 @@ package body WNM.Project is
    ----------------
 
    procedure Prev_Value (S : User_Chord_Settings) is
-      Chord : Chord_Setting renames G_Project.Chords (Editing_Chord);
+      Chord : Chord_Rec renames G_Project.Chords (Editing_Chord);
    begin
       case S is
          when Tonic => Prev (Chord.Tonic);
@@ -776,7 +776,7 @@ package body WNM.Project is
    ----------------
 
    procedure Next_Value_Fast (S : User_Chord_Settings) is
-      Chord : Chord_Setting renames G_Project.Chords (Editing_Chord);
+      Chord : Chord_Rec renames G_Project.Chords (Editing_Chord);
    begin
       case S is
          when Tonic => Next_Fast (Chord.Tonic);
@@ -789,7 +789,7 @@ package body WNM.Project is
    ----------------
 
    procedure Prev_Value_Fast (S : User_Chord_Settings) is
-      Chord : Chord_Setting renames G_Project.Chords (Editing_Chord);
+      Chord : Chord_Rec renames G_Project.Chords (Editing_Chord);
    begin
       case S is
          when Tonic => Prev_Fast (Chord.Tonic);

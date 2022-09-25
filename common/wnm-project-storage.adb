@@ -19,18 +19,80 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+--  The WNM storage format is a binary format that encodes projects.
+--
+--  The file is split in several sections (track settings, chords settings,
+--  etc.). Sections are made of lists of setting identifier followed by a
+--  value.
+--
+--  To reduce the output size, the sequences sections is a bit different in
+--  that only Steps that are different than the Default_Step will be encoded.
+--
+--  Except for string characters, data is always encoded using variable
+--  length encoding (LEB128). This means that it will be possible to add
+--  more settings in the future without breaking format.
+--
+--  For instance let's say in format version 1 (v1) there are only 2 chord
+--  settings possible. It is tempting to encode the identifiers in the with
+--  1-bit. However if a future version 2 (v2) of the format has, say, 8 chord
+--  settings the encoding will have to be larger. This means that the decoder
+--  for v2 can only read v2 format or needs to know that the file in v1 and
+--  adjust accordingly.
+--
+--  Using LEB128 encoding, future versions of the format will be able
+--  to introduce new setting identifiers without breaking backwards
+--  compatibility. v2 decoder will still be able to read v1 identifiers.
+--
+--
+--  Here is a basic layout of project format:
+--
+--  <Global Section>
+--    <Setting ID><Value>
+--    ...
+--  <End of Section>
+--  <Track Section>
+--    <Track ID>
+--    <Setting ID><Value>
+--    ...
+--  <End of Section>
+--  <Chord Section>
+--    <Chord ID>
+--    <Setting ID><Value>
+--    ...
+--  <End of Section>
+--  <Pattern Section>
+--    <Pattern ID>
+--    <Setting ID><Value>
+--    ...
+--  <End of Section>
+--  <Sequence Section>
+--    <Seq Change Pattern> <Pattern ID>
+--    <Seq Change Track> <TrackID>
+--    <Step Section>
+--       <Step ID >
+--       <Setting ID><Value>
+--       ...
+--    <End of Section>
+--    ...
+--  <End of Section>
+--  <End of File>
+
 with HAL; use HAL;
 with WNM.Project.Storage.File_Out;
+with WNM.Project.Storage.File_In;
+with WNM.File_System;
 
 package body WNM.Project.Storage is
+
+   File_Ext : constant String := ".wnm_prj";
 
    --------------------
    -- Save_Sequences --
    --------------------
 
    procedure Save_Sequences (Output : in out File_Out.Instance) is
-      Out_Pattern : Patterns := Patterns'Last;
-      Out_Track   : Tracks   := Tracks'Last;
+      Out_Pattern : Patterns := Patterns'First;
+      Out_Track   : Tracks   := Tracks'First;
    begin
       Output.Start_Sequence;
 
@@ -68,13 +130,13 @@ package body WNM.Project.Storage is
                            when Condition =>
                               if Step.Trig /= Default_Step.Trig then
                                  Output.Push (Set);
-                                 Output.Push (UInt8 (Step.Trig'Enum_Rep));
+                                 Output.Push (UInt32 (Step.Trig'Enum_Rep));
                               end if;
                            when Repeat =>
 
                               if Step.Repeat /= Default_Step.Repeat then
                                  Output.Push (Set);
-                                 Output.Push (UInt8 (Step.Repeat'Enum_Rep));
+                                 Output.Push (UInt32 (Step.Repeat'Enum_Rep));
                               end if;
 
                            when Repeat_Rate =>
@@ -82,59 +144,57 @@ package body WNM.Project.Storage is
                               then
                                  Output.Push (Set);
                                  Output.Push
-                                   (UInt8 (Step.Repeat_Rate'Enum_Rep));
+                                   (UInt32 (Step.Repeat_Rate'Enum_Rep));
                               end if;
 
                            when Note_Mode =>
                               if Step.Note_Mode /= Default_Step.Note_Mode then
                                  Output.Push (Set);
-                                 Output.Push (UInt8 (Step.Note_Mode'Enum_Rep));
+                                 Output.Push
+                                   (UInt32 (Step.Note_Mode'Enum_Rep));
                               end if;
 
                            when Note =>
                               if Step.Note /= Default_Step.Note then
                                  Output.Push (Set);
-                                 Output.Push (UInt8 (Step.Note));
+                                 Output.Push (UInt32 (Step.Note));
                               end if;
 
                            when Duration =>
                               if Step.Duration /= Default_Step.Duration then
                                  Output.Push (Set);
-                                 Output.Push (UInt8 (Step.Duration'Enum_Rep));
+                                 Output.Push (UInt32 (Step.Duration'Enum_Rep));
                               end if;
 
                            when Velo =>
                               if Step.Velo /= Default_Step.Velo then
                                  Output.Push (Set);
-                                 Output.Push (UInt8 (Step.Velo));
+                                 Output.Push (UInt32 (Step.Velo));
                               end if;
 
                            when CC_A =>
                               if Step.CC_Ena (A) then
                                  Output.Push (Set);
-                                 Output.Push (Step.CC_Val (A));
+                                 Output.Push (UInt32 (Step.CC_Val (A)));
                               end if;
 
                            when CC_B =>
                               if Step.CC_Ena (B) then
                                  Output.Push (Set);
-                                 Output.Push (Step.CC_Val (B));
+                                 Output.Push (UInt32 (Step.CC_Val (B)));
                               end if;
 
                            when CC_C =>
                               if Step.CC_Ena (C) then
                                  Output.Push (Set);
-                                 Output.Push (Step.CC_Val (C));
+                                 Output.Push (UInt32 (Step.CC_Val (C)));
                               end if;
 
                            when CC_D =>
                               if Step.CC_Ena (D) then
                                  Output.Push (Set);
-                                 Output.Push (Step.CC_Val (D));
+                                 Output.Push (UInt32 (Step.CC_Val (D)));
                               end if;
-
-                           when Extended | Reserved =>
-                              null; -- We don't save this
                         end case;
                      end loop;
                      Output.End_Section;
@@ -170,40 +230,40 @@ package body WNM.Project.Storage is
 
                case Set is
                   when Track_Mode =>
-                     Output.Push (UInt8 (Track.Mode'Enum_Rep));
+                     Output.Push (UInt32 (Track.Mode'Enum_Rep));
 
                   when Sample =>
-                     Output.Push (UInt8 (Track.Sample'Enum_Rep));
+                     Output.Push (UInt32 (Track.Sample'Enum_Rep));
 
                   when Speech_Word =>
-                     Output.Push (UInt8 (Track.Word'Enum_Rep));
+                     Output.Push (UInt32 (Track.Word'Enum_Rep));
 
                   when Volume =>
-                     Output.Push (UInt8 (Track.Volume));
+                     Output.Push (UInt32 (Track.Volume));
 
                   when Pan =>
-                     Output.Push (UInt8 (Track.Pan));
+                     Output.Push (UInt32 (Track.Pan));
 
                   when Arp_Mode =>
-                     Output.Push (UInt8 (Track.Arp_Mode'Enum_Rep));
+                     Output.Push (UInt32 (Track.Arp_Mode'Enum_Rep));
 
                   when Arp_Notes =>
-                     Output.Push (UInt8 (Track.Arp_Notes'Enum_Rep));
+                     Output.Push (UInt32 (Track.Arp_Notes'Enum_Rep));
 
                   when MIDI_Chan =>
-                     Output.Push (UInt8 (Track.Chan));
+                     Output.Push (UInt32 (Track.Chan));
 
                   when CC_A =>
-                     Output.Push (UInt8 (Track.CC (A).Controller));
+                     Output.Push (UInt32 (Track.CC (A).Controller));
 
                   when CC_B =>
-                     Output.Push (UInt8 (Track.CC (B).Controller));
+                     Output.Push (UInt32 (Track.CC (B).Controller));
 
                   when CC_C =>
-                     Output.Push (UInt8 (Track.CC (C).Controller));
+                     Output.Push (UInt32 (Track.CC (C).Controller));
 
                   when CC_D =>
-                     Output.Push (UInt8 (Track.CC (D).Controller));
+                     Output.Push (UInt32 (Track.CC (D).Controller));
 
                   when CC_Label_A =>
                      Output.Push (Track.CC (A).Label);
@@ -217,7 +277,7 @@ package body WNM.Project.Storage is
                   when CC_Label_D =>
                      Output.Push (Track.CC (D).Label);
 
-                  when MIDI_Instrument | Extended | Reserved =>
+                  when MIDI_Instrument =>
                      null; -- We don't save this
                end case;
 
@@ -245,7 +305,7 @@ package body WNM.Project.Storage is
    begin
       for C_Id in Chords loop
          declare
-            Chord : Chord_Setting renames G_Project.Chords (C_Id);
+            Chord : Chord_Rec renames G_Project.Chords (C_Id);
          begin
             Output.Start_Chord_Settings (C_Id);
 
@@ -254,17 +314,15 @@ package body WNM.Project.Storage is
             --  mistakes when new settings are introduced.
             for Set in Chord_Setting_Kind loop
 
-               Output.Push (UInt8 (Set'Enum_Rep));
+               Output.Push (UInt32 (Set'Enum_Rep));
 
                case Set is
                   when Tonic =>
-                     Output.Push (UInt8 (Chord.Tonic));
+                     Output.Push (UInt32 (Chord.Tonic));
 
                   when Name =>
-                     Output.Push (UInt8 (Chord.Name'Enum_Rep));
+                     Output.Push (UInt32 (Chord.Name'Enum_Rep));
 
-                  when Extended | Reserved =>
-                     null; -- We don't save this
                end case;
 
                if Output.Status /= Ok then
@@ -282,15 +340,29 @@ package body WNM.Project.Storage is
 
    end Save_Chords;
 
+   -----------------
+   -- Save_Global --
+   -----------------
+
+   procedure Save_Global (Output : in out File_Out.Instance) is
+   begin
+      Output.Start_Global;
+      Output.Push (UInt32 (Global_Settings'Enum_Rep (BPM)));
+      Output.Push (G_Project.BPM);
+      Output.End_Section;
+   end Save_Global;
+
    ----------
    -- Save --
    ----------
 
    function Save (Name : Project_Name) return Storage_Error is
 
-      Output : File_Out.Instance := File_Out.Open (Name & ".wnm_prj");
+      Output : File_Out.Instance := File_Out.Open (Name & File_Ext);
    begin
-      Output.Push (G_Project.BPM);
+      if Output.Status = Ok then
+         Save_Global (Output);
+      end if;
 
       if Output.Status = Ok then
          Save_Tracks (Output);
@@ -304,18 +376,330 @@ package body WNM.Project.Storage is
          Save_Sequences (Output);
       end if;
 
+      Output.End_File;
       Output.Close;
       return Output.Status;
    end Save;
+
+   ----------------
+   -- Load_Track --
+   ----------------
+
+   procedure Load_Track (Input : in out File_In.Instance) is
+      procedure To_Track_Settings is new Convert_To_Enum (Track_Settings);
+
+      procedure Read is new File_In.Read_Gen_Enum (Track_Mode_Kind);
+      procedure Read is new File_In.Read_Gen_Int
+        (Sample_Library.Valid_Sample_Index);
+      procedure Read is new File_In.Read_Gen_Int (Speech.Word);
+      procedure Read is new File_In.Read_Gen_Int (Audio_Volume);
+      procedure Read is new File_In.Read_Gen_Int (Audio_Pan);
+      procedure Read is new File_In.Read_Gen_Enum (Arp_Mode_Kind);
+      procedure Read is new File_In.Read_Gen_Enum (Arp_Notes_Kind);
+      procedure Read is new File_In.Read_Gen_Mod (MIDI.MIDI_Channel);
+      procedure Read is new File_In.Read_Gen_Mod (MIDI.MIDI_Data);
+
+      T_Id : Tracks;
+      S : Track_Settings;
+      Raw : In_UInt := 0;
+      Success : Boolean;
+   begin
+      Input.Read (T_Id);
+
+      if Input.Status /= Ok then
+         return;
+      end if;
+
+      declare
+         Track : Track_Rec renames G_Project.Tracks (T_Id);
+      begin
+
+         Track := Default_Track;
+
+         loop
+            Input.Read (Raw);
+
+            exit when Input.Status /= Ok
+              or else Raw = End_Of_Section_Value;
+
+            To_Track_Settings (Raw, S, Success);
+
+            exit when not Success;
+
+            case S is
+               when Track_Mode  => Read (Input, Track.Mode);
+               when Sample      => Read (Input, Track.Sample);
+               when Speech_Word => Read (Input, Track.Word);
+               when Volume      => Read (Input, Track.Volume);
+               when Pan         => Read (Input, Track.Pan);
+               when Arp_Mode    => Read (Input, Track.Arp_Mode);
+               when Arp_Notes   => Read (Input, Track.Arp_Notes);
+               when MIDI_Chan   => Read (Input, Track.Chan);
+               when MIDI_Instrument => null;
+               when CC_A        => Read (Input, Track.CC (A).Controller);
+               when CC_B        => Read (Input, Track.CC (B).Controller);
+               when CC_C        => Read (Input, Track.CC (C).Controller);
+               when CC_D        => Read (Input, Track.CC (D).Controller);
+               when CC_Label_A  => File_In.Read (Input, Track.CC (A).Label);
+               when CC_Label_B  => File_In.Read (Input, Track.CC (B).Label);
+               when CC_Label_C  => File_In.Read (Input, Track.CC (C).Label);
+               when CC_Label_D  => File_In.Read (Input, Track.CC (D).Label);
+            end case;
+
+            exit when Input.Status /= Ok;
+         end loop;
+      end;
+   end Load_Track;
+
+   ----------------
+   -- Load_Chord --
+   ----------------
+
+   procedure Load_Chord (Input : in out File_In.Instance) is
+      procedure To_Chord_Settings is new Convert_To_Enum (Chord_Setting_Kind);
+
+      procedure Read is new File_In.Read_Gen_Mod (MIDI.MIDI_Key);
+      procedure Read is new File_In.Read_Gen_Enum
+        (WNM.Chord_Settings.Chord_Name);
+
+      C_Id : Chords;
+      S : Chord_Setting_Kind;
+      Raw : In_UInt;
+      Success : Boolean;
+   begin
+      Input.Read (C_Id);
+
+      if Input.Status /= Ok then
+         return;
+      end if;
+
+      declare
+         Chord : Chord_Rec renames G_Project.Chords (C_Id);
+      begin
+         Chord := Default_Chord;
+
+         loop
+            Input.Read (Raw);
+
+            exit when Input.Status /= Ok
+              or else Raw = End_Of_Section_Value;
+
+            To_Chord_Settings (Raw, S, Success);
+
+            exit when not Success;
+
+            case S is
+               when Tonic  => Read (Input, Chord.Tonic);
+               when Name      => Read (Input, Chord.Name);
+            end case;
+
+            exit when Input.Status /= Ok;
+         end loop;
+      end;
+   end Load_Chord;
+
+   ---------------
+   -- Load_Step --
+   ---------------
+
+   procedure Load_Step (Input : in out File_In.Instance;
+                        P : Patterns; T : Tracks; S : Sequencer_Steps)
+   is
+      procedure To_Step_Settings is new Convert_To_Enum (Step_Settings);
+
+      procedure Read is new File_In.Read_Gen_Enum (Trigger_Kind);
+      procedure Read is new File_In.Read_Gen_Mod (MIDI.MIDI_Data);
+      procedure Read is new File_In.Read_Gen_Enum (Note_Duration);
+      procedure Read is new File_In.Read_Gen_Mod (Repeat_Cnt);
+      procedure Read is new File_In.Read_Gen_Enum (Repeat_Rate_Kind);
+      procedure Read is new File_In.Read_Gen_Enum (Note_Mode_Kind);
+
+      Step : Step_Rec renames G_Project.Seqs (P)(T)(S);
+      Set : Step_Settings;
+      Raw : In_UInt;
+      Success : Boolean;
+   begin
+      loop
+         Input.Read (Raw);
+
+         exit when Input.Status /= Ok
+           or else Raw = End_Of_Section_Value;
+
+         To_Step_Settings (Raw, Set, Success);
+
+         exit when not Success;
+
+         case Set is
+            when Condition   => Read (Input, Step.Trig);
+            when Note        => Read (Input, Step.Note);
+            when Duration    => Read (Input, Step.Duration);
+            when Velo        => Read (Input, Step.Velo);
+            when Repeat      => Read (Input, Step.Repeat);
+            when Repeat_Rate => Read (Input, Step.Repeat_Rate);
+            when CC_A        =>
+               Step.CC_Ena (A) := True;
+               Read (Input, Step.CC_Val (A));
+            when CC_B        =>
+               Step.CC_Ena (B) := True;
+               Read (Input, Step.CC_Val (B));
+            when CC_C        =>
+               Step.CC_Ena (C) := True;
+               Read (Input, Step.CC_Val (C));
+            when CC_D        =>
+               Step.CC_Ena (D) := True;
+               Read (Input, Step.CC_Val (D));
+
+            when Note_Mode => Read (Input, Step.Note_Mode);
+         end case;
+
+         exit when Input.Status /= Ok;
+      end loop;
+   end Load_Step;
+
+   --------------------
+   -- Load_Sequences --
+   --------------------
+
+   procedure Load_Sequences (Input : in out File_In.Instance) is
+      Token : Token_Kind;
+
+      In_Pattern : Patterns        := Patterns'First;
+      In_Track   : Tracks          := Tracks'First;
+      In_Step    : Sequencer_Steps := Sequencer_Steps'First;
+   begin
+      --  Init all steps to the default value
+      for P in Patterns loop
+         for T in Tracks loop
+            for S in Sequencer_Steps loop
+               G_Project.Seqs (P)(T)(S) := Default_Step;
+            end loop;
+         end loop;
+      end loop;
+
+      loop
+
+         Input.Read (Token);
+
+         if Input.Status /= Ok then
+            return;
+         end if;
+
+         case Token is
+            when Seq_Change_Track =>
+               Input.Read (In_Track);
+
+            when Seq_Change_Pattern =>
+               Input.Read (In_Pattern);
+
+            when Step_Section =>
+               Input.Read (In_Step);
+
+               exit when Input.Status /= Ok;
+
+               Load_Step (Input, In_Pattern, In_Track, In_Step);
+
+            when End_Of_Section =>
+               return;
+
+            when others =>
+               Input.Set_Format_Error;
+               return;
+         end case;
+
+         exit when Input.Status /= Ok;
+      end loop;
+   end Load_Sequences;
+
+   -----------------
+   -- Load_Global --
+   -----------------
+
+   procedure Load_Global (Input : in out File_In.Instance) is
+      procedure To_Global_Settings is new Convert_To_Enum (Global_Settings);
+
+      procedure Read_BPM is new File_In.Read_Gen_Int (Beat_Per_Minute);
+
+      Set : Global_Settings;
+      Raw : In_UInt;
+      Success : Boolean;
+   begin
+      loop
+         Input.Read (Raw);
+
+         exit when Input.Status /= Ok
+           or else Raw = End_Of_Section_Value;
+
+         To_Global_Settings (Raw, Set, Success);
+
+         exit when not Success;
+
+         case Set is
+            when BPM   => Read_BPM (Input, G_Project.BPM);
+         end case;
+
+         exit when Input.Status /= Ok;
+      end loop;
+   end Load_Global;
 
    ----------
    -- Load --
    ----------
 
    function Load (Name : Project_Name) return Storage_Error is
-      pragma Unreferenced (Name);
+      Input : File_In.Instance := File_In.Open (Name & File_Ext);
+
+      Token : Token_Kind;
    begin
+
+      loop
+
+         Input.Read (Token);
+
+         exit when Input.Status /= Ok;
+
+         case Token is
+            when Global_Section =>
+               Load_Global (Input);
+
+            when Track_Section =>
+               Load_Track (Input);
+
+            when Chord_Section =>
+               Load_Chord (Input);
+
+            when Sequence_Section =>
+               Load_Sequences (Input);
+
+            when End_Of_File =>
+               exit;
+
+            when others =>
+               Input.Set_Format_Error;
+               exit;
+         end case;
+
+         exit when Input.Status /= Ok;
+
+      end loop;
+
+      File_System.Close;
       return Ok;
    end Load;
+
+   ---------------------
+   -- Convert_To_Enum --
+   ---------------------
+
+   procedure Convert_To_Enum (Raw     :     In_UInt;
+                              V       : out T;
+                              Success : out Boolean)
+   is
+   begin
+      V := T'Enum_Val (Raw);
+      Success := True;
+   exception
+      when Constraint_Error =>
+         Success := False;
+   end Convert_To_Enum;
 
 end WNM.Project.Storage;

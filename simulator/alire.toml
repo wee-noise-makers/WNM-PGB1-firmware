@@ -15,17 +15,18 @@ resources = "~0.1.0"
 littlefs = "~0.1.0"
 lpc_synth = "~0.1.0-dev"
 rtmidi = "~0.1.0"
+flux = "~0.1.0-dev"
 
 [[pins]]
 littlefs = { url = "git@github.com:Fabien-Chouteau/littlefs-ada.git", branch="release/0.3" }
+lpc_synth = { url='git@github.com:Fabien-Chouteau/lpc_synth.git' }
+flux = { url='https://github.com/Fabien-Chouteau/flux' }
 
 [configuration.values]
-littlefs.Assert = true
-littlefs.Debug = true
-littlefs.Warn = true
-littlefs.Error = true
-littlefs.Trace = true
+littlefs.Assert = false
+littlefs.Debug = false
+littlefs.Warn = false
+littlefs.Error = false
+littlefs.Trace = false
 littlefs.No_Malloc = true
 
-[[pins]]
-lpc_synth = { url='git@github.com:Fabien-Chouteau/lpc_synth.git' }

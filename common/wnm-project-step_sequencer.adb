@@ -479,7 +479,6 @@ package body WNM.Project.Step_Sequencer is
                                  Speech_CC_Evt => (T, S.CC_Val (A))));
             end if;
 
-
          when Sample_Mode =>
             null;
       end case;

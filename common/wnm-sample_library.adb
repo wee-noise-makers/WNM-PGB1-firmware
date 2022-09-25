@@ -137,7 +137,6 @@ package body WNM.Sample_Library is
    procedure Load is
       use WNM.File_System;
 
-      FD : aliased File_Descriptor;
       Line : String (1 .. 64);
       Last : Natural;
    begin
@@ -153,10 +152,13 @@ package body WNM.Sample_Library is
       --  Entries (3).Name := "This is sample ";
       --  Entries (3).Length := 0;
 
-      Open_Read (FD, Sample_Entries_Filename);
+      if File_System.Open_Read (Sample_Entries_Filename) /= File_System.Ok
+      then
+         return;
+      end if;
 
       loop
-         Get_Line (FD, Line, Last);
+         Read_Line (Line, Last);
          exit when Last < Line'First;
 
          Ada.Text_IO.Put_Line ("Get_Line => '" & Line (1 .. Last) & "'");
@@ -170,7 +172,7 @@ package body WNM.Sample_Library is
          end if;
       end loop;
 
-      Close (FD);
+      File_System.Close;
    end Load;
 
    ----------------------------

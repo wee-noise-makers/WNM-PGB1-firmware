@@ -23,6 +23,8 @@ with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
 with WNM.GUI.Popup;
 with WNM.GUI.Menu.Text_Dialog;
 
+with WNM.Utils;
+
 package body WNM.GUI.Menu.Track_Settings is
 
    Track_Settings_Singleton : aliased Track_Settings_Menu;
@@ -353,13 +355,7 @@ package body WNM.GUI.Menu.Track_Settings is
                Output : constant String := WNM.GUI.Menu.Text_Dialog.Value;
                Label : Controller_Label := Empty_Controller_Label;
             begin
-               if Output'Length > Label'Length then
-                  Label := Output
-                    (Output'First .. Output'First + Label'Length - 1);
-               else
-                  Label (Label'First .. Label'First + Output'Length - 1) :=
-                 Output;
-               end if;
+               Utils.Copy_Str (Output, Label);
                Project.Set_CC_Controller_Label (Editing_Track, CC, Label);
             end;
          end if;

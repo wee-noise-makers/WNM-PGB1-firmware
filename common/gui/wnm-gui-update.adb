@@ -87,7 +87,7 @@ package body WNM.GUI.Update is
 
       case WNM.UI.Input_GUI_Mode is
          when WNM.UI.Volume_BPM_Mute | WNM.UI.Volume_BPM_Solo =>
-            BPM := Integer (WNM.Project.BPM);
+            BPM := Integer (WNM.Project.Get_BPM);
             Volume := Integer (WNM.Master_Volume.Value);
 
             WNM.GUI.Parameters.Print_Percentage

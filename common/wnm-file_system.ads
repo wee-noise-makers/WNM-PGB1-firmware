@@ -1,37 +1,54 @@
 with Littlefs;
 with System;
+with System.Storage_Elements;
+
+with Flux.Traits.Sink;
+with Flux.Traits.Source;
 
 package WNM.File_System is
 
    procedure Mount;
 
-   subtype File_Descriptor is Littlefs.LFS_File;
    subtype File_Size is Littlefs.LFS_Size;
    subtype File_Signed_Size is Littlefs.LFS_Signed_Size;
 
-   procedure Close (FD : aliased in out File_Descriptor);
+   type File_Mode is (Closed, Read_Only, Write_Only);
+   type Open_Read_Result is (Ok, Already_Open, Not_Found, Cannot_Open);
+   type Open_Write_Result is (Ok, Already_Open, Cannot_Open);
 
-   procedure Create_File (FD : aliased in out File_Descriptor; Name : String);
+   function Status return File_Mode;
 
-   procedure Open_Read (FD : aliased in out File_Descriptor; Name : String);
+   function Size return File_Signed_Size
+     with Pre => Status /= Closed;
 
-   function Size (FD : aliased in out File_Descriptor)
-                  return File_Signed_Size;
+   function Open_Read (Path : String) return Open_Read_Result
+     with Post => (if Open_Read'Result = Ok then Status = Read_Only);
 
-   function Read (FD : aliased in out File_Descriptor;
-                  A  : System.Address;
+   function Open_Write (Path : String) return Open_Read_Result
+     with Post => (if Open_Write'Result = Ok then Status = Write_Only);
+
+   procedure Close
+     with Pre => Status /= Closed,
+     Post => Status = Closed;
+
+   function Read (A  : System.Address;
                   N  : File_Size)
-                  return File_Signed_Size;
+                  return File_Signed_Size
+     with Pre => Status = Read_Only;
    --  Read data from file
    --
    --  Takes a buffer and size indicating where to store the read data.
    --
    --  Returns the number of bytes read, or a negative error code on failure.
 
-   function Write (FD : aliased in out File_Descriptor;
-                   A  : System.Address;
+   procedure Read_Line (Item : out String;
+                        Last : out Natural)
+     with Pre => Status = Read_Only;
+
+   function Write (A  : System.Address;
                    N  : File_Size)
-                   return File_Signed_Size;
+                   return File_Signed_Size
+     with Pre => Status = Write_Only;
    --  Write data to file
    --
    --  Takes a buffer and size indicating the data to write. The file will not
@@ -40,22 +57,42 @@ package WNM.File_System is
    --  Returns the number of bytes written, or a negative error code on
    --  failure.
 
-   subtype Offset is Littlefs.LFS_Signed_Offset;
-   subtype Seek_Whence is Littlefs.LFS_Whence_Flags;
-
-   procedure Seek (FD     : aliased in out File_Descriptor;
-                   Off    : Offset;
-                   Whence : Seek_Whence);
-
    function Available return File_Signed_Size;
-
-   procedure Get_Line
-     (FD   : aliased in out File_Descriptor;
-      Item :            out String;
-      Last :            out Natural);
 
    generic
       with procedure Process (Filename : String);
    procedure For_Each_File_In_Dir (Dirpath : String);
+
+   ----------
+   -- Flux --
+   ----------
+
+   type Flux_Sink_Instance is null record;
+
+   procedure Write (This    : in out Flux_Sink_Instance;
+                    Data    :        System.Storage_Elements.Storage_Element;
+                    Success :    out Boolean);
+
+   procedure Write (This : in out Flux_Sink_Instance;
+                    Data :        System.Storage_Elements.Storage_Array;
+                    Last :    out System.Storage_Elements.Storage_Count);
+
+   package Flux_Sink is new Flux.Traits.Sink (Flux_Sink_Instance,
+                                              Write,
+                                              Write);
+
+   type Flux_Source_Instance is null record;
+
+   procedure Read (This    : in out Flux_Source_Instance;
+                   Data    :    out System.Storage_Elements.Storage_Element;
+                   Success :    out Boolean);
+
+   procedure Read (This : in out Flux_Source_Instance;
+                   Data :    out System.Storage_Elements.Storage_Array;
+                   Last :    out System.Storage_Elements.Storage_Count);
+
+   package Flux_Source is new Flux.Traits.Source (Flux_Source_Instance,
+                                                  Read,
+                                                  Read);
 
 end WNM.File_System;

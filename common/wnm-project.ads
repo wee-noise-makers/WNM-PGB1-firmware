@@ -41,7 +41,7 @@ package WNM.Project is
 
    procedure Set_BPM (BPM : Beat_Per_Minute);
    procedure Change_BPM (BPM_Delta : Integer);
-   function BPM return Beat_Per_Minute;
+   function Get_BPM return Beat_Per_Minute;
    function Samples_Per_Beat return Synth.Sample_Time;
    function Microseconds_Per_Beat return Time.Time_Microseconds;
 
@@ -161,9 +161,7 @@ package WNM.Project is
                           CC_B,
                           CC_C,
                           CC_D,
-                          Note_Mode,
-                          Extended,
-                          Reserved);
+                          Note_Mode);
 
    for Step_Settings'Size use 8;
    for Step_Settings use (Condition   => 0,
@@ -176,16 +174,7 @@ package WNM.Project is
                           CC_B        => 7,
                           CC_C        => 8,
                           CC_D        => 9,
-                          Note_Mode   => 10,
-
-                          --  This value is reseved for future extensions of
-                          --  step settings.
-                          Extended        => 254,
-
-                          --  This value is reseved for the end of section
-                          --  token in storage.
-                          Reserved        => 255
-                         );
+                          Note_Mode   => 10);
 
    subtype User_Step_Settings is Step_Settings range Condition .. CC_D;
 
@@ -226,7 +215,7 @@ package WNM.Project is
           when Chord => "Notes of chord");
 
    type Audio_Volume is range 0 .. 100;
-   type Audio_Pan is range -50 .. 50;
+   type Audio_Pan is range 0 .. 100;
 
    -- Track Getters --
    function Mode (T : Tracks := Editing_Track) return Track_Mode_Kind;
@@ -257,9 +246,7 @@ package WNM.Project is
                            CC_A, CC_Label_A,
                            CC_B, CC_Label_B,
                            CC_C, CC_Label_C,
-                           CC_D, CC_Label_D,
-                           Extended,
-                           Reserved);
+                           CC_D, CC_Label_D);
 
    for Track_Settings'Size use 8;
    for Track_Settings use (Track_Mode      => 0,
@@ -278,16 +265,7 @@ package WNM.Project is
                            CC_C            => 13,
                            CC_Label_C      => 14,
                            CC_D            => 15,
-                           CC_Label_D      => 16,
-
-                           --  This value is reseved for future extensions of
-                           --  track settings.
-                           Extended        => 254,
-
-                           --  This value is reseved for the end of section
-                           --  token in storage.
-                           Reserved        => 255
-                          );
+                           CC_Label_D      => 16);
 
    subtype User_Track_Settings
      is Track_Settings range Track_Mode .. CC_Label_D;
@@ -308,22 +286,11 @@ package WNM.Project is
    -----------
 
    type Chord_Setting_Kind is (Tonic,
-                               Name,
-                               Extended,
-                               Reserved);
+                               Name);
 
    for Chord_Setting_Kind'Size use 8;
-   for Chord_Setting_Kind use (Tonic       => 0,
-                               Name        => 1,
-
-                               --  This value is reseved for future extensions
-                               --  of chord settings.
-                               Extended        => 254,
-
-                               --  This value is reseved for the end of
-                               --  section token in storage.
-                               Reserved        => 255
-                              );
+   for Chord_Setting_Kind use (Tonic => 0,
+                               Name  => 1);
 
    subtype User_Chord_Settings is Chord_Setting_Kind range Tonic .. Name;
 
@@ -344,6 +311,9 @@ package WNM.Project is
    --  a.k.a. The Magic Hat of Chord Progression
 
 private
+
+   type Global_Settings is (BPM);
+   for Global_Settings use (BPM => 0);
 
    package Trigger_Kind_Next is new Enum_Next (Trigger_Kind);
    use Trigger_Kind_Next;
@@ -431,7 +401,7 @@ private
       Mode : Track_Mode_Kind := Sample_Mode;
       Chan : MIDI.MIDI_Channel := 0;
       Volume : Audio_Volume := 100;
-      Pan : Audio_Pan := 0;
+      Pan : Audio_Pan := 50;
       CC : CC_Setting_Array;
       Sample : Sample_Library.Valid_Sample_Index := 1;
       Word   : Speech.Word := Speech.Word'First;
@@ -457,23 +427,23 @@ private
       Arp_Notes => Arp_Notes_Kind'First
      );
 
-   type Chord_Setting is record
+   type Chord_Rec is record
       Tonic : MIDI.MIDI_Key := MIDI.C4;
       Name  : WNM.Chord_Settings.Chord_Name :=
         WNM.Chord_Settings.Chord_Name'First;
    end record;
 
-   Default_Chord : constant Chord_Setting :=
+   type Chord_Arr is array (WNM.Chords) of Chord_Rec;
+
+   Default_Chord : constant Chord_Rec :=
      (Tonic => MIDI.C4,
       Name => WNM.Chord_Settings.Chord_Name'First);
-
-   type Chord_Settings is array (WNM.Chords) of Chord_Setting;
 
    type Project_Rec is record
       BPM : Beat_Per_Minute := 120;
       Seqs : All_Patterns := (others => (others => (others => Default_Step)));
       Tracks : Track_Arr := (others => Default_Track);
-      Chords : Chord_Settings := (others => Default_Chord);
+      Chords : Chord_Arr := (others => Default_Chord);
    end record;
 
    G_Project : Project_Rec := (others => <>);

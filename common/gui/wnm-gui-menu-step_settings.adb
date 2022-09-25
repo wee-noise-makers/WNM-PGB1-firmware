@@ -21,7 +21,6 @@
 
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
 with WNM.Project;          use WNM.Project;
-with WNM.Speech;
 
 package body WNM.GUI.Menu.Step_Settings is
 

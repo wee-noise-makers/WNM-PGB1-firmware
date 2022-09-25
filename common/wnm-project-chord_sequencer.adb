@@ -40,7 +40,7 @@ package body WNM.Project.Chord_Sequencer is
 
    Init_Scale_Root : constant MIDI.MIDI_Key := MIDI.C4;
    Init_Scale      : constant Scale_Name := Minor_Scale;
-   Init_Chords     : constant Chord_Settings :=
+   Init_Chords     : constant Chord_Arr :=
      (1 => (Init_Scale_Root + Scales (Init_Scale)(0),
             Substitutions (Scale_Chords (Init_Scale)(0)).Sub (1)),
 
