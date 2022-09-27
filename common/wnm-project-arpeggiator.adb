@@ -24,6 +24,40 @@ with WNM.Project.Chord_Sequencer;
 
 package body WNM.Project.Arpeggiator is
 
+   type Arp_Pattern is array (Natural range <>) of
+     WNM.Chord_Settings.Chord_Index_Range;
+   type Arp_Pattern_Acc is not null access constant Arp_Pattern;
+
+   Arp_Up : aliased constant Arp_Pattern :=
+     (0, 1, 2, 3);
+
+   pragma Compile_Time_Error
+     (Arp_Up'Length /= WNM.Chord_Settings.Chord_Notes'Length,
+      "Number of notes in chords changed");
+
+   Arp_Down : aliased constant Arp_Pattern :=
+     (3, 2, 1, 0);
+
+   pragma Compile_Time_Error
+     (Arp_Down'Length /= WNM.Chord_Settings.Chord_Notes'Length,
+      "Number of notes in chords changed");
+
+   Arp_Up_Down : aliased constant Arp_Pattern :=
+     (0, 1, 2, 3, 2, 1);
+
+   pragma Compile_Time_Error
+     (Arp_Up_Down'Length /= (2 * WNM.Chord_Settings.Chord_Notes'Length) - 2,
+      "Number of notes in chords changed");
+
+   Arp_Pat1 : aliased constant Arp_Pattern :=
+     (0, 3, 2, 3, 1, 3, 2, 3);
+
+   Arp_Pat2 : aliased constant Arp_Pattern :=
+     (0, 1, 2, 3, 1, 3, 2, 3);
+
+   Arp_Pat3 : aliased constant Arp_Pattern :=
+     (0, 2, 1, 3, 2, 1, 2);
+
    ---------------
    -- Next_Note --
    ---------------
@@ -34,53 +68,55 @@ package body WNM.Project.Arpeggiator is
 
       Track : Track_Rec renames G_Project.Tracks (T);
       Arp : Arpeggiator_Rec renames Arpeggiators (T);
-      Result : MIDI.MIDI_Key;
-      Last : Natural;
+
+      Note_Index : Chord_Index_Range;
    begin
-      case Track.Arp_Notes is
-         when Chord =>
-            Result :=  Current_Chord (Chord_Index_Range (Arp.Next_Index));
-            Last := Natural (Chord_Index_Range'Last);
-      end case;
 
       case Track.Arp_Mode is
-         when Up =>
-            if Arp.Next_Index = Last then
-               Arp.Next_Index := 0;
-            else
-               Arp.Next_Index := Arp.Next_Index + 1;
-            end if;
-
-         when Down =>
-            if Arp.Next_Index = 0 then
-               Arp.Next_Index := Last;
-            else
-               Arp.Next_Index := Arp.Next_Index - 1;
-            end if;
-
-         when Up_Down =>
-            if Arp.Going_Up then
-               if Arp.Next_Index = Last then
-                  Arp.Going_Up := False;
-                  Arp.Next_Index := Last - 1;
-               else
-                  Arp.Next_Index := Arp.Next_Index + 1;
-               end if;
-            else
-               if Arp.Next_Index = 0 then
-                  Arp.Next_Index := 1;
-                  Arp.Going_Up := True;
-               else
-                  Arp.Next_Index := Arp.Next_Index - 1;
-               end if;
-            end if;
-
          when Random =>
-            Arp.Next_Index := Natural (WNM.Random) mod (Last + 1);
+            Note_Index :=
+              Chord_Index_Range (Natural (WNM.Random) mod
+                                     Natural (Chord_Index_Range'Last + 1));
+         when others =>
+            declare
+               Pat : constant Arp_Pattern_Acc :=
+                 (case Track.Arp_Mode is
+                     when Up       => Arp_Up'Access,
+                     when Down     => Arp_Down'Access,
+                     when Up_Down  => Arp_Up_Down'Access,
+                     when Pattern1 => Arp_Pat1'Access,
+                     when Pattern2 => Arp_Pat2'Access,
+                     when Pattern3 => Arp_Pat3'Access,
+                     when Random   => raise Program_Error);
+            begin
+               if Arp.Next_Index not in Pat'Range then
+                  Arp.Next_Index := Pat'First;
+               end if;
+
+               Note_Index := Pat (Arp.Next_Index);
+               Arp.Next_Index := Arp.Next_Index + 1;
+            end;
       end case;
 
-      return Result;
-
+      return Current_Chord (Note_Index);
    end Next_Note;
+
+   ---------------------------
+   -- Signal_End_Of_Pattern --
+   ---------------------------
+
+   procedure Signal_End_Of_Pattern is
+   begin
+      --  Reset all arps before the start of next pattern
+      for Elt of Arpeggiators loop
+         Elt.Next_Index := 0;
+      end loop;
+   end Signal_End_Of_Pattern;
+
+   ------------------------
+   -- Signal_Mid_Pattern --
+   ------------------------
+
+   procedure Signal_Mid_Pattern is null;
 
 end WNM.Project.Arpeggiator;

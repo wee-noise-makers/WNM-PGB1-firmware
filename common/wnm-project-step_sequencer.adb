@@ -558,6 +558,7 @@ package body WNM.Project.Step_Sequencer is
                      Pattern_Sequencer.Signal_Mid_Pattern;
                      Chord_Sequencer.Signal_Mid_Pattern;
                      WNM.Project.Chord_Sequencer.Signal_Mid_Pattern;
+                     Arpeggiator.Signal_Mid_Pattern;
                   end if;
 
                   Current_Playing_Step := Current_Playing_Step + 1;
@@ -566,6 +567,7 @@ package body WNM.Project.Step_Sequencer is
                   Pattern_Sequencer.Signal_End_Of_Pattern;
                   Chord_Sequencer.Signal_End_Of_Pattern;
                   WNM.Project.Chord_Sequencer.Signal_End_Of_Pattern;
+                  Arpeggiator.Signal_End_Of_Pattern;
                end if;
 
                --  At the middle of the step we play the recorded notes

@@ -23,10 +23,12 @@ package WNM.Project.Arpeggiator is
 
    function Next_Note (T : Tracks) return MIDI.MIDI_Key;
 
+   procedure Signal_End_Of_Pattern;
+   procedure Signal_Mid_Pattern;
+
 private
 
    type Arpeggiator_Rec is record
-      Going_Up : Boolean := True;
       Next_Index : Natural := 0;
    end record;
 

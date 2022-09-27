@@ -200,7 +200,8 @@ package WNM.Project is
    subtype Controller_Label is String (1 .. 17);
    Empty_Controller_Label : constant Controller_Label := (others => ' ');
 
-   type Arp_Mode_Kind is (Up, Down, Up_Down, Random);
+   type Arp_Mode_Kind is (Up, Down, Up_Down, Pattern1, Pattern2, Pattern3,
+                          Random);
    type Arp_Notes_Kind is (Chord);
 
    function Img (M : Arp_Mode_Kind) return String
@@ -208,6 +209,9 @@ package WNM.Project is
           when Up => "Up",
           when Down => "Down",
           when Up_Down => "Up and Down",
+          when Pattern1 => "Pattern 1",
+          when Pattern2 => "Pattern 2",
+          when Pattern3 => "Pattern 3",
           when Random => "Random");
 
    function Img (N : Arp_Notes_Kind) return String
