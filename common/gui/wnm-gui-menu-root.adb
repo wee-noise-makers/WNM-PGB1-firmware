@@ -25,6 +25,7 @@ with WNM.GUI.Menu.Text_Dialog;       use WNM.GUI.Menu.Text_Dialog;
 with WNM.GUI.Menu.Sample_Edit;
 with WNM.GUI.Menu.Create_Sample;
 with WNM.GUI.Menu.Passthrough;
+with WNM.GUI.Popup;
 
 with WNM.Project.Storage;
 
@@ -84,15 +85,23 @@ package body WNM.GUI.Menu.Root is
             case This.Item is
                when Save_Project =>
                   declare
-                     Unused : Project.Storage.Storage_Error;
+                     use Project.Storage;
+                     Err : Project.Storage.Storage_Error;
                   begin
-                     Unused := Project.Storage.Save ("project_abcdefg");
+                     Err := Project.Storage.Save ("project_abcdefg");
+                     if Err /= Ok then
+                        GUI.Popup.Display ("Cannot Save Prj ", 500_000);
+                     end if;
                   end;
                when Load_Project =>
                   declare
-                     Unused : Project.Storage.Storage_Error;
+                     use Project.Storage;
+                     Err : Project.Storage.Storage_Error;
                   begin
-                     Unused := Project.Storage.Load ("project_abcdefg");
+                     Err := Project.Storage.Load ("project_abcdefg");
+                     if Err /= Ok then
+                        GUI.Popup.Display ("Cannot Load Prj ", 500_000);
+                     end if;
                   end;
                when Edit_Sample =>
                   Menu.Sample_Edit.Push_Window;

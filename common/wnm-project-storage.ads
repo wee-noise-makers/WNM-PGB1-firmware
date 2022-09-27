@@ -30,6 +30,15 @@ package WNM.Project.Storage is
                           Format_Error,
                           Unknown_Error);
 
+   function Img (S : Storage_Error) return String
+   is (case S is
+          when Ok => "Ok",
+          when Out_Of_Space => "No space on disk",
+          when Project_Do_Not_Exist => "No project",
+          when Disk_Error => "Disk error",
+          when Format_Error => "Format Error",
+          when Unknown_Error => "Unknown_Error");
+
    subtype Project_Name is String (1 .. 15);
 
    function Save (Name : Project_Name) return Storage_Error;
