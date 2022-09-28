@@ -90,7 +90,12 @@ package body WNM.GUI.Menu.Root is
                   begin
                      Err := Project.Storage.Save ("project_abcdefg");
                      if Err /= Ok then
-                        GUI.Popup.Display ("Cannot Save Prj ", 500_000);
+                        GUI.Popup.Display_2L ("Can't Save Project",
+                                              Project.Storage.Img (Err),
+                                              1_500_000);
+                     else
+                        GUI.Popup.Display ("Project Saved",
+                                           500_000);
                      end if;
                   end;
                when Load_Project =>
@@ -100,7 +105,12 @@ package body WNM.GUI.Menu.Root is
                   begin
                      Err := Project.Storage.Load ("project_abcdefg");
                      if Err /= Ok then
-                        GUI.Popup.Display ("Cannot Load Prj ", 500_000);
+                        GUI.Popup.Display_2L ("Can't Load Project",
+                                              Project.Storage.Img (Err),
+                                              1_500_000);
+                     else
+                        GUI.Popup.Display ("Project Loaded",
+                                           500_000);
                      end if;
                   end;
                when Edit_Sample =>

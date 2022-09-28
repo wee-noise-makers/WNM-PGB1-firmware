@@ -21,21 +21,31 @@
 
 with WNM.Time;
 
+private with WNM.GUI.Bitmap_Fonts;
+
 package WNM.GUI.Popup is
 
    Text_Length : constant := 16;
    subtype Popup_Text is String (1 .. Text_Length);
 
-   procedure Display (T : Popup_Text; Duration : Time.Time_Microseconds);
+   procedure Display (T : String; Duration : Time.Time_Microseconds);
+
+   procedure Display_2L (Top, Bottom : String;
+                         Duration : Time.Time_Microseconds);
 
    procedure Update;
 
 private
 
-   type Popup_State is (Disabled, Text_Popup);
+   type Popup_State is (Disabled, Text_Popup_1L, Text_Popup_2L);
 
    State  : Popup_State := Disabled;
-   Text   : Popup_Text := (others => ' ');
-   Expire : Time.Time_Microseconds := 0;
+   T_Text   : Popup_Text := (others => ' ');
+   B_Text   : Popup_Text := (others => ' ');
+
+   subtype Tick_Count is Integer range 0 .. Text_Length * Bitmap_Fonts.Width;
+   Remaining_Ticks : Tick_Count := 0;
+   Tick_Period : Time.Time_Microseconds := 0;
+   Next_Tick : Time.Time_Microseconds := 0;
 
 end WNM.GUI.Popup;
