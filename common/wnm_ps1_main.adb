@@ -9,6 +9,7 @@ with WNM.GUI.Update;
 with WNM.Synth;
 with WNM.File_System;
 with WNM.Sample_Library;
+with WNM.Project.Library;
 with WNM.Time; use WNM.Time;
 
 with WNM.GUI.Menu.Track_Settings;
@@ -20,6 +21,7 @@ begin
 
    WNM.File_System.Mount;
    WNM.Sample_Library.Load;
+   WNM.Project.Library.Load_Library;
 
    WNM.GUI.Menu.Track_Settings.Push_Window;
 

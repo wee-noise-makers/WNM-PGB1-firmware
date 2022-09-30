@@ -84,8 +84,6 @@ with WNM.File_System;
 
 package body WNM.Project.Storage is
 
-   File_Ext : constant String := ".wnm_prj";
-
    --------------------
    -- Save_Sequences --
    --------------------
@@ -356,9 +354,9 @@ package body WNM.Project.Storage is
    -- Save --
    ----------
 
-   function Save (Name : Project_Name) return Storage_Error is
+   function Save (Filename : String) return Storage_Error is
 
-      Output : File_Out.Instance := File_Out.Open (Name & File_Ext);
+      Output : File_Out.Instance := File_Out.Open (Filename);
    begin
       if Output.Status = Ok then
          Save_Global (Output);
@@ -645,8 +643,8 @@ package body WNM.Project.Storage is
    -- Load --
    ----------
 
-   function Load (Name : Project_Name) return Storage_Error is
-      Input : File_In.Instance := File_In.Open (Name & File_Ext);
+   function Load (Filename : String) return Storage_Error is
+      Input : File_In.Instance := File_In.Open (Filename);
 
       Token : Token_Kind;
    begin

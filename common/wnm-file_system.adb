@@ -276,6 +276,24 @@ package body WNM.File_System is
       end if;
    end For_Each_File_In_Dir;
 
+   ------------
+   -- Remove --
+   ------------
+
+   function Remove (Filename : String) return Boolean is
+   begin
+      return Littlefs.Remove (FS, Filename) >= 0;
+   end Remove;
+
+   ----------
+   -- Move --
+   ----------
+
+   function Move (From, To : String) return Boolean is
+   begin
+      return Littlefs.Rename (FS, From, To) >= 0;
+   end Move;
+
    -----------
    -- Write --
    -----------

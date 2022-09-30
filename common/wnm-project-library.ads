@@ -19,20 +19,37 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-package WNM.Utils is
+with WNM.Project.Storage;
 
-   procedure Copy_Str (From :     String;
-                       To   : out String;
-                       Fill :     Character := ' ');
-   --  Copy sting From in To. If the length doesn't match, either trucate From
-   --  or fill the remaining characters of To with Fill.
+package WNM.Project.Library is
 
-   function Starts_With (Full, Prefix : String) return Boolean is
-     (Full'Length >= Prefix'Length
-      and then Full (Full'First .. Full'First + Prefix'Length - 1) = Prefix);
+   subtype Prj_Entry_Name is String (1 .. 15);
 
-   function Ends_With (Full, Suffix : String) return Boolean is
-     (Full'Length >= Suffix'Length
-      and then Full (Full'Last - Suffix'Length + 1 .. Full'Last) = Suffix);
+   subtype Prj_Index is Natural range 0 .. 20;
+   subtype Valid_Prj_Index is Prj_Index range 1 .. Prj_Index'Last;
 
-end WNM.Utils;
+   Invalid_Prj_Entry : constant Prj_Index := Prj_Index'First;
+
+   function Last_Loaded return Prj_Index;
+
+   function Has_Project (Index : Prj_Index) return Boolean;
+
+   function Entry_Name (Index : Valid_Prj_Index) return Prj_Entry_Name;
+
+   procedure Rename (Index : Valid_Prj_Index; Name : String);
+
+   procedure Delete (Index : Valid_Prj_Index);
+
+   procedure Load_Library;
+
+   function Load_Project (Index : Valid_Prj_Index)
+                          return Storage.Storage_Error;
+
+   function Save_Project (Index : Valid_Prj_Index)
+                          return Storage.Storage_Error;
+
+   function Save_Project_With_Name (Index : Valid_Prj_Index;
+                                    Name  : String)
+                                    return Storage.Storage_Error;
+
+end WNM.Project.Library;

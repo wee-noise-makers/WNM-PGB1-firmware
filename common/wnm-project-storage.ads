@@ -27,6 +27,7 @@ package WNM.Project.Storage is
                           Out_Of_Space,
                           Project_Do_Not_Exist,
                           Disk_Error,
+                          Move_Error,
                           Format_Error,
                           Unknown_Error);
 
@@ -36,14 +37,13 @@ package WNM.Project.Storage is
           when Out_Of_Space => "No space on disk",
           when Project_Do_Not_Exist => "No project",
           when Disk_Error => "Disk error",
+          when Move_Error => "Move error",
           when Format_Error => "Format Error",
           when Unknown_Error => "Unknown_Error");
 
-   subtype Project_Name is String (1 .. 15);
+   function Save (Filename : String) return Storage_Error;
 
-   function Save (Name : Project_Name) return Storage_Error;
-
-   function Load (Name : Project_Name) return Storage_Error;
+   function Load (Filename : String) return Storage_Error;
 
    End_Of_Section_Value : constant := 255;
 

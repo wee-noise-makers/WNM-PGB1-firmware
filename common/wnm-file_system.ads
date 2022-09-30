@@ -63,6 +63,14 @@ package WNM.File_System is
       with procedure Process (Filename : String);
    procedure For_Each_File_In_Dir (Dirpath : String);
 
+   function Remove (Filename : String) return Boolean;
+   --  Remove/delete a file from the file system.
+   --  Return True on success.
+
+   function Move (From, To : String) return Boolean;
+   --  Move a file From in To, replacing the content of To, if any.
+   --  Return True on success.
+
    ----------
    -- Flux --
    ----------
