@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                  Copyright (C) 2016-2017 Fabien Chouteau                  --
+--                    Copyright (C) 2022 Fabien Chouteau                     --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,32 +19,37 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Sample_Library; use WNM.Sample_Library;
+with WNM.Project.Library; use WNM.Project.Library;
 
-package WNM.GUI.Menu.Sample_Select is
+package WNM.GUI.Menu.Save_Project is
 
    procedure Push_Window;
 
-   function Selected return Valid_Sample_Index;
-
 private
 
-   type Sample_Select_Window is new Menu_Window with record
-      Index  : WNM.Sample_Library.Valid_Sample_Index;
+   type Window_State is (Select_Project,
+                         Enter_Name,
+                         Confirm_Overwrite);
+
+   type Instance is new Menu_Window with record
+      State     : Window_State;
+      Prj_Entry : Prj_Index := Invalid_Prj_Entry;
    end record;
 
    overriding
-   procedure Draw (This : in out Sample_Select_Window);
+   procedure Draw (This   : in out Instance)
+   is null;
 
    overriding
-   procedure On_Event (This  : in out Sample_Select_Window;
-                       Event : Menu_Event);
+   procedure On_Event (This  : in out Instance;
+                       Event : Menu_Event)
+   is null;
 
    overriding
-   procedure On_Pushed (This  : in out Sample_Select_Window);
+   procedure On_Pushed (This  : in out Instance);
 
    overriding
-   procedure On_Focus (This       : in out Sample_Select_Window;
+   procedure On_Focus (This       : in out Instance;
                        Exit_Value : Window_Exit_Value);
 
-end WNM.GUI.Menu.Sample_Select;
+end WNM.GUI.Menu.Save_Project;

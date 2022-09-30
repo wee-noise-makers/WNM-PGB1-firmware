@@ -38,7 +38,7 @@ package body WNM.GUI.Menu.Sample_Select is
    -- Selected --
    --------------
 
-   function Selected return Sample_Index
+   function Selected return Valid_Sample_Index
    is (Sample_Select.Index);
 
    ----------

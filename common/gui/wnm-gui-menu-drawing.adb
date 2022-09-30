@@ -42,7 +42,7 @@ package body WNM.GUI.Menu.Drawing is
 
    procedure Draw_Menu_Box
      (Title       : String;
-      Count       : Positive;
+      Count       : Natural;
       Index       : Natural)
    is
       X : Integer;
@@ -53,25 +53,29 @@ package body WNM.GUI.Menu.Drawing is
              Y_Offset    => Title_Y_Offset,
              Str         => Title);
 
-      declare
-         X_Offset : constant Natural := (Screen.Width - Count * 3) / 2;
-      begin
-         for Item in 0 .. Count - 1 loop
-            Screen.Set_Pixel ((X_Offset + Item * 3, Scroll_Bar_Y_Offset));
-            Screen.Set_Pixel ((X_Offset + Item * 3 + 1, Scroll_Bar_Y_Offset));
-         end loop;
+      if Count > 0 then
+         declare
+            X_Offset : constant Natural := (Screen.Width - Count * 3) / 2;
+         begin
+            for Item in 0 .. Count - 1 loop
+               Screen.Set_Pixel ((X_Offset + Item * 3,
+                                 Scroll_Bar_Y_Offset));
+               Screen.Set_Pixel ((X_Offset + Item * 3 + 1,
+                                 Scroll_Bar_Y_Offset));
+            end loop;
 
-         Screen.Set_Pixel ((X_Offset + Index * 3, Scroll_Bar_Y_Offset + 1));
+            Screen.Set_Pixel ((X_Offset + Index * 3, Scroll_Bar_Y_Offset + 1));
 
-         Screen.Set_Pixel ((X_Offset + Index * 3 + 1,
-                           Scroll_Bar_Y_Offset + 1));
-      end;
+            Screen.Set_Pixel ((X_Offset + Index * 3 + 1,
+                              Scroll_Bar_Y_Offset + 1));
+         end;
 
-      if Index < Count - 1 then
-         X := Box_Right + 1;
-         Print (X_Offset => X,
-                Y_Offset => Arrow_Y_Offset,
-                C        => '>');
+         if Index < Count - 1 then
+            X := Box_Right + 1;
+            Print (X_Offset => X,
+                   Y_Offset => Arrow_Y_Offset,
+                   C        => '>');
+         end if;
       end if;
 
       --  Top line
@@ -93,7 +97,7 @@ package body WNM.GUI.Menu.Drawing is
       Screen.Set_Pixel ((Box_Right - 1, Box_Top + 1));
       Screen.Set_Pixel ((Box_Right - 1, Box_Bottom - 1));
 
-      if Index /= 0 then
+      if Count > 0 and then Index /= 0 then
          X := 0;
          Print (X_Offset => X,
                 Y_Offset => Arrow_Y_Offset,
@@ -458,6 +462,45 @@ package body WNM.GUI.Menu.Drawing is
                 Str      => Display_Text (Val + 1));
       end if;
    end Draw_Sample_Select;
+
+   -------------------------
+   -- Draw_Project_Select --
+   -------------------------
+
+   procedure Draw_Project_Select (Val : Project.Library.Valid_Prj_Index) is
+      use Project.Library;
+
+      X : Integer;
+
+      function Display_Text (Val : Valid_Prj_Index) return String is
+         Num : constant String := (if Val < 10 then " " else "") & Val'Img;
+      begin
+         return Num (Num'First + 1 .. Num'Last) & " " & Entry_Name (Val);
+      end Display_Text;
+
+   begin
+
+      if Val /= Valid_Prj_Index'First then
+         X := Box_Left + 2;
+         Print (X_Offset => X,
+                Y_Offset => Value_Text_Y - 23,
+                Str      => Display_Text (Val - 1));
+      end if;
+
+      X := Box_Left + 2;
+      Print (X_Offset => X,
+             Y_Offset => Value_Text_Y - 11,
+             Str      => Display_Text (Val),
+             Invert_From => Box_Left,
+             Invert_To   => Box_Right);
+
+      if Val /= Valid_Prj_Index'Last then
+         X := Box_Left + 2;
+         Print (X_Offset => X,
+                Y_Offset => Value_Text_Y + 1,
+                Str      => Display_Text (Val + 1));
+      end if;
+   end Draw_Project_Select;
 
    ----------------------
    -- Draw_Word_Select --

@@ -25,6 +25,7 @@ with WNM.GUI.Bitmap_Fonts;
 with WNM.Sample_Library;
 with WNM.Speech;
 with WNM.Project;
+with WNM.Project.Library;
 
 package WNM.GUI.Menu.Drawing is
 
@@ -37,7 +38,7 @@ package WNM.GUI.Menu.Drawing is
                                           (Box_Top + Box_Bottom) / 2);
 
    procedure Draw_Menu_Box (Title : String;
-                            Count : Positive;
+                            Count : Natural;
                             Index : Natural);
 
    procedure Draw_Volume (Title : String;
@@ -71,6 +72,8 @@ package WNM.GUI.Menu.Drawing is
                         Value : Natural);
 
    procedure Draw_Sample_Select (Val : Sample_Library.Valid_Sample_Index);
+
+   procedure Draw_Project_Select (Val : Project.Library.Valid_Prj_Index);
 
    procedure Draw_Word_Select (Word : Speech.Word);
 

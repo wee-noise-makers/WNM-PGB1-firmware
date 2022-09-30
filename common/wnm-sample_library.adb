@@ -22,8 +22,6 @@
 with WNM.File_System;
 with System.Address_To_Access_Conversions;
 
-with Ada.Text_IO;
-
 package body WNM.Sample_Library is
 
    package Global_Address_To_Access
@@ -94,7 +92,6 @@ package body WNM.Sample_Library is
          ID : constant Natural :=
            Natural'Value (Line (Line'First .. Delim1 - 1));
       begin
-         Ada.Text_IO.Put_Line ("Sample ID:" & ID'Img);
          if ID in
            Natural (Valid_Sample_Index'First) ..
            Natural (Valid_Sample_Index'Last)
@@ -108,8 +105,6 @@ package body WNM.Sample_Library is
       declare
          Name : constant String := Line (Delim1 + 1 .. Delim2 - 1);
       begin
-         Ada.Text_IO.Put_Line ("Sample Name: '" & Name & "'");
-
          if Name'Length = Sample_Entry_Name'Length then
             Entries (Sample_Id).Name := Name;
          end if;
@@ -119,7 +114,6 @@ package body WNM.Sample_Library is
          Len : constant Natural :=
            Natural'Value (Line (Delim2 + 1 .. Line'Last));
       begin
-         Ada.Text_IO.Put_Line ("Sample Len:" & Len'Img);
          if Len <= Natural (Sample_Point_Count'Last) then
             Entries (Sample_Id).Length := Sample_Point_Count (Len);
             Entries (Sample_Id).Used := Len > 0;
@@ -140,18 +134,6 @@ package body WNM.Sample_Library is
       Line : String (1 .. 64);
       Last : Natural;
    begin
-      --  Entries (1).Used := True;
-      --  Entries (1).Name := "123456789ABCDEF";
-      --  Entries (1).Length := 0;
-      --
-      --  Entries (2).Used := True;
-      --  Entries (2).Name := "This is sample ";
-      --  Entries (2).Length := 0;
-      --
-      --  Entries (3).Used := True;
-      --  Entries (3).Name := "This is sample ";
-      --  Entries (3).Length := 0;
-
       if File_System.Open_Read (Sample_Entries_Filename) /= File_System.Ok
       then
          return;
@@ -160,8 +142,6 @@ package body WNM.Sample_Library is
       loop
          Read_Line (Line, Last);
          exit when Last < Line'First;
-
-         Ada.Text_IO.Put_Line ("Get_Line => '" & Line (1 .. Last) & "'");
 
          if Line (Last) = ASCII.LF then
             Last := Last - 1;

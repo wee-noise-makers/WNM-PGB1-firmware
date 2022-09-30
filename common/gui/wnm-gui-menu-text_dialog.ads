@@ -33,6 +33,8 @@ package WNM.GUI.Menu.Text_Dialog is
 
    function Value return String;
 
+   subtype Valid_Character is Character range ' ' .. '~';
+
 private
 
    subtype Text_Range is Natural range 1 .. 15;

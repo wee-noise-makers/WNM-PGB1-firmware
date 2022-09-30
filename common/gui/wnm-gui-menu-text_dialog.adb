@@ -20,6 +20,7 @@
 -------------------------------------------------------------------------------
 
 with WNM.GUI.Bitmap_Fonts; use WNM.GUI.Bitmap_Fonts;
+with WNM.GUI.Menu.Drawing;
 
 package body WNM.GUI.Menu.Text_Dialog is
 
@@ -100,16 +101,13 @@ package body WNM.GUI.Menu.Text_Dialog is
    procedure Draw
      (This : in out Text_Dialog_Window)
    is
-      X        : Integer := 1;
+      X        : Integer := Drawing.Box_Left + 3;
       Select_X : constant Integer := X + (This.Index - This.Text'First) * 6;
    begin
-      Print (X_Offset    => X,
-             Y_Offset    => 8,
-             Str         => Dialog_Title);
+      Drawing.Draw_Menu_Box (Dialog_Title, 0, 0);
 
-      X := 1;
       Print (X_Offset    => X,
-             Y_Offset    => 9 + 8,
+             Y_Offset    => Drawing.Box_Center.Y,
              Str         =>
                This.Text (This.Text'First .. This.Text'First + This.Len - 1),
              Invert_From => (Select_X - 1),
@@ -159,14 +157,26 @@ package body WNM.GUI.Menu.Text_Dialog is
                   This.Index := This.Index - 1;
                end if;
             end if;
+
          when Encoder_Left =>
-            if Event.Value > 0 then
-               This.Text (This.Index) :=
-                 Character'Succ (This.Text (This.Index));
-            elsif Event.Value < 0 then
-               This.Text (This.Index) :=
-                 Character'Pred (This.Text (This.Index));
-            end if;
+            declare
+               C : Character renames This.Text (This.Index);
+            begin
+               if Event.Value > 0 then
+                  if C > Valid_Character'First then
+                     C := Character'Pred (C);
+                  else
+                     C := Valid_Character'Last;
+                  end if;
+
+               elsif Event.Value < 0 then
+                  if C < Valid_Character'Last then
+                     C := Character'Succ (C);
+                  else
+                     C := Valid_Character'First;
+                  end if;
+               end if;
+            end;
       end case;
    end On_Event;
 

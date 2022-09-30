@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2020 Fabien Chouteau                    --
+--                    Copyright (C) 2022 Fabien Chouteau                     --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,13 +19,11 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Utils;
-with WNM.GUI.Menu.Drawing;
+with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
 
-package body WNM.GUI.Menu.Yes_No_Dialog is
+package body WNM.GUI.Menu.Project_Select is
 
-   Yes_No_Dialog  : aliased Yes_No_Dialog_Window;
-   Dialog_Title : String (1 .. Title_Max_Len) := (others => ' ');
+   Project_Select : aliased Project_Select_Window;
 
    -----------------
    -- Push_Window --
@@ -33,28 +31,27 @@ package body WNM.GUI.Menu.Yes_No_Dialog is
 
    procedure Push_Window is
    begin
-      Push (Yes_No_Dialog'Access);
+      Push (Project_Select'Access);
    end Push_Window;
 
-   ---------------
-   -- Set_Title --
-   ---------------
+   --------------
+   -- Selected --
+   --------------
 
-   procedure Set_Title (Title : String) is
-   begin
-      WNM.Utils.Copy_Str (Title, Dialog_Title);
-   end Set_Title;
+   function Selected return Valid_Prj_Index
+   is (Project_Select.Index);
 
    ----------
    -- Draw --
    ----------
 
    overriding
-   procedure Draw (This : in out Yes_No_Dialog_Window)
+   procedure Draw
+     (This : in out Project_Select_Window)
    is
    begin
-      Drawing.Draw_Menu_Box (Dialog_Title, 0, 0);
-      Drawing.Draw_Value ("-> " & (if This.Yes then "Yes" else "No"));
+      Draw_Menu_Box ("Select project", 0, 0);
+      Draw_Project_Select (This.Index);
    end Draw;
 
    --------------
@@ -63,22 +60,26 @@ package body WNM.GUI.Menu.Yes_No_Dialog is
 
    overriding
    procedure On_Event
-     (This  : in out Yes_No_Dialog_Window;
+     (This  : in out Project_Select_Window;
       Event : Menu_Event)
    is
    begin
       case Event.Kind is
          when Left_Press =>
-            if This.Yes then
-               Menu.Pop (Exit_Value => Success);
-            else
-               Menu.Pop (Exit_Value => Failure);
-            end if;
+            Menu.Pop (Exit_Value => Success);
          when Right_Press =>
             Menu.Pop (Exit_Value => Failure);
+         when Encoder_Right =>
+            if Event.Value > 0 then
+               if This.Index /= Valid_Prj_Index'Last then
+                  This.Index := This.Index + 1;
+               end if;
+            elsif Event.Value < 0 then
+               if This.Index /= Valid_Prj_Index'First then
+                  This.Index := This.Index - 1;
+               end if;
+            end if;
          when Encoder_Left =>
-            This.Yes := not This.Yes;
-         when others =>
             null;
       end case;
    end On_Event;
@@ -88,10 +89,22 @@ package body WNM.GUI.Menu.Yes_No_Dialog is
    ---------------
 
    overriding procedure On_Pushed
-     (This  : in out Yes_No_Dialog_Window)
+     (This  : in out Project_Select_Window)
    is
    begin
-      This.Yes := False;
+      This.Index := Valid_Prj_Index'First;
    end On_Pushed;
 
-end WNM.GUI.Menu.Yes_No_Dialog;
+   --------------
+   -- On_Focus --
+   --------------
+
+   overriding procedure On_Focus
+     (This       : in out Project_Select_Window;
+      Exit_Value : Window_Exit_Value)
+   is
+   begin
+      null;
+   end On_Focus;
+
+end WNM.GUI.Menu.Project_Select;

@@ -25,9 +25,12 @@ with WNM.GUI.Menu.Text_Dialog;       use WNM.GUI.Menu.Text_Dialog;
 with WNM.GUI.Menu.Sample_Edit;
 with WNM.GUI.Menu.Create_Sample;
 with WNM.GUI.Menu.Passthrough;
+with WNM.GUI.Menu.Save_Project;
 with WNM.GUI.Popup;
+with WNM.GUI.Menu.Project_Select;
 
 with WNM.Project.Storage;
+with WNM.Project.Library;
 
 package body WNM.GUI.Menu.Root is
 
@@ -84,35 +87,11 @@ package body WNM.GUI.Menu.Root is
          when Left_Press =>
             case This.Item is
                when Save_Project =>
-                  declare
-                     use Project.Storage;
-                     Err : Project.Storage.Storage_Error;
-                  begin
-                     Err := Project.Storage.Save ("project_abcdefg");
-                     if Err /= Ok then
-                        GUI.Popup.Display_2L ("Can't Save Project",
-                                              Project.Storage.Img (Err),
-                                              1_500_000);
-                     else
-                        GUI.Popup.Display ("Project Saved",
-                                           500_000);
-                     end if;
-                  end;
+                  Menu.Save_Project.Push_Window;
+
                when Load_Project =>
-                  declare
-                     use Project.Storage;
-                     Err : Project.Storage.Storage_Error;
-                  begin
-                     Err := Project.Storage.Load ("project_abcdefg");
-                     if Err /= Ok then
-                        GUI.Popup.Display_2L ("Can't Load Project",
-                                              Project.Storage.Img (Err),
-                                              1_500_000);
-                     else
-                        GUI.Popup.Display ("Project Loaded",
-                                           500_000);
-                     end if;
-                  end;
+                  Menu.Project_Select.Push_Window;
+
                when Edit_Sample =>
                   Menu.Sample_Edit.Push_Window;
                when Create_Sample =>
@@ -170,7 +149,31 @@ package body WNM.GUI.Menu.Root is
       Exit_Value : Window_Exit_Value)
    is
    begin
-      null;
+      case This.Item is
+         when Load_Project =>
+
+            if Exit_Value = Success then
+               declare
+                  use Project.Storage;
+                  Err : Project.Storage.Storage_Error;
+               begin
+                  Err := Project.Library.Load_Project
+                    (Project_Select.Selected);
+
+                  if Err /= Ok then
+                     GUI.Popup.Display_2L ("Can't Load Project",
+                                           Project.Storage.Img (Err),
+                                           1_500_000);
+                  else
+                     GUI.Popup.Display ("Project Loaded",
+                                        500_000);
+                  end if;
+               end;
+            end if;
+
+         when others =>
+            null;
+      end case;
    end On_Focus;
 
 end WNM.GUI.Menu.Root;

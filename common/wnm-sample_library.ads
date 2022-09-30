@@ -37,7 +37,7 @@ is
    --  seconds of audio data. We can either use this space for 100 samples of
    --  ~1 seconds or 50 samples of ~2 seconds.
    --
-   --  We decide to go for 50 samples of ~2 seconds.
+   --  We decided to go for 50 samples of ~2 seconds.
    --
    --  The meta-data associated with each sample (length, name, entry point,
    --  exit point, repeat point, etc.) will be located in a file on the
@@ -50,7 +50,7 @@ is
    --  In sample edit mode, the sequencer/playback is stopped to provide the
    --  maximum CPU time and allocate RAM memory for editing.
    --
-   --  The sample uder edit is first loaded in RAM. User can then apply a
+   --  The sample under edit is first loaded in RAM. User can then apply a
    --  number of actions/settins/effects to the sample:
    --    - Preview sample
    --    - Record from audio in
