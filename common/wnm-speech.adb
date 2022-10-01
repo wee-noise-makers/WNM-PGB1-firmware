@@ -22,9 +22,6 @@
 with Interfaces;
 
 with WNM.Audio; use WNM.Audio;
-with LPC_Synth;
-
-with WNM.MIDI;
 with WNM.Speech_Dictionary;
 
 package body WNM.Speech is
@@ -101,7 +98,6 @@ package body WNM.Speech is
                   else
                      Buffer (Idx).L := Mono_Point (Val);
                   end if;
-
 
                   Val :=
                     Integer_32 (Buffer (Idx).R) + Integer_32 (LPC_Out (Idx));

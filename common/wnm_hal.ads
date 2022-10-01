@@ -111,4 +111,10 @@ package WNM_HAL is
 
    procedure Send_MIDI (Data : System.Storage_Elements.Storage_Array);
 
+   -----------
+   -- Power --
+   -----------
+
+   procedure Power_Down;
+
 end WNM_HAL;

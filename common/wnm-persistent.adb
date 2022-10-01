@@ -19,38 +19,69 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.File_System.LEB128_File_Out;
+with WNM.File_System.LEB128_File_Out; use WNM.File_System.LEB128_File_Out;
+with WNM.File_System.LEB128_File_In; use WNM.File_System.LEB128_File_In;
+with WNM.File_System; use WNM.File_System;
 
-private package WNM.Project.Storage.File_Out is
+package body WNM.Persistent is
 
-   subtype Parent is File_System.LEB128_File_Out.Instance;
-   type Instance
-   is new Parent with
-   private;
+   Filename : constant String := "persistent.leb128";
 
-   procedure Start_Global (This : in out Instance);
+   type Persistent_Token is (P_Last_Project);
 
-   procedure Start_Chord_Settings (This : in out Instance; C : Chords);
-   procedure Start_Track_Settings (This : in out Instance; T : Tracks);
+   for Persistent_Token use (P_Last_Project => 0);
 
-   procedure Start_Sequence (This : in out Instance);
-   procedure Start_Step_Settings (This : in out Instance;
-                                  S : Sequencer_Steps);
-   procedure Change_Pattern_In_Seq (This : in out Instance; P : Patterns);
-   procedure Change_Track_In_Seq (This : in out Instance; T : Tracks);
-   procedure End_Section (This : in out Instance);
-   procedure End_File (This : in out Instance);
+   ----------
+   -- Save --
+   ----------
 
-   procedure Push (This : in out Instance; A : Beat_Per_Minute);
-   procedure Push (This : in out Instance; A : Step_Settings);
-   procedure Push (This : in out Instance; A : Track_Settings);
-   procedure Push (This : in out Instance; A : Chord_Setting_Kind);
+   procedure Save is
+      Output : File_System.LEB128_File_Out.Instance :=
+        File_System.LEB128_File_Out.Open (Filename);
+   begin
+      if Output.Status = Ok then
+         Output.Push (Out_UInt (P_Last_Project'Enum_Rep));
+         Output.Push (Out_UInt (Data.Last_Project));
+      end if;
 
-private
+      Output.Close;
+   end Save;
 
-   type Instance
-   is new Parent with null record;
+   ----------
+   -- Load --
+   ----------
 
-   procedure Push (This : in out Instance; A : Token_Kind);
+   procedure Load is
+      procedure To_P_Token is new Convert_To_Enum (Persistent_Token);
+      procedure Read_Prj is new Read_Gen_Int (Project.Library.Prj_Index);
 
-end WNM.Project.Storage.File_Out;
+      Input : LEB128_File_In.Instance := LEB128_File_In.Open (Filename);
+      Set : Persistent_Token;
+      Raw : In_UInt;
+      Success : Boolean;
+   begin
+
+      Data := Default;
+
+      if Input.Status /= Ok then
+         return;
+      end if;
+
+      loop
+         Input.Read (Raw);
+
+         exit when Input.Status /= Ok;
+
+         To_P_Token (Raw, Set, Success);
+
+         exit when not Success;
+
+         case Set is
+            when P_Last_Project => Read_Prj (Input, Data.Last_Project);
+         end case;
+
+         exit when Input.Status /= Ok;
+      end loop;
+   end Load;
+
+end WNM.Persistent;

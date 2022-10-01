@@ -20,5 +20,7 @@
 -------------------------------------------------------------------------------
 
 package WNM.Power_Control is
+
    procedure Power_Down;
+
 end WNM.Power_Control;

@@ -19,38 +19,36 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.File_System.LEB128_File_Out;
+with HAL;
 
-private package WNM.Project.Storage.File_Out is
+package WNM.File_System.LEB128_File_Out is
 
-   subtype Parent is File_System.LEB128_File_Out.Instance;
+   type Out_UInt is new HAL.UInt32;
+   Max_Str_Len_In_Storage : constant := 253;
+
    type Instance
-   is new Parent with
+   is tagged limited
    private;
 
-   procedure Start_Global (This : in out Instance);
+   function Open (Filename : String) return Instance;
 
-   procedure Start_Chord_Settings (This : in out Instance; C : Chords);
-   procedure Start_Track_Settings (This : in out Instance; T : Tracks);
+   procedure Close (This : in out Instance);
 
-   procedure Start_Sequence (This : in out Instance);
-   procedure Start_Step_Settings (This : in out Instance;
-                                  S : Sequencer_Steps);
-   procedure Change_Pattern_In_Seq (This : in out Instance; P : Patterns);
-   procedure Change_Track_In_Seq (This : in out Instance; T : Tracks);
-   procedure End_Section (This : in out Instance);
-   procedure End_File (This : in out Instance);
+   function Status (This : Instance) return Storage_Error;
 
-   procedure Push (This : in out Instance; A : Beat_Per_Minute);
-   procedure Push (This : in out Instance; A : Step_Settings);
-   procedure Push (This : in out Instance; A : Track_Settings);
-   procedure Push (This : in out Instance; A : Chord_Setting_Kind);
+   generic
+      type T is (<>);
+   procedure Push_Gen (This : in out Instance; A : T);
+
+   procedure Push (This : in out Instance; A : Out_UInt);
+   procedure Push (This : in out Instance; A : String);
 
 private
 
    type Instance
-   is new Parent with null record;
+   is tagged limited
+           record
+              Error : Storage_Error := Ok;
+           end record;
 
-   procedure Push (This : in out Instance; A : Token_Kind);
-
-end WNM.Project.Storage.File_Out;
+end WNM.File_System.LEB128_File_Out;

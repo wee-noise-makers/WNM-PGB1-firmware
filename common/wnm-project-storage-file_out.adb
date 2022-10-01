@@ -19,100 +19,10 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with System;
-with Littlefs;
-with Interfaces;
-with Interfaces.C;
-
 with WNM.File_System;
-
-with Flux.Traits.LEB128;
+with WNM.File_System.LEB128_File_Out; use WNM.File_System.LEB128_File_Out;
 
 package body WNM.Project.Storage.File_Out is
-
-   use type Out_UInt;
-
-   procedure Encode is new Flux.Traits.LEB128.Encode (Out_UInt,
-                                                      File_System.Flux_Sink);
-
-   Sink : File_System.Flux_Sink_Instance;
-
-   function Write (Addr   : System.Address;
-                   Len    : File_System.File_Size)
-                   return Storage_Error;
-
-   -----------
-   -- Write --
-   -----------
-
-   function Write (Addr : System.Address;
-                   Len  : File_System.File_Size)
-                   return Storage_Error
-   is
-      use File_System;
-      use Littlefs;
-      use Interfaces;
-
-      Res : File_Signed_Size;
-   begin
-      Res := File_System.Write (Addr, Len);
-
-      if Res < 0 then
-         case Interfaces.C.int (Res) is
-            when LFS_ERR_IO | LFS_ERR_CORRUPT | LFS_ERR_NOENT |
-                 LFS_ERR_EXIST | LFS_ERR_NOTDIR | LFS_ERR_ISDIR |
-                 LFS_ERR_NOTEMPTY | LFS_ERR_BADF | LFS_ERR_FBIG |
-                 LFS_ERR_INVAL | LFS_ERR_NOMEM |
-                 LFS_ERR_NOATTR | LFS_ERR_NAMETOOLONG =>
-
-               return Disk_Error;
-
-            when LFS_ERR_NOSPC =>
-
-               return Out_Of_Space;
-
-            when others =>
-               return Unknown_Error;
-         end case;
-
-      elsif File_Size (Res) /= Len then
-         return Unknown_Error;
-      else
-         return Ok;
-      end if;
-   end Write;
-
-   ----------
-   -- Open --
-   ----------
-
-   function Open (Filename : String) return Instance is
-   begin
-      return Result : Instance do
-         case File_System.Open_Write (Filename) is
-            when File_System.Ok =>
-               Result.Error := Ok;
-            when others =>
-               Result.Error := Unknown_Error;
-         end case;
-      end return;
-   end Open;
-
-   -----------
-   -- Close --
-   -----------
-
-   procedure Close (This : in out Instance) is
-   begin
-      File_System.Close;
-   end Close;
-
-   ------------
-   -- Status --
-   ------------
-
-   function Status (This : Instance) return Storage_Error
-   is (This.Error);
 
    ------------------
    -- Start_Global --
@@ -130,7 +40,7 @@ package body WNM.Project.Storage.File_Out is
    procedure Start_Chord_Settings (This : in out Instance; C : Chords) is
    begin
       This.Push (Chord_Section);
-      This.Push (HAL.UInt32 (C'Enum_Rep));
+      This.Push (Out_UInt (C'Enum_Rep));
    end Start_Chord_Settings;
 
    --------------------------
@@ -140,7 +50,7 @@ package body WNM.Project.Storage.File_Out is
    procedure Start_Track_Settings (This : in out Instance; T : Tracks) is
    begin
       This.Push (Track_Section);
-      This.Push (HAL.UInt32 (T'Enum_Rep));
+      This.Push (Out_UInt (T'Enum_Rep));
    end Start_Track_Settings;
 
    --------------------
@@ -161,7 +71,7 @@ package body WNM.Project.Storage.File_Out is
    is
    begin
       This.Push (Step_Section);
-      This.Push (HAL.UInt32 (S'Enum_Rep));
+      This.Push (Out_UInt (S'Enum_Rep));
    end Start_Step_Settings;
 
    ---------------------------
@@ -172,7 +82,7 @@ package body WNM.Project.Storage.File_Out is
    is
    begin
       This.Push (Seq_Change_Pattern);
-      This.Push (HAL.UInt32 (P'Enum_Rep));
+      This.Push (Out_UInt (P'Enum_Rep));
    end Change_Pattern_In_Seq;
 
    -------------------------
@@ -183,7 +93,7 @@ package body WNM.Project.Storage.File_Out is
    is
    begin
       This.Push (Seq_Change_Track);
-      This.Push (HAL.UInt32 (T'Enum_Rep));
+      This.Push (Out_UInt (T'Enum_Rep));
    end Change_Track_In_Seq;
 
    -----------------
@@ -204,69 +114,6 @@ package body WNM.Project.Storage.File_Out is
       This.Push (End_Of_File);
    end End_File;
 
-   --------------
-   -- Push_Gen --
-   --------------
-
-   procedure Push_Gen (This : in out Instance; A : T) is
-      Success : Boolean;
-   begin
-      if This.Status /= Ok then
-         return;
-      end if;
-
-      pragma Compile_Time_Error (T'Last'Enum_Rep > Out_UInt'Last,
-                                 "Invalid type size for storage output");
-
-      pragma Compile_Time_Error (T'First'Enum_Rep < Out_UInt'First,
-                                 "Invalid type size for storage output");
-
-      --  pragma Compile_Time_Error (T'Last'Enum_Rep >= End_Of_Section_Value,
-      --                             "Invalid type size for storage output");
-
-      Encode (Sink, HAL.UInt32 (A'Enum_Rep), Success);
-
-      if not Success then
-         This.Error := Unknown_Error;
-      else
-         This.Error := Ok;
-      end if;
-
-   end Push_Gen;
-
-   ----------
-   -- Push --
-   ----------
-
-   procedure Push (This : in out Instance; A : HAL.UInt32) is
-      procedure Push_G is new Push_Gen (HAL.UInt32);
-   begin
-      Push_G (This, A);
-   end Push;
-
-   ----------
-   -- Push --
-   ----------
-
-   procedure Push (This : in out Instance; A : Character) is
-      procedure Push_G is new Push_Gen (Character);
-   begin
-      Push_G (This, A);
-   end Push;
-
-   ----------
-   -- Push --
-   ----------
-
-   procedure Push (This : in out Instance; A : String) is
-   begin
-      if A'Length >= Max_Str_Len_In_Storage then
-         raise Program_Error with "String too long for storage";
-      end if;
-      This.Push (HAL.UInt32 (A'Length));
-      This.Error := Write (A'Address, A'Length);
-   end Push;
-
    ----------
    -- Push --
    ----------
@@ -274,7 +121,7 @@ package body WNM.Project.Storage.File_Out is
    procedure Push (This : in out Instance; A : Beat_Per_Minute) is
       procedure Push_G is new Push_Gen (Beat_Per_Minute);
    begin
-      Push_G (This, A);
+      Push_G (Parent (This), A);
    end Push;
 
    ----------
@@ -284,7 +131,7 @@ package body WNM.Project.Storage.File_Out is
    procedure Push (This : in out Instance; A : Step_Settings) is
       procedure Push_G is new Push_Gen (Step_Settings);
    begin
-      Push_G (This, A);
+      Push_G (Parent (This), A);
    end Push;
 
    ----------
@@ -294,7 +141,7 @@ package body WNM.Project.Storage.File_Out is
    procedure Push (This : in out Instance; A : Track_Settings) is
       procedure Push_G is new Push_Gen (Track_Settings);
    begin
-      Push_G (This, A);
+      Push_G (Parent (This), A);
    end Push;
 
    ----------
@@ -304,7 +151,7 @@ package body WNM.Project.Storage.File_Out is
    procedure Push (This : in out Instance; A : Chord_Setting_Kind) is
       procedure Push_G is new Push_Gen (Chord_Setting_Kind);
    begin
-      Push_G (This, A);
+      Push_G (Parent (This), A);
    end Push;
 
    ----------
@@ -314,7 +161,7 @@ package body WNM.Project.Storage.File_Out is
    procedure Push (This : in out Instance; A : Token_Kind) is
       procedure Push_G is new Push_Gen (Token_Kind);
    begin
-      Push_G (This, A);
+      Push_G (Parent (This), A);
    end Push;
 
 end WNM.Project.Storage.File_Out;

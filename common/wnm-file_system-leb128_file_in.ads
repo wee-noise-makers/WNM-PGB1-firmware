@@ -19,38 +19,54 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with WNM.File_System;
+
 with WNM.File_System.LEB128_File_Out;
 
-private package WNM.Project.Storage.File_Out is
+package WNM.File_System.LEB128_File_In is
 
-   subtype Parent is File_System.LEB128_File_Out.Instance;
+   type In_UInt is new LEB128_File_Out.Out_UInt;
+
    type Instance
-   is new Parent with
+   is tagged limited
    private;
 
-   procedure Start_Global (This : in out Instance);
+   function Open (Filename : String) return Instance;
 
-   procedure Start_Chord_Settings (This : in out Instance; C : Chords);
-   procedure Start_Track_Settings (This : in out Instance; T : Tracks);
+   procedure Close (This : in out Instance);
 
-   procedure Start_Sequence (This : in out Instance);
-   procedure Start_Step_Settings (This : in out Instance;
-                                  S : Sequencer_Steps);
-   procedure Change_Pattern_In_Seq (This : in out Instance; P : Patterns);
-   procedure Change_Track_In_Seq (This : in out Instance; T : Tracks);
-   procedure End_Section (This : in out Instance);
-   procedure End_File (This : in out Instance);
+   function Status (This : Instance) return File_System.Storage_Error;
 
-   procedure Push (This : in out Instance; A : Beat_Per_Minute);
-   procedure Push (This : in out Instance; A : Step_Settings);
-   procedure Push (This : in out Instance; A : Track_Settings);
-   procedure Push (This : in out Instance; A : Chord_Setting_Kind);
+   procedure Set_Format_Error (This : in out Instance);
+
+   generic
+      type T is range <>;
+   procedure Read_Gen_Int (This : in out Instance; A : out T);
+
+   generic
+      type T is mod <>;
+   procedure Read_Gen_Mod (This : in out Instance; A : out T);
+
+   generic
+      type T is (<>);
+   procedure Read_Gen_Enum (This : in out Instance; A : out T);
+
+   procedure Read (This : in out Instance; A : out In_UInt);
+   procedure Read (This : in out Instance; A : out String);
+
+   generic
+      type T is (<>);
+   procedure Convert_To_Enum
+     (Raw     :     In_UInt;
+      V       : out T;
+      Success : out Boolean);
 
 private
 
    type Instance
-   is new Parent with null record;
+   is tagged limited
+   record
+      Error : File_System.Storage_Error := File_System.Ok;
+   end record;
 
-   procedure Push (This : in out Instance; A : Token_Kind);
-
-end WNM.Project.Storage.File_Out;
+end WNM.File_System.LEB128_File_In;

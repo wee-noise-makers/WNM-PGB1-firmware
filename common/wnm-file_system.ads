@@ -71,6 +71,24 @@ package WNM.File_System is
    --  Move a file From in To, replacing the content of To, if any.
    --  Return True on success.
 
+   type Storage_Error is (Ok,
+                          Out_Of_Space,
+                          Project_Do_Not_Exist,
+                          Disk_Error,
+                          Move_Error,
+                          Format_Error,
+                          Unknown_Error);
+
+   function Img (S : Storage_Error) return String
+   is (case S is
+          when Ok => "Ok",
+          when Out_Of_Space => "No space on disk",
+          when Project_Do_Not_Exist => "No project",
+          when Disk_Error => "Disk error",
+          when Move_Error => "Move error",
+          when Format_Error => "Format Error",
+          when Unknown_Error => "Unknown_Error");
+
    ----------
    -- Flux --
    ----------

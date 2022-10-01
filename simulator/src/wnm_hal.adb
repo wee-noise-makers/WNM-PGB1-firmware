@@ -264,6 +264,15 @@ package body WNM_HAL is
       end if;
    end Send_MIDI;
 
+   ----------------
+   -- Power_Down --
+   ----------------
+
+   procedure Power_Down is
+   begin
+      raise Program_Error with "Power Down";
+   end Power_Down;
+
 begin
    if not RtMIDI.Valid (MIDI_Out) then
       raise Program_Error with "Cannot create MIDI device";

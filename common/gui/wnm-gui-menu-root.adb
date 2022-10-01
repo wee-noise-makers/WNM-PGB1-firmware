@@ -23,14 +23,16 @@ with WNM.GUI.Menu.Drawing;           use WNM.GUI.Menu.Drawing;
 with WNM.GUI.Menu.Sample_Select;     use WNM.GUI.Menu.Sample_Select;
 with WNM.GUI.Menu.Text_Dialog;       use WNM.GUI.Menu.Text_Dialog;
 with WNM.GUI.Menu.Sample_Edit;
+with WNM.GUI.Menu.Yes_No_Dialog;
 with WNM.GUI.Menu.Create_Sample;
 with WNM.GUI.Menu.Passthrough;
 with WNM.GUI.Menu.Save_Project;
 with WNM.GUI.Popup;
 with WNM.GUI.Menu.Project_Select;
 
-with WNM.Project.Storage;
 with WNM.Project.Library;
+with WNM.File_System;
+with WNM.Power_Control;
 
 package body WNM.GUI.Menu.Root is
 
@@ -94,24 +96,34 @@ package body WNM.GUI.Menu.Root is
 
                when Edit_Sample =>
                   Menu.Sample_Edit.Push_Window;
+
                when Create_Sample =>
                   Menu.Create_Sample.Push_Window;
+
                when Change_Sample =>
                   Sample_Select.Push_Window;
+
                when Set_Passthrough =>
                   Passthrough.Push_Window;
+
                when Test_Text_Input =>
                   Text_Dialog.Set_Title ("Enter some text");
                   Text_Dialog.Push_Window;
+
                when Shutdown =>
-                  null; -- TODO
+                  Yes_No_Dialog.Set_Title ("Shutdown?");
+                  Yes_No_Dialog.Push_Window;
+
                when others =>
                   null;
             end case;
+
          when Right_Press =>
             Menu.Pop (Exit_Value => None);
+
          when Encoder_Right =>
             null;
+
          when Encoder_Left =>
             if Event.Value > 0 then
                if This.Item /= Menu_Items'Last then
@@ -144,7 +156,8 @@ package body WNM.GUI.Menu.Root is
    -- On_Focus --
    --------------
 
-   overriding procedure On_Focus
+   overriding
+   procedure On_Focus
      (This       : in out Root_Menu;
       Exit_Value : Window_Exit_Value)
    is
@@ -154,21 +167,26 @@ package body WNM.GUI.Menu.Root is
 
             if Exit_Value = Success then
                declare
-                  use Project.Storage;
-                  Err : Project.Storage.Storage_Error;
+                  use WNM.File_System;
+                  Err : File_System.Storage_Error;
                begin
                   Err := Project.Library.Load_Project
                     (Project_Select.Selected);
 
                   if Err /= Ok then
                      GUI.Popup.Display_2L ("Can't Load Project",
-                                           Project.Storage.Img (Err),
+                                           File_System.Img (Err),
                                            1_500_000);
                   else
                      GUI.Popup.Display ("Project Loaded",
                                         500_000);
                   end if;
                end;
+            end if;
+
+         when Shutdown =>
+            if Exit_Value = Success then
+               WNM.Power_Control.Power_Down;
             end if;
 
          when others =>

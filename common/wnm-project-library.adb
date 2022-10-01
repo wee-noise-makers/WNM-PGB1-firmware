@@ -19,16 +19,14 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with HAL;
 with WNM.File_System; use WNM.File_System;
 with WNM.Utils; use WNM.Utils;
+with WNM.Project.Storage;
+with WNM.Persistent;
 
 package body WNM.Project.Library is
 
-   Last_Prj_Filename : constant String := "last_prj.bin";
-   Prj_File_Ext      : constant String := ".wnm_prj";
-
-   G_Last_Loaded : Prj_Index := Invalid_Prj_Entry;
+   Prj_File_Ext : constant String := ".wnm_prj";
 
    G_Names : array (Valid_Prj_Index) of Prj_Entry_Name
      := (others => (others => ' '));
@@ -48,7 +46,7 @@ package body WNM.Project.Library is
    -----------------
 
    function Last_Loaded return Prj_Index
-   is (G_Last_Loaded);
+   is (Persistent.Data.Last_Project);
 
    -----------------
    -- Has_Project --
@@ -106,44 +104,6 @@ package body WNM.Project.Library is
          end if;
       end if;
    end Delete;
-
-   -------------------
-   -- Load_Last_Prj --
-   -------------------
-
-   procedure Load_Last_Prj is
-      use type File_System.File_Signed_Size;
-      Val : HAL.UInt8;
-   begin
-      if File_System.Open_Read (Last_Prj_Filename) /= Ok then
-         G_Last_Loaded := Invalid_Prj_Entry;
-      else
-         if File_System.Read (Val'Address, 1) = 1 then
-            G_Last_Loaded := Prj_Index (Val);
-         end if;
-
-         File_System.Close;
-      end if;
-   end Load_Last_Prj;
-
-   -------------------
-   -- Save_Last_Prj --
-   -------------------
-
-   procedure Save_Last_Prj is
-      use type File_System.File_Signed_Size;
-      Val : constant HAL.UInt8 := HAL.UInt8 (G_Last_Loaded);
-   begin
-      if File_System.Open_Write (Last_Prj_Filename) /= Ok then
-         raise Program_Error;
-      else
-         if File_System.Write (Val'Address, 1) /= 1 then
-            raise Program_Error;
-         end if;
-
-         File_System.Close;
-      end if;
-   end Save_Last_Prj;
 
    ------------------
    -- Load_Library --
@@ -207,13 +167,12 @@ package body WNM.Project.Library is
 
    begin
       For_Each_File ("/");
-      Load_Last_Prj;
 
-      if G_Last_Loaded /= Invalid_Prj_Entry then
+      if Persistent.Data.Last_Project /= Invalid_Prj_Entry then
          declare
-            Unused : Storage.Storage_Error;
+            Unused : File_System.Storage_Error;
          begin
-            Unused := Load_Project (G_Last_Loaded);
+            Unused := Load_Project (Persistent.Data.Last_Project);
          end;
       end if;
    end Load_Library;
@@ -223,20 +182,18 @@ package body WNM.Project.Library is
    ------------------
 
    function Load_Project (Index : Valid_Prj_Index)
-                          return Storage.Storage_Error
+                          return File_System.Storage_Error
    is
-      use Storage;
-      Result : Storage.Storage_Error;
+      Result : File_System.Storage_Error;
    begin
       if not G_Has_Prj (Index) then
-         return Storage.Project_Do_Not_Exist;
+         return File_System.Project_Do_Not_Exist;
       end if;
 
       Result := Storage.Load (Entry_Filename (Index));
 
       if Result = Ok then
-         G_Last_Loaded := Index;
-         Save_Last_Prj;
+         Persistent.Data.Last_Project := Index;
       end if;
 
       return Result;
@@ -247,11 +204,10 @@ package body WNM.Project.Library is
    ------------------
 
    function Save_Project (Index : Valid_Prj_Index)
-                          return Storage.Storage_Error
+                          return File_System.Storage_Error
    is
-      use Storage;
       Tmp_Filename : constant String := "tmp.tmp_prj";
-      Result : Storage.Storage_Error;
+      Result : File_System.Storage_Error;
    begin
 
       Result := Storage.Save (Tmp_Filename);
@@ -265,8 +221,7 @@ package body WNM.Project.Library is
       end if;
 
       G_Has_Prj (Index) := True;
-      G_Last_Loaded := Index;
-      Save_Last_Prj;
+      Persistent.Data.Last_Project := Index;
 
       return Ok;
    end Save_Project;
@@ -277,11 +232,9 @@ package body WNM.Project.Library is
 
    function Save_Project_With_Name (Index : Valid_Prj_Index;
                                     Name  : String)
-                                    return Storage.Storage_Error
+                                    return File_System.Storage_Error
    is
-      use Storage;
-
-      Result : Storage.Storage_Error;
+      Result : File_System.Storage_Error;
    begin
       if not Has_Project (Index) then
          Copy_Str (Name, G_Names (Index));

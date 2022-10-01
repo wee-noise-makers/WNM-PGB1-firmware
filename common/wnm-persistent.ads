@@ -19,38 +19,21 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.File_System.LEB128_File_Out;
+with WNM.Project.Library;
 
-private package WNM.Project.Storage.File_Out is
+package WNM.Persistent is
 
-   subtype Parent is File_System.LEB128_File_Out.Instance;
-   type Instance
-   is new Parent with
-   private;
+   type Persistent_Data is record
+      Last_Project : WNM.Project.Library.Prj_Index;
+   end record;
 
-   procedure Start_Global (This : in out Instance);
+   Default : Persistent_Data :=
+     (Last_Project => WNM.Project.Library.Invalid_Prj_Entry);
 
-   procedure Start_Chord_Settings (This : in out Instance; C : Chords);
-   procedure Start_Track_Settings (This : in out Instance; T : Tracks);
+   Data : Persistent_Data := Default;
 
-   procedure Start_Sequence (This : in out Instance);
-   procedure Start_Step_Settings (This : in out Instance;
-                                  S : Sequencer_Steps);
-   procedure Change_Pattern_In_Seq (This : in out Instance; P : Patterns);
-   procedure Change_Track_In_Seq (This : in out Instance; T : Tracks);
-   procedure End_Section (This : in out Instance);
-   procedure End_File (This : in out Instance);
+   procedure Save;
 
-   procedure Push (This : in out Instance; A : Beat_Per_Minute);
-   procedure Push (This : in out Instance; A : Step_Settings);
-   procedure Push (This : in out Instance; A : Track_Settings);
-   procedure Push (This : in out Instance; A : Chord_Setting_Kind);
+   procedure Load;
 
-private
-
-   type Instance
-   is new Parent with null record;
-
-   procedure Push (This : in out Instance; A : Token_Kind);
-
-end WNM.Project.Storage.File_Out;
+end WNM.Persistent;

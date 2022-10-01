@@ -19,46 +19,17 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-private with HAL;
+with WNM.File_System;
 
 package WNM.Project.Storage is
 
-   type Storage_Error is (Ok,
-                          Out_Of_Space,
-                          Project_Do_Not_Exist,
-                          Disk_Error,
-                          Move_Error,
-                          Format_Error,
-                          Unknown_Error);
+   function Save (Filename : String) return File_System.Storage_Error;
 
-   function Img (S : Storage_Error) return String
-   is (case S is
-          when Ok => "Ok",
-          when Out_Of_Space => "No space on disk",
-          when Project_Do_Not_Exist => "No project",
-          when Disk_Error => "Disk error",
-          when Move_Error => "Move error",
-          when Format_Error => "Format Error",
-          when Unknown_Error => "Unknown_Error");
-
-   function Save (Filename : String) return Storage_Error;
-
-   function Load (Filename : String) return Storage_Error;
+   function Load (Filename : String) return File_System.Storage_Error;
 
    End_Of_Section_Value : constant := 255;
 
 private
-
-   Max_Str_Len_In_Storage : constant := 253;
-
-   subtype In_UInt is HAL.UInt32;
-   subtype Out_UInt is HAL.UInt32;
-
-   generic
-      type T is (<>);
-   procedure Convert_To_Enum (Raw     :     In_UInt;
-                              V       : out T;
-                              Success : out Boolean);
 
    type Token_Kind is (Global_Section,
                        Track_Section,

@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2022 Fabien Chouteau                    --
+--                  Copyright (C) 2016-2022 Fabien Chouteau                  --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,38 +19,21 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.File_System.LEB128_File_Out;
+with WNM.Persistent;
+with WNM_HAL;
 
-private package WNM.Project.Storage.File_Out is
+package body WNM.Power_Control is
 
-   subtype Parent is File_System.LEB128_File_Out.Instance;
-   type Instance
-   is new Parent with
-   private;
+   ----------------
+   -- Power_Down --
+   ----------------
 
-   procedure Start_Global (This : in out Instance);
+   procedure Power_Down is
+   begin
+      Persistent.Save;
+      --  TODO: save the current project in a special file to load it at
+      --  startup.
+      WNM_HAL.Power_Down;
+   end Power_Down;
 
-   procedure Start_Chord_Settings (This : in out Instance; C : Chords);
-   procedure Start_Track_Settings (This : in out Instance; T : Tracks);
-
-   procedure Start_Sequence (This : in out Instance);
-   procedure Start_Step_Settings (This : in out Instance;
-                                  S : Sequencer_Steps);
-   procedure Change_Pattern_In_Seq (This : in out Instance; P : Patterns);
-   procedure Change_Track_In_Seq (This : in out Instance; T : Tracks);
-   procedure End_Section (This : in out Instance);
-   procedure End_File (This : in out Instance);
-
-   procedure Push (This : in out Instance; A : Beat_Per_Minute);
-   procedure Push (This : in out Instance; A : Step_Settings);
-   procedure Push (This : in out Instance; A : Track_Settings);
-   procedure Push (This : in out Instance; A : Chord_Setting_Kind);
-
-private
-
-   type Instance
-   is new Parent with null record;
-
-   procedure Push (This : in out Instance; A : Token_Kind);
-
-end WNM.Project.Storage.File_Out;
+end WNM.Power_Control;

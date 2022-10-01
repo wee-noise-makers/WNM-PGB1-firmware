@@ -19,19 +19,15 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with WNM.File_System;
+with WNM.File_System.LEB128_File_In;
+
 private package WNM.Project.Storage.File_In is
 
+   subtype Parent is File_System.LEB128_File_In.Instance;
    type Instance
-   is tagged limited
+   is new Parent with
    private;
-
-   function Open (Filename : String) return Instance;
-
-   procedure Close (This : in out Instance);
-
-   function Status (This : Instance) return Storage_Error;
-
-   procedure Set_Format_Error (This : in out Instance);
 
    generic
       type T is range <>;
@@ -45,18 +41,12 @@ private package WNM.Project.Storage.File_In is
       type T is (<>);
    procedure Read_Gen_Enum (This : in out Instance; A : out T);
 
-   procedure Read (This : in out Instance; A : out In_UInt);
    procedure Read (This : in out Instance; A : out Token_Kind);
    procedure Read (This : in out Instance; A : out Keyboard_Value);
-
-   procedure Read (This : in out Instance; A : out String);
 
 private
 
    type Instance
-   is tagged limited
-   record
-      Error : Storage_Error := Ok;
-   end record;
+   is new Parent with null record;
 
 end WNM.Project.Storage.File_In;

@@ -25,7 +25,7 @@ with WNM.GUI.Menu.Yes_No_Dialog;
 
 with WNM.GUI.Popup;
 
-with WNM.Project.Storage;
+with WNM.File_System;
 
 package body WNM.GUI.Menu.Save_Project is
 
@@ -69,12 +69,12 @@ package body WNM.GUI.Menu.Save_Project is
       -- Save_Result --
       -----------------
 
-      procedure Save_Result (R : Project.Storage.Storage_Error) is
-         use Project.Storage;
+      procedure Save_Result (R : File_System.Storage_Error) is
+         use File_System;
       begin
          if R /= Ok then
             GUI.Popup.Display_2L ("Can't Save Project",
-                                  Project.Storage.Img (R),
+                                  File_System.Img (R),
                                   1_500_000);
          else
             GUI.Popup.Display ("Project Saved",

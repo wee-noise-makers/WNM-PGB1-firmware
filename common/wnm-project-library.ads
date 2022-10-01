@@ -19,7 +19,7 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Project.Storage;
+with WNM.File_System;
 
 package WNM.Project.Library is
 
@@ -43,13 +43,13 @@ package WNM.Project.Library is
    procedure Load_Library;
 
    function Load_Project (Index : Valid_Prj_Index)
-                          return Storage.Storage_Error;
+                          return File_System.Storage_Error;
 
    function Save_Project (Index : Valid_Prj_Index)
-                          return Storage.Storage_Error;
+                          return File_System.Storage_Error;
 
    function Save_Project_With_Name (Index : Valid_Prj_Index;
                                     Name  : String)
-                                    return Storage.Storage_Error;
+                                    return File_System.Storage_Error;
 
 end WNM.Project.Library;

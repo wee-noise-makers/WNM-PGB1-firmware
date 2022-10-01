@@ -10,6 +10,7 @@ with WNM.Synth;
 with WNM.File_System;
 with WNM.Sample_Library;
 with WNM.Project.Library;
+with WNM.Persistent;
 with WNM.Time; use WNM.Time;
 
 with WNM.GUI.Menu.Track_Settings;
@@ -20,6 +21,7 @@ procedure WNM_PS1_Main is
 begin
 
    WNM.File_System.Mount;
+   WNM.Persistent.Load;
    WNM.Sample_Library.Load;
    WNM.Project.Library.Load_Library;
 

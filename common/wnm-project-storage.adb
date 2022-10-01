@@ -78,9 +78,11 @@
 --  <End of File>
 
 with HAL; use HAL;
+with WNM.File_System.LEB128_File_Out; use WNM.File_System.LEB128_File_Out;
+with WNM.File_System.LEB128_File_In; use WNM.File_System.LEB128_File_In;
 with WNM.Project.Storage.File_Out;
 with WNM.Project.Storage.File_In;
-with WNM.File_System;
+with WNM.File_System; use WNM.File_System;
 
 package body WNM.Project.Storage is
 
@@ -128,13 +130,13 @@ package body WNM.Project.Storage is
                            when Condition =>
                               if Step.Trig /= Default_Step.Trig then
                                  Output.Push (Set);
-                                 Output.Push (UInt32 (Step.Trig'Enum_Rep));
+                                 Output.Push (Out_UInt (Step.Trig'Enum_Rep));
                               end if;
                            when Repeat =>
 
                               if Step.Repeat /= Default_Step.Repeat then
                                  Output.Push (Set);
-                                 Output.Push (UInt32 (Step.Repeat'Enum_Rep));
+                                 Output.Push (Out_UInt (Step.Repeat'Enum_Rep));
                               end if;
 
                            when Repeat_Rate =>
@@ -142,56 +144,57 @@ package body WNM.Project.Storage is
                               then
                                  Output.Push (Set);
                                  Output.Push
-                                   (UInt32 (Step.Repeat_Rate'Enum_Rep));
+                                   (Out_UInt (Step.Repeat_Rate'Enum_Rep));
                               end if;
 
                            when Note_Mode =>
                               if Step.Note_Mode /= Default_Step.Note_Mode then
                                  Output.Push (Set);
                                  Output.Push
-                                   (UInt32 (Step.Note_Mode'Enum_Rep));
+                                   (Out_UInt (Step.Note_Mode'Enum_Rep));
                               end if;
 
                            when Note =>
                               if Step.Note /= Default_Step.Note then
                                  Output.Push (Set);
-                                 Output.Push (UInt32 (Step.Note));
+                                 Output.Push (Out_UInt (Step.Note));
                               end if;
 
                            when Duration =>
                               if Step.Duration /= Default_Step.Duration then
                                  Output.Push (Set);
-                                 Output.Push (UInt32 (Step.Duration'Enum_Rep));
+                                 Output.Push (Out_UInt
+                                              (Step.Duration'Enum_Rep));
                               end if;
 
                            when Velo =>
                               if Step.Velo /= Default_Step.Velo then
                                  Output.Push (Set);
-                                 Output.Push (UInt32 (Step.Velo));
+                                 Output.Push (Out_UInt (Step.Velo));
                               end if;
 
                            when CC_A =>
                               if Step.CC_Ena (A) then
                                  Output.Push (Set);
-                                 Output.Push (UInt32 (Step.CC_Val (A)));
+                                 Output.Push (Out_UInt (Step.CC_Val (A)));
                               end if;
 
                            when CC_B =>
                               if Step.CC_Ena (B) then
                                  Output.Push (Set);
-                                 Output.Push (UInt32 (Step.CC_Val (B)));
+                                 Output.Push (Out_UInt (Step.CC_Val (B)));
                               end if;
 
                            when CC_C =>
                               if Step.CC_Ena (C) then
                                  Output.Push (Set);
-                                 Output.Push (UInt32 (Step.CC_Val (C)));
+                                 Output.Push (Out_UInt (Step.CC_Val (C)));
                               end if;
 
                            when CC_D =>
                               if Step.CC_Ena (D) then
                                  Output.Push (Set);
-                                 Output.Push (UInt32 (Step.CC_Val (D)));
+                                 Output.Push (Out_UInt (Step.CC_Val (D)));
                               end if;
                         end case;
                      end loop;
@@ -228,40 +231,40 @@ package body WNM.Project.Storage is
 
                case Set is
                   when Track_Mode =>
-                     Output.Push (UInt32 (Track.Mode'Enum_Rep));
+                     Output.Push (Out_UInt (Track.Mode'Enum_Rep));
 
                   when Sample =>
-                     Output.Push (UInt32 (Track.Sample'Enum_Rep));
+                     Output.Push (Out_UInt (Track.Sample'Enum_Rep));
 
                   when Speech_Word =>
-                     Output.Push (UInt32 (Track.Word'Enum_Rep));
+                     Output.Push (Out_UInt (Track.Word'Enum_Rep));
 
                   when Volume =>
-                     Output.Push (UInt32 (Track.Volume));
+                     Output.Push (Out_UInt (Track.Volume));
 
                   when Pan =>
-                     Output.Push (UInt32 (Track.Pan));
+                     Output.Push (Out_UInt (Track.Pan));
 
                   when Arp_Mode =>
-                     Output.Push (UInt32 (Track.Arp_Mode'Enum_Rep));
+                     Output.Push (Out_UInt (Track.Arp_Mode'Enum_Rep));
 
                   when Arp_Notes =>
-                     Output.Push (UInt32 (Track.Arp_Notes'Enum_Rep));
+                     Output.Push (Out_UInt (Track.Arp_Notes'Enum_Rep));
 
                   when MIDI_Chan =>
-                     Output.Push (UInt32 (Track.Chan));
+                     Output.Push (Out_UInt (Track.Chan));
 
                   when CC_A =>
-                     Output.Push (UInt32 (Track.CC (A).Controller));
+                     Output.Push (Out_UInt (Track.CC (A).Controller));
 
                   when CC_B =>
-                     Output.Push (UInt32 (Track.CC (B).Controller));
+                     Output.Push (Out_UInt (Track.CC (B).Controller));
 
                   when CC_C =>
-                     Output.Push (UInt32 (Track.CC (C).Controller));
+                     Output.Push (Out_UInt (Track.CC (C).Controller));
 
                   when CC_D =>
-                     Output.Push (UInt32 (Track.CC (D).Controller));
+                     Output.Push (Out_UInt (Track.CC (D).Controller));
 
                   when CC_Label_A =>
                      Output.Push (Track.CC (A).Label);
@@ -312,14 +315,14 @@ package body WNM.Project.Storage is
             --  mistakes when new settings are introduced.
             for Set in Chord_Setting_Kind loop
 
-               Output.Push (UInt32 (Set'Enum_Rep));
+               Output.Push (Out_UInt (Set'Enum_Rep));
 
                case Set is
                   when Tonic =>
-                     Output.Push (UInt32 (Chord.Tonic));
+                     Output.Push (Out_UInt (Chord.Tonic));
 
                   when Name =>
-                     Output.Push (UInt32 (Chord.Name'Enum_Rep));
+                     Output.Push (Out_UInt (Chord.Name'Enum_Rep));
 
                end case;
 
@@ -345,7 +348,7 @@ package body WNM.Project.Storage is
    procedure Save_Global (Output : in out File_Out.Instance) is
    begin
       Output.Start_Global;
-      Output.Push (UInt32 (Global_Settings'Enum_Rep (BPM)));
+      Output.Push (Out_UInt (Global_Settings'Enum_Rep (BPM)));
       Output.Push (G_Project.BPM);
       Output.End_Section;
    end Save_Global;
@@ -354,7 +357,7 @@ package body WNM.Project.Storage is
    -- Save --
    ----------
 
-   function Save (Filename : String) return Storage_Error is
+   function Save (Filename : String) return File_System.Storage_Error is
 
       Output : File_Out.Instance := File_Out.Open (Filename);
    begin
@@ -643,7 +646,7 @@ package body WNM.Project.Storage is
    -- Load --
    ----------
 
-   function Load (Filename : String) return Storage_Error is
+   function Load (Filename : String) return File_System.Storage_Error is
       Input : File_In.Instance := File_In.Open (Filename);
 
       Token : Token_Kind;
@@ -683,21 +686,5 @@ package body WNM.Project.Storage is
       File_System.Close;
       return Ok;
    end Load;
-
-   ---------------------
-   -- Convert_To_Enum --
-   ---------------------
-
-   procedure Convert_To_Enum (Raw     :     In_UInt;
-                              V       : out T;
-                              Success : out Boolean)
-   is
-   begin
-      V := T'Enum_Val (Raw);
-      Success := True;
-   exception
-      when Constraint_Error =>
-         Success := False;
-   end Convert_To_Enum;
 
 end WNM.Project.Storage;
