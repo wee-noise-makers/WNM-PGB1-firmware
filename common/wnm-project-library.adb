@@ -27,6 +27,7 @@ with WNM.Persistent;
 package body WNM.Project.Library is
 
    Prj_File_Ext : constant String := ".wnm_prj";
+   Shutdown_Save_Filename : constant String := "shutdown.tmp_prj";
 
    G_Names : array (Valid_Prj_Index) of Prj_Entry_Name
      := (others => (others => ' '));
@@ -168,13 +169,12 @@ package body WNM.Project.Library is
    begin
       For_Each_File ("/");
 
-      if Persistent.Data.Last_Project /= Invalid_Prj_Entry then
-         declare
-            Unused : File_System.Storage_Error;
-         begin
-            Unused := Load_Project (Persistent.Data.Last_Project);
-         end;
-      end if;
+      --  Best effort at loading a project that was saved at shutdown
+      declare
+         Unused : File_System.Storage_Error;
+      begin
+         Unused := Storage.Load (Shutdown_Save_Filename);
+      end;
    end Load_Library;
 
    ------------------
@@ -247,5 +247,15 @@ package body WNM.Project.Library is
          return Result;
       end if;
    end Save_Project_With_Name;
+
+   ---------------------------
+   -- Try_Save_For_Shutdown --
+   ---------------------------
+
+   procedure Try_Save_For_Shutdown is
+      Unused : File_System.Storage_Error;
+   begin
+      Unused := Storage.Save (Shutdown_Save_Filename);
+   end Try_Save_For_Shutdown;
 
 end WNM.Project.Library;

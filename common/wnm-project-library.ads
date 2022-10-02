@@ -52,4 +52,10 @@ package WNM.Project.Library is
                                     Name  : String)
                                     return File_System.Storage_Error;
 
+   procedure Try_Save_For_Shutdown;
+   --  Try to save the current project in a special file before shuting
+   --  down the device. In case of problem saving the project, the procedure
+   --  will silently fail as this is "best effort" attempt at preserving the
+   --  current state of the project.
+
 end WNM.Project.Library;

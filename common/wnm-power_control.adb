@@ -21,6 +21,7 @@
 
 with WNM.Persistent;
 with WNM_HAL;
+with WNM.Project.Library;
 
 package body WNM.Power_Control is
 
@@ -31,8 +32,7 @@ package body WNM.Power_Control is
    procedure Power_Down is
    begin
       Persistent.Save;
-      --  TODO: save the current project in a special file to load it at
-      --  startup.
+      WNM.Project.Library.Try_Save_For_Shutdown;
       WNM_HAL.Power_Down;
    end Power_Down;
 
