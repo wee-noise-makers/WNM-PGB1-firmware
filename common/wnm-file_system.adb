@@ -10,7 +10,7 @@ with WNM.GUI.Bitmap_Fonts;
 package body WNM.File_System is
 
    File_Buffer : Storage_Array
-     (1 .. Storage_Count (Get_LFS_Config.Block_Size));
+     (1 .. WNM_Configuration.Storage.Sector_Size);
 
    File_Conf : aliased constant Littlefs.lfs_file_config :=
      (Buffer => File_Buffer'Address,

@@ -20,6 +20,7 @@
 -------------------------------------------------------------------------------
 
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
+with WNM.Persistent;
 
 package body WNM.GUI.Menu.Project_Select is
 
@@ -88,11 +89,16 @@ package body WNM.GUI.Menu.Project_Select is
    -- On_Pushed --
    ---------------
 
-   overriding procedure On_Pushed
+   overriding
+   procedure On_Pushed
      (This  : in out Project_Select_Window)
    is
    begin
-      This.Index := Valid_Prj_Index'First;
+      if Persistent.Data.Last_Project in Valid_Prj_Index then
+         This.Index := Persistent.Data.Last_Project;
+      else
+         This.Index := Valid_Prj_Index'First;
+      end if;
    end On_Pushed;
 
    --------------

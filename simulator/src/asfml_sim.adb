@@ -21,19 +21,14 @@ with Sf; use Sf;
 with WNM.Synth;
 with WNM.Audio;
 
+with ASFML_SIM_Menu;
+with ASFML_Sim_Resources;
 with Ada.Real_Time; use Ada.Real_Time;
 with Sf.System.Vector2; use Sf.System.Vector2;
 
 with GNAT.Command_Line; use GNAT.Command_Line;
 
-with Resources;
-
-with Wnm_Ps1_Simulator_Config;
-
 package body ASFML_Sim is
-
-   package Sim_Resources
-   is new Resources (Wnm_Ps1_Simulator_Config.Crate_Name);
 
    Font : Sf.Graphics.sfFont_Ptr;
 
@@ -303,7 +298,7 @@ package body ASFML_Sim is
       setTexture (Sprite_Right, Framebuffer_Texture);
 
       BG_Texture := Sf.Graphics.Texture.createFromFile
-        (Sim_Resources.Resource_Path & "/WNM-PS1.png");
+        (ASFML_Sim_Resources.Resource_Path & "/WNM-PS1.png");
 
       BG_Sprite := create;
       if BG_Sprite = null then
@@ -314,13 +309,13 @@ package body ASFML_Sim is
       setTexture (BG_Sprite, BG_Texture);
 
       Font := Sf.Graphics.Font.createFromFile
-        (Sim_Resources.Resource_Path & "/ZeroesOne.ttf");
+        (ASFML_Sim_Resources.Resource_Path & "/ZeroesOne.ttf");
       if Font = null then
          Put_Line ("Could not load font");
          GNAT.OS_Lib.OS_Exit (1);
       end if;
 
-      Window := create (Mode, "PyGamer simulator",
+      Window := create (Mode, "WNM-PS1 Simulator",
                         sfResize or sfClose, Params);
       if Window = null then
          Put_Line ("Failed to create window");
@@ -357,28 +352,46 @@ package body ASFML_Sim is
                Set_View (Letter_Box_View, Event.size.width, Event.size.height);
             end if;
 
-            if Event.eventType in sfEvtKeyPressed then
-               if Event.key.code = sfKeyEscape then
-                  close (Window);
-                  Put_Line ("Attempting to close");
-                  GNAT.OS_Lib.OS_Exit (0);
-               elsif Event.key.code = sfKeyRight then
-                  Encoder_Left := 1;
-               elsif Event.key.code = sfKeyLeft then
-                  Encoder_Left := -1;
-               elsif Event.key.code = sfKeyDown then
-                  Encoder_Right := -1;
-               elsif Event.key.code = sfKeyUp then
-                  Encoder_Right := 1;
-               end if;
-            end if;
+            if Sim_Clock.Is_Held then
+               case ASFML_SIM_Menu.Event_Handler (Event) is
+                  when ASFML_SIM_Menu.None =>
+                     null;
+                  when ASFML_SIM_Menu.Resume =>
+                     Sim_Clock.Release;
+                  when ASFML_SIM_Menu.Quit =>
+                     close (Window);
+                     Put_Line ("Attempting to close");
+                     GNAT.OS_Lib.OS_Exit (0);
+               end case;
 
-            if Event.eventType in sfEvtKeyPressed | sfEvtKeyReleased then
-               for K in Button loop
-                  if Event.key.code = To_SFML_Evt (K) then
-                     SFML_Pressed (K) := Event.eventType = sfEvtKeyPressed;
+            else
+
+               if Event.eventType in sfEvtKeyPressed then
+                  if Event.key.code = sfKeyEscape then
+                     Sim_Clock.Hold;
+                     --  close (Window);
+                     --  Put_Line ("Attempting to close");
+                     --  GNAT.OS_Lib.OS_Exit (0);
+                  elsif Event.key.code = sfKeyRight then
+                     Encoder_Left := 1;
+                  elsif Event.key.code = sfKeyLeft then
+                     Encoder_Left := -1;
+                  elsif Event.key.code = sfKeyDown then
+                     Encoder_Right := -1;
+                  elsif Event.key.code = sfKeyUp then
+                     Encoder_Right := 1;
+                  elsif Event.key.code = sfKeyN then
+                     Sim_Clock.Release;
                   end if;
-               end loop;
+               end if;
+
+               if Event.eventType in sfEvtKeyPressed | sfEvtKeyReleased then
+                  for K in Button loop
+                     if Event.key.code = To_SFML_Evt (K) then
+                        SFML_Pressed (K) := Event.eventType = sfEvtKeyPressed;
+                     end if;
+                  end loop;
+               end if;
             end if;
          end loop;
 
@@ -400,6 +413,10 @@ package body ASFML_Sim is
          drawSprite (Window, Screen_Sprite);
          Draw_Buttons (Window);
 
+         if Sim_Clock.Is_Held then
+            ASFML_SIM_Menu.Render (Window, Font);
+         end if;
+
          setView (Window, Letter_Box_View);
          display (Window);
 
@@ -419,8 +436,13 @@ package body ASFML_Sim is
    task body Synth_Task is
    begin
       loop
-         WNM.Synth.Next_Points (Flip_Out_Buffers (Flip),
-                                Flip_In_Buffers (Flip));
+         if Sim_Clock.Is_Held then
+            --  Simulation stopped
+            Flip_Out_Buffers (Flip) := (others => (0, 0));
+         else
+            WNM.Synth.Next_Points (Flip_Out_Buffers (Flip),
+                                   Flip_In_Buffers (Flip));
+         end if;
 
          Ada.Synchronous_Task_Control.Suspend_Until_True (Synth_Trig);
          Ada.Synchronous_Task_Control.Set_False (Synth_Trig);
@@ -480,6 +502,9 @@ package body ASFML_Sim is
 
 begin
 
+   Sim_Clock.Reset;
+   Sim_Clock.Hold;
+
    declare
       Config : Command_Line_Configuration;
    begin
@@ -489,6 +514,13 @@ begin
          "-i:",
          Long_Switch => "--img=",
          Help => "Internal storage image (littlefs format)");
+
+      Define_Switch
+        (Config,
+         ASFML_Sim.Switch_Storage_TOML'Access,
+         "-t:",
+         Long_Switch => "--toml=",
+         Help => "Make storage image from TOML description");
 
       Set_Usage
         (Config,

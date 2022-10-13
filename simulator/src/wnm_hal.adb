@@ -1,4 +1,3 @@
-with Ada.Calendar; use Ada.Calendar;
 with Ada.Synchronous_Task_Control;
 
 with GNAT.Bounded_Buffers;
@@ -169,10 +168,8 @@ package body WNM_HAL is
    -- Clock --
    -----------
 
-   Start_Time : constant Ada.Calendar.Time := Ada.Calendar.Clock;
-
    function Clock return Time_Microseconds is
-      Delt_Sec : constant Duration := Ada.Calendar.Clock - Start_Time;
+      Delt_Sec : constant Duration := ASFML_Sim.Sim_Clock.Elapsed;
    begin
       return HAL.UInt64 (Delt_Sec * 1_000_000.0);
    end Clock;
@@ -265,12 +262,28 @@ package body WNM_HAL is
    end Send_MIDI;
 
    ----------------
+   -- Start_Hook --
+   ----------------
+
+   procedure Start_Hook is
+   begin
+      ASFML_Sim.Sim_Clock.Hold;
+
+      while ASFML_Sim.Sim_Clock.Is_Held loop
+         delay 0.1;
+      end loop;
+   end Start_Hook;
+
+   ----------------
    -- Power_Down --
    ----------------
 
    procedure Power_Down is
    begin
-      raise Program_Error with "Power Down";
+      loop
+         ASFML_Sim.Sim_Clock.Hold;
+         delay 0.1;
+      end loop;
    end Power_Down;
 
 begin

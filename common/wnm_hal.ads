@@ -115,6 +115,7 @@ package WNM_HAL is
    -- Power --
    -----------
 
+   procedure Start_Hook;
    procedure Power_Down;
 
 end WNM_HAL;

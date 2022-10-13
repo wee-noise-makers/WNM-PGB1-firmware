@@ -39,8 +39,16 @@ package body WNM.Project.Library is
    -- Entry_Filename --
    --------------------
 
-   function Entry_Filename (Index : Valid_Prj_Index) return String
-   is ("00" & G_Names (Index) & Prj_File_Ext);
+   function Entry_Filename (Index : Valid_Prj_Index) return String is
+      Idx_Img : constant String := Index'Img;
+      Trim : constant String := Idx_Img (Idx_Img'First + 1 .. Idx_Img'Last);
+      Pad  : constant String :=
+        (if Trim'Length = 1
+         then "0" & Trim
+         else Trim);
+   begin
+      return Pad & G_Names (Index) & Prj_File_Ext;
+   end Entry_Filename;
 
    -----------------
    -- Last_Loaded --

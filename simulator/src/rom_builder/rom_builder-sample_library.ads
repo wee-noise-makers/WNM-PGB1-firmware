@@ -35,8 +35,9 @@ package ROM_Builder.Sample_Library is
                          Index : Valid_Sample_Index;
                          Len   : Sample_Point_Count);
 
-   procedure Load_From_TOML (This : in out Instance;
-                             Root : TOML.TOML_Value);
+   procedure Load_From_TOML (This     : in out Instance;
+                             Root     :        TOML.TOML_Value;
+                             TOML_Dir :        String);
 
    procedure Write_Entry_Info
      (This :        Instance;

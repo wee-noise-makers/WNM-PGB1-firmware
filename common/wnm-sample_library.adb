@@ -19,6 +19,8 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with Ada.Text_IO;
+
 with WNM.File_System;
 with System.Address_To_Access_Conversions;
 
@@ -43,7 +45,9 @@ package body WNM.Sample_Library is
 
    function Entry_Name (Index : Sample_Index) return Sample_Entry_Name is
    begin
-      if Index /= Invalid_Sample_Entry and then Entries (Index).Used then
+      if Index = Invalid_Sample_Entry then
+         return "--  Invalid  --";
+      elsif Entries (Index).Used then
          return Entries (Index).Name;
       else
          return "-- No Sample --";
@@ -136,6 +140,7 @@ package body WNM.Sample_Library is
    begin
       if File_System.Open_Read (Sample_Entries_Filename) /= File_System.Ok
       then
+         Ada.Text_IO.Put_Line ("Cannot open Sample Entries file...");
          return;
       end if;
 

@@ -75,8 +75,9 @@ package body ROM_Builder.Sample_Library is
    -- Load_From_TOML --
    --------------------
 
-   procedure Load_From_TOML (This : in out Instance;
-                             Root : TOML.TOML_Value)
+   procedure Load_From_TOML (This     : in out Instance;
+                             Root     :        TOML.TOML_Value;
+                             TOML_Dir :        String)
    is
       use TOML;
       Key : constant String := "samples";
@@ -101,7 +102,7 @@ package body ROM_Builder.Sample_Library is
          end if;
 
          This.Set_Name (Index, Name.As_String);
-         This.Load_From_File (Index, File.As_String);
+         This.Load_From_File (Index, TOML_Dir & "/" & File.As_String);
 
       end Load_Single;
 

@@ -60,6 +60,7 @@ package WNM.GUI.Menu is
 
    procedure On_Pushed (This  : in out Menu_Window)
    is abstract;
+
    procedure On_Focus (This       : in out Menu_Window;
                        Exit_Value : Window_Exit_Value)
    is abstract;

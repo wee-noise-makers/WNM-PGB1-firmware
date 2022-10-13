@@ -1,7 +1,8 @@
 with "config/wnm_rom_builder_config.gpr";
 project Wnm_Rom_Builder is
 
-   for Source_Dirs use ("src", "../../common/");
+   for Source_Dirs use ("../../simulator/src/rom_builder/",
+                        "../../common/");
    for Object_Dir use "obj/" & Wnm_Rom_Builder_Config.Build_Profile;
    for Create_Missing_Dirs use "True";
    for Exec_Dir use "bin";

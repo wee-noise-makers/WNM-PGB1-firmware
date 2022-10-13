@@ -2,6 +2,8 @@ with Ada.Text_IO;
 with Ada.Exceptions;
 with GNAT.OS_Lib;
 
+with WNM_HAL;
+
 with WNM.Project.Step_Sequencer;
 with WNM.UI;
 with WNM.LEDs;
@@ -19,6 +21,8 @@ procedure WNM_PS1_Main is
    Next_Start : Time_Microseconds;
 
 begin
+
+   WNM_HAL.Start_Hook;
 
    WNM.File_System.Mount;
    WNM.Persistent.Load;

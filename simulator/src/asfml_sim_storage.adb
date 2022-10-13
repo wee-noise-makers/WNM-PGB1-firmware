@@ -1,5 +1,5 @@
 with System.Storage_Elements; use System.Storage_Elements;
-with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Text_IO;
 
 with Littlefs; use Littlefs;
 with Interfaces.C; use Interfaces.C;
@@ -9,9 +9,10 @@ with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 with WNM.Sample_Library;
 
-with ASFML_Sim;
-
 with WNM_Configuration;
+
+with ASFML_Sim_Resources;
+with ROM_Builder.From_TOML;
 
 package body ASFML_SIM_Storage is
 
@@ -22,20 +23,23 @@ package body ASFML_SIM_Storage is
    LFS_Prog_Buffer : Storage_Array (1 .. LFS_Block_Size);
    LFS_Lookahead_Buffer : Storage_Array (1 .. LFS_Block_Size);
 
-   procedure Load_Sample_Data (FD : GNAT.OS_Lib.File_Descriptor);
+   procedure Load_Sample_Data (Img : ROM_Builder.From_TOML.RAM_Image);
+   procedure Save_Sample_Data (Img : ROM_Builder.From_TOML.RAM_Image);
 
    type LFS_Config_Access is access all Standard.Littlefs.LFS_Config;
 
    Config : LFS_Config_Access := null;
-   FD : aliased GNAT.OS_Lib.File_Descriptor;
+   Img : aliased ROM_Builder.From_TOML.RAM_Image;
 
-   package FD_Backend is
-      function Create (FD : aliased GNAT.OS_Lib.File_Descriptor)
+   package RAM_Image_Backend is
+      function Create (Img : aliased ROM_Builder.From_TOML.RAM_Image)
                        return LFS_Config_Access;
 
-   end FD_Backend;
+   end RAM_Image_Backend;
 
-   package body FD_Backend is
+   package body RAM_Image_Backend is
+
+      pragma Warnings (Off, "lower bound test");
 
       function Read (C      : access constant LFS_Config;
                      Block  : LFS_Block;
@@ -71,17 +75,21 @@ package body ASFML_SIM_Storage is
                      return int
       is
          Offset : constant LFS_Offset := Off + C.Block_Size * LFS_Size (Block);
-         FD : GNAT.OS_Lib.File_Descriptor with Address => C.Context;
-      begin
-         GNAT.OS_Lib.Lseek (FD     => FD,
-                            offset => Long_Integer (Offset),
-                            origin => GNAT.OS_Lib.Seek_Set);
 
-         if GNAT.OS_Lib.Read (FD, Buffer, Integer (Size)) = Integer (Size) then
-            return 0;
-         else
-            return LFS_ERR_IO;
+         Dst : Storage_Array (1 .. Storage_Offset (Size))
+           with Address => Buffer;
+
+         Src : Storage_Array (1 .. WNM_Configuration.Storage.FS_Size)
+           with Address => C.Context;
+
+      begin
+         if Block not in 0 .. WNM_Configuration.Storage.FS_Sectors - 1 then
+            raise Program_Error with "Invalid block to read: " & Block'Img;
          end if;
+
+         Dst := Src (Src'First + Storage_Count (Offset) ..
+                       Src'First + Storage_Count (Offset + Size - 1));
+         return 0;
       end Read;
 
       ----------
@@ -96,18 +104,20 @@ package body ASFML_SIM_Storage is
                      return int
       is
          Offset : constant LFS_Offset := Off + C.Block_Size * LFS_Size (Block);
-         FD : GNAT.OS_Lib.File_Descriptor with Address => C.Context;
-      begin
-         GNAT.OS_Lib.Lseek (FD     => FD,
-                            offset => Long_Integer (Offset),
-                            origin => GNAT.OS_Lib.Seek_Set);
+         Src : Storage_Array (1 .. Storage_Offset (Size))
+           with Address => Buffer;
 
-         if GNAT.OS_Lib.Write (FD, Buffer, Integer (Size)) = Integer (Size)
-         then
-            return 0;
-         else
-            return LFS_ERR_IO;
+         Dst : Storage_Array (1 .. WNM_Configuration.Storage.FS_Size)
+           with Address => C.Context;
+
+      begin
+         if Block not in 0 .. WNM_Configuration.Storage.FS_Sectors - 1 then
+            raise Program_Error with "Invalid block to program: " & Block'Img;
          end if;
+
+         Dst (Dst'First + Storage_Count (Offset) ..
+                Dst'First + Storage_Count (Offset + Size - 1)) := Src;
+         return 0;
       end Prog;
 
       -----------
@@ -118,23 +128,24 @@ package body ASFML_SIM_Storage is
                       Block : LFS_Block)
                       return int
       is
+         Size : constant LFS_Size := C.Block_Size;
          Offset : constant LFS_Offset := C.Block_Size * LFS_Size (Block);
-         FD : GNAT.OS_Lib.File_Descriptor with Address => C.Context;
+         Src : constant Storage_Array (1 .. Storage_Offset (Size)) :=
+           (others => 16#FF#);
 
-         Zeros : constant array (1 .. C.Block_Size) of Unsigned_8 :=
-           (others => 0);
+         Dst : Storage_Array (1 .. WNM_Configuration.Storage.FS_Size)
+           with Address => C.Context;
 
-         Size : constant Integer := Integer (C.Block_Size);
+         First : constant Storage_Offset :=
+           Dst'First + Storage_Count (Offset);
+         Last : constant Storage_Offset :=
+           Dst'First + Storage_Count (Offset + Size - 1);
       begin
-         GNAT.OS_Lib.Lseek (FD     => FD,
-                            offset => Long_Integer (Offset),
-                            origin => GNAT.OS_Lib.Seek_Set);
-
-         if GNAT.OS_Lib.Write (FD, Zeros'Address, Size) = Size then
-            return 0;
-         else
-            return LFS_ERR_IO;
+         if Block not in 0 .. WNM_Configuration.Storage.FS_Sectors - 1 then
+            raise Program_Error with "Invalid block to erase: " & Block'Img;
          end if;
+         Dst (First .. Last) := Src;
+         return 0;
       end Erase;
 
       ----------
@@ -151,12 +162,12 @@ package body ASFML_SIM_Storage is
       -- Create --
       ------------
 
-      function Create (FD : aliased GNAT.OS_Lib.File_Descriptor)
+      function Create (Img : aliased ROM_Builder.From_TOML.RAM_Image)
                        return LFS_Config_Access
       is
          Ret : constant LFS_Config_Access := new LFS_Config;
       begin
-         Ret.Context := FD'Address;
+         Ret.Context := Img.FS_Addr;
          Ret.Read := Read'Access;
          Ret.Prog := Prog'Access;
          Ret.Erase := Erase'Access;
@@ -165,7 +176,7 @@ package body ASFML_SIM_Storage is
          Ret.Read_Size := LFS_Block_Size;
          Ret.Prog_Size := LFS_Block_Size;
 
-         Ret.Block_Count := LFS_Block_Size;
+         Ret.Block_Count := WNM_Configuration.Storage.FS_Sectors;
 
          Ret.Block_Cycles := 700;
          Ret.Cache_Size := LFS_Block_Size;
@@ -179,7 +190,7 @@ package body ASFML_SIM_Storage is
          return Ret;
       end Create;
 
-   end FD_Backend;
+   end RAM_Image_Backend;
 
    --------------------
    -- Get_LFS_Config --
@@ -203,86 +214,151 @@ package body ASFML_SIM_Storage is
    -- Load_Sample_Data --
    ----------------------
 
-   procedure Load_Sample_Data (FD : GNAT.OS_Lib.File_Descriptor) is
+   procedure Load_Sample_Data (Img : ROM_Builder.From_TOML.RAM_Image) is
+      Src : Storage_Array (1 .. Sample_Data'Size / 8)
+        with Address => Img.Samples_Addr;
+
+      Dst : Storage_Array (Src'Range)
+        with Address => Sample_Data'Address;
    begin
-
-      --  The sample data is located after the FS in ROM image
-
-      GNAT.OS_Lib.Lseek
-        (FD     => FD,
-         offset => Long_Integer (WNM_Configuration.Storage.FS_Size),
-         origin => GNAT.OS_Lib.Seek_Set);
-
-      if GNAT.OS_Lib.Read
-        (FD, Sample_Data'Address, Sample_Data'Size / 8) /= Sample_Data'Size / 8
-      then
-         Put_Line ("Cannot load sample data from ROM image");
-         GNAT.OS_Lib.OS_Exit (1);
-      end if;
+      Dst := Src;
    end Load_Sample_Data;
 
-begin
+   ----------------------
+   -- Save_Sample_Data --
+   ----------------------
 
-   if ASFML_Sim.Switch_Storage_Image = null
-     or else
-       ASFML_Sim.Switch_Storage_Image.all = ""
-   then
-      --  Create a temp image
+   procedure Save_Sample_Data (Img : ROM_Builder.From_TOML.RAM_Image) is
+      Dst : Storage_Array (1 .. Sample_Data'Size / 8)
+        with Address => Img.Samples_Addr;
 
-      Create_Temp_File (FD, ASFML_Sim.Switch_Storage_Image);
+      Src : Storage_Array (Dst'Range)
+        with Address => Sample_Data'Address;
+   begin
+      Dst := Src;
+   end Save_Sample_Data;
 
-      declare
-         function ftruncate (FS : int;
-                             Length : Long_Integer)
-                             return int;
-         pragma Import (C, ftruncate, "ftruncate");
+   --------------
+   -- Load_ROM --
+   --------------
 
-      begin
-         if ftruncate (int (FD),
-                       Long_Integer
-                         (WNM_Configuration.Storage.Total_Storage_Size)) /= 0
-         then
-            raise Program_Error with "ftruncate error: " &
-              GNAT.OS_Lib.Errno_Message;
-         end if;
-      end;
-      Close (FD);
-   end if;
-
-   declare
-      Image_Path : constant String := ASFML_Sim.Switch_Storage_Image.all;
+   function Load_ROM (Path : String) return String is
+      FD : aliased GNAT.OS_Lib.File_Descriptor;
    begin
       --  The image file should exists and be writable
 
-      if not Is_Regular_File (Image_Path) then
-         Put_Line ("Image file '" & Image_Path & "' does not exists");
-         GNAT.OS_Lib.OS_Exit (1);
-      elsif not Is_Owner_Writable_File (Image_Path) then
-         Put_Line ("Image file '" & Image_Path & "' is not writable");
-         GNAT.OS_Lib.OS_Exit (1);
+      if not Is_Regular_File (Path) then
+         return "Image file" & ASCII.LF &
+           "'" & Path & "'" & ASCII.LF &
+           "does not exists";
+      elsif not Is_Owner_Writable_File (Path) then
+         return "Image file" & ASCII.LF &
+           "'" & Path & "'" & ASCII.LF &
+           "is not writable";
       else
-         Put_Line ("Open image file '" & Image_Path & "'...");
-         FD := Open_Read_Write (Image_Path, Binary);
+         Ada.Text_IO.Put_Line ("Open image file '" & Path & "'...");
+         FD := Open_Read_Write (Path, Binary);
       end if;
 
       if FD = Invalid_FD then
-         Put_Line ("Cannot open image file '" & Image_Path & "': " &
-                     GNAT.OS_Lib.Errno_Message);
-         OS_Exit (1);
+         return "Cannot open image file" & ASCII.LF &
+           "'" & Path & "':" & ASCII.LF &
+           "" &
+           GNAT.OS_Lib.Errno_Message;
       end if;
 
       if File_Length (FD) /= WNM_Configuration.Storage.Total_Storage_Size
       then
-         Put_Line ("Invalid size for image file '" & Image_Path & "'");
-         Put_Line ("Expected: " &
-                     WNM_Configuration.Storage.Total_Storage_Size'Img);
-         Put_Line ("Actual: " & File_Length (FD)'Img);
-         OS_Exit (1);
+         return "Invalid size for image file" & ASCII.LF &
+           "'" & Path & "'" & ASCII.LF &
+           "Expected: " &
+           WNM_Configuration.Storage.Total_Storage_Size'Img &
+           " Actual: " & File_Length (FD)'Img;
       end if;
-   end;
 
-   Load_Sample_Data (FD);
+      Img.Load_From_File (FD);
+      GNAT.OS_Lib.Close (FD);
+      Load_Sample_Data (Img);
+      Config := RAM_Image_Backend.Create (Img);
 
-   Config := FD_Backend.Create (FD);
+      return "";
+   end Load_ROM;
+
+   ----------------
+   -- Create_ROM --
+   ----------------
+
+   function Create_ROM return String is
+      TOML_Path : constant String :=
+        ASFML_Sim_Resources.Resource_Path & "/rom_desc_avl_drumkits.toml";
+   begin
+      Ada.Text_IO.Put_Line ("Create ROM from '" & TOML_Path & "'...");
+      ROM_Builder.From_TOML.Build_From_TOML (Img, TOML_Path);
+      Load_Sample_Data (Img);
+      Config := RAM_Image_Backend.Create (Img);
+      return "";
+   end Create_ROM;
+
+   --------------
+   -- Save_ROM --
+   --------------
+
+   function Save_ROM (Path : String) return String is
+   begin
+      Save_Sample_Data (Img);
+      Img.Write_To_File (Path);
+      return "";
+   end Save_ROM;
+
+--  begin
+--
+--     if ASFML_Sim.Switch_Storage_Image /= null
+--       and then
+--         ASFML_Sim.Switch_Storage_Image.all /= ""
+--     then
+--        declare
+--        Image_Path : constant String := ASFML_Sim.Switch_Storage_Image.all;
+--           FD : aliased GNAT.OS_Lib.File_Descriptor;
+--        begin
+--           --  The image file should exists and be writable
+--
+--           if not Is_Regular_File (Image_Path) then
+--              Put_Line ("Image file '" & Image_Path & "' does not exists");
+--              GNAT.OS_Lib.OS_Exit (1);
+--           elsif not Is_Owner_Writable_File (Image_Path) then
+--              Put_Line ("Image file '" & Image_Path & "' is not writable");
+--              GNAT.OS_Lib.OS_Exit (1);
+--           else
+--              Put_Line ("Open image file '" & Image_Path & "'...");
+--              FD := Open_Read_Write (Image_Path, Binary);
+--           end if;
+--
+--           if FD = Invalid_FD then
+--              Put_Line ("Cannot open image file '" & Image_Path & "': " &
+--                          GNAT.OS_Lib.Errno_Message);
+--              OS_Exit (1);
+--           end if;
+--
+--        if File_Length (FD) /= WNM_Configuration.Storage.Total_Storage_Size
+--           then
+--              Put_Line ("Invalid size for image file '" & Image_Path & "'");
+--              Put_Line ("Expected: " &
+--                          WNM_Configuration.Storage.Total_Storage_Size'Img);
+--              Put_Line ("Actual: " & File_Length (FD)'Img);
+--              OS_Exit (1);
+--           end if;
+--           Img.Load_From_File (FD);
+--           GNAT.OS_Lib.Close (FD);
+--        end;
+--     elsif ASFML_Sim.Switch_Storage_TOML /= null
+--       and then
+--         ASFML_Sim.Switch_Storage_TOML.all /= ""
+--     then
+--        ROM_Builder.From_TOML.Build_From_TOML
+--          (Img, ASFML_Sim.Switch_Storage_TOML.all);
+--     end if;
+--
+--     Load_Sample_Data (Img);
+--     Config := RAM_Image_Backend.Create (Img);
 
 end ASFML_SIM_Storage;
