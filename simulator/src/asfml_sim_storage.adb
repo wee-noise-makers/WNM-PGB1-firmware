@@ -1,5 +1,6 @@
 with System.Storage_Elements; use System.Storage_Elements;
 with Ada.Text_IO;
+with Ada.Directories;
 
 with Littlefs; use Littlefs;
 with Interfaces.C; use Interfaces.C;
@@ -13,6 +14,7 @@ with WNM_Configuration;
 
 with ASFML_Sim_Resources;
 with ROM_Builder.From_TOML;
+with Wnm_Ps1_Simulator_Config;
 
 package body ASFML_SIM_Storage is
 
@@ -201,6 +203,70 @@ package body ASFML_SIM_Storage is
       return Config;
    end Get_LFS_Config;
 
+   -------------------
+   -- Print_FS_Tree --
+   -------------------
+
+   procedure Print_FS_Tree is
+
+      FS : aliased Littlefs.LFS_T;
+
+      procedure Tree_Rec (Dir_Path : String) is
+         Dir : aliased LFS_Dir;
+         Err : int;
+         Info : aliased Entry_Info;
+
+      begin
+         Ada.Text_IO.Put_Line ("Listing path: '" & Dir_Path & "'");
+
+         Err := Open (FS, Dir, Dir_Path);
+         if Err /= LFS_ERR_OK then
+            raise Program_Error with "tree: " & Error_Img (Err);
+         end if;
+
+         loop
+            Err := Read (FS, Dir, Info);
+
+            case Err is
+               when LFS_ERR_OK =>
+                  exit; --  End of directory
+               when int'First .. -1 =>
+                  raise Program_Error with "tree: " & Error_Img (Err);
+               when 1 .. int'Last  =>
+
+                  declare
+                     Name : constant String := Standard.Littlefs.Name (Info);
+                  begin
+                     if Name /= "." and then Name /= ".." then
+                        case Kind (Info) is
+                        when Register =>
+                           Ada.Text_IO.Put_Line (Name);
+                        when Directory =>
+                           Ada.Text_IO.Put_Line (Name & "/");
+                           Tree_Rec (Dir_Path & Name & "/");
+                        end case;
+                     end if;
+                  end;
+            end case;
+         end loop;
+
+         Err := Close (FS, Dir);
+         if Err /= LFS_ERR_OK then
+            raise Program_Error with "tree: " & Error_Img (Err);
+         end if;
+      end Tree_Rec;
+
+      Err : int;
+   begin
+
+      Err := Littlefs.Mount (FS, Get_LFS_Config.all);
+      if Err /= 0 then
+         raise Program_Error with "Mount error: " & Error_Img (Err);
+      end if;
+
+      Tree_Rec ("/");
+   end Print_FS_Tree;
+
    ----------------------
    -- Sample_Data_Base --
    ----------------------
@@ -281,6 +347,8 @@ package body ASFML_SIM_Storage is
       Load_Sample_Data (Img);
       Config := RAM_Image_Backend.Create (Img);
 
+      Print_FS_Tree;
+
       return "";
    end Load_ROM;
 
@@ -289,8 +357,6 @@ package body ASFML_SIM_Storage is
    ----------------
 
    function Create_ROM return String is
-      TOML_Path : constant String :=
-        ASFML_Sim_Resources.Resource_Path & "/rom_desc_avl_drumkits.toml";
    begin
       Ada.Text_IO.Put_Line ("Create ROM from '" & TOML_Path & "'...");
       ROM_Builder.From_TOML.Build_From_TOML (Img, TOML_Path);
@@ -310,55 +376,51 @@ package body ASFML_SIM_Storage is
       return "";
    end Save_ROM;
 
---  begin
---
---     if ASFML_Sim.Switch_Storage_Image /= null
---       and then
---         ASFML_Sim.Switch_Storage_Image.all /= ""
---     then
---        declare
---        Image_Path : constant String := ASFML_Sim.Switch_Storage_Image.all;
---           FD : aliased GNAT.OS_Lib.File_Descriptor;
---        begin
---           --  The image file should exists and be writable
---
---           if not Is_Regular_File (Image_Path) then
---              Put_Line ("Image file '" & Image_Path & "' does not exists");
---              GNAT.OS_Lib.OS_Exit (1);
---           elsif not Is_Owner_Writable_File (Image_Path) then
---              Put_Line ("Image file '" & Image_Path & "' is not writable");
---              GNAT.OS_Lib.OS_Exit (1);
---           else
---              Put_Line ("Open image file '" & Image_Path & "'...");
---              FD := Open_Read_Write (Image_Path, Binary);
---           end if;
---
---           if FD = Invalid_FD then
---              Put_Line ("Cannot open image file '" & Image_Path & "': " &
---                          GNAT.OS_Lib.Errno_Message);
---              OS_Exit (1);
---           end if;
---
---        if File_Length (FD) /= WNM_Configuration.Storage.Total_Storage_Size
---           then
---              Put_Line ("Invalid size for image file '" & Image_Path & "'");
---              Put_Line ("Expected: " &
---                          WNM_Configuration.Storage.Total_Storage_Size'Img);
---              Put_Line ("Actual: " & File_Length (FD)'Img);
---              OS_Exit (1);
---           end if;
---           Img.Load_From_File (FD);
---           GNAT.OS_Lib.Close (FD);
---        end;
---     elsif ASFML_Sim.Switch_Storage_TOML /= null
---       and then
---         ASFML_Sim.Switch_Storage_TOML.all /= ""
---     then
---        ROM_Builder.From_TOML.Build_From_TOML
---          (Img, ASFML_Sim.Switch_Storage_TOML.all);
---     end if;
---
---     Load_Sample_Data (Img);
---     Config := RAM_Image_Backend.Create (Img);
+   --------------
+   -- ROM_Path --
+   --------------
+
+   function ROM_Path return String is
+   begin
+
+      if Switch_Storage_ROM /= null
+        and then
+          Switch_Storage_ROM.all /= ""
+      then
+         return Switch_Storage_ROM.all;
+
+      else
+         declare
+            Home_Dir : constant String :=
+              (if Wnm_Ps1_Simulator_Config.Alire_Host_OS = "windows"
+               then Getenv ("HOMEDRIVE").all & Getenv ("HOMEPATH").all
+               else Getenv ("HOME").all);
+
+            ROM_Dir : constant String := Home_Dir & "/.config/wnm-ps1/";
+         begin
+            Ada.Directories.Create_Path (ROM_Dir);
+
+            return ROM_Dir & "user_rom.wnm_rom";
+         end;
+      end if;
+   end ROM_Path;
+
+   ---------------
+   -- TOML_Path --
+   ---------------
+
+   function TOML_Path return String is
+   begin
+      if Switch_Storage_TOML /= null
+        and then
+          Switch_Storage_TOML.all /= ""
+      then
+         return Switch_Storage_TOML.all;
+
+      else
+         return ASFML_Sim_Resources.Resource_Path &
+           "/rom_desc_avl_drumkits.toml";
+      end if;
+   end TOML_Path;
 
 end ASFML_SIM_Storage;

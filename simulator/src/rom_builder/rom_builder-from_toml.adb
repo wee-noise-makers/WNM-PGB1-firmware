@@ -12,8 +12,6 @@ with TOML.File_IO;
 
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 
-with CLIC.User_Input; use CLIC.User_Input;
-
 with Simple_Logging;
 
 package body ROM_Builder.From_TOML is
@@ -77,20 +75,12 @@ package body ROM_Builder.From_TOML is
          FD := Create_File (Path_To_Output, Binary);
 
       elsif not GNAT.OS_Lib.Is_Owner_Writable_File (Path_To_Output) then
+
          raise Program_Error
            with "Image file '" & Path_To_Output & "' is not writable";
-      else
 
-         Simple_Logging.Always ("Existing image file '" & Path_To_Output &
-                                  "' will be overwritten.");
-         if Query ("Do you want to continue?",
-                   Valid    => (Yes | No => True, Always => False),
-                   Default  => Yes) = Yes
-         then
-            FD := Open_Read_Write (Path_To_Output, Binary);
-         else
-            raise Program_Error with "Cannot overwrite existing file";
-         end if;
+      else
+         FD := Open_Read_Write (Path_To_Output, Binary);
       end if;
 
       if FD = Invalid_FD then

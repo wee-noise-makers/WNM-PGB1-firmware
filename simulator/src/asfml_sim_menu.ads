@@ -1,9 +1,8 @@
-with Sf.System.Vector2;
 with Sf.Window.Event;
 with Sf.Graphics;
+with Sf.System.Vector2;
 
 private with Ada.Strings.Unbounded;
-private with AAA.Strings;
 
 package ASFML_SIM_Menu is
 
@@ -21,25 +20,12 @@ private
    BG_Height : constant := 804.0;
 
    Menu_Size : constant Sf.System.Vector2.sfVector2f :=
-     (BG_Width / 2.0, BG_Height / 2.0);
+     (350.0, 170.0);
 
-   Menu_Pos : constant Sf.System.Vector2.sfVector2f := (100.0, 100.0);
-
-   New_ROM : constant String := "New ROM";
-   ROM_Dir : constant String := "/home/chouteau/.config/wnm-ps1/";
-   ROM_Ext : constant String := ".wnm_rom";
+   Menu_Pos : constant Sf.System.Vector2.sfVector2f :=
+     ((BG_Width - Menu_Size.x) / 2.0,
+      (BG_Height - Menu_Size.y) / 2.0);
 
    Error_Message : Ada.Strings.Unbounded.Unbounded_String;
-
-   ROMs : AAA.Strings.Vector;
-   Selected_ROM : Natural := 0;
-
-   function "+" (A, B : Sf.System.Vector2.sfVector2f)
-                 return Sf.System.Vector2.sfVector2f
-   is ((A.x + B.x, A.y + B.y));
-
-   function "-" (A, B : Sf.System.Vector2.sfVector2f)
-                 return Sf.System.Vector2.sfVector2f
-   is ((A.x - B.x, A.y - B.y));
 
 end ASFML_SIM_Menu;

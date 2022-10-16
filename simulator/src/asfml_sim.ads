@@ -1,7 +1,5 @@
 with Ada.Synchronous_Task_Control;
 
-with GNAT.Strings;
-
 with Sf;
 with Sf.Window.Keyboard; use Sf.Window.Keyboard;
 with Sf.Graphics.Color;
@@ -10,14 +8,11 @@ with WNM_Configuration; use WNM_Configuration;
 
 with Stopwatch;
 
-package ASFML_Sim
-with Elaborate_Body
-is
+package ASFML_Sim is
+
+   procedure Start;
 
    Sim_Clock : Stopwatch.Instance;
-
-   Switch_Storage_Image : aliased GNAT.Strings.String_Access;
-   Switch_Storage_TOML : aliased GNAT.Strings.String_Access;
 
    Screen_Width : constant := WNM_Configuration.Screen_Width;
    Screen_Height : constant := WNM_Configuration.Screen_Height;

@@ -82,6 +82,8 @@ package body WNM.Persistent is
 
          exit when Input.Status /= Ok;
       end loop;
+
+      Input.Close;
    end Load;
 
 end WNM.Persistent;

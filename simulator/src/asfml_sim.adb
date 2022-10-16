@@ -21,14 +21,44 @@ with Sf; use Sf;
 with WNM.Synth;
 with WNM.Audio;
 
+with ASFML_Util; use ASFML_Util;
+
 with ASFML_SIM_Menu;
 with ASFML_Sim_Resources;
 with Ada.Real_Time; use Ada.Real_Time;
 with Sf.System.Vector2; use Sf.System.Vector2;
-
-with GNAT.Command_Line; use GNAT.Command_Line;
+with Sf.Graphics.Rect; use Sf.Graphics.Rect;
 
 package body ASFML_Sim is
+
+   LED_Offset : constant array (WNM_Configuration.LED) of sfVector2f :=
+     (
+      Menu           => (753.0, 293.0),
+      Chord_Button   => (869.0, 293.0),
+      Pattern_Button => (985.0, 293.0),
+      Func           => (1114.0, 293.0),
+
+      Track_Button => (45.0, 434.0),
+      B1           => (174.0, 434.0),
+      B2           => (290.0, 434.0),
+      B3           => (406.0, 434.0),
+      B4           => (522.0, 434.0),
+      B5           => (638.0, 434.0),
+      B6           => (753.0, 434.0),
+      B7           => (869.0, 434.0),
+      B8           => (985.0, 434.0),
+      Play         => (1114.0, 434.0),
+
+      Step_Button  => (45.0, 576.0),
+      B9           => (174.0, 576.0),
+      B10          => (290.0, 576.0),
+      B11          => (406.0, 576.0),
+      B12          => (522.0, 576.0),
+      B13          => (638.0, 576.0),
+      B14          => (753.0, 576.0),
+      B15          => (869.0, 576.0),
+      B16          => (985.0, 576.0),
+      Rec          => (1114.0, 576.0));
 
    Font : Sf.Graphics.sfFont_Ptr;
 
@@ -53,6 +83,7 @@ package body ASFML_Sim is
    Synth_Trig : Ada.Synchronous_Task_Control.Suspension_Object;
 
    task Synth_Task is
+      entry Start;
    end Synth_Task;
 
    --------------
@@ -118,17 +149,22 @@ package body ASFML_Sim is
    Text : constant Sf.Graphics.sfText_Ptr := Sf.Graphics.Text.create;
 
    procedure Draw_Text
-     (W     : Sf.Graphics.sfRenderWindow_Ptr;
-      Pos   : sfVector2f;
-      Str   : String;
-      Color : Sf.Graphics.Color.sfColor := Sf.Graphics.Color.sfWhite)
+     (W      : Sf.Graphics.sfRenderWindow_Ptr;
+      Pos    : sfVector2f;
+      Str    : String;
+      Color  : Sf.Graphics.Color.sfColor := Sf.Graphics.Color.sfWhite)
    is
       use Sf.Graphics.Text;
+      Rect : sfFloatRect;
    begin
-      setPosition (Text, Pos);
       setFont (Text, Font);
       setString (Text, Str);
       setColor (Text, Color);
+
+      Rect := getLocalBounds (Text);
+      setOrigin (Text, (Rect.left + (Rect.width / 2.0),
+                        Rect.top  + (Rect.height / 2.0)));
+      setPosition (Text, Pos);
 
       drawText (W, Text);
    end Draw_Text;
@@ -140,35 +176,6 @@ package body ASFML_Sim is
    Rect : constant sfRectangleShape_Ptr := create;
 
    procedure Draw_LEDS (W : Sf.Graphics.sfRenderWindow_Ptr) is
-      LED_Offset : constant array (WNM_Configuration.LED) of sfVector2f :=
-        (
-         Menu           => (753.0, 293.0),
-         Chord_Button   => (869.0, 293.0),
-         Pattern_Button => (985.0, 293.0),
-         Func           => (1114.0, 293.0),
-
-         Track_Button => (45.0, 434.0),
-         B1           => (174.0, 434.0),
-         B2           => (290.0, 434.0),
-         B3           => (406.0, 434.0),
-         B4           => (522.0, 434.0),
-         B5           => (638.0, 434.0),
-         B6           => (753.0, 434.0),
-         B7           => (869.0, 434.0),
-         B8           => (985.0, 434.0),
-         Play         => (1114.0, 434.0),
-
-         Step_Button  => (45.0, 576.0),
-         B9           => (174.0, 576.0),
-         B10          => (290.0, 576.0),
-         B11          => (406.0, 576.0),
-         B12          => (522.0, 576.0),
-         B13          => (638.0, 576.0),
-         B14          => (753.0, 576.0),
-         B15          => (869.0, 576.0),
-         B16          => (985.0, 576.0),
-         Rec          => (1114.0, 576.0));
-
    begin
       setOutlineColor (Rect, Sf.Graphics.Color.sfBlack);
       setOutlineThickness (Rect, 1.0);
@@ -187,58 +194,43 @@ package body ASFML_Sim is
 
    procedure Draw_Buttons (W : Sf.Graphics.sfRenderWindow_Ptr) is
 
-      B_Y_Offset : constant := 40.0;
+      Rect_Size : constant sfVector2f := (83.0, 83.0);
+      Text_Offset : constant sfVector2f := (Rect_Size.x / 2.0,
+                                            Rect_Size.y / 2.0);
 
-      Buttons_Offset : constant array (WNM_Configuration.Button)
-        of sfVector2f :=
-        (
-         Menu           => (753.0, 293.0 + B_Y_Offset),
-         Chord_Button   => (869.0, 293.0 + B_Y_Offset),
-         Pattern_Button => (985.0, 293.0 + B_Y_Offset),
-         Func           => (1114.0, 293.0 + B_Y_Offset),
-
-         Track_Button => (45.0, 434.0 + B_Y_Offset),
-         B1           => (174.0, 434.0 + B_Y_Offset),
-         B2           => (290.0, 434.0 + B_Y_Offset),
-         B3           => (406.0, 434.0 + B_Y_Offset),
-         B4           => (522.0, 434.0 + B_Y_Offset),
-         B5           => (638.0, 434.0 + B_Y_Offset),
-         B6           => (753.0, 434.0 + B_Y_Offset),
-         B7           => (869.0, 434.0 + B_Y_Offset),
-         B8           => (985.0, 434.0 + B_Y_Offset),
-         Play         => (1114.0, 434.0 + B_Y_Offset),
-
-         Step_Button  => (45.0, 576.0 + B_Y_Offset),
-         B9           => (174.0, 576.0 + B_Y_Offset),
-         B10          => (290.0, 576.0 + B_Y_Offset),
-         B11          => (406.0, 576.0 + B_Y_Offset),
-         B12          => (522.0, 576.0 + B_Y_Offset),
-         B13          => (638.0, 576.0 + B_Y_Offset),
-         B14          => (753.0, 576.0 + B_Y_Offset),
-         B15          => (869.0, 576.0 + B_Y_Offset),
-         B16          => (985.0, 576.0 + B_Y_Offset),
-         Rec          => (1114.0, 576.0 + B_Y_Offset),
-
-         Encoder_L    => (79.0, 288.0),
-         Encoder_R    => (271.0, 288.0));
-
+      Pos : sfVector2f;
    begin
       setOutlineColor (Rect, Sf.Graphics.Color.sfBlack);
       setOutlineThickness (Rect, 1.0);
-      setSize (Rect, (80.0, 80.0));
+      setSize (Rect, Rect_Size);
 
       for B in SFML_Pressed'Range loop
+
+         case B is
+            when LED_Offset'Range =>
+               Pos := LED_Offset (B);
+            when Encoder_L =>
+               Pos := (77.0, 241.5);
+            when Encoder_R =>
+               Pos := (271.0, 241.5);
+         end case;
+
+         Pos := Pos + (-3.0, 39.0);
+
          if SFML_Pressed (B) or else Force_Pressed (B) then
             setFillColor (Rect, Sf.Graphics.Color.sfBlue);
-            setPosition (Rect, Buttons_Offset (B));
+            setOutlineColor (Rect, Sf.Graphics.Color.sfTransparent);
+            setPosition (Rect, Pos);
             drawRectangleShape (W, Rect);
          end if;
-         Draw_Text (W, Buttons_Offset (B), Key_Image (To_SFML_Evt (B)));
+         Draw_Text (W,
+                    Pos + Text_Offset,
+                    Key_Image (To_SFML_Evt (B)));
       end loop;
    end Draw_Buttons;
 
    task Periodic_Update is
-
+      entry Start;
    end Periodic_Update;
 
    ---------------------
@@ -268,6 +260,8 @@ package body ASFML_Sim is
       Screen_Scale : constant := 296.0 / Float (Screen_Width);
       Screen_Offset : constant sfVector2f := (469.0, 33.0);
    begin
+
+      accept Start;
 
       Framebuffer_Texture := create (Screen_Width, Screen_Height);
       if Framebuffer_Texture = null then
@@ -435,6 +429,8 @@ package body ASFML_Sim is
 
    task body Synth_Task is
    begin
+      accept Start;
+
       loop
          if Sim_Clock.Is_Held then
             --  Simulation stopped
@@ -500,41 +496,20 @@ package body ASFML_Sim is
       end if;
    end Init_Audio;
 
-begin
+   -----------
+   -- Start --
+   -----------
 
-   Sim_Clock.Reset;
-   Sim_Clock.Hold;
-
-   declare
-      Config : Command_Line_Configuration;
+   procedure Start is
    begin
-      Define_Switch
-        (Config,
-         ASFML_Sim.Switch_Storage_Image'Access,
-         "-i:",
-         Long_Switch => "--img=",
-         Help => "Internal storage image (littlefs format)");
 
-      Define_Switch
-        (Config,
-         ASFML_Sim.Switch_Storage_TOML'Access,
-         "-t:",
-         Long_Switch => "--toml=",
-         Help => "Make storage image from TOML description");
+      Sim_Clock.Reset;
+      Sim_Clock.Hold;
 
-      Set_Usage
-        (Config,
-         "--img=<filesystem-image>",
-         "Wee-Noise-Maker Simulator");
+      Init_Audio;
 
-      Getopt (Config);
-   exception
-      when GNAT.Command_Line.Invalid_Switch =>
-         GNAT.OS_Lib.OS_Exit (1);
-      when GNAT.Command_Line.Exit_From_Command_Line =>
-         GNAT.OS_Lib.OS_Exit (0);
-   end;
-
-   Init_Audio;
+      Periodic_Update.Start;
+      Synth_Task.Start;
+   end Start;
 
 end ASFML_Sim;

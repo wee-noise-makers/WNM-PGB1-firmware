@@ -20,16 +20,16 @@ flux = "~0.1.0-dev"
 stopwatch = "~0.1.0"
 
 [[pins]]
-fsmaker = { url="git@github.com:Fabien-Chouteau/fsmaker.git" }
-littlefs = { url = "git@github.com:Fabien-Chouteau/littlefs-ada.git", branch="release/0.3" }
-lpc_synth = { url='git@github.com:Fabien-Chouteau/lpc_synth.git' }
-flux = { url='https://github.com/Fabien-Chouteau/flux' }
+fsmaker = { url="https://github.com/Fabien-Chouteau/fsmaker" }
+littlefs = { url = "https://github.com/Fabien-Chouteau/littlefs-ada", branch="release/0.3" }
+lpc_synth = { url="https://github.com/Fabien-Chouteau/lpc_synth" }
+flux = { url="https://github.com/Fabien-Chouteau/flux" }
 
 [configuration.values]
 littlefs.Assert = false
 littlefs.Debug = false
-littlefs.Warn = false
-littlefs.Error = false
+littlefs.Warn = true
+littlefs.Error = true
 littlefs.Trace = false
-littlefs.No_Malloc = true
+# littlefs.No_Malloc = true # Triggers a bug in alr 1.2.1, var set in fsmaker anyway
 

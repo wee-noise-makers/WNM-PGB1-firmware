@@ -9,10 +9,10 @@ project Wnm_Ps1_Simulator is
    for Object_Dir use "obj/" & Wnm_Ps1_Simulator_Config.Build_Profile;
    for Create_Missing_Dirs use "True";
    for Exec_Dir use "bin";
-   for Main use ("wnm_ps1_main.adb");
+   for Main use ("wnm_ps1_simulator.adb");
 
    package Builder is
-      for Executable ("wnm_ps1_main.adb") use "wnm_ps1_simulator";
+      for Executable ("wnm_ps1_simulator.adb") use "wnm_ps1_simulator";
    end Builder;
 
    package Compiler is

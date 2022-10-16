@@ -1,5 +1,7 @@
 with Ada.Synchronous_Task_Control;
 
+with GNAT.OS_Lib;
+
 with GNAT.Bounded_Buffers;
 
 with Sf;
@@ -262,28 +264,17 @@ package body WNM_HAL is
    end Send_MIDI;
 
    ----------------
-   -- Start_Hook --
-   ----------------
-
-   procedure Start_Hook is
-   begin
-      ASFML_Sim.Sim_Clock.Hold;
-
-      while ASFML_Sim.Sim_Clock.Is_Held loop
-         delay 0.1;
-      end loop;
-   end Start_Hook;
-
-   ----------------
    -- Power_Down --
    ----------------
 
    procedure Power_Down is
+      Result : constant String :=
+        ASFML_SIM_Storage.Save_ROM (ASFML_SIM_Storage.ROM_Path);
    begin
-      loop
-         ASFML_Sim.Sim_Clock.Hold;
-         delay 0.1;
-      end loop;
+      if Result /= "" then
+         raise Program_Error with Result;
+      end if;
+      GNAT.OS_Lib.OS_Exit (0);
    end Power_Down;
 
 begin
