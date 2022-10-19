@@ -418,8 +418,7 @@ package body ASFML_SIM_Storage is
          return Switch_Storage_TOML.all;
 
       else
-         return ASFML_Sim_Resources.Resource_Path &
-           "/rom_desc_avl_drumkits.toml";
+         return ASFML_Sim_Resources.Resource_Path & "/rom_desc.toml";
       end if;
    end TOML_Path;
 

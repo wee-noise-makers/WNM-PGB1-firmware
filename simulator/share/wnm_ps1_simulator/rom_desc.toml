@@ -1,0 +1,57 @@
+[samples]
+1 = {name = "Kick1", file="samples/SVModular/kick/raw_44100/01.raw"}
+2 = {name = "Kick2", file="samples/SVModular/kick/raw_44100/02.raw"}
+
+3 = {name = "BassDrum1", file="samples/SVModular/bd9/raw_44100/01.raw"}
+4 = {name = "BassDrum2", file="samples/SVModular/bd9/raw_44100/02.raw"}
+5 = {name = "BassDrum3", file="samples/SVModular/bd9/raw_44100/03.raw"}
+6 = {name = "BassDrum4", file="samples/SVModular/bd9/raw_44100/04.raw"}
+
+7 = {name = "Snare1", file="samples/SVModular/snare/raw_44100/03.raw"}
+8 = {name = "Snare2", file="samples/SVModular/snare/raw_44100/04.raw"}
+9 = {name = "Snare3", file="samples/SVModular/snare/raw_44100/10.raw"}
+10 = {name = "Snare4", file="samples/SVModular/snare/raw_44100/08.raw"}
+11 = {name = "Snare5", file="samples/SVModular/snare/raw_44100/13.raw"}
+12 = {name = "Snare6", file="samples/SVModular/snare/raw_44100/14.raw"}
+
+13 = {name = "ClosedHH1", file="samples/SVModular/closedhh/raw_44100/13.raw"}
+14 = {name = "ClosedHH2", file="samples/SVModular/closedhh/raw_44100/10.raw"}
+15 = {name = "ClosedHH3", file="samples/SVModular/closedhh/raw_44100/11.raw"}
+16 = {name = "ClosedHH4", file="samples/SVModular/closedhh/raw_44100/12.raw"}
+
+17 = {name = "OpenHH1", file="samples/SVModular/openhh/raw_44100/01.raw"}
+18 = {name = "OpenHH2", file="samples/SVModular/openhh/raw_44100/04.raw"}
+19 = {name = "OpenHH3", file="samples/SVModular/openhh/raw_44100/06.raw"}
+20 = {name = "OpenHH4", file="samples/SVModular/openhh/raw_44100/11.raw"}
+
+21 = {name = "Tom1", file="samples/SVModular/tomi/raw_44100/05.raw"}
+22 = {name = "Tom2", file="samples/SVModular/tomi/raw_44100/06.raw"}
+23 = {name = "Tom3", file="samples/SVModular/tomi/raw_44100/07.raw"}
+24 = {name = "Tom4", file="samples/SVModular/tomi/raw_44100/08.raw"}
+25 = {name = "Tom5", file="samples/SVModular/tomi/raw_44100/09.raw"}
+26 = {name = "Tom6", file="samples/SVModular/tomi/raw_44100/11.raw"}
+27 = {name = "Tom7", file="samples/SVModular/tomi/raw_44100/14.raw"}
+
+28 = {name = "Tom8", file="samples/avl_drumkits/AVL-BlackPearl-5-1.1/raw_44100/47-Pearl13Tom2-2.raw"}
+29 = {name = "Tom9", file="samples/avl_drumkits/AVL-BlackPearl-5-1.1/raw_44100/47-Pearl13Tom2-3.raw"}
+30 = {name = "HatSemiOpen1", file="samples/avl_drumkits/AVL-BlackPearl-5-1.1/raw_44100/46-SabianRockHatSemiOpen-1.raw"}
+31 = {name = "HatSemiOpen2", file="samples/avl_drumkits/AVL-BlackPearl-5-1.1/raw_44100/46-SabianRockHatSemiOpen-3.raw"}
+32 = {name = "Ride1", file="samples/avl_drumkits/AVL-BlackPearl-5-1.1/raw_44100/51-SabianAAX20Ride-1.raw"}
+33 = {name = "Ride2", file="samples/avl_drumkits/AVL-BlackPearl-5-1.1/raw_44100/51-SabianAAX20Ride-2.raw"}
+34 = {name = "BongoHi1", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/BongoHi-Soft.raw"}
+35 = {name = "BongoHi2", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/BongoHi-Med.raw"}
+36 = {name = "BongoLo1", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/BongoLo-Soft.raw"}
+37 = {name = "BongoLo2", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/BongoLo-Med.raw"}
+38 = {name = "CajonSlaps1", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/CajonSlaps-Soft.raw"}
+39 = {name = "CajonSlaps2", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/CajonSlaps-Med.raw"}
+40 = {name = "CajonThumps1", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/CajonThumps-Soft.raw"}
+41 = {name = "CajonThumps2", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/CajonThumps-Med.raw"}
+42 = {name = "Clave1", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/Clave-Soft.raw"}
+43 = {name = "Clave2", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/Clave-Med.raw"}
+44 = {name = "FingerSnap1", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/Fingersnap-Soft.raw"}
+45 = {name = "FingerSnap2", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/Fingersnap-Med.raw"}
+46 = {name = "HandClap1", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/HandClap-Soft.raw"}
+47 = {name = "HandClap2", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/HandClap-Hard.raw"}
+48 = {name = "Maraca1", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/Maraca-Soft.raw"}
+49 = {name = "Maraca2", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/Maraca-Med.raw"}
+50 = {name = "Tambourine", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/Tambourine-Med.raw"}
