@@ -1,43 +1,42 @@
 [samples]
-1 = {name = "Kick1", file="samples/SVModular/kick/raw_44100/01.raw"}
-2 = {name = "Kick2", file="samples/SVModular/kick/raw_44100/02.raw"}
+1 = {name = "Kick1", file="samples/wee_noise_maker/raw_44100/kick1-1.raw"}
+2 = {name = "Kick2", file="samples/wee_noise_maker/raw_44100/kick1-2.raw"}
+3 = {name = "Kick3", file="samples/wee_noise_maker/raw_44100/kick1-3.raw"}
+4 = {name = "Kick4", file="samples/wee_noise_maker/raw_44100/kick1-4.raw"}
+5 = {name = "Kick5", file="samples/wee_noise_maker/raw_44100/kick1-5.raw"}
+6 = {name = "Kick6", file="samples/wee_noise_maker/raw_44100/kick1-6.raw"}
+7 = {name = "Kick7", file="samples/wee_noise_maker/raw_44100/kick1-7.raw"}
+8 = {name = "Kick8", file="samples/wee_noise_maker/raw_44100/kick1-8.raw"}
+9 = {name = "Kick9", file="samples/wee_noise_maker/raw_44100/kick1-9.raw"}
+10 = {name = "Kick10", file="samples/wee_noise_maker/raw_44100/kick1-10.raw"}
 
-3 = {name = "BassDrum1", file="samples/SVModular/bd9/raw_44100/01.raw"}
-4 = {name = "BassDrum2", file="samples/SVModular/bd9/raw_44100/02.raw"}
-5 = {name = "BassDrum3", file="samples/SVModular/bd9/raw_44100/03.raw"}
-6 = {name = "BassDrum4", file="samples/SVModular/bd9/raw_44100/04.raw"}
+11 = {name = "Snare1", file="samples/wee_noise_maker/raw_44100/snare1-1.raw"}
+12 = {name = "Snare2", file="samples/wee_noise_maker/raw_44100/snare1-2.raw"}
+13 = {name = "Snare3", file="samples/wee_noise_maker/raw_44100/snare1-3.raw"}
+14 = {name = "Snare4", file="samples/wee_noise_maker/raw_44100/snare1-4.raw"}
+15 = {name = "Snare5", file="samples/wee_noise_maker/raw_44100/snare1-5.raw"}
 
-7 = {name = "Snare1", file="samples/SVModular/snare/raw_44100/03.raw"}
-8 = {name = "Snare2", file="samples/SVModular/snare/raw_44100/04.raw"}
-9 = {name = "Snare3", file="samples/SVModular/snare/raw_44100/10.raw"}
-10 = {name = "Snare4", file="samples/SVModular/snare/raw_44100/08.raw"}
-11 = {name = "Snare5", file="samples/SVModular/snare/raw_44100/13.raw"}
-12 = {name = "Snare6", file="samples/SVModular/snare/raw_44100/14.raw"}
+16 = {name = "ClosedHH1", file="samples/wee_noise_maker/raw_44100/closedhh1-1.raw"}
+17 = {name = "ClosedHH2", file="samples/wee_noise_maker/raw_44100/closedhh1-2.raw"}
+18 = {name = "ClosedHH3", file="samples/wee_noise_maker/raw_44100/closedhh1-3.raw"}
+19 = {name = "ClosedHH4", file="samples/wee_noise_maker/raw_44100/closedhh1-4.raw"}
+20 = {name = "ClosedHH5", file="samples/wee_noise_maker/raw_44100/closedhh1-5.raw"}
 
-13 = {name = "ClosedHH1", file="samples/SVModular/closedhh/raw_44100/13.raw"}
-14 = {name = "ClosedHH2", file="samples/SVModular/closedhh/raw_44100/10.raw"}
-15 = {name = "ClosedHH3", file="samples/SVModular/closedhh/raw_44100/11.raw"}
-16 = {name = "ClosedHH4", file="samples/SVModular/closedhh/raw_44100/12.raw"}
+21 = {name = "OpenHH1", file="samples/wee_noise_maker/raw_44100/openhh1-1.raw"}
+22 = {name = "OpenHH2", file="samples/wee_noise_maker/raw_44100/openhh1-2.raw"}
+23 = {name = "OpenHH3", file="samples/wee_noise_maker/raw_44100/openhh1-3.raw"}
+24 = {name = "OpenHH4", file="samples/wee_noise_maker/raw_44100/openhh1-4.raw"}
+25 = {name = "OpenHH5", file="samples/wee_noise_maker/raw_44100/openhh1-5.raw"}
 
-17 = {name = "OpenHH1", file="samples/SVModular/openhh/raw_44100/01.raw"}
-18 = {name = "OpenHH2", file="samples/SVModular/openhh/raw_44100/04.raw"}
-19 = {name = "OpenHH3", file="samples/SVModular/openhh/raw_44100/06.raw"}
-20 = {name = "OpenHH4", file="samples/SVModular/openhh/raw_44100/11.raw"}
+26 = {name = "Tom1", file="samples/SVModular/tomi/raw_44100/05.raw"}
+27 = {name = "Tom2", file="samples/SVModular/tomi/raw_44100/06.raw"}
+28 = {name = "Tom3", file="samples/SVModular/tomi/raw_44100/07.raw"}
+29 = {name = "Tom4", file="samples/SVModular/tomi/raw_44100/08.raw"}
+30 = {name = "Tom5", file="samples/SVModular/tomi/raw_44100/09.raw"}
+31 = {name = "Tom6", file="samples/SVModular/tomi/raw_44100/11.raw"}
+32 = {name = "Tom7", file="samples/SVModular/tomi/raw_44100/14.raw"}
 
-21 = {name = "Tom1", file="samples/SVModular/tomi/raw_44100/05.raw"}
-22 = {name = "Tom2", file="samples/SVModular/tomi/raw_44100/06.raw"}
-23 = {name = "Tom3", file="samples/SVModular/tomi/raw_44100/07.raw"}
-24 = {name = "Tom4", file="samples/SVModular/tomi/raw_44100/08.raw"}
-25 = {name = "Tom5", file="samples/SVModular/tomi/raw_44100/09.raw"}
-26 = {name = "Tom6", file="samples/SVModular/tomi/raw_44100/11.raw"}
-27 = {name = "Tom7", file="samples/SVModular/tomi/raw_44100/14.raw"}
-
-28 = {name = "Tom8", file="samples/avl_drumkits/AVL-BlackPearl-5-1.1/raw_44100/47-Pearl13Tom2-2.raw"}
-29 = {name = "Tom9", file="samples/avl_drumkits/AVL-BlackPearl-5-1.1/raw_44100/47-Pearl13Tom2-3.raw"}
-30 = {name = "HatSemiOpen1", file="samples/avl_drumkits/AVL-BlackPearl-5-1.1/raw_44100/46-SabianRockHatSemiOpen-1.raw"}
-31 = {name = "HatSemiOpen2", file="samples/avl_drumkits/AVL-BlackPearl-5-1.1/raw_44100/46-SabianRockHatSemiOpen-3.raw"}
-32 = {name = "Ride1", file="samples/avl_drumkits/AVL-BlackPearl-5-1.1/raw_44100/51-SabianAAX20Ride-1.raw"}
-33 = {name = "Ride2", file="samples/avl_drumkits/AVL-BlackPearl-5-1.1/raw_44100/51-SabianAAX20Ride-2.raw"}
+33 = {name = "Ride1", file="samples/avl_drumkits/AVL-BlackPearl-5-1.1/raw_44100/51-SabianAAX20Ride-1.raw"}
 34 = {name = "BongoHi1", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/BongoHi-Soft.raw"}
 35 = {name = "BongoHi2", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/BongoHi-Med.raw"}
 36 = {name = "BongoLo1", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/BongoLo-Soft.raw"}
