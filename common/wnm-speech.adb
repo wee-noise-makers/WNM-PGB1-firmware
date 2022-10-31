@@ -21,7 +21,6 @@
 
 with Interfaces;
 
-with WNM.Audio; use WNM.Audio;
 with WNM.Speech_Dictionary;
 
 package body WNM.Speech is
@@ -73,7 +72,7 @@ package body WNM.Speech is
    -- Next_Points --
    -----------------
 
-   procedure Next_Points (Buffer : in out Audio.Stereo_Buffer) is
+   procedure Next_Points (Buffer : in out WNM_HAL.Stereo_Buffer) is
       use Interfaces;
 
       Val : Integer_32;
@@ -83,10 +82,11 @@ package body WNM.Speech is
             LPC : LPC_Synth.Instance renames LPC_Arr (T);
          begin
             if LPC_Synth.Has_Data (LPC) then
-               LPC_Synth.Next_Points (LPC, LPC_Out,
-                                      Sample_Rate => WNM.Sample_Frequency,
-                                      Pitch => Pitch (T),
-                                      Time_Stretch => Stretch (T));
+               LPC_Synth.Next_Points
+                 (LPC, LPC_Out,
+                  Sample_Rate => WNM_Configuration.Audio.Sample_Frequency,
+                  Pitch => Pitch (T),
+                  Time_Stretch => Stretch (T));
 
                for Idx in Buffer'Range loop
                   Val :=

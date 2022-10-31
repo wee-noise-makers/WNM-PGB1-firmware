@@ -24,7 +24,6 @@ with WNM_HAL;
 
 with WNM.Sample_Stream;
 with WNM.Speech;
-with WNM.Project;
 
 private with Ada.Unchecked_Conversion;
 
@@ -49,8 +48,8 @@ package WNM.Coproc is
 
          when Track_Vol_Pan =>
             TVP_Track : Tracks;
-            TVP_Vol : Project.Audio_Volume;
-            TVP_Pan : Project.Audio_Pan;
+            TVP_Vol : WNM_HAL.Audio_Volume;
+            TVP_Pan : WNM_HAL.Audio_Pan;
       end case;
    end record
      with Size => WNM_Configuration.Coproc_Data_Size;

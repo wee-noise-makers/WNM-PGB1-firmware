@@ -19,8 +19,8 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with WNM_HAL;
 with WNM.MIDI;
-with WNM.Audio;
 with LPC_Synth;
 
 package WNM.Speech is
@@ -38,7 +38,7 @@ package WNM.Speech is
 
    procedure Set_Stretch (T : Tracks; V : MIDI.MIDI_Data);
 
-   procedure Next_Points (Buffer : in out Audio.Stereo_Buffer);
+   procedure Next_Points (Buffer : in out WNM_HAL.Stereo_Buffer);
 
    type Speech_Event_Rec is record
       On       : Boolean;

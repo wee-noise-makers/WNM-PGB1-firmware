@@ -1,5 +1,6 @@
 with System;
 with System.Storage_Elements;
+with Interfaces;
 
 with HAL;
 with Littlefs;
@@ -60,11 +61,37 @@ package WNM_HAL is
    -- Audio --
    -----------
 
+   --  It can be quite confusing to use the term sample for both audio/music
+   --  sample (short bits of music) and PCM sample (signal processing). So in
+   --  this project we use the word "Point" for the signal processing.
+
+   type Mono_Point is new Interfaces.Integer_16 with Size => 16;
+
+   type Stereo_Point is record
+      L, R : Mono_Point;
+   end record with Pack, Size => 32;
+
+   type Mono_Buffer is array (1 .. Audio.Samples_Per_Buffer) of Mono_Point
+     with Pack, Size => Audio.Mono_Buffer_Size_In_Bytes * 8;
+
+   type Stereo_Buffer is array (1 .. Audio.Samples_Per_Buffer) of Stereo_Point
+     with Pack, Size => Audio.Stereo_Buffer_Size_In_Bytes * 8;
+
    type Audio_Input_Kind is (None, Line_In);
    procedure Select_Audio_Input (Kind : Audio_Input_Kind);
 
    type Audio_Volume is range 0 .. 100;
-   procedure Set_Audio_Volume (Volume : Audio_Volume);
+   Init_Volume : constant Audio_Volume := 50;
+
+   type Audio_Pan is range 0 .. 100;
+   Init_Pan : constant Audio_Pan := 50;
+
+   procedure Set_Master_Volume (Volume : Audio_Volume);
+
+   procedure Mix (Output : in out Stereo_Buffer;
+                  Input  :        Mono_Buffer;
+                  Volume :        Audio_Volume;
+                  Pan    :        Audio_Pan);
 
    ----------
    -- Time --

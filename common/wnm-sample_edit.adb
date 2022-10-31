@@ -19,8 +19,6 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Audio;
-
 package body WNM.Sample_Edit is
 
    Work_RAM : Sample_Library.Single_Sample_Data;
@@ -111,7 +109,7 @@ package body WNM.Sample_Edit is
    ---------------------
 
    procedure Update_Waveform is
-      use type Audio.Mono_Point;
+      use type WNM_HAL.Mono_Point;
 
       Point_Len : constant Sample_Point_Count := Stop - Start;
       Chunk_Len : constant Sample_Point_Count := Point_Len / Waveform'Length;
@@ -134,7 +132,7 @@ package body WNM.Sample_Edit is
 
          Acc := (Acc * 2.0) / Float (Chunk_Len);
 
-         Elt := Waveform_Point (Acc / Float (WNM.Audio.Mono_Point'Last));
+         Elt := Waveform_Point (Acc / Float (WNM_HAL.Mono_Point'Last));
       end loop;
    end Update_Waveform;
 

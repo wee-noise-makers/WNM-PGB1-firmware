@@ -41,6 +41,13 @@ package WNM_Configuration is
       Pattern_Button => 3,
       Chord_Button   => 2);
 
+   package Audio is
+      Sample_Frequency            : constant := 44_100;
+      Samples_Per_Buffer          : constant := 512;
+      Mono_Buffer_Size_In_Bytes   : constant := Samples_Per_Buffer * 2;
+      Stereo_Buffer_Size_In_Bytes : constant := Samples_Per_Buffer * 4;
+   end Audio;
+
    package Storage is
       pragma Style_Checks ("M120");
 

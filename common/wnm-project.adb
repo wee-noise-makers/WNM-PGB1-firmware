@@ -96,7 +96,8 @@ package body WNM.Project is
    function Samples_Per_Beat return Synth.Sample_Time is
       use Synth;
 
-      Samples_Per_Minute : constant Sample_Time := 60 * Sample_Frequency;
+      Samples_Per_Minute : constant Sample_Time :=
+        60 * WNM_Configuration.Audio.Sample_Frequency;
    begin
       return Samples_Per_Minute / Sample_Time (Get_BPM);
    end Samples_Per_Beat;

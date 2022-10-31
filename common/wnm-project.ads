@@ -218,9 +218,6 @@ package WNM.Project is
    is (case N is
           when Chord => "Notes of chord");
 
-   type Audio_Volume is range 0 .. 100;
-   type Audio_Pan is range 0 .. 100;
-
    -- Track Getters --
    function Mode (T : Tracks := Editing_Track) return Track_Mode_Kind;
    function MIDI_Chan (T : Tracks := Editing_Track) return MIDI.MIDI_Channel;
@@ -404,8 +401,8 @@ private
    type Track_Rec is record
       Mode : Track_Mode_Kind := Sample_Mode;
       Chan : MIDI.MIDI_Channel := 0;
-      Volume : Audio_Volume := 100;
-      Pan : Audio_Pan := 50;
+      Volume : Audio_Volume := Init_Volume;
+      Pan : Audio_Pan := Init_Pan;
       CC : CC_Setting_Array;
       Sample : Sample_Library.Valid_Sample_Index := 1;
       Word   : Speech.Word := Speech.Word'First;
@@ -418,8 +415,8 @@ private
    Default_Track : constant Track_Rec :=
      (Mode => MIDI_Mode,
       Chan => 0,
-      Volume => 100,
-      Pan => 0,
+      Volume => Init_Volume,
+      Pan => Init_Pan,
       CC => ((0, "Control 0        "),
              (1, "Control 1        "),
              (2, "Control 2        "),

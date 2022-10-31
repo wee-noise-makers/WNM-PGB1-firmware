@@ -168,7 +168,8 @@ package body WNM.Sample_Library is
                                     return Sample_Time
    is
    begin
-      return Sample_Time (Float (Index) / Float (WNM.Sample_Frequency));
+      return Sample_Time (Float (Index) /
+                            Float (WNM_Configuration.Audio.Sample_Frequency));
    end Point_Index_To_Seconds;
 
 end WNM.Sample_Library;

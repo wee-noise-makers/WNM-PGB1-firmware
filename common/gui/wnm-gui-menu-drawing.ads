@@ -42,10 +42,10 @@ package WNM.GUI.Menu.Drawing is
                             Index : Natural);
 
    procedure Draw_Volume (Title : String;
-                          Val : Project.Audio_Volume);
+                          Val : WNM_HAL.Audio_Volume);
 
    procedure Draw_Pan (Title : String;
-                       Val : Project.Audio_Pan);
+                       Val : WNM_HAL.Audio_Pan);
 
    procedure Draw_MIDI_Val (Val      : MIDI.MIDI_Data;
                             Selected : Boolean);

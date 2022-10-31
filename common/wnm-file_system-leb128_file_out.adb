@@ -24,8 +24,6 @@ with Littlefs;
 with Interfaces;
 with Interfaces.C;
 
-with WNM.File_System;
-
 with Flux.Traits.LEB128;
 
 package body WNM.File_System.LEB128_File_Out is

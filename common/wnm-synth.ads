@@ -21,9 +21,9 @@
 
 with Interfaces;
 
-with WNM;
+with WNM_HAL;
+
 with WNM.Time;
-with WNM.Audio;
 with WNM.Sample_Library;
 with WNM.Sample_Stream;
 
@@ -40,8 +40,8 @@ package WNM.Synth is
 
    function Update return WNM.Time.Time_Microseconds;
 
-   procedure Next_Points (Output : out Audio.Stereo_Buffer;
-                          Input  :     Audio.Stereo_Buffer);
+   procedure Next_Points (Output : out WNM_HAL.Stereo_Buffer;
+                          Input  :     WNM_HAL.Stereo_Buffer);
 
    procedure Set_Passthrough (Kind : Audio_Input_Kind);
    function Get_Passthrough return Audio_Input_Kind;

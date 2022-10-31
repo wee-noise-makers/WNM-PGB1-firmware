@@ -110,7 +110,7 @@ package body WNM.GUI.Menu.Drawing is
    -----------------
 
    procedure Draw_Volume (Title : String;
-                          Val   : Project.Audio_Volume)
+                          Val   : WNM_HAL.Audio_Volume)
    is
       X : Integer := Box_Left + 4;
    begin
@@ -136,7 +136,7 @@ package body WNM.GUI.Menu.Drawing is
    --------------
 
    procedure Draw_Pan (Title : String;
-                       Val   : Project.Audio_Pan)
+                       Val   : WNM_HAL.Audio_Pan)
    is
       X : Integer := Box_Left + 4;
    begin
@@ -147,8 +147,8 @@ package body WNM.GUI.Menu.Drawing is
       Screen.Draw_Line ((Box_Center.X - 50, Box_Center.Y),
                         (Box_Center.X + 50, Box_Center.Y));
 
-      Screen.Draw_Line ((Box_Center.X + Integer (Val), Box_Center.Y - 2),
-                        (Box_Center.X + Integer (Val), Box_Center.Y + 2));
+      Screen.Draw_Line ((Box_Center.X - 50 + Integer (Val), Box_Center.Y - 2),
+                        (Box_Center.X - 50 + Integer (Val), Box_Center.Y + 2));
 
       X := Box_Center.X - 8;
       Print (X_Offset    => X,

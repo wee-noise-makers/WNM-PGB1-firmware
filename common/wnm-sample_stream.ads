@@ -19,7 +19,8 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Audio;
+with WNM_HAL;
+
 with WNM.Sample_Library;
 with WNM.MIDI;
 
@@ -49,7 +50,7 @@ package WNM.Sample_Stream is
                     Looping     : Boolean);
 
    procedure Next_Buffer (Track   :     Stream_Track;
-                          Buffer  : out Audio.Mono_Buffer;
+                          Buffer  : out WNM_HAL.Mono_Buffer;
                           Success : out Boolean);
 
 private

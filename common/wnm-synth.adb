@@ -21,25 +21,23 @@
 
 with HAL; use HAL;
 with Interfaces; use Interfaces;
-with WNM.Sample_Stream;          use WNM.Sample_Stream;
-with WNM;                        use WNM;
-with WNM.Sample_Library;         use WNM.Sample_Library;
-with WNM.Audio;                  use WNM.Audio;
+
+with WNM.Sample_Stream;  use WNM.Sample_Stream;
+with WNM.Sample_Library; use WNM.Sample_Library;
 with WNM.Coproc;
 
 with WNM.Speech;
-with WNM.Project;
 
 package body WNM.Synth is
 
    Recording_Source : Rec_Source;
    Recording_Size   : Natural;
 
-   Pan_For_Track : array (WNM.Tracks) of Project.Audio_Pan :=
-     (others => 0);
+   Pan_For_Track : array (WNM.Tracks) of WNM_HAL.Audio_Pan :=
+     (others => WNM_HAL.Init_Pan);
 
-   Volume_For_Track : array (WNM.Tracks) of Project.Audio_Volume :=
-     (others => 50);
+   Volume_For_Track : array (WNM.Tracks) of WNM_HAL.Audio_Volume :=
+     (others => WNM_HAL.Init_Volume);
 
    Passthrough : Audio_Input_Kind := Line_In;
 
@@ -161,63 +159,9 @@ package body WNM.Synth is
    -- Next_Points --
    -----------------
 
-   procedure Next_Points (Output : out Audio.Stereo_Buffer;
-                          Input  :     Audio.Stereo_Buffer)
+   procedure Next_Points (Output : out WNM_HAL.Stereo_Buffer;
+                          Input  :     WNM_HAL.Stereo_Buffer)
    is
-      procedure Mix (Mono_Points : Mono_Buffer;
-                     ST          : Stream_Track);
-
-         ---------
-         -- Mix --
-         ---------
-
-      procedure Mix (Mono_Points : Mono_Buffer;
-                     ST          : Stream_Track)
-      is
-         Val         : Integer_32;
-
-         Sample, Left, Right : Float;
-
-         Volume       : Float;
-         Pan          : Float;
-      begin
-         if ST = Always_On then
-            Volume := 1.0;
-            Pan    := 0.0;
-         else
-            Volume := Float (Volume_For_Track (To_Track (ST))) / 50.0;
-            Pan    := Float (Pan_For_Track (To_Track (ST))) / 100.0;
-         end if;
-
-         for Index in Mono_Points'Range loop
-
-            Sample := Float (Mono_Points (Index));
-            Sample := Sample * Volume;
-
-            Right := Sample * (1.0 - Pan);
-            Left  := Sample * (1.0 + Pan);
-
-            Val := Integer_32 (Output (Index).L) + Integer_32 (Left);
-            if Val > Integer_32 (Mono_Point'Last) then
-               Output (Index).L := Mono_Point'Last;
-            elsif Val < Integer_32 (Mono_Point'First) then
-               Output (Index).L := Mono_Point'First;
-            else
-               Output (Index).L := Mono_Point (Val);
-            end if;
-
-            Val := Integer_32 (Output (Index).R) + Integer_32 (Right);
-            if Val > Integer_32 (Mono_Point'Last) then
-               Output (Index).R := Mono_Point'Last;
-            elsif Val < Integer_32 (Mono_Point'First) then
-               Output (Index).R := Mono_Point'First;
-            else
-               Output (Index).R := Mono_Point (Val);
-            end if;
-
-         end loop;
-      end Mix;
-
    begin
       if Passthrough /= None then
          Output := Input;
@@ -232,7 +176,10 @@ package body WNM.Synth is
          for Track in Stream_Track loop
             Next_Buffer (Track, Sample_Buf, Success);
             if Success then
-               Mix (Sample_Buf, Track);
+               WNM_HAL.Mix (Output,
+                            Sample_Buf,
+                            Volume_For_Track (To_Track (Track)),
+                            Pan_For_Track (To_Track (Track)));
             end if;
          end loop;
       end;
@@ -260,7 +207,8 @@ package body WNM.Synth is
       --     end;
       --  end if;
 
-      Glob_Sample_Clock := Glob_Sample_Clock + Samples_Per_Buffer;
+      Glob_Sample_Clock :=
+        Glob_Sample_Clock + WNM_Configuration.Audio.Samples_Per_Buffer;
    end Next_Points;
 
    ---------------------

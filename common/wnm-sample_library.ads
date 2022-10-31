@@ -19,7 +19,7 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Audio;
+with WNM_HAL;
 
 package WNM.Sample_Library
 with Elaborate_Body
@@ -75,7 +75,7 @@ is
    subtype Sample_Point_Index
      is Sample_Point_Count range 1 .. Sample_Point_Count'Last;
 
-   type Single_Sample_Data is array (Sample_Point_Index) of Audio.Mono_Point
+   type Single_Sample_Data is array (Sample_Point_Index) of WNM_HAL.Mono_Point
      with Size => Single_Sample_Byte_Size * 8;
 
    type Single_Sample_Data_Access is access all Single_Sample_Data;

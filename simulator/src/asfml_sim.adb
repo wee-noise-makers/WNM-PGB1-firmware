@@ -19,7 +19,6 @@ with Sf.Audio.SoundStream; use Sf.Audio.SoundStream;
 with Sf; use Sf;
 
 with WNM.Synth;
-with WNM.Audio;
 
 with ASFML_Util; use ASFML_Util;
 
@@ -28,8 +27,16 @@ with ASFML_Sim_Resources;
 with Ada.Real_Time; use Ada.Real_Time;
 with Sf.System.Vector2; use Sf.System.Vector2;
 with Sf.Graphics.Rect; use Sf.Graphics.Rect;
+with WNM_HAL;
 
 package body ASFML_Sim is
+
+   Audio_Rate_Factor : constant := 2;
+   --  SFML audio has a lower limit on buffer size which is higher than what we
+   --  want for tight timing on the synthesis. So we scale the SFML audio rate
+   --  up which means a bigger buffer will hold the same amount of
+   --  "audio time". Each sample from the smaller WNM buffers is repeated to
+   --  fill the bigger SFML buffers.
 
    LED_Offset : constant array (WNM_Configuration.LED) of sfVector2f :=
      (
@@ -74,17 +81,15 @@ package body ASFML_Sim is
    Flip : Boolean := False
      with Atomic, Volatile;
 
-   Flip_Out_Buffers : array (Boolean) of WNM.Audio.Stereo_Buffer :=
+   Flip_Out_Buffers : array (Boolean) of WNM_HAL.Stereo_Buffer :=
      (others => (others => (0, 0)));
 
-   Flip_In_Buffers : constant array (Boolean) of WNM.Audio.Stereo_Buffer :=
+   Flip_In_Buffers : constant array (Boolean) of WNM_HAL.Stereo_Buffer :=
      (others => (others => (0, 0)));
 
-   Synth_Trig : Ada.Synchronous_Task_Control.Suspension_Object;
-
-   task Synth_Task is
-      entry Start;
-   end Synth_Task;
+   Stream_Data : array
+     (1 .. WNM_HAL.Mono_Buffer'Length * 2 * Audio_Rate_Factor)
+       of aliased sfInt16;
 
    --------------
    -- Set_View --
@@ -423,32 +428,6 @@ package body ASFML_Sim is
          GNAT.OS_Lib.OS_Exit (1);
    end Periodic_Update;
 
-   ----------------
-   -- Synth_Task --
-   ----------------
-
-   task body Synth_Task is
-   begin
-      accept Start;
-
-      loop
-         if Sim_Clock.Is_Held then
-            --  Simulation stopped
-            Flip_Out_Buffers (Flip) := (others => (0, 0));
-         else
-            WNM.Synth.Next_Points (Flip_Out_Buffers (Flip),
-                                   Flip_In_Buffers (Flip));
-         end if;
-
-         Ada.Synchronous_Task_Control.Suspend_Until_True (Synth_Trig);
-         Ada.Synchronous_Task_Control.Set_False (Synth_Trig);
-      end loop;
-   exception
-      when E : others =>
-         Ada.Text_IO.Put_Line (Ada.Exceptions.Exception_Information (E));
-         GNAT.OS_Lib.OS_Exit (42);
-   end Synth_Task;
-
    -------------------------
    -- SFML_Audio_Callback --
    -------------------------
@@ -457,17 +436,30 @@ package body ASFML_Sim is
                                  Unused : System.Address)
                                  return sfBool
    is
-      Stream_Data : array (1 .. WNM.Audio.Mono_Buffer'Length * 2)
-        of aliased sfInt16
-      with Address => Flip_Out_Buffers (Flip)'Address;
+      Stream_Index : Natural := Stream_Data'First;
    begin
+
+      WNM.Synth.Next_Points (Flip_Out_Buffers (Flip),
+                             Flip_In_Buffers (Flip));
+
+      for Point of Flip_Out_Buffers (Flip) loop
+         for Cnt in 1 .. Audio_Rate_Factor loop
+            Stream_Data (Stream_Index) := sfInt16 (Point.L);
+            Stream_Data (Stream_Index + 1) := sfInt16 (Point.R);
+            Stream_Index := Stream_Index + 2;
+         end loop;
+      end loop;
+
       chunk.Samples := Stream_Data (1)'Unchecked_Access;
       chunk.NbSamples := Stream_Data'Length;
 
       Flip := not Flip;
 
-      Ada.Synchronous_Task_Control.Set_True (Synth_Trig);
       return True;
+   exception
+      when E : others =>
+         Ada.Text_IO.Put_Line (Ada.Exceptions.Exception_Information (E));
+         GNAT.OS_Lib.OS_Exit (42);
    end SFML_Audio_Callback;
 
    ----------------
@@ -482,11 +474,13 @@ package body ASFML_Sim is
          GNAT.OS_Lib.Setenv ("ALSOFT_DRIVERS", "dsound");
       end if;
 
-      Stream := create (onGetData    => SFML_Audio_Callback'Access,
-                        onSeek       => null,
-                        channelCount => 2,
-                        sampleRate   => WNM.Sample_Frequency,
-                        userData     => System.Null_Address);
+      Stream := create
+        (onGetData    => SFML_Audio_Callback'Access,
+         onSeek       => null,
+         channelCount => 2,
+         sampleRate   =>
+           WNM_Configuration.Audio.Sample_Frequency * Audio_Rate_Factor,
+         userData     => System.Null_Address);
 
       if Stream = null then
          Ada.Text_IO.Put_Line ("Could not create audio stream");
@@ -509,7 +503,6 @@ package body ASFML_Sim is
       Init_Audio;
 
       Periodic_Update.Start;
-      Synth_Task.Start;
    end Start;
 
 end ASFML_Sim;

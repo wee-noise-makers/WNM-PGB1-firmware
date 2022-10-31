@@ -21,8 +21,6 @@
 
 with font_5x7;
 
-with WNM; use WNM;
-
 package body WNM.GUI.Bitmap_Fonts is
 
    -----------

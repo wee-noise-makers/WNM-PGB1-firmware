@@ -52,11 +52,6 @@ package WNM is
    --  How much time (in miliseconds) users have to press a button to get the
    --  alternative function.
 
-   Sample_Frequency            : constant := 44_100;
-   Samples_Per_Buffer          : constant := 1024;
-   Mono_Buffer_Size_In_Bytes   : constant := Samples_Per_Buffer * 2;
-   Stereo_Buffer_Size_In_Bytes : constant := Samples_Per_Buffer * 4;
-
    Audio_Queue_Size : constant := 3;
 
    function Img (V : Keyboard_Value) return String

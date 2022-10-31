@@ -19,8 +19,6 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.File_System;
-
 with WNM.File_System.LEB128_File_Out;
 
 package WNM.File_System.LEB128_File_In is
