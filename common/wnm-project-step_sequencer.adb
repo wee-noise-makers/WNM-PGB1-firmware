@@ -93,11 +93,11 @@ package body WNM.Project.Step_Sequencer is
       case Mode is
          when UI.Pattern_Mode =>
             Editing_Pattern := V;
-            Pattern_Sequencer.On_Press (Button, Mode);
+            Pattern_Sequencer.On_Press (Button);
 
          when UI.Chord_Mode =>
             Editing_Chord := V;
-            Project.Chord_Sequencer.Chain.On_Press (Button, Mode);
+            Project.Chord_Sequencer.Chain.On_Press (Button);
 
          when UI.Track_Mode | UI.Step_Mode =>
 
@@ -157,10 +157,10 @@ package body WNM.Project.Step_Sequencer is
    begin
       case Mode is
          when UI.Pattern_Mode =>
-            Pattern_Sequencer.On_Release (Button, Mode);
+            Pattern_Sequencer.On_Release (Button);
 
          when UI.Chord_Mode =>
-            Project.Chord_Sequencer.Chain.On_Release (Button, Mode);
+            Project.Chord_Sequencer.Chain.On_Release (Button);
 
          when UI.Track_Mode | UI.Step_Mode =>
             null;
@@ -566,7 +566,6 @@ package body WNM.Project.Step_Sequencer is
                   Current_Playing_Step := Sequencer_Steps'First;
                   Pattern_Sequencer.Signal_End_Of_Pattern;
                   Chord_Sequencer.Signal_End_Of_Pattern;
-                  WNM.Project.Chord_Sequencer.Signal_End_Of_Pattern;
                   Arpeggiator.Signal_End_Of_Pattern;
                end if;
 

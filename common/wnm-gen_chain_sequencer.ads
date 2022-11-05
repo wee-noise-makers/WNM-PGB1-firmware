@@ -22,8 +22,6 @@
 --  This package provides a common implementation of chain sequencing that
 --  will be used for patterns as well as chords (maybe more in the future).
 
-with WNM.UI;
-
 generic
    Max_Patterns_In_Sequence : Natural := 30;
 package WNM.Gen_Chain_Sequencer is
@@ -34,11 +32,9 @@ package WNM.Gen_Chain_Sequencer is
    procedure Play_Pause;
    function Playing return Boolean;
 
-   procedure On_Press (Button : Keyboard_Button;
-                       Mode : WNM.UI.Main_Modes);
+   procedure On_Press (Button : Keyboard_Button);
 
-   procedure On_Release (Button : Keyboard_Button;
-                         Mode : WNM.UI.Main_Modes);
+   procedure On_Release (Button : Keyboard_Button);
 
    procedure Single_Play (K : Keyboard_Value);
 

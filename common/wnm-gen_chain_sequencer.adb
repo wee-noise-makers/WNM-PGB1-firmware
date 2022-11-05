@@ -29,8 +29,8 @@ package body WNM.Gen_Chain_Sequencer is
       Sequence_Of_Pattern : Sequence := (others => Keyboard_Value'First);
       Is_In_Sequence      : In_Seq_Array :=  (Keyboard_Value'First => True,
                                               others               => False);
-      Playing             : Sequence_Range := 1;
-      Last_In             : Sequence_Range := 1;
+      Playing             : Sequence_Range := Sequence_Range'First;
+      Last_In             : Sequence_Range := Sequence_Range'First;
    end record;
 
    Seq_Flip : Boolean := False;
@@ -166,10 +166,8 @@ package body WNM.Gen_Chain_Sequencer is
    -- On_Press --
    --------------
 
-   procedure On_Press (Button : Keyboard_Button;
-                       Mode   : WNM.UI.Main_Modes)
+   procedure On_Press (Button : Keyboard_Button)
    is
-      pragma Unreferenced (Mode);
       V : constant Keyboard_Value := To_Value (Button);
    begin
       case Recording_State is
@@ -198,8 +196,7 @@ package body WNM.Gen_Chain_Sequencer is
    -- On_Release --
    ----------------
 
-   procedure On_Release (Button : Keyboard_Button;
-                         Mode : WNM.UI.Main_Modes)
+   procedure On_Release (Button : Keyboard_Button)
    is null;
 
    -----------------
@@ -240,7 +237,6 @@ package body WNM.Gen_Chain_Sequencer is
 
    procedure Signal_End_Of_Pattern is
    begin
-
       if Cue_Next then
 
          Cue_Next := False;
@@ -251,9 +247,7 @@ package body WNM.Gen_Chain_Sequencer is
 
          case Playing_State is
          when Stop =>
-            raise Program_Error;
-         --  when One_Shot =>
-         --     Playing_State := Stop;
+            null;
          when Play_Loop =>
             Signal_End_Of_Pattern (Sequences (Seq_Flip));
          end case;
