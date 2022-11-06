@@ -533,6 +533,32 @@ package body WNM.Project is
                            return MIDI.MIDI_Data
    is (G_Project.Tracks (T).CC (Id).Controller);
 
+   ----------------
+   -- CC_Default --
+   ----------------
+
+   function CC_Default (T : Tracks := Editing_Track;
+                        Id : CC_Id)
+                        return MIDI.MIDI_Data
+   is (G_Project.Tracks (T).CC (Id).Value);
+
+   ---------------------
+   -- CC_Value_To_Use --
+   ---------------------
+
+   function CC_Value_To_Use (P : Patterns; T : Tracks; S : Sequencer_Steps;
+                             Id : CC_Id)
+                             return MIDI.MIDI_Data
+   is
+      Step : Step_Rec renames G_Project.Seqs (P)(T)(S);
+   begin
+      if Step.CC_Ena (Id) then
+         return Step.CC_Val (Id);
+      else
+         return G_Project.Tracks (T).CC (Id).Value;
+      end if;
+   end CC_Value_To_Use;
+
    -------------------------
    -- CC_Controller_Label --
    -------------------------
@@ -551,10 +577,8 @@ package body WNM.Project is
 
          when Speech_Mode =>
             case Id is
-               when A =>
-                  return "Time Stretch     ";
-               when others =>
-                  return "Not Applicable   ";
+               when A => return "Time Stretch     ";
+               when others => return "Not Applicable   ";
             end case;
       end case;
    end CC_Controller_Label;
@@ -618,10 +642,14 @@ package body WNM.Project is
          when Arp_Notes       => Next (Track.Arp_Notes);
          when MIDI_Chan       => Next (Track.Chan);
          when MIDI_Instrument => null;
-         when CC_A            => Next (Track.CC (A).Controller);
-         when CC_B            => Next (Track.CC (B).Controller);
-         when CC_C            => Next (Track.CC (C).Controller);
-         when CC_D            => Next (Track.CC (D).Controller);
+         when CC_Default_A    => Next (Track.CC (A).Value);
+         when CC_Default_B    => Next (Track.CC (B).Value);
+         when CC_Default_C    => Next (Track.CC (C).Value);
+         when CC_Default_D    => Next (Track.CC (D).Value);
+         when CC_Ctrl_A       => Next (Track.CC (A).Controller);
+         when CC_Ctrl_B       => Next (Track.CC (B).Controller);
+         when CC_Ctrl_C       => Next (Track.CC (C).Controller);
+         when CC_Ctrl_D       => Next (Track.CC (D).Controller);
          when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D => null;
       end case;
 
@@ -647,10 +675,14 @@ package body WNM.Project is
          when Arp_Notes       => Prev (Track.Arp_Notes);
          when MIDI_Chan       => Prev (Track.Chan);
          when MIDI_Instrument => null;
-         when CC_A            => Prev (Track.CC (A).Controller);
-         when CC_B            => Prev (Track.CC (B).Controller);
-         when CC_C            => Prev (Track.CC (C).Controller);
-         when CC_D            => Prev (Track.CC (D).Controller);
+         when CC_Default_A    => Prev (Track.CC (A).Value);
+         when CC_Default_B    => Prev (Track.CC (B).Value);
+         when CC_Default_C    => Prev (Track.CC (C).Value);
+         when CC_Default_D    => Prev (Track.CC (D).Value);
+         when CC_Ctrl_A       => Prev (Track.CC (A).Controller);
+         when CC_Ctrl_B       => Prev (Track.CC (B).Controller);
+         when CC_Ctrl_C       => Prev (Track.CC (C).Controller);
+         when CC_Ctrl_D       => Prev (Track.CC (D).Controller);
          when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D => null;
       end case;
 
@@ -676,10 +708,14 @@ package body WNM.Project is
          when Arp_Notes       => Next_Fast (Track.Arp_Notes);
          when MIDI_Chan       => Next_Fast (Track.Chan);
          when MIDI_Instrument => null;
-         when CC_A            => Next_Fast (Track.CC (A).Controller);
-         when CC_B            => Next_Fast (Track.CC (B).Controller);
-         when CC_C            => Next_Fast (Track.CC (C).Controller);
-         when CC_D            => Next_Fast (Track.CC (D).Controller);
+         when CC_Default_A    => Next_Fast (Track.CC (A).Value);
+         when CC_Default_B    => Next_Fast (Track.CC (B).Value);
+         when CC_Default_C    => Next_Fast (Track.CC (C).Value);
+         when CC_Default_D    => Next_Fast (Track.CC (D).Value);
+         when CC_Ctrl_A       => Next_Fast (Track.CC (A).Controller);
+         when CC_Ctrl_B       => Next_Fast (Track.CC (B).Controller);
+         when CC_Ctrl_C       => Next_Fast (Track.CC (C).Controller);
+         when CC_Ctrl_D       => Next_Fast (Track.CC (D).Controller);
          when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D => null;
       end case;
    end Next_Value_Fast;
@@ -701,10 +737,14 @@ package body WNM.Project is
          when Arp_Notes       => Prev_Fast (Track.Arp_Notes);
          when MIDI_Chan       => Prev_Fast (Track.Chan);
          when MIDI_Instrument => null;
-         when CC_A            => Prev_Fast (Track.CC (A).Controller);
-         when CC_B            => Prev_Fast (Track.CC (B).Controller);
-         when CC_C            => Prev_Fast (Track.CC (C).Controller);
-         when CC_D            => Prev_Fast (Track.CC (D).Controller);
+         when CC_Default_A    => Prev_Fast (Track.CC (A).Value);
+         when CC_Default_B    => Prev_Fast (Track.CC (B).Value);
+         when CC_Default_C    => Prev_Fast (Track.CC (C).Value);
+         when CC_Default_D    => Prev_Fast (Track.CC (D).Value);
+         when CC_Ctrl_A       => Prev_Fast (Track.CC (A).Controller);
+         when CC_Ctrl_B       => Prev_Fast (Track.CC (B).Controller);
+         when CC_Ctrl_C       => Prev_Fast (Track.CC (C).Controller);
+         when CC_Ctrl_D       => Prev_Fast (Track.CC (D).Controller);
          when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D => null;
       end case;
    end Prev_Value_Fast;

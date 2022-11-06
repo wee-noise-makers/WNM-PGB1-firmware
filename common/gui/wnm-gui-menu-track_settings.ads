@@ -44,11 +44,11 @@ private
 
           when Project.MIDI_Mode =>
              S in Track_Mode | MIDI_Chan | MIDI_Instrument | Arp_Mode |
-                  Arp_Notes | CC_A .. CC_Label_D,
+                  Arp_Notes | CC_Default_A .. CC_Label_D,
 
           when Project.Speech_Mode =>
              S in Track_Mode | Speech_Word | Volume | Pan | Arp_Mode |
-                  Arp_Notes);
+                  Arp_Notes | CC_Default_A,
    --  Return True if the given setting is available for the given track mode.
    --  For instance, volume setting is not available in MIDI mode.
 
@@ -87,14 +87,14 @@ private
 
    type MIDI_Instrument_Settings is record
       Name : Project.Controller_Label;
-      CC_A : MIDI.MIDI_Data;
-      CC_A_Label : Project.Controller_Label;
-      CC_B : MIDI.MIDI_Data;
-      CC_B_Label : Project.Controller_Label;
-      CC_C : MIDI.MIDI_Data;
-      CC_C_Label : Project.Controller_Label;
-      CC_D : MIDI.MIDI_Data;
-      CC_D_Label : Project.Controller_Label;
+      CC_Target_A : MIDI.MIDI_Data;
+      CC_A_Label  : Project.Controller_Label;
+      CC_Target_B : MIDI.MIDI_Data;
+      CC_B_Label  : Project.Controller_Label;
+      CC_Target_C : MIDI.MIDI_Data;
+      CC_C_Label  : Project.Controller_Label;
+      CC_Target_D : MIDI.MIDI_Data;
+      CC_D_Label  : Project.Controller_Label;
    end record;
 
    Builtin_Instruments : array (Natural range <>) of MIDI_Instrument_Settings

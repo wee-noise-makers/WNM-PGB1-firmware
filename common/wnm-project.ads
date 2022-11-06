@@ -223,6 +223,15 @@ package WNM.Project is
    function MIDI_Chan (T : Tracks := Editing_Track) return MIDI.MIDI_Channel;
    function Track_Volume (T : Tracks := Editing_Track) return Audio_Volume;
    function Track_Pan (T : Tracks := Editing_Track) return Audio_Pan;
+   function CC_Default (T : Tracks := Editing_Track;
+                        Id : CC_Id)
+                        return MIDI.MIDI_Data;
+
+   function CC_Value_To_Use (P : Patterns; T : Tracks; S : Sequencer_Steps;
+                             Id : CC_Id)
+                             return MIDI.MIDI_Data;
+   --  Return the value for the given step if any, otherwise the default value
+
    function CC_Controller (T : Tracks := Editing_Track;
                            Id : CC_Id)
                            return MIDI.MIDI_Data;
@@ -244,10 +253,14 @@ package WNM.Project is
                            Arp_Notes,
                            MIDI_Chan,
                            MIDI_Instrument,
-                           CC_A, CC_Label_A,
-                           CC_B, CC_Label_B,
-                           CC_C, CC_Label_C,
-                           CC_D, CC_Label_D);
+                           CC_Default_A,
+                           CC_Default_B,
+                           CC_Default_C,
+                           CC_Default_D,
+                           CC_Ctrl_A, CC_Label_A,
+                           CC_Ctrl_B, CC_Label_B,
+                           CC_Ctrl_C, CC_Label_C,
+                           CC_Ctrl_D, CC_Label_D);
 
    for Track_Settings'Size use 8;
    for Track_Settings use (Track_Mode      => 0,
@@ -259,14 +272,18 @@ package WNM.Project is
                            Arp_Notes       => 6,
                            MIDI_Chan       => 7,
                            MIDI_Instrument => 8,
-                           CC_A            => 9,
-                           CC_Label_A      => 10,
-                           CC_B            => 11,
-                           CC_Label_B      => 12,
-                           CC_C            => 13,
-                           CC_Label_C      => 14,
-                           CC_D            => 15,
-                           CC_Label_D      => 16);
+                           CC_Default_A    => 9,
+                           CC_Default_B    => 10,
+                           CC_Default_C    => 11,
+                           CC_Default_D    => 12,
+                           CC_Ctrl_A       => 13,
+                           CC_Label_A      => 14,
+                           CC_Ctrl_B       => 15,
+                           CC_Label_B      => 16,
+                           CC_Ctrl_C       => 17,
+                           CC_Label_C      => 18,
+                           CC_Ctrl_D       => 19,
+                           CC_Label_D      => 20);
 
    subtype User_Track_Settings
      is Track_Settings range Track_Mode .. CC_Label_D;
@@ -394,6 +411,7 @@ private
 
    type CC_Setting is record
       Controller : MIDI.MIDI_Data := 0;
+      Value      : MIDI.MIDI_Data := 63; --  MIDI_Data'Last / 2
       Label      : Controller_Label := "Noname Controller";
    end record;
    type CC_Setting_Array is array (CC_Id) of CC_Setting;
@@ -417,10 +435,10 @@ private
       Chan => 0,
       Volume => Init_Volume,
       Pan => Init_Pan,
-      CC => ((0, "Control 0        "),
-             (1, "Control 1        "),
-             (2, "Control 2        "),
-             (3, "Control 3        ")
+      CC => ((0, 63, "Control 0        "),
+             (1, 63, "Control 1        "),
+             (2, 63, "Control 2        "),
+             (3, 63, "Control 3        ")
             ),
       Sample => Sample_Library.Valid_Sample_Index'First,
       Word => Speech.Word'First,

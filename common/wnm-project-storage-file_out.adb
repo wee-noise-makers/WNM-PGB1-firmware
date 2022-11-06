@@ -164,4 +164,14 @@ package body WNM.Project.Storage.File_Out is
       Push_G (Parent (This), A);
    end Push;
 
+   ----------
+   -- Push --
+   ----------
+
+   procedure Push (This : in out Instance; A : MIDI.MIDI_Data) is
+      procedure Push_G is new Push_Gen (MIDI.MIDI_Data);
+   begin
+      Push_G (Parent (This), A);
+   end Push;
+
 end WNM.Project.Storage.File_Out;

@@ -142,10 +142,10 @@ package body WNM.GUI.Menu.Track_Settings is
 
    function To_CC_Id (S : Settings) return Project.CC_Id
    is (case S is
-          when CC_A | CC_Label_A => A,
-          when CC_B | CC_Label_B => B,
-          when CC_C | CC_Label_C => C,
-          when CC_D | CC_Label_D => D,
+          when CC_Default_A | CC_Ctrl_A | CC_Label_A => A,
+          when CC_Default_B | CC_Ctrl_B | CC_Label_B => B,
+          when CC_Default_C | CC_Ctrl_C | CC_Label_C => C,
+          when CC_Default_D | CC_Ctrl_D | CC_Label_D => D,
           when others => raise Program_Error);
 
    -----------------
@@ -207,7 +207,17 @@ package body WNM.GUI.Menu.Track_Settings is
 
             Draw_Word_Select (Project.Selected_Word (Editing_Track));
 
-         when CC_A | CC_B | CC_C | CC_D =>
+         when CC_Default_A | CC_Default_B | CC_Default_C | CC_Default_D =>
+            declare
+               CC : constant Project.CC_Id :=
+                 To_CC_Id (This.Current_Setting);
+            begin
+               Draw_Title (Project.CC_Controller_Label (Editing_Track, CC),
+                           "");
+               Draw_Value (Project.CC_Default (Editing_Track, CC)'Img);
+            end;
+
+         when CC_Ctrl_A | CC_Ctrl_B | CC_Ctrl_C | CC_Ctrl_D =>
             declare
                CC : constant Project.CC_Id :=
                  To_CC_Id (This.Current_Setting);
@@ -226,6 +236,7 @@ package body WNM.GUI.Menu.Track_Settings is
                            "");
                Draw_Value (Project.CC_Controller_Label (Editing_Track, CC));
             end;
+
       end case;
 
    end Draw;
@@ -252,10 +263,10 @@ package body WNM.GUI.Menu.Track_Settings is
                      I : MIDI_Instrument_Settings renames
                        Builtin_Instruments (This.Instrument);
                   begin
-                     Set_CC_Controller (Editing_Track, A, I.CC_A);
-                     Set_CC_Controller (Editing_Track, B, I.CC_B);
-                     Set_CC_Controller (Editing_Track, C, I.CC_C);
-                     Set_CC_Controller (Editing_Track, D, I.CC_D);
+                     Set_CC_Controller (Editing_Track, A, I.CC_Target_A);
+                     Set_CC_Controller (Editing_Track, B, I.CC_Target_B);
+                     Set_CC_Controller (Editing_Track, C, I.CC_Target_C);
+                     Set_CC_Controller (Editing_Track, D, I.CC_Target_D);
 
                      Set_CC_Controller_Label (Editing_Track, A, I.CC_A_Label);
                      Set_CC_Controller_Label (Editing_Track, B, I.CC_B_Label);

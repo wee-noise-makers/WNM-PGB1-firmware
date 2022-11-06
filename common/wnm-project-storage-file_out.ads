@@ -45,6 +45,7 @@ private package WNM.Project.Storage.File_Out is
    procedure Push (This : in out Instance; A : Step_Settings);
    procedure Push (This : in out Instance; A : Track_Settings);
    procedure Push (This : in out Instance; A : Chord_Setting_Kind);
+   procedure Push (This : in out Instance; A : MIDI.MIDI_Data);
 
 private
 

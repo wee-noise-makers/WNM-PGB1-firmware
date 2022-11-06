@@ -254,17 +254,29 @@ package body WNM.Project.Storage is
                   when MIDI_Chan =>
                      Output.Push (Out_UInt (Track.Chan));
 
-                  when CC_A =>
-                     Output.Push (Out_UInt (Track.CC (A).Controller));
+                  when CC_Default_A =>
+                     Output.Push (Track.CC (A).Value);
 
-                  when CC_B =>
-                     Output.Push (Out_UInt (Track.CC (B).Controller));
+                  when CC_Default_B =>
+                     Output.Push (Track.CC (B).Value);
 
-                  when CC_C =>
-                     Output.Push (Out_UInt (Track.CC (C).Controller));
+                  when CC_Default_C =>
+                     Output.Push (Track.CC (C).Value);
 
-                  when CC_D =>
-                     Output.Push (Out_UInt (Track.CC (D).Controller));
+                  when CC_Default_D =>
+                     Output.Push (Track.CC (D).Value);
+
+                  when CC_Ctrl_A =>
+                     Output.Push (Track.CC (A).Controller);
+
+                  when CC_Ctrl_B =>
+                     Output.Push (Track.CC (B).Controller);
+
+                  when CC_Ctrl_C =>
+                     Output.Push (Track.CC (C).Controller);
+
+                  when CC_Ctrl_D =>
+                     Output.Push (Track.CC (D).Controller);
 
                   when CC_Label_A =>
                      Output.Push (Track.CC (A).Label);
@@ -437,14 +449,18 @@ package body WNM.Project.Storage is
                when Arp_Notes   => Read (Input, Track.Arp_Notes);
                when MIDI_Chan   => Read (Input, Track.Chan);
                when MIDI_Instrument => null;
-               when CC_A        => Read (Input, Track.CC (A).Controller);
-               when CC_B        => Read (Input, Track.CC (B).Controller);
-               when CC_C        => Read (Input, Track.CC (C).Controller);
-               when CC_D        => Read (Input, Track.CC (D).Controller);
-               when CC_Label_A  => File_In.Read (Input, Track.CC (A).Label);
-               when CC_Label_B  => File_In.Read (Input, Track.CC (B).Label);
-               when CC_Label_C  => File_In.Read (Input, Track.CC (C).Label);
-               when CC_Label_D  => File_In.Read (Input, Track.CC (D).Label);
+               when CC_Default_A => Read (Input, Track.CC (A).Value);
+               when CC_Default_B => Read (Input, Track.CC (B).Value);
+               when CC_Default_C => Read (Input, Track.CC (C).Value);
+               when CC_Default_D => Read (Input, Track.CC (D).Value);
+               when CC_Ctrl_A    => Read (Input, Track.CC (A).Controller);
+               when CC_Ctrl_B    => Read (Input, Track.CC (B).Controller);
+               when CC_Ctrl_C    => Read (Input, Track.CC (C).Controller);
+               when CC_Ctrl_D    => Read (Input, Track.CC (D).Controller);
+               when CC_Label_A   => File_In.Read (Input, Track.CC (A).Label);
+               when CC_Label_B   => File_In.Read (Input, Track.CC (B).Label);
+               when CC_Label_C   => File_In.Read (Input, Track.CC (C).Label);
+               when CC_Label_D   => File_In.Read (Input, Track.CC (D).Label);
             end case;
 
             exit when Input.Status /= Ok;
