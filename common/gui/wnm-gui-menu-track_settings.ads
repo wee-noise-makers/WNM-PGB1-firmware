@@ -44,7 +44,7 @@ private
 
           when Project.MIDI_Mode =>
              S in Track_Mode | MIDI_Chan | MIDI_Instrument | Arp_Mode |
-                  Arp_Notes | CC_Default_A .. CC_Label_D,
+                  Arp_Notes | Notes_Per_Chord | CC_Default_A .. CC_Label_D,
 
           when Project.Speech_Mode =>
              S in Track_Mode | Speech_Word | Volume | Pan | Arp_Mode |

@@ -21,7 +21,6 @@
 
 with HAL; use HAL;
 
-with WNM.Project.Chord_Sequencer;
 with WNM.Coproc;
 
 package body WNM.Project is
@@ -157,36 +156,60 @@ package body WNM.Project is
                        return Note_Mode_Kind
    is (G_Project.Seqs (Editing_Pattern) (Editing_Track) (Step).Note_Mode);
 
-   ----------
-   -- Note --
-   ----------
+   --------------
+   -- Note_Img --
+   --------------
 
-   function Note (Step : Sequencer_Steps := Editing_Step)
-                  return MIDI.MIDI_Key
+   function Note_Img (Step : Sequencer_Steps := Editing_Step)
+                      return String
    is
       S : Step_Rec renames G_Project.Seqs
         (Editing_Pattern)
         (Editing_Track)
         (Step);
+
+      Chord_Len : constant MIDI.MIDI_Key :=
+        MIDI.MIDI_Key (Chord_Settings.Chord_Index_Range'Last) + 1;
+
+      function Oct_Offset return String
+      is (case S.Oct is
+             when -8 => "-8",
+             when -7 => "-7",
+             when -6 => "-6",
+             when -5 => "-5",
+             when -4 => "-4",
+             when -3 => "-3",
+             when -2 => "-2",
+             when -1 => "-1",
+             when  0 => " 0",
+             when  1 => "+1",
+             when  2 => "+2",
+             when  3 => "+3",
+             when  4 => "+4",
+             when  5 => "+5",
+             when  6 => "+6",
+             when  7 => "+7",
+             when  8 => "+8");
+
    begin
       case S.Note_Mode is
          when Note =>
-            return S.Note;
+            return MIDI.Key_Img (S.Note);
          when Chord =>
-            return S.Note;
+            return Oct_Offset & " oct";
          when Note_In_Chord =>
-            declare
-               use WNM.Chord_Settings;
-               use WNM.Project.Chord_Sequencer;
-               Chord : constant Chord_Notes := Current_Chord;
-            begin
-               return Chord (Chord_Index_Range (S.Note));
-            end;
+            return
+              (case S.Note is
+                  when 0 => "root",
+                  when 1 => "2nd",
+                  when 2 => "3rd",
+                  when 3 => "4th",
+                  when Chord_Len .. MIDI.MIDI_Key'Last =>
+                    raise Program_Error) & Oct_Offset;
          when Arp =>
-            return 0;
-
+            return "Arp" & Oct_Offset;
       end case;
-   end Note;
+   end Note_Img;
 
    --------------
    -- Duration --
@@ -269,14 +292,9 @@ package body WNM.Project is
       case S.Note_Mode is
          when Note =>
             S.Note := MIDI.C4;
-         when Chord =>
-            S.Note := MIDI.MIDI_Key
-              (WNM.Chord_Settings.Chord_Index_Range'Last);
-         when Note_In_Chord =>
-            S.Note := MIDI.MIDI_Key
-              (WNM.Chord_Settings.Chord_Index_Range'First);
-         when Arp =>
-            null;
+         when Chord | Note_In_Chord | Arp =>
+            S.Note := 0;
+            S.Oct := 0;
       end case;
    end Note_Mode_Next;
 
@@ -307,18 +325,23 @@ package body WNM.Project is
    begin
       case S.Note_Mode is
          when Note =>
-            if S.Note /= MIDI.MIDI_Key'Last then
+            if S.Note /= MIDI_Key'Last then
                S.Note := S.Note + 1;
             end if;
 
-         when Chord | Note_In_Chord =>
-            if S.Note /= MIDI_Key (WNM.Chord_Settings.Chord_Index_Range'Last)
+         when Note_In_Chord =>
+            if S.Note /= MIDI_Key (Chord_Settings.Chord_Index_Range'Last)
             then
                S.Note := S.Note + 1;
+            elsif S.Oct /= Octave_Offset'Last then
+               S.Oct := S.Oct + 1;
+               S.Note := MIDI_Key (Chord_Settings.Chord_Index_Range'First);
             end if;
 
-         when Arp =>
-            null;
+         when Chord | Arp =>
+            if S.Oct /= Octave_Offset'Last then
+               S.Oct := S.Oct + 1;
+            end if;
       end case;
 
    end Note_Next;
@@ -336,13 +359,24 @@ package body WNM.Project is
         (Step);
    begin
       case S.Note_Mode is
-         when Note | Note_In_Chord | Chord =>
-            if S.Note /= MIDI.MIDI_Key'First then
+         when Note =>
+            if S.Note /= MIDI_Key'First then
                S.Note := S.Note - 1;
             end if;
 
-         when Arp =>
-            null;
+         when Note_In_Chord =>
+            if S.Note /= MIDI_Key (Chord_Settings.Chord_Index_Range'First)
+            then
+               S.Note := S.Note - 1;
+            elsif S.Oct /= Octave_Offset'First then
+               S.Oct := S.Oct - 1;
+               S.Note := MIDI_Key (Chord_Settings.Chord_Index_Range'Last);
+            end if;
+
+         when Chord | Arp =>
+            if S.Oct /= Octave_Offset'First then
+               S.Oct := S.Oct - 1;
+            end if;
       end case;
    end Note_Prev;
 
@@ -612,6 +646,14 @@ package body WNM.Project is
    function Arp_Notes (T : Tracks := Editing_Track) return Arp_Notes_Kind
    is (G_Project.Tracks (T).Arp_Notes);
 
+   ---------------------
+   -- Notes_Per_Chord --
+   ---------------------
+
+   function Notes_Per_Chord (T : Tracks := Editing_Track)
+                             return Natural
+   is (Natural (G_Project.Tracks (T).Notes_Per_Chord) + 1);
+
    ---------------------------
    -- Update_Coproc_Vol_Pan --
    ---------------------------
@@ -640,6 +682,7 @@ package body WNM.Project is
          when Pan             => Next (Track.Pan);
          when Arp_Mode        => Next (Track.Arp_Mode);
          when Arp_Notes       => Next (Track.Arp_Notes);
+         when Notes_Per_Chord => Next (Track.Notes_Per_Chord);
          when MIDI_Chan       => Next (Track.Chan);
          when MIDI_Instrument => null;
          when CC_Default_A    => Next (Track.CC (A).Value);
@@ -673,6 +716,7 @@ package body WNM.Project is
          when Pan             => Prev (Track.Pan);
          when Arp_Mode        => Prev (Track.Arp_Mode);
          when Arp_Notes       => Prev (Track.Arp_Notes);
+         when Notes_Per_Chord => Prev (Track.Notes_Per_Chord);
          when MIDI_Chan       => Prev (Track.Chan);
          when MIDI_Instrument => null;
          when CC_Default_A    => Prev (Track.CC (A).Value);
@@ -706,6 +750,7 @@ package body WNM.Project is
          when Pan             => Next_Fast (Track.Pan);
          when Arp_Mode        => Next_Fast (Track.Arp_Mode);
          when Arp_Notes       => Next_Fast (Track.Arp_Notes);
+         when Notes_Per_Chord => Next_Fast (Track.Notes_Per_Chord);
          when MIDI_Chan       => Next_Fast (Track.Chan);
          when MIDI_Instrument => null;
          when CC_Default_A    => Next_Fast (Track.CC (A).Value);
@@ -735,6 +780,7 @@ package body WNM.Project is
          when Pan             => Prev_Fast (Track.Pan);
          when Arp_Mode        => Prev_Fast (Track.Arp_Mode);
          when Arp_Notes       => Prev_Fast (Track.Arp_Notes);
+         when Notes_Per_Chord => Prev_Fast (Track.Notes_Per_Chord);
          when MIDI_Chan       => Prev_Fast (Track.Chan);
          when MIDI_Instrument => null;
          when CC_Default_A    => Prev_Fast (Track.CC (A).Value);

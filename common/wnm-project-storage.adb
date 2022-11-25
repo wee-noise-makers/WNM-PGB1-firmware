@@ -160,6 +160,20 @@ package body WNM.Project.Storage is
                                  Output.Push (Out_UInt (Step.Note));
                               end if;
 
+                           when Octave_Shift =>
+                              if Step.Oct /= Default_Step.Oct then
+                                 Output.Push (Set);
+
+                                 declare
+                                    Oct : constant Integer :=
+                                      Integer (Step.Oct) -
+                                      Integer (Octave_Offset'First);
+                                 begin
+                                    Output.Push
+                                      (Out_UInt (UInt8 (Oct)));
+                                 end;
+                              end if;
+
                            when Duration =>
                               if Step.Duration /= Default_Step.Duration then
                                  Output.Push (Set);
@@ -250,6 +264,9 @@ package body WNM.Project.Storage is
 
                   when Arp_Notes =>
                      Output.Push (Out_UInt (Track.Arp_Notes'Enum_Rep));
+
+                  when Notes_Per_Chord =>
+                     Output.Push (Out_UInt (Track.Notes_Per_Chord'Enum_Rep));
 
                   when MIDI_Chan =>
                      Output.Push (Out_UInt (Track.Chan));
@@ -411,6 +428,8 @@ package body WNM.Project.Storage is
       procedure Read is new File_In.Read_Gen_Enum (Arp_Notes_Kind);
       procedure Read is new File_In.Read_Gen_Mod (MIDI.MIDI_Channel);
       procedure Read is new File_In.Read_Gen_Mod (MIDI.MIDI_Data);
+      procedure Read is new File_In.Read_Gen_Int
+        (Chord_Settings.Chord_Index_Range);
 
       T_Id : Tracks;
       S : Track_Settings;
@@ -447,6 +466,7 @@ package body WNM.Project.Storage is
                when Pan         => Read (Input, Track.Pan);
                when Arp_Mode    => Read (Input, Track.Arp_Mode);
                when Arp_Notes   => Read (Input, Track.Arp_Notes);
+               when Notes_Per_Chord => Read (Input, Track.Notes_Per_Chord);
                when MIDI_Chan   => Read (Input, Track.Chan);
                when MIDI_Instrument => null;
                when CC_Default_A => Read (Input, Track.CC (A).Value);
@@ -535,6 +555,8 @@ package body WNM.Project.Storage is
       Set : Step_Settings;
       Raw : In_UInt;
       Success : Boolean;
+
+      Val : UInt8;
    begin
       loop
          Input.Read (Raw);
@@ -547,22 +569,32 @@ package body WNM.Project.Storage is
          exit when not Success;
 
          case Set is
-            when Condition   => Read (Input, Step.Trig);
-            when Note        => Read (Input, Step.Note);
-            when Duration    => Read (Input, Step.Duration);
-            when Velo        => Read (Input, Step.Velo);
-            when Repeat      => Read (Input, Step.Repeat);
-            when Repeat_Rate => Read (Input, Step.Repeat_Rate);
-            when CC_A        =>
+            when Condition    => Read (Input, Step.Trig);
+            when Note         => Read (Input, Step.Note);
+
+            when Octave_Shift =>
+               Read (Input, Val);
+               declare
+                  Oct : constant Integer :=
+                    Integer (Val) + Integer (Octave_Offset'First);
+               begin
+                  Step.Oct := Octave_Offset (Oct);
+               end;
+
+            when Duration     => Read (Input, Step.Duration);
+            when Velo         => Read (Input, Step.Velo);
+            when Repeat       => Read (Input, Step.Repeat);
+            when Repeat_Rate  => Read (Input, Step.Repeat_Rate);
+            when CC_A         =>
                Step.CC_Ena (A) := True;
                Read (Input, Step.CC_Val (A));
-            when CC_B        =>
+            when CC_B         =>
                Step.CC_Ena (B) := True;
                Read (Input, Step.CC_Val (B));
-            when CC_C        =>
+            when CC_C         =>
                Step.CC_Ena (C) := True;
                Read (Input, Step.CC_Val (C));
-            when CC_D        =>
+            when CC_D         =>
                Step.CC_Ena (D) := True;
                Read (Input, Step.CC_Val (D));
 

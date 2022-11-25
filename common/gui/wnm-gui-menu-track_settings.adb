@@ -191,6 +191,10 @@ package body WNM.GUI.Menu.Track_Settings is
             Draw_Title ("Arpeggiator notes:", "");
             Draw_Value (Project.Img (Project.Arp_Notes));
 
+         when Notes_Per_Chord =>
+            Draw_Title ("Notes per Chord:", "");
+            Draw_Value (Project.Notes_Per_Chord (Editing_Track)'Img);
+
          when MIDI_Chan =>
             Draw_Title ("MIDI Channel:", "");
             Draw_Value (Project.MIDI_Chan (Editing_Track)'Img);

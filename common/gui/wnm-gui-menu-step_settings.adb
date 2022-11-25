@@ -89,16 +89,7 @@ package body WNM.GUI.Menu.Step_Settings is
                   raise Program_Error;
             end case;
 
-            case Project.Note_Mode (Step) is
-               when Project.Note | Project.Note_In_Chord =>
-                  Draw_MIDI_Note (Project.Note,
-                                  This.Current_Setting = Project.Note);
-               when Project.Chord =>
-                  Draw_Value (Project.Note (Step)'Img);
-
-               when Project.Arp =>
-                  Draw_Value ("---");
-            end case;
+            Draw_Value (Project.Note_Img (Step));
 
             Draw_Duration (Project.Duration (Step),
                            This.Current_Setting = Project.Duration);

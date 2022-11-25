@@ -50,6 +50,35 @@ package body WNM.Project.Step_Sequencer is
    procedure Play_Step (P : Patterns; T : Tracks; S : Sequencer_Steps;
                         Now : Time.Time_Microseconds := Time.Clock);
 
+   ------------
+   -- Offset --
+   ------------
+
+   function Offset (K : MIDI.MIDI_Key; Oct : Octave_Offset)
+                    return MIDI.MIDI_Key
+   is
+      Result : MIDI.MIDI_Key := K;
+   begin
+      if Oct >= 0 then
+         for X in 1 .. Natural (Oct) loop
+            if Result <= (MIDI.MIDI_Key'Last - 12) then
+               Result := Result + 12;
+            else
+               return Result;
+            end if;
+         end loop;
+      else
+         for X in 1 .. Natural (-Oct) loop
+            if Result >= 12 then
+               Result := Result - 12;
+            else
+               return Result;
+            end if;
+         end loop;
+      end if;
+      return Result;
+   end Offset;
+
    ------------------
    -- Playing_Step --
    ------------------
@@ -357,13 +386,14 @@ package body WNM.Project.Step_Sequencer is
 
    procedure Play_Arp (T           : Tracks;
                        Velo        : MIDI.MIDI_Data;
+                       Oct         : Octave_Offset;
                        Rep         : Repeat_Cnt;
                        Now         : Time.Time_Microseconds;
                        Duration    : Time.Time_Microseconds;
                        Repeat_Span : Time.Time_Microseconds)
    is
       Repeat_Time : Time.Time_Microseconds := Now;
-      Key : MIDI.MIDI_Key := Arpeggiator.Next_Note (T);
+      Key : MIDI.MIDI_Key := Offset (Arpeggiator.Next_Note (T), Oct);
    begin
 
       Send_Now (T, Key, Velo, On);
@@ -386,6 +416,7 @@ package body WNM.Project.Step_Sequencer is
    procedure Play_Chord (T           : Tracks;
                          Chord       : WNM.Chord_Settings.Chord_Notes;
                          Last_Note   : WNM.Chord_Settings.Chord_Index_Range;
+                         Oct         : Octave_Offset;
                          Velo        : MIDI.MIDI_Data;
                          Rep         : Repeat_Cnt;
                          Now         : Time.Time_Microseconds;
@@ -393,20 +424,23 @@ package body WNM.Project.Step_Sequencer is
                          Repeat_Span : Time.Time_Microseconds)
    is
       Repeat_Time : Time.Time_Microseconds := Now;
+      Offset_Chord : WNM.Chord_Settings.Chord_Notes;
    begin
       for X in Chord'First .. Last_Note loop
+         Offset_Chord (X) := Offset (Chord (X), Oct);
+      end loop;
 
-         Send_Now (T, Chord (X), Velo, On);
-         Send_Later (T, Now + Duration, Chord (X), 0, Off);
-
+      for X in Chord'First .. Last_Note loop
+         Send_Now (T, Offset_Chord (X), Velo, On);
+         Send_Later (T, Now + Duration, Offset_Chord (X), 0, Off);
       end loop;
 
       for X in 1 .. Rep loop
          Repeat_Time := Repeat_Time + Repeat_Span;
 
          for X in Chord'First .. Last_Note loop
-            Send_Later (T, Repeat_Time, Chord (X), Velo, On);
-            Send_Later (T, Repeat_Span + Duration, Chord (X), 0, Off);
+            Send_Later (T, Repeat_Time, Offset_Chord (X), Velo, On);
+            Send_Later (T, Repeat_Span + Duration, Offset_Chord (X), 0, Off);
          end loop;
       end loop;
    end Play_Chord;
@@ -466,24 +500,25 @@ package body WNM.Project.Step_Sequencer is
 
          when Note_In_Chord =>
 
-            Play_Note (T, Current_Chord (Chord_Index_Range (Step.Note)),
+            Play_Note (T,
+                       Offset
+                         (Current_Chord (Chord_Index_Range (Step.Note)),
+                          Step.Oct),
                        Step.Velo, Step.Repeat,
                        Now, Repeat_Duration, Repeat_Span);
 
          when Arp =>
 
             Play_Arp (T,
-                      Step.Velo, Step.Repeat,
+                      Step.Velo, Step.Oct, Step.Repeat,
                       Now, Repeat_Duration, Repeat_Span);
 
          when Chord =>
 
             Play_Chord
               (T, Current_Chord,
-               Chord_Index_Range
-                 (Integer'Min (Integer (Chord_Index_Range'Last),
-                 Integer (Step.Note))),
-
+               G_Project.Tracks (T).Notes_Per_Chord,
+               Step.Oct,
                Step.Velo, Step.Repeat,
                Now, Repeat_Duration, Repeat_Span);
       end case;

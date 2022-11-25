@@ -131,8 +131,8 @@ package WNM.Project is
                          return Repeat_Rate_Kind;
    function Note_Mode (Step : Sequencer_Steps := Editing_Step)
                        return Note_Mode_Kind;
-   function Note (Step : Sequencer_Steps := Editing_Step)
-                  return MIDI.MIDI_Key;
+   function Note_Img (Step : Sequencer_Steps := Editing_Step)
+                      return String;
    function Duration (Step : Sequencer_Steps := Editing_Step)
                       return Note_Duration;
    function Velocity (Step : Sequencer_Steps := Editing_Step)
@@ -161,20 +161,22 @@ package WNM.Project is
                           CC_B,
                           CC_C,
                           CC_D,
-                          Note_Mode);
+                          Note_Mode,
+                          Octave_Shift);
 
    for Step_Settings'Size use 8;
-   for Step_Settings use (Condition   => 0,
-                          Note        => 1,
-                          Duration    => 2,
-                          Velo        => 3,
-                          Repeat      => 4,
-                          Repeat_Rate => 5,
-                          CC_A        => 6,
-                          CC_B        => 7,
-                          CC_C        => 8,
-                          CC_D        => 9,
-                          Note_Mode   => 10);
+   for Step_Settings use (Condition    => 0,
+                          Note         => 1,
+                          Duration     => 2,
+                          Velo         => 3,
+                          Repeat       => 4,
+                          Repeat_Rate  => 5,
+                          CC_A         => 6,
+                          CC_B         => 7,
+                          CC_C         => 8,
+                          CC_D         => 9,
+                          Note_Mode    => 10,
+                          Octave_Shift => 11);
 
    subtype User_Step_Settings is Step_Settings range Condition .. CC_D;
 
@@ -243,6 +245,8 @@ package WNM.Project is
    function Selected_Word (T : Tracks := Editing_Track) return Speech.Word;
    function Arp_Mode (T : Tracks := Editing_Track) return Arp_Mode_Kind;
    function Arp_Notes (T : Tracks := Editing_Track) return Arp_Notes_Kind;
+   function Notes_Per_Chord (T : Tracks := Editing_Track)
+                             return Natural;
 
    type Track_Settings is (Track_Mode,
                            Sample,
@@ -251,6 +255,7 @@ package WNM.Project is
                            Pan,
                            Arp_Mode,
                            Arp_Notes,
+                           Notes_Per_Chord,
                            MIDI_Chan,
                            MIDI_Instrument,
                            CC_Default_A,
@@ -270,20 +275,21 @@ package WNM.Project is
                            Pan             => 4,
                            Arp_Mode        => 5,
                            Arp_Notes       => 6,
-                           MIDI_Chan       => 7,
-                           MIDI_Instrument => 8,
-                           CC_Default_A    => 9,
-                           CC_Default_B    => 10,
-                           CC_Default_C    => 11,
-                           CC_Default_D    => 12,
-                           CC_Ctrl_A       => 13,
-                           CC_Label_A      => 14,
-                           CC_Ctrl_B       => 15,
-                           CC_Label_B      => 16,
-                           CC_Ctrl_C       => 17,
-                           CC_Label_C      => 18,
-                           CC_Ctrl_D       => 19,
-                           CC_Label_D      => 20);
+                           Notes_Per_Chord => 7,
+                           MIDI_Chan       => 8,
+                           MIDI_Instrument => 9,
+                           CC_Default_A    => 10,
+                           CC_Default_B    => 11,
+                           CC_Default_C    => 12,
+                           CC_Default_D    => 13,
+                           CC_Ctrl_A       => 14,
+                           CC_Label_A      => 15,
+                           CC_Ctrl_B       => 16,
+                           CC_Label_B      => 17,
+                           CC_Ctrl_C       => 18,
+                           CC_Label_C      => 19,
+                           CC_Ctrl_D       => 20,
+                           CC_Label_D      => 21);
 
    subtype User_Track_Settings
      is Track_Settings range Track_Mode .. CC_Label_D;
@@ -378,8 +384,15 @@ private
    package Chord_Name_Next is new Enum_Next (WNM.Chord_Settings.Chord_Name);
    use Chord_Name_Next;
 
+   package Notes_Per_Chord_Next
+   is new Enum_Next (Chord_Settings.Chord_Index_Range, Wrap => False);
+   use Notes_Per_Chord_Next;
+
    type CC_Val_Array is array (CC_Id) of MIDI.MIDI_Data;
    type CC_Ena_Array is array (CC_Id) of Boolean;
+
+   type Octave_Offset is range -8 .. 8;
+   for Octave_Offset'Size use 5;
 
    type Step_Rec is record
       Trig        : Trigger_Kind;
@@ -388,6 +401,7 @@ private
 
       Note_Mode : Note_Mode_Kind;
       Note      : MIDI.MIDI_Key;
+      Oct       : Octave_Offset;
       Duration  : Note_Duration;
       Velo      : MIDI.MIDI_Data;
       CC_Ena    : CC_Ena_Array;
@@ -400,6 +414,7 @@ private
       Repeat_Rate => Rate_1_8,
       Note_Mode => Note,
       Note => MIDI.C4,
+      Oct => 0,
       Duration => Quarter,
       Velo => MIDI.MIDI_Data'Last,
       CC_Ena => (others => False),
@@ -426,6 +441,8 @@ private
       Word   : Speech.Word := Speech.Word'First;
       Arp_Mode : Arp_Mode_Kind := Arp_Mode_Kind'First;
       Arp_Notes : Arp_Notes_Kind := Arp_Notes_Kind'First;
+      Notes_Per_Chord : Chord_Settings.Chord_Index_Range :=
+        Chord_Settings.Chord_Index_Range'Last;
    end record;
 
    type Track_Arr is array (Tracks) of Track_Rec;
@@ -443,7 +460,8 @@ private
       Sample => Sample_Library.Valid_Sample_Index'First,
       Word => Speech.Word'First,
       Arp_Mode => Arp_Mode_Kind'First,
-      Arp_Notes => Arp_Notes_Kind'First
+      Arp_Notes => Arp_Notes_Kind'First,
+      Notes_Per_Chord => Chord_Settings.Chord_Index_Range'Last
      );
 
    type Chord_Rec is record
