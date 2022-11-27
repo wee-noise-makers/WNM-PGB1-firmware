@@ -49,19 +49,23 @@ package WNM.Project is
    -- Step --
    ----------
 
-   type Trigger_Kind is (None, Always, Fill, Percent_25, Percent_50,
-                         Percent_75,
-                         One_Of_Two, One_Of_Three);
+   type Trigger_Kind is (None, Always, Fill, Not_Fill,
+                         Percent_25, Percent_50, Percent_75,
+                         One_Of_Two, One_Of_Three, One_Of_Four, One_Of_Five);
+
    function Img (T : Trigger_Kind) return String
    is (case T is
-          when None        => "None",
-          when Always      => "Always",
-          when Fill        => "Fill",
-          when Percent_25  => "25%",
-          when Percent_50  => "50%",
-          when Percent_75  => "75%",
-          when One_Of_Two  => "1/2",
-          when One_Of_Three => "1/3");
+          when None         => "None",
+          when Always       => "Always",
+          when Fill         => "Fill",
+          when Not_Fill     => "Not Fill",
+          when Percent_25   => "25%",
+          when Percent_50   => "50%",
+          when Percent_75   => "75%",
+          when One_Of_Two   => "1/2",
+          when One_Of_Three => "1/3",
+          when One_Of_Four  => "1/4",
+          when One_Of_Five  => "1/5");
 
    type Note_Duration is (Double, Whole, Half, Quarter, N_8th,
                           N_16th, N_32nd);

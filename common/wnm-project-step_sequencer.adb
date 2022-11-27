@@ -550,30 +550,37 @@ package body WNM.Project.Step_Sequencer is
             --  Send CC first
             Process_CC_Values (Pattern, Track, Step);
 
-            case S.Trig is
-            when None =>
-               Condition := False;
-            when Always =>
-               Condition := True;
-            when Fill =>
-               Condition := WNM.UI.FX_On (B1);
-            when Percent_25 =>
-               Condition := Random <= 25;
-            when Percent_50 =>
-               Condition := Random <= 50;
-            when Percent_75 =>
-               Condition := Random <= 75;
-            when One_Of_Two =>
-               Condition := Pattern_Counter (Pattern) mod 2 = 0;
-            when One_Of_Three =>
-               Condition := Pattern_Counter (Pattern) mod 3 = 0;
-            end case;
+            if not UI.Muted (Track) then
+               case S.Trig is
+               when None =>
+                  Condition := False;
+               when Always =>
+                  Condition := True;
+               when Fill =>
+                  Condition := WNM.UI.FX_On (B1);
+               when Not_Fill =>
+                  Condition := not WNM.UI.FX_On (B1);
+               when Percent_25 =>
+                  Condition := Random <= 25;
+               when Percent_50 =>
+                  Condition := Random <= 50;
+               when Percent_75 =>
+                  Condition := Random <= 75;
+               when One_Of_Two =>
+                  Condition := Pattern_Counter (Pattern) mod 2 = 0;
+               when One_Of_Three =>
+                  Condition := Pattern_Counter (Pattern) mod 3 = 0;
+               when One_Of_Four =>
+                  Condition := Pattern_Counter (Pattern) mod 4 = 0;
+               when One_Of_Five =>
+                  Condition := Pattern_Counter (Pattern) mod 5 = 0;
+               end case;
 
-            --  Play step?
-            if Condition and then not UI.Muted (Track) then
-               Play_Step (Pattern, Track, Step, Now);
+               --  Play step?
+               if Condition then
+                  Play_Step (Pattern, Track, Step, Now);
+               end if;
             end if;
-
          end;
       end loop;
    end Process_Step;

@@ -200,10 +200,10 @@ package body WNM.Project is
          when Note_In_Chord =>
             return
               (case S.Note is
-                  when 0 => "root",
-                  when 1 => "2nd",
-                  when 2 => "3rd",
-                  when 3 => "4th",
+                  when 0 => "#1",
+                  when 1 => "#2",
+                  when 2 => "#3",
+                  when 3 => "#4",
                   when Chord_Len .. MIDI.MIDI_Key'Last =>
                     raise Program_Error) & Oct_Offset;
          when Arp =>
