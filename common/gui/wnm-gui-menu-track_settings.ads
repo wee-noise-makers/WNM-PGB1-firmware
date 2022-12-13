@@ -49,6 +49,12 @@ private
           when Project.Speech_Mode =>
              S in Track_Mode | Speech_Word | Volume | Pan | Arp_Mode |
                   Arp_Notes | CC_Default_A,
+
+          when Project.Kick_Mode | Project.Snare_Mode |
+               Project.Cymbal_Mode | Project.Lead_Mode =>
+             S in Track_Mode | Volume | Pan | Arp_Mode | Arp_Notes |
+                  CC_Default_A .. CC_Default_D
+      );
    --  Return True if the given setting is available for the given track mode.
    --  For instance, volume setting is not available in MIDI mode.
 

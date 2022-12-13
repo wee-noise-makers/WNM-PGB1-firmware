@@ -21,14 +21,28 @@
 
 with HAL; use HAL;
 with Interfaces; use Interfaces;
-
-with WNM.Sample_Stream;  use WNM.Sample_Stream;
-with WNM.Sample_Library; use WNM.Sample_Library;
+with WNM.Sample_Stream;          use WNM.Sample_Stream;
+with WNM.Sample_Library;         use WNM.Sample_Library;
 with WNM.Coproc;
+with MIDI;
+
+pragma Warnings (Off, "hides compilation unit");
+with WNM.MIDI;
+pragma Warnings (On, "hides compilation unit");
 
 with WNM.Speech;
 
+with Tresses.Drums.Kick;
+with Tresses.Drums.Snare;
+with Tresses.Drums.Cymbal;
+with Tresses.Voices.Macro;
+
 package body WNM.Synth is
+
+   TK : Tresses.Drums.Kick.Instance;
+   TS : Tresses.Drums.Snare.Instance;
+   TC : Tresses.Drums.Cymbal.Instance;
+   Lead : Tresses.Voices.Macro.Instance;
 
    Recording_Source : Rec_Source;
    Recording_Size   : Natural;
@@ -49,6 +63,19 @@ package body WNM.Synth is
    pragma Unreferenced (Copy_Stereo_To_Mono);
 
    procedure Process_Coproc_Events;
+
+   -------------------------------
+   -- MIDI_Val_To_Tresses_Param --
+   -------------------------------
+
+   function MIDI_Val_To_Tresses_Param (V : MIDI.MIDI_Data)
+                                       return Tresses.Param_Range
+   is
+      use Tresses;
+   begin
+      return Param_Range (V) *
+        (Param_Range'Last / Param_Range (MIDI.MIDI_Data'Last));
+   end MIDI_Val_To_Tresses_Param;
 
    ------------------
    -- Sample_Clock --
@@ -133,6 +160,48 @@ package body WNM.Synth is
             when WNM.Coproc.Track_Vol_Pan =>
                Volume_For_Track (Msg.TVP_Track) := Msg.TVP_Vol;
                Pan_For_Track (Msg.TVP_Track) := Msg.TVP_Pan;
+
+            when WNM.Coproc.Synth_Event =>
+               declare
+                  P1 : constant Tresses.Param_Range :=
+                    MIDI_Val_To_Tresses_Param (Msg.Synth_Evt.P1);
+                  P2 : constant Tresses.Param_Range :=
+                    MIDI_Val_To_Tresses_Param (Msg.Synth_Evt.P2);
+                  Pitch : constant Tresses.Pitch_Range :=
+                    Tresses.MIDI_Pitch
+                      (Standard.MIDI.MIDI_UInt8 (Msg.Synth_Evt.Key));
+               begin
+                  case Msg.Synth_Evt.Voice is
+                  when WNM.Coproc.Kick =>
+                     TK.Set_Param (1, P1);
+                     TK.Set_Param (2, P2);
+                     TK.Set_Pitch (Pitch);
+                     if Msg.Synth_Evt.Trigger then
+                        TK.Strike;
+                     end if;
+                  when WNM.Coproc.Snare =>
+                     TS.Set_Param (1, P1);
+                     TS.Set_Param (2, P2);
+                     TS.Set_Pitch (Pitch);
+                     if Msg.Synth_Evt.Trigger then
+                        TS.Strike;
+                     end if;
+                  when WNM.Coproc.Cymbal =>
+                     TC.Set_Param (1, P1);
+                     TC.Set_Param (2, P2);
+                     TC.Set_Pitch (Pitch);
+                     if Msg.Synth_Evt.Trigger then
+                        TC.Strike;
+                     end if;
+                  when WNM.Coproc.Lead =>
+                     Lead.Set_Param (1, P1);
+                     Lead.Set_Param (2, P2);
+                     Lead.Set_Pitch (Pitch);
+                     if Msg.Synth_Evt.Trigger then
+                        Lead.Strike;
+                     end if;
+                  end case;
+               end;
          end case;
       end loop;
    end Process_Coproc_Events;
@@ -186,6 +255,41 @@ package body WNM.Synth is
 
       -- Speech synth --
       Speech.Next_Points (Output);
+
+      declare
+         Buffer : Tresses.Mono_Buffer (Mono_Buffer'Range);
+         Buffer_B : Tresses.Mono_Buffer (Mono_Buffer'Range);
+
+         procedure Mix is
+            subtype S32 is Integer_32;
+            L, R : S32;
+         begin
+            for Idx in Buffer'Range loop
+               L := S32 (Output (Idx).L) + S32 (Buffer (Idx));
+
+               L := S32'Min (L, S32 (Mono_Point'Last));
+               L := S32'Max (L, S32 (Mono_Point'First));
+               Output (Idx).L := Mono_Point (L);
+
+               R := S32 (Output (Idx).R) + S32 (Buffer (Idx));
+               R := S32'Min (R, S32 (Mono_Point'Last));
+               R := S32'Max (R, S32 (Mono_Point'First));
+               Output (Idx).R := Mono_Point (R);
+            end loop;
+         end Mix;
+      begin
+         TK.Render (Buffer);
+         Mix;
+
+         TS.Render (Buffer);
+         Mix;
+
+         TC.Render (Buffer);
+         Mix;
+
+         Lead.Render (Buffer, Buffer_B);
+         Mix;
+      end;
 
       -- Recording --
       --  if Recording_Source /= None then
@@ -271,4 +375,8 @@ package body WNM.Synth is
    function Record_Size return Natural
    is (Recording_Size);
 
+begin
+   Lead.Set_Engine (Tresses.Voice_Saw_Swarm);
+   Lead.Set_Param (3, 0);
+   Lead.Set_Param (4, Tresses.Param_Range'Last);
 end WNM.Synth;

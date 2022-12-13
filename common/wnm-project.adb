@@ -254,7 +254,7 @@ package body WNM.Project is
    is
    begin
       case Mode (Editing_Track) is
-         when MIDI_Mode =>
+         when MIDI_Mode | Kick_Mode | Snare_Mode | Cymbal_Mode | Lead_Mode =>
             return CC_Value (Step, Id)'Img;
 
          when Sample_Mode =>
@@ -605,6 +605,34 @@ package body WNM.Project is
       case Mode (T) is
          when MIDI_Mode =>
             return G_Project.Tracks (T).CC (Id).Label;
+
+         when Kick_Mode =>
+            case Id is
+               when A      => return "Decay            ";
+               when B      => return "Coefficient      ";
+               when others => return "Nothing...       ";
+            end case;
+
+         when Snare_Mode =>
+            case Id is
+               when A      => return "Tone             ";
+               when B      => return "Noise            ";
+               when others => return "Nothing...       ";
+            end case;
+
+         when Cymbal_Mode =>
+            case Id is
+               when A      => return "Cutoff           ";
+               when B      => return "Noise            ";
+               when others => return "Nothing...       ";
+            end case;
+
+         when Lead_Mode =>
+            case Id is
+               when A      => return "Timber           ";
+               when B      => return "Color            ";
+               when others => return "Nothing...       ";
+            end case;
 
          when Sample_Mode =>
             return "Not Applicable   ";

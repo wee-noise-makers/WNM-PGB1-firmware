@@ -227,6 +227,22 @@ package body WNM.Project.Step_Sequencer is
                              )
                             );
 
+         when Kick_Mode | Snare_Mode | Cymbal_Mode | Lead_Mode =>
+            WNM.Coproc.Push ((WNM.Coproc.Synth_Event,
+                              (Trigger  => Kind = On,
+                               Voice    =>
+                                 (case Mode (T) is
+                                     when Kick_Mode => Coproc.Kick,
+                                     when Snare_Mode => Coproc.Snare,
+                                     when Cymbal_Mode => Coproc.Cymbal,
+                                     when Lead_Mode => Coproc.Lead,
+                                     when others => raise Program_Error),
+                               Key      => Key,
+                               P1       => CC_Default (T, A),
+                               P2       => CC_Default (T, B))
+                              )
+                            );
+
          when MIDI_Mode =>
             case Kind is
                when On =>
@@ -271,6 +287,22 @@ package body WNM.Project.Step_Sequencer is
                            W     => Selected_Word (T),
                            Key   => Key)
                           ),
+               Deadline);
+
+         when Kick_Mode | Snare_Mode | Cymbal_Mode | Lead_Mode =>
+            WNM.Short_Term_Sequencer.Push
+              ((Short_Term_Sequencer.Synth_Event,
+               (Trigger  => Kind = On,
+                Voice    => (case Mode (T) is
+                                when Kick_Mode => Coproc.Kick,
+                                when Snare_Mode => Coproc.Snare,
+                                when Cymbal_Mode => Coproc.Cymbal,
+                                when Lead_Mode => Coproc.Lead,
+                                when others => raise Program_Error),
+                Key      => Key,
+                P1       => CC_Default (T, A),
+                P2       => CC_Default (T, B))
+              ),
                Deadline);
 
          when MIDI_Mode =>
@@ -330,6 +362,8 @@ package body WNM.Project.Step_Sequencer is
          when Sample_Mode =>
             null;
 
+         when Kick_Mode | Snare_Mode | Cymbal_Mode | Lead_Mode =>
+            null;
          end case;
       end loop;
    end Process_CC_Values;
@@ -648,6 +682,8 @@ package body WNM.Project.Step_Sequencer is
                WNM.Coproc.Push ((WNM.Coproc.Sampler_Event, Data.Sampler_Evt));
             when Short_Term_Sequencer.Speech_Event =>
                WNM.Coproc.Push ((WNM.Coproc.Speech_Event, Data.Speech_Evt));
+            when Short_Term_Sequencer.Synth_Event =>
+               WNM.Coproc.Push ((WNM.Coproc.Synth_Event, Data.Synth_Evt));
             when Short_Term_Sequencer.MIDI_Event =>
                WNM.MIDI.Queues.Sequencer_Push (Data.Msg);
          end case;

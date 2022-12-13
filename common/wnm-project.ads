@@ -193,7 +193,8 @@ package WNM.Project is
    -- Track --
    -----------
 
-   type Track_Mode_Kind is (Sample_Mode, MIDI_Mode, Speech_Mode);
+   type Track_Mode_Kind is (Sample_Mode, MIDI_Mode, Speech_Mode,
+                            Kick_Mode, Snare_Mode, Cymbal_Mode, Lead_Mode);
    package Track_Mode_Kind_Next is new Enum_Next (Track_Mode_Kind);
    use Track_Mode_Kind_Next;
 
@@ -201,7 +202,11 @@ package WNM.Project is
    is (case M is
           when Sample_Mode => "Sample",
           when MIDI_Mode   => "MIDI",
-          when Speech_Mode  => "Speech");
+          when Speech_Mode => "Speech",
+          when Kick_Mode   => "Kick",
+          when Snare_Mode  => "Snare",
+          when Cymbal_Mode => "Symbal",
+          when Lead_Mode => "Lead");
 
    subtype Controller_Label is String (1 .. 17);
    Empty_Controller_Label : constant Controller_Label := (others => ' ');

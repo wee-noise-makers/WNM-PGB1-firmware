@@ -89,7 +89,8 @@ package body WNM.GUI.Menu.Step_Settings is
                   raise Program_Error;
             end case;
 
-            Draw_Value (Project.Note_Img (Step));
+            Draw_Value (Project.Note_Img (Step),
+                        Selected => This.Current_Setting = Project.Note);
 
             Draw_Duration (Project.Duration (Step),
                            This.Current_Setting = Project.Duration);

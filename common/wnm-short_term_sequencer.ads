@@ -23,10 +23,11 @@ with WNM.MIDI;
 with WNM.Time;
 with WNM.Sample_Stream;
 with WNM.Speech;
+with WNM.Coproc;
 
 package WNM.Short_Term_Sequencer is
 
-   type Event_Kind is (Sampler_Event, MIDI_Event, Speech_Event);
+   type Event_Kind is (Sampler_Event, MIDI_Event, Speech_Event, Synth_Event);
 
    type Event_Data (Kind : Event_Kind := Sampler_Event) is record
       case Kind is
@@ -36,6 +37,8 @@ package WNM.Short_Term_Sequencer is
             Msg : MIDI.Message;
          when Speech_Event =>
             Speech_Evt : Speech.Speech_Event_Rec;
+         when Synth_Event =>
+            Synth_Evt : Coproc.Synth_Event_Rec;
       end case;
    end record;
 
