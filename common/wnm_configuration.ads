@@ -43,7 +43,7 @@ package WNM_Configuration is
 
    package Audio is
       Sample_Frequency            : constant := 44_100;
-      Samples_Per_Buffer          : constant := 512;
+      Samples_Per_Buffer          : constant := 32;
       Mono_Buffer_Size_In_Bytes   : constant := Samples_Per_Buffer * 2;
       Stereo_Buffer_Size_In_Bytes : constant := Samples_Per_Buffer * 4;
    end Audio;

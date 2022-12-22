@@ -1,4 +1,6 @@
 with System;
+with Interfaces.C; use Interfaces.C;
+
 with Ada.Exceptions;
 with GNAT.OS_Lib;
 with Ada.Text_IO; use Ada.Text_IO;
@@ -14,8 +16,6 @@ with Sf.Graphics.Font;
 with Sf.Graphics.Text;
 with Sf.Window.Window; use Sf.Window.Window;
 with Sf.Window.Event; use Sf.Window.Event;
-with Sf.Audio; use Sf.Audio;
-with Sf.Audio.SoundStream; use Sf.Audio.SoundStream;
 with Sf; use Sf;
 
 with WNM.Synth;
@@ -29,14 +29,9 @@ with Sf.System.Vector2; use Sf.System.Vector2;
 with Sf.Graphics.Rect; use Sf.Graphics.Rect;
 with WNM_HAL;
 
-package body ASFML_Sim is
+with Tresses.Resources;
 
-   Audio_Rate_Factor : constant := 2;
-   --  SFML audio has a lower limit on buffer size which is higher than what we
-   --  want for tight timing on the synthesis. So we scale the SFML audio rate
-   --  up which means a bigger buffer will hold the same amount of
-   --  "audio time". Each sample from the smaller WNM buffers is repeated to
-   --  fill the bigger SFML buffers.
+package body ASFML_Sim is
 
    LED_Offset : constant array (WNM_Configuration.LED) of sfVector2f :=
      (
@@ -69,27 +64,36 @@ package body ASFML_Sim is
 
    Font : Sf.Graphics.sfFont_Ptr;
 
-   ------------- SFML Audio
+   ------------- Audio
 
-   Stream : sfSoundStream_Ptr;
+   procedure RTaudio_Callback (Buf    : System.Address;
+                               Frames : Interfaces.C.unsigned);
+   pragma Export (C, RTaudio_Callback, "wnm_rtaudio_callback");
 
-   function SFML_Audio_Callback (chunk  : access sfSoundStreamChunk;
-                                 Unused : System.Address)
-                                 return sfBool
-     with Convention => C;
+   ----------------------
+   -- RTaudio_Callback --
+   ----------------------
 
-   Flip : Boolean := False
-     with Atomic, Volatile;
+   procedure RTaudio_Callback (Buf : System.Address;
+                               Frames : Interfaces.C.unsigned)
+   is
+      In_Buffer : constant WNM_HAL.Stereo_Buffer := (others => (0, 0));
 
-   Flip_Out_Buffers : array (Boolean) of WNM_HAL.Stereo_Buffer :=
-     (others => (others => (0, 0)));
+      Out_Buffer : WNM_HAL.Stereo_Buffer
+        with Address => Buf;
+   begin
+      if Frames /= WNM_Configuration.Audio.Samples_Per_Buffer then
+         raise Program_Error with "Invalid buffer size from RTAudio: " &
+           Frames'Img;
+      end if;
 
-   Flip_In_Buffers : constant array (Boolean) of WNM_HAL.Stereo_Buffer :=
-     (others => (others => (0, 0)));
+      WNM.Synth.Next_Points (Out_Buffer, In_Buffer);
 
-   Stream_Data : array
-     (1 .. WNM_HAL.Mono_Buffer'Length * 2 * Audio_Rate_Factor)
-       of aliased sfInt16;
+   exception
+      when E : others =>
+         Ada.Text_IO.Put_Line (Ada.Exceptions.Exception_Information (E));
+         GNAT.OS_Lib.OS_Exit (42);
+   end RTaudio_Callback;
 
    --------------
    -- Set_View --
@@ -428,45 +432,15 @@ package body ASFML_Sim is
          GNAT.OS_Lib.OS_Exit (1);
    end Periodic_Update;
 
-   -------------------------
-   -- SFML_Audio_Callback --
-   -------------------------
-
-   function SFML_Audio_Callback (chunk  : access sfSoundStreamChunk;
-                                 Unused : System.Address)
-                                 return sfBool
-   is
-      Stream_Index : Natural := Stream_Data'First;
-   begin
-
-      WNM.Synth.Next_Points (Flip_Out_Buffers (Flip),
-                             Flip_In_Buffers (Flip));
-
-      for Point of Flip_Out_Buffers (Flip) loop
-         for Cnt in 1 .. Audio_Rate_Factor loop
-            Stream_Data (Stream_Index) := sfInt16 (Point.L);
-            Stream_Data (Stream_Index + 1) := sfInt16 (Point.R);
-            Stream_Index := Stream_Index + 2;
-         end loop;
-      end loop;
-
-      chunk.Samples := Stream_Data (1)'Unchecked_Access;
-      chunk.NbSamples := Stream_Data'Length;
-
-      Flip := not Flip;
-
-      return True;
-   exception
-      when E : others =>
-         Ada.Text_IO.Put_Line (Ada.Exceptions.Exception_Information (E));
-         GNAT.OS_Lib.OS_Exit (42);
-   end SFML_Audio_Callback;
-
    ----------------
    -- Init_Audio --
    ----------------
 
    procedure Init_Audio is
+      function RTaudio_Init (Sample_Rate : Interfaces.C.unsigned;
+                             Frames      : Interfaces.C.unsigned)
+                             return Interfaces.C.int;
+      pragma Import (C, RTaudio_Init, "wnm_rtaudio_init");
    begin
 
       if GNAT.OS_Lib.Getenv ("OS").all = "Windows_NT" then
@@ -474,20 +448,13 @@ package body ASFML_Sim is
          GNAT.OS_Lib.Setenv ("ALSOFT_DRIVERS", "dsound");
       end if;
 
-      Stream := create
-        (onGetData    => SFML_Audio_Callback'Access,
-         onSeek       => null,
-         channelCount => 2,
-         sampleRate   =>
-           WNM_Configuration.Audio.Sample_Frequency * Audio_Rate_Factor,
-         userData     => System.Null_Address);
-
-      if Stream = null then
-         Ada.Text_IO.Put_Line ("Could not create audio stream");
-         GNAT.OS_Lib.OS_Exit (1);
-      else
-         play (Stream);
+      if RTaudio_Init (Tresses.Resources.SAMPLE_RATE,
+                       WNM_Configuration.Audio.Samples_Per_Buffer) /= 0
+      then
+         Ada.Text_IO.Put_Line ("rtaudio init error");
+         GNAT.OS_Lib.OS_Exit (42);
       end if;
+
    end Init_Audio;
 
    -----------

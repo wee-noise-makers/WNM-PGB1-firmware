@@ -1,10 +1,11 @@
 with System;
 with System.Storage_Elements;
-with Interfaces;
 
 with HAL;
 with Littlefs;
 with WNM_Configuration; use WNM_Configuration;
+
+with Tresses;
 
 package WNM_HAL is
 
@@ -65,14 +66,13 @@ package WNM_HAL is
    --  sample (short bits of music) and PCM sample (signal processing). So in
    --  this project we use the word "Point" for the signal processing.
 
-   type Mono_Point is new Interfaces.Integer_16 with Size => 16;
+   subtype Mono_Point is Tresses.Mono_Point;
 
    type Stereo_Point is record
       L, R : Mono_Point;
    end record with Pack, Size => 32;
 
-   type Mono_Buffer is array (1 .. Audio.Samples_Per_Buffer) of Mono_Point
-     with Pack, Size => Audio.Mono_Buffer_Size_In_Bytes * 8;
+   subtype Mono_Buffer is Tresses.Mono_Buffer (1 .. Audio.Samples_Per_Buffer);
 
    type Stereo_Buffer is array (1 .. Audio.Samples_Per_Buffer) of Stereo_Point
      with Pack, Size => Audio.Stereo_Buffer_Size_In_Bytes * 8;

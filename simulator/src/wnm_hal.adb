@@ -3,6 +3,7 @@ with Ada.Synchronous_Task_Control;
 with GNAT.OS_Lib;
 
 with GNAT.Bounded_Buffers;
+with Interfaces;
 
 with Sf;
 with Sf.Graphics.Color;

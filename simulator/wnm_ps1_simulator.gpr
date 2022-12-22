@@ -1,7 +1,7 @@
 with "config/wnm_ps1_simulator_config.gpr";
 project Wnm_Ps1_Simulator is
 
-   for Languages use ("Ada", "C");
+   for Languages use ("Ada", "C", "C++");
    for Source_Dirs use ("src/",
                         "src/rom_builder/",
                         "config/",
@@ -20,7 +20,7 @@ project Wnm_Ps1_Simulator is
    end Compiler;
 
    package Linker is
-      for Switches ("Ada") use ("-lrtmidi");
+      for Switches ("Ada") use ("-lrtmidi", "-lrtaudio");
    end Linker;
 
    package Binder is
