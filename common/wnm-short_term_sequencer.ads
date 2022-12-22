@@ -38,7 +38,7 @@ package WNM.Short_Term_Sequencer is
          when Speech_Event =>
             Speech_Evt : Speech.Speech_Event_Rec;
          when Synth_Event =>
-            Synth_Evt : Coproc.Synth_Event_Rec;
+            Synth_Evt : Coproc.MIDI_Event_Rec;
       end case;
    end record;
 

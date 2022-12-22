@@ -50,6 +50,14 @@ package body WNM.Project.Step_Sequencer is
    procedure Play_Step (P : Patterns; T : Tracks; S : Sequencer_Steps;
                         Now : Time.Time_Microseconds := Time.Clock);
 
+   function Voice_MIDI_Chan (Voice : Track_Mode_Kind) return MIDI.MIDI_Channel
+   is (case Voice is
+          when Kick_Mode   => 1,
+          when Snare_Mode  => 2,
+          when Cymbal_Mode => 3,
+          when Lead_Mode   => 4,
+          when others => raise Program_Error);
+
    ------------
    -- Offset --
    ------------
@@ -228,20 +236,20 @@ package body WNM.Project.Step_Sequencer is
                             );
 
          when Kick_Mode | Snare_Mode | Cymbal_Mode | Lead_Mode =>
-            WNM.Coproc.Push ((WNM.Coproc.Synth_Event,
-                              (Trigger  => Kind = On,
-                               Voice    =>
-                                 (case Mode (T) is
-                                     when Kick_Mode => Coproc.Kick,
-                                     when Snare_Mode => Coproc.Snare,
-                                     when Cymbal_Mode => Coproc.Cymbal,
-                                     when Lead_Mode => Coproc.Lead,
-                                     when others => raise Program_Error),
-                               Key      => Key,
-                               P1       => CC_Default (T, A),
-                               P2       => CC_Default (T, B))
-                              )
-                            );
+            declare
+               Chan : constant MIDI.MIDI_Channel :=
+                 Voice_MIDI_Chan (Mode (T));
+            begin
+
+               case Kind is
+               when On =>
+                  WNM.Coproc.Push ((WNM.Coproc.MIDI_Event,
+                                   (MIDI.Note_On, Chan, Key, Velo)));
+               when Off =>
+                  WNM.Coproc.Push ((WNM.Coproc.MIDI_Event,
+                                   (MIDI.Note_Off, Chan, Key, Velo)));
+               end case;
+            end;
 
          when MIDI_Mode =>
             case Kind is
@@ -290,20 +298,26 @@ package body WNM.Project.Step_Sequencer is
                Deadline);
 
          when Kick_Mode | Snare_Mode | Cymbal_Mode | Lead_Mode =>
-            WNM.Short_Term_Sequencer.Push
-              ((Short_Term_Sequencer.Synth_Event,
-               (Trigger  => Kind = On,
-                Voice    => (case Mode (T) is
-                                when Kick_Mode => Coproc.Kick,
-                                when Snare_Mode => Coproc.Snare,
-                                when Cymbal_Mode => Coproc.Cymbal,
-                                when Lead_Mode => Coproc.Lead,
-                                when others => raise Program_Error),
-                Key      => Key,
-                P1       => CC_Default (T, A),
-                P2       => CC_Default (T, B))
-              ),
-               Deadline);
+            case Kind is
+               when On =>
+                  WNM.Short_Term_Sequencer.Push
+                    ((Short_Term_Sequencer.Synth_Event,
+                     (MIDI.Note_On,
+                      Voice_MIDI_Chan (Mode (T)),
+                      Key,
+                      Velo)
+                    ),
+                     Deadline);
+               when Off =>
+                  WNM.Short_Term_Sequencer.Push
+                    ((Short_Term_Sequencer.Synth_Event,
+                     (MIDI.Note_Off,
+                      Voice_MIDI_Chan (Mode (T)),
+                      Key,
+                      Velo)
+                    ),
+                     Deadline);
+            end case;
 
          when MIDI_Mode =>
             case Kind is
@@ -337,21 +351,27 @@ package body WNM.Project.Step_Sequencer is
                                 T : Tracks;
                                 S : Sequencer_Steps)
    is
-      Channel : constant MIDI.MIDI_Channel :=
-        G_Project.Tracks (T).Chan;
-      Val : MIDI.MIDI_Data;
+      Val  : MIDI.MIDI_Data;
+      Ctrl : MIDI.MIDI_Data;
+      M    : constant Track_Mode_Kind := Mode (T);
+      Chan : constant MIDI.MIDI_Channel :=
+        (case M is
+            when MIDI_Mode =>
+              G_Project.Tracks (T).Chan,
+            when Kick_Mode | Snare_Mode | Cymbal_Mode | Lead_Mode =>
+              Voice_MIDI_Chan (M),
+            when Speech_Mode | Sample_Mode =>
+              0);
    begin
       for Id in CC_Id loop
          Val := CC_Value_To_Use (P, T, S, Id);
-
+         Ctrl := G_Project.Tracks (T).CC (Id).Controller;
          case Mode (T) is
 
          when MIDI_Mode =>
             WNM.MIDI.Queues.Sequencer_Push
               ((MIDI.Continous_Controller,
-               Channel,
-               G_Project.Tracks (T).CC (Id).Controller,
-               Val));
+               Chan, Ctrl, Val));
 
          when Speech_Mode =>
             if Id = A then
@@ -363,6 +383,12 @@ package body WNM.Project.Step_Sequencer is
             null;
 
          when Kick_Mode | Snare_Mode | Cymbal_Mode | Lead_Mode =>
+
+            WNM.Coproc.Push ((Kind => WNM.Coproc.MIDI_Event,
+                              MIDI_Evt =>
+                                (MIDI.Continous_Controller,
+                                 Chan, Ctrl, Val)));
+
             null;
          end case;
       end loop;
@@ -683,7 +709,7 @@ package body WNM.Project.Step_Sequencer is
             when Short_Term_Sequencer.Speech_Event =>
                WNM.Coproc.Push ((WNM.Coproc.Speech_Event, Data.Speech_Evt));
             when Short_Term_Sequencer.Synth_Event =>
-               WNM.Coproc.Push ((WNM.Coproc.Synth_Event, Data.Synth_Evt));
+               WNM.Coproc.Push ((WNM.Coproc.MIDI_Event, Data.Synth_Evt));
             when Short_Term_Sequencer.MIDI_Event =>
                WNM.MIDI.Queues.Sequencer_Push (Data.Msg);
          end case;

@@ -36,13 +36,20 @@ with Tresses.Drums.Kick;
 with Tresses.Drums.Snare;
 with Tresses.Drums.Cymbal;
 with Tresses.Voices.Macro;
+with Tresses.Interfaces;
 
 package body WNM.Synth is
 
-   TK : Tresses.Drums.Kick.Instance;
-   TS : Tresses.Drums.Snare.Instance;
-   TC : Tresses.Drums.Cymbal.Instance;
-   Lead : Tresses.Voices.Macro.Instance;
+   TK   : aliased Tresses.Drums.Kick.Instance;
+   TS   : aliased Tresses.Drums.Snare.Instance;
+   TC   : aliased Tresses.Drums.Cymbal.Instance;
+   Lead : aliased Tresses.Voices.Macro.Instance;
+
+   subtype Voice_Class is Tresses.Interfaces.Four_Params_Voice'Class;
+   type Voice_Access is access all Voice_Class;
+   Synth_Voices : constant array (MIDI.MIDI_Channel range 1 .. 4) of
+     Voice_Access :=
+       (TK'Access, TS'Access, TC'Access, Lead'Access);
 
    Recording_Source : Rec_Source;
    Recording_Size   : Natural;
@@ -161,47 +168,34 @@ package body WNM.Synth is
                Volume_For_Track (Msg.TVP_Track) := Msg.TVP_Vol;
                Pan_For_Track (Msg.TVP_Track) := Msg.TVP_Pan;
 
-            when WNM.Coproc.Synth_Event =>
-               declare
-                  P1 : constant Tresses.Param_Range :=
-                    MIDI_Val_To_Tresses_Param (Msg.Synth_Evt.P1);
-                  P2 : constant Tresses.Param_Range :=
-                    MIDI_Val_To_Tresses_Param (Msg.Synth_Evt.P2);
-                  Pitch : constant Tresses.Pitch_Range :=
-                    Tresses.MIDI_Pitch
-                      (Standard.MIDI.MIDI_UInt8 (Msg.Synth_Evt.Key));
-               begin
-                  case Msg.Synth_Evt.Voice is
-                  when WNM.Coproc.Kick =>
-                     TK.Set_Param (1, P1);
-                     TK.Set_Param (2, P2);
-                     TK.Set_Pitch (Pitch);
-                     if Msg.Synth_Evt.Trigger then
-                        TK.Strike;
-                     end if;
-                  when WNM.Coproc.Snare =>
-                     TS.Set_Param (1, P1);
-                     TS.Set_Param (2, P2);
-                     TS.Set_Pitch (Pitch);
-                     if Msg.Synth_Evt.Trigger then
-                        TS.Strike;
-                     end if;
-                  when WNM.Coproc.Cymbal =>
-                     TC.Set_Param (1, P1);
-                     TC.Set_Param (2, P2);
-                     TC.Set_Pitch (Pitch);
-                     if Msg.Synth_Evt.Trigger then
-                        TC.Strike;
-                     end if;
-                  when WNM.Coproc.Lead =>
-                     Lead.Set_Param (1, P1);
-                     Lead.Set_Param (2, P2);
-                     Lead.Set_Pitch (Pitch);
-                     if Msg.Synth_Evt.Trigger then
-                        Lead.Strike;
-                     end if;
-                  end case;
-               end;
+            when WNM.Coproc.MIDI_Event =>
+
+               if Msg.MIDI_Evt.Chan in Synth_Voices'Range then
+                  declare
+                     Voice : Voice_Class renames
+                       Synth_Voices (Msg.MIDI_Evt.Chan).all;
+                  begin
+                     case Msg.MIDI_Evt.Kind is
+                     when MIDI.Note_On =>
+                        Voice.Set_Pitch (Tresses.MIDI_Pitch
+                                         (Standard.MIDI.MIDI_UInt8
+                                            (Msg.MIDI_Evt.Key)));
+                        Voice.Strike;
+
+                     when MIDI.Continous_Controller =>
+                        if Msg.MIDI_Evt.Controller <= 3 then
+                           Voice.Set_Param
+                             (Tresses.Interfaces.Param_Id
+                                (Msg.MIDI_Evt.Controller + 1),
+                              MIDI_Val_To_Tresses_Param
+                                (Msg.MIDI_Evt.Controller_Value));
+                        end if;
+
+                     when others =>
+                        null;
+                     end case;
+                  end;
+               end if;
          end case;
       end loop;
    end Process_Coproc_Events;
@@ -257,38 +251,32 @@ package body WNM.Synth is
       Speech.Next_Points (Output);
 
       declare
-         Buffer : Tresses.Mono_Buffer (Mono_Buffer'Range);
-         Buffer_B : Tresses.Mono_Buffer (Mono_Buffer'Range);
+         Buffer, Aux_Buffer : Mono_Buffer;
 
-         procedure Mix is
-            subtype S32 is Integer_32;
-            L, R : S32;
-         begin
-            for Idx in Buffer'Range loop
-               L := S32 (Output (Idx).L) + S32 (Buffer (Idx));
-
-               L := S32'Min (L, S32 (Mono_Point'Last));
-               L := S32'Max (L, S32 (Mono_Point'First));
-               Output (Idx).L := Mono_Point (L);
-
-               R := S32 (Output (Idx).R) + S32 (Buffer (Idx));
-               R := S32'Min (R, S32 (Mono_Point'Last));
-               R := S32'Max (R, S32 (Mono_Point'First));
-               Output (Idx).R := Mono_Point (R);
-            end loop;
-         end Mix;
       begin
          TK.Render (Buffer);
-         Mix;
+         WNM_HAL.Mix (Output => Output,
+                      Input => Buffer,
+                      Volume => 50,
+                      Pan => 50);
 
          TS.Render (Buffer);
-         Mix;
+         WNM_HAL.Mix (Output => Output,
+                      Input => Buffer,
+                      Volume => 50,
+                      Pan => 50);
 
          TC.Render (Buffer);
-         Mix;
+         WNM_HAL.Mix (Output => Output,
+                      Input => Buffer,
+                      Volume => 50,
+                      Pan => 50);
 
-         Lead.Render (Buffer, Buffer_B);
-         Mix;
+         Lead.Render (Buffer, Aux_Buffer);
+         WNM_HAL.Mix (Output => Output,
+                      Input => Buffer,
+                      Volume => 50,
+                      Pan => 50);
       end;
 
       -- Recording --

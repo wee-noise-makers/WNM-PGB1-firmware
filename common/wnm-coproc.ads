@@ -35,20 +35,13 @@ package WNM.Coproc is
                          Speech_Event,
                          Speech_CC_Event,
                          Track_Vol_Pan,
-                         Synth_Event)
+                         MIDI_Event)
      with Size => 4;
 
    type Synth_Voice_Id is (Kick, Snare, Cymbal, Lead)
      with Size => 2;
 
-   type Synth_Event_Rec is record
-      Voice    : Synth_Voice_Id;
-      Trigger  : Boolean;
-      Key      : MIDI.MIDI_Key;
-      P1       : MIDI.MIDI_Data;
-      P2       : MIDI.MIDI_Data;
-   end record
-     with Pack, Size => 24;
+   subtype MIDI_Event_Rec is MIDI.Message;
 
    type Message (Kind : Message_Kind := Sampler_Event) is record
       case Kind is
@@ -66,8 +59,8 @@ package WNM.Coproc is
             TVP_Vol : WNM_HAL.Audio_Volume;
             TVP_Pan : WNM_HAL.Audio_Pan;
 
-         when Synth_Event =>
-            Synth_Evt : Synth_Event_Rec;
+         when MIDI_Event =>
+            MIDI_Evt : MIDI_Event_Rec;
       end case;
    end record
      with Size => WNM_Configuration.Coproc_Data_Size;
@@ -76,7 +69,7 @@ package WNM.Coproc is
       Kind        at 0 range 0 .. 3;
       Sampler_Evt at 0 range 6 .. 31;
       Speech_Evt  at 0 range 6 .. 31;
-      Synth_Evt   at 0 range 6 .. 31;
+      MIDI_Evt    at 0 range 6 .. 31;
    end record;
 
    procedure Push (Msg : Message);
