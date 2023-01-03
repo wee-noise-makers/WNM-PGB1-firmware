@@ -410,6 +410,75 @@ package body WNM.GUI.Menu.Drawing is
              Str         => Val);
    end Draw_Value_Left;
 
+   -------------------
+   -- Draw_CC_Value --
+   -------------------
+
+   procedure Draw_CC_Value (Id    : WNM.Project.CC_Id;
+                            Value : MIDI.MIDI_Data;
+                            Label : String;
+                            Selected : Boolean;
+                            Enabled : Boolean := True)
+   is
+      Val : Natural := Natural (Value) + 1;
+      Last_Width : Natural;
+      X, Y : Natural;
+
+      Spacing : constant := 30;
+      Left : constant Natural := Box_Left + 5 +
+        (case Id is
+            when WNM.Project.A => 0 * Spacing,
+            when WNM.Project.B => 1 * Spacing,
+            when WNM.Project.C => 2 * Spacing,
+            when WNM.Project.D => 3 * Spacing);
+
+      Sub_Label_Width : constant := (Bitmap_Fonts.Width * 3) - 1;
+      Bar_Width : constant := 8;
+      Bar_Height : constant := 128 / Bar_Width - 1;
+      Bar_Left : constant Natural :=
+        Left + (Sub_Label_Width - Bar_Width) / 2;
+      Bar_Bottom : constant := Value_Text_Y + 2;
+      Bar_Center : constant Screen.Point :=
+        (Bar_Left + Bar_Width / 2,
+         Bar_Bottom - Bar_Height / 2);
+
+   begin
+      Y := Bar_Bottom;
+
+      if Selected then
+         Screen.Draw_Line ((Bar_Left - 2, Y), (Bar_Left - 2, Y - Bar_Height));
+         Screen.Draw_Line ((Bar_Left + Bar_Width + 1, Y),
+                           (Bar_Left + Bar_Width + 1, Y - Bar_Height));
+      end if;
+
+      --  Short label
+      X := Left;
+      Print (X_Offset => X,
+             Y_Offset => Value_Text_Y + 4,
+             Str      => Label);
+
+      if Enabled then
+         while Val >= Bar_Width loop
+            Val := Val - Bar_Width;
+            Screen.Draw_Line ((Bar_Left, Y), (Bar_Left + Bar_Width - 1, Y));
+            Y := Y - 1;
+         end loop;
+
+         if Val > 0 then
+            Last_Width := Val - 1;
+            Screen.Draw_Line ((Bar_Left, Y),
+                              (Bar_Left + Last_Width, Y));
+         end if;
+      else
+         Screen.Draw_Line
+           ((Bar_Center.X - Bar_Width / 2, Bar_Center.Y + Bar_Width / 2),
+            (Bar_Center.X + Bar_Width / 2, Bar_Center.Y - Bar_Width / 2));
+         Screen.Draw_Line
+           ((Bar_Center.X + Bar_Width / 2, Bar_Center.Y + Bar_Width / 2),
+            (Bar_Center.X - Bar_Width / 2, Bar_Center.Y - Bar_Width / 2));
+      end if;
+
+   end Draw_CC_Value;
    ---------------
    -- Draw_Knob --
    ---------------

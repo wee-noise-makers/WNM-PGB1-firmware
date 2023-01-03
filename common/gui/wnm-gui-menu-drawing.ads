@@ -65,6 +65,12 @@ package WNM.GUI.Menu.Drawing is
    procedure Draw_Value (Val      : String;
                          Selected : Boolean := False);
 
+   procedure Draw_CC_Value (Id    : WNM.Project.CC_Id;
+                            Value : MIDI.MIDI_Data;
+                            Label : String;
+                            Selected : Boolean;
+                            Enabled : Boolean := True);
+
    procedure Draw_Value_Left (Val      : String;
                               Selected : Boolean := False);
 

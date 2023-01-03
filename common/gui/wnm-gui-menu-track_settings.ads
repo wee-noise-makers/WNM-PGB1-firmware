@@ -28,15 +28,30 @@ package WNM.GUI.Menu.Track_Settings is
 
 private
 
-   subtype Settings is Project.User_Track_Settings;
+   type Top_Settings is (Track_Mode,
+                         Sample,
+                         Speech_Word,
+                         Volume,
+                         Pan,
+                         Arp_Mode,
+                         Arp_Notes,
+                         Notes_Per_Chord,
+                         MIDI_Chan,
+                         MIDI_Instrument,
+                         CC_Default,
+                         CC_Ctrl_A, CC_Label_A,
+                         CC_Ctrl_B, CC_Label_B,
+                         CC_Ctrl_C, CC_Label_C,
+                         CC_Ctrl_D, CC_Label_D);
 
-   function Settings_Count (M : Project.Track_Mode_Kind) return Positive;
-   function Setting_Position (S : Settings;
-                              M : Project.Track_Mode_Kind)
-                              return Natural;
+   subtype Sub_Settings is Project.User_Track_Settings;
 
-   function Valid_Setting (S : Settings;
-                           M : Project.Track_Mode_Kind)
+   function Top_Setting_Position (S : Top_Settings;
+                                  M : Project.Track_Mode_Kind)
+                                  return Natural;
+
+   function Valid_Setting (M : Project.Track_Mode_Kind;
+                           S : Sub_Settings)
                            return Boolean
    is (case M is
           when Project.Sample_Mode =>
@@ -58,13 +73,13 @@ private
    --  Return True if the given setting is available for the given track mode.
    --  For instance, volume setting is not available in MIDI mode.
 
-   procedure Next_Valid_Setting (S : in out Settings;
-                                 M : Project.Track_Mode_Kind);
-   procedure Prev_Valid_Setting (S : in out Settings;
-                                 M : Project.Track_Mode_Kind);
+   procedure Next_Valid_Setting (M : Project.Track_Mode_Kind;
+                                 S : in out Sub_Settings);
+   procedure Prev_Valid_Setting (M : Project.Track_Mode_Kind;
+                                 S : in out Sub_Settings);
 
    type Track_Settings_Menu is new Menu_Window with record
-      Current_Setting : Settings := Settings'First;
+      Current_Setting : Sub_Settings := CC_Default_A;
       Instrument : Natural := 0;
    end record;
 

@@ -384,14 +384,19 @@ package body WNM.Project is
    -- CC_Value_Inc --
    ------------------
 
-   procedure CC_Value_Inc (Step : Sequencer_Steps; Id : CC_Id) is
+   procedure CC_Value_Inc (Step : Sequencer_Steps;
+                           Id : CC_Id;
+                           Val : MIDI.MIDI_Data := 1)
+   is
       CC : MIDI.MIDI_Data renames G_Project.Seqs
         (Editing_Pattern)
         (Editing_Track)
         (Step).CC_Val (Id);
    begin
-      if CC /= MIDI.MIDI_Data'Last then
-         CC := CC + 1;
+      if CC < MIDI.MIDI_Data'Last - Val then
+         CC := CC + Val;
+      else
+         CC := MIDI.MIDI_Data'Last;
       end if;
 
       --  Enable when the value is changed
@@ -405,14 +410,19 @@ package body WNM.Project is
    -- CC_Value_Dec --
    ------------------
 
-   procedure CC_Value_Dec (Step : Sequencer_Steps; Id : CC_Id) is
+   procedure CC_Value_Dec (Step : Sequencer_Steps;
+                           Id   : CC_Id;
+                           Val  : MIDI.MIDI_Data := 1)
+   is
       CC : MIDI.MIDI_Data renames G_Project.Seqs
         (Editing_Pattern)
         (Editing_Track)
         (Step).CC_Val (Id);
    begin
-      if CC /= MIDI.MIDI_Data'First then
-         CC := CC - 1;
+      if CC >= Val then
+         CC := CC - Val;
+      else
+         CC := MIDI.MIDI_Data'First;
       end if;
 
       --  Enable when the value is changed
@@ -499,7 +509,8 @@ package body WNM.Project is
                               when CC_A   => A,
                               when CC_B   => B,
                               when CC_C   => C,
-                              when others => D));
+                              when others => D),
+                          Val => 8);
       end case;
    end Next_Value_Fast;
 
@@ -526,7 +537,8 @@ package body WNM.Project is
                               when CC_A   => A,
                               when CC_B   => B,
                               when CC_C   => C,
-                              when others => D));
+                              when others => D),
+                          Val => 8);
       end case;
    end Prev_Value_Fast;
 

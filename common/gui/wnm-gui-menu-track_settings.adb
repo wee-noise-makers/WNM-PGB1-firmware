@@ -29,87 +29,96 @@ package body WNM.GUI.Menu.Track_Settings is
 
    Track_Settings_Singleton : aliased Track_Settings_Menu;
 
-   Settings_Count_Cache : array (Track_Mode_Kind) of Natural :=
+   Valid_Top_Settings : array (Track_Mode_Kind, Top_Settings) of
+     Boolean := (others => (others => False));
+
+   Top_Settings_Count_Cache : array (Track_Mode_Kind) of Natural :=
      (others => 0);
 
-   Settings_Position_Cache : array (Track_Mode_Kind, Settings) of Integer :=
-     (others => (others => -1));
+   Top_Settings_Position_Cache : array (Track_Mode_Kind, Top_Settings) of
+     Integer := (others => (others => -1));
+
+   ------------
+   -- To_Top --
+   ------------
+
+   function To_Top (S : Sub_Settings) return Top_Settings
+   is (case S is
+       when Project.Track_Mode => Track_Mode,
+       when Project.Sample => Sample,
+       when Project.Speech_Word => Speech_Word,
+       when Project.Volume => Volume,
+       when Project.Pan => Pan,
+       when Project.Arp_Mode => Arp_Mode,
+       when Project.Arp_Notes => Arp_Notes,
+       when Project.Notes_Per_Chord => Notes_Per_Chord,
+       when Project.MIDI_Chan => MIDI_Chan,
+       when Project.MIDI_Instrument => MIDI_Instrument,
+       when Project.CC_Default_A => CC_Default,
+       when Project.CC_Default_B => CC_Default,
+       when Project.CC_Default_C => CC_Default,
+       when Project.CC_Default_D => CC_Default,
+       when Project.CC_Ctrl_A => CC_Ctrl_A,
+       when Project.CC_Label_A => CC_Label_A,
+       when Project.CC_Ctrl_B => CC_Ctrl_B,
+       when Project.CC_Label_B => CC_Label_B,
+       when Project.CC_Ctrl_C => CC_Ctrl_C,
+       when Project.CC_Label_C => CC_Label_C,
+       when Project.CC_Ctrl_D => CC_Ctrl_D,
+       when Project.CC_Label_D => CC_Label_D);
+
+   -------------------------
+   -- Fix_Current_Setting --
+   -------------------------
 
    procedure Fix_Current_Setting (This : in out Track_Settings_Menu) is
    begin
-      if not Valid_Setting (This.Current_Setting, Mode (Editing_Track)) then
-         Prev_Valid_Setting (This.Current_Setting, Mode (Editing_Track));
+      if not Valid_Setting (Mode (Editing_Track), This.Current_Setting) then
+         Prev_Valid_Setting (Mode (Editing_Track), This.Current_Setting);
       end if;
    end Fix_Current_Setting;
 
-   --------------------
-   -- Settings_Count --
-   --------------------
+   ------------------------
+   -- Top_Settings_Count --
+   ------------------------
 
-   function Settings_Count (M : Project.Track_Mode_Kind) return Positive is
+   function Top_Settings_Count (M : Project.Track_Mode_Kind) return Positive is
    begin
-      if Settings_Count_Cache (M) = 0 then
-         --  I don't think there is a way to know the number of settings per
-         --  mode at compile time because it depends on the results of the
-         --  Valid_Setting function. So we compute the numbers here and cache
-         --  the result for futre calls.
+      --  Computed at elaboration
+      return Top_Settings_Count_Cache (M);
+   end Top_Settings_Count;
 
-         for S in Settings loop
-            if Valid_Setting (S, M) then
-               Settings_Count_Cache (M) := Settings_Count_Cache (M) + 1;
-            end if;
-         end loop;
-      end if;
+   --------------------------
+   -- Top_Setting_Position --
+   --------------------------
 
-      return Settings_Count_Cache (M);
-   end Settings_Count;
-
-   ----------------------
-   -- Setting_Position --
-   ----------------------
-
-   function Setting_Position (S : Settings;
-                              M : Project.Track_Mode_Kind)
-                              return Natural
+   function Top_Setting_Position (S : Top_Settings;
+                                  M : Project.Track_Mode_Kind)
+                                  return Natural
    is
    begin
-      if Settings_Position_Cache (M, S) = -1 then
-         --  Same as Settings_Count, we compute the numbers here and cache the
-         --  result for futre calls.
-
-         declare
-            Cnt : Natural := 0;
-         begin
-            for S in Settings loop
-               if Valid_Setting (S, M) then
-                  Settings_Position_Cache (M, S) := Cnt;
-                  Cnt := Cnt + 1;
-               end if;
-            end loop;
-         end;
-      end if;
-
-      return Settings_Position_Cache (M, S);
-   end Setting_Position;
+      --  Computed at elaboration
+      return Top_Settings_Position_Cache (M, S);
+   end Top_Setting_Position;
 
    ------------------------
    -- Next_Valid_Setting --
    ------------------------
 
-   procedure Next_Valid_Setting (S : in out Settings;
-                                 M : Project.Track_Mode_Kind)
+   procedure Next_Valid_Setting (M : Project.Track_Mode_Kind;
+                                 S : in out Sub_Settings)
    is
-      Result : Settings := S;
+      Result : Sub_Settings := S;
    begin
-      while Result /= Settings'Last loop
-         Result := Settings'Succ (Result);
-         if Valid_Setting (Result, M) then
+      while Result /= Sub_Settings'Last loop
+         Result := Sub_Settings'Succ (Result);
+         if Valid_Setting (M, Result) then
             S := Result;
             return;
          end if;
       end loop;
 
-      if Valid_Setting (Result, M) then
+      if Valid_Setting (M, Result) then
          S := Result;
       end if;
    end Next_Valid_Setting;
@@ -118,20 +127,20 @@ package body WNM.GUI.Menu.Track_Settings is
    -- Prev_Valid_Setting --
    ------------------------
 
-   procedure Prev_Valid_Setting (S : in out Settings;
-                                 M : Project.Track_Mode_Kind)
+   procedure Prev_Valid_Setting (M : Project.Track_Mode_Kind;
+                                 S : in out Sub_Settings)
    is
-      Result : Settings := S;
+      Result : Sub_Settings := S;
    begin
-      while Result /= Settings'First loop
-         Result := Settings'Pred (Result);
-         if Valid_Setting (Result, M) then
+      while Result /= Sub_Settings'First loop
+         Result := Sub_Settings'Pred (Result);
+         if Valid_Setting (M, Result) then
             S := Result;
             return;
          end if;
       end loop;
 
-      if Valid_Setting (Result, M) then
+      if Valid_Setting (M, Result) then
          S := Result;
       end if;
    end Prev_Valid_Setting;
@@ -140,7 +149,7 @@ package body WNM.GUI.Menu.Track_Settings is
    -- To_CC_Id --
    --------------
 
-   function To_CC_Id (S : Settings) return Project.CC_Id
+   function To_CC_Id (S : Sub_Settings) return Project.CC_Id
    is (case S is
           when CC_Default_A | CC_Ctrl_A | CC_Label_A => A,
           when CC_Default_B | CC_Ctrl_B | CC_Label_B => B,
@@ -165,22 +174,24 @@ package body WNM.GUI.Menu.Track_Settings is
    procedure Draw
      (This : in out Track_Settings_Menu)
    is
+      Mode : constant Project.Track_Mode_Kind := Project.Mode (Editing_Track);
+      Sub : constant Sub_Settings := This.Current_Setting;
+      Top : constant Top_Settings := To_Top (This.Current_Setting);
    begin
       This.Fix_Current_Setting;
 
       Draw_Menu_Box ("Track settings",
-                     Count => Settings_Count (Mode (Editing_Track)),
-                     Index => Setting_Position (This.Current_Setting,
-                                                Mode (Editing_Track)));
-      case This.Current_Setting is
+                     Count => Top_Settings_Count (Mode),
+                     Index => Top_Setting_Position (Top, Mode));
+      case Top is
          when Track_Mode =>
             Draw_Title ("Track mode:", "");
-            Draw_Value (Img (Mode (Editing_Track)));
+            Draw_Value (Img (Mode));
 
          when Volume =>
             Draw_Volume ("Volume:", Project.Track_Volume);
 
-         when Project.Pan =>
+         when Pan =>
             Draw_Pan ("Pan:", Project.Track_Pan);
 
          when Arp_Mode =>
@@ -211,20 +222,24 @@ package body WNM.GUI.Menu.Track_Settings is
 
             Draw_Word_Select (Project.Selected_Word (Editing_Track));
 
-         when CC_Default_A | CC_Default_B | CC_Default_C | CC_Default_D =>
+         when CC_Default =>
             declare
-               CC : constant Project.CC_Id :=
-                 To_CC_Id (This.Current_Setting);
+               Selected : constant Project.CC_Id := To_CC_Id (Sub);
             begin
-               Draw_Title (Project.CC_Controller_Label (Editing_Track, CC),
-                           "");
-               Draw_Value (Project.CC_Default (Editing_Track, CC)'Img);
+
+               for Id in CC_Id loop
+                  Draw_CC_Value (Id, Project.CC_Default (Editing_Track, Id),
+                                 "   ",
+                                 Id = Selected);
+               end loop;
+
+               Draw_Title
+                 (Project.CC_Controller_Label (Editing_Track, Selected), "");
             end;
 
          when CC_Ctrl_A | CC_Ctrl_B | CC_Ctrl_C | CC_Ctrl_D =>
             declare
-               CC : constant Project.CC_Id :=
-                 To_CC_Id (This.Current_Setting);
+               CC : constant Project.CC_Id := To_CC_Id (Sub);
             begin
                Draw_Title ("MIDI CC " & Project.CC_Letter (CC) & ":", "");
                Draw_Value ("Controller:" &
@@ -316,6 +331,13 @@ package body WNM.GUI.Menu.Track_Settings is
                when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D =>
                   GUI.Popup.Display ("L press to edit ", 500_000);
 
+               when CC_Default_A .. CC_Default_D =>
+                  if Event.Value > 0 then
+                     Project.Next_Value_Fast (This.Current_Setting);
+                  else
+                     Project.Prev_Value_Fast (This.Current_Setting);
+                  end if;
+
                when others =>
                   if Event.Value > 0 then
                      Project.Next_Value (This.Current_Setting);
@@ -325,11 +347,11 @@ package body WNM.GUI.Menu.Track_Settings is
             end case;
          when Encoder_Left =>
             if Event.Value > 0 then
-               Next_Valid_Setting (This.Current_Setting,
-                                   Mode (Editing_Track));
+               Next_Valid_Setting (Mode (Editing_Track),
+                                   This.Current_Setting);
             elsif Event.Value < 0 then
-               Prev_Valid_Setting (This.Current_Setting,
-                                   Mode (Editing_Track));
+               Prev_Valid_Setting (Mode (Editing_Track),
+                                   This.Current_Setting);
             end if;
       end case;
    end On_Event;
@@ -379,4 +401,41 @@ package body WNM.GUI.Menu.Track_Settings is
       end if;
    end On_Focus;
 
+begin
+
+   for Mode in Project.Track_Mode_Kind loop
+
+      for Sub in Sub_Settings loop
+         if Valid_Setting (Mode, Sub) then
+            Valid_Top_Settings (Mode, To_Top (Sub)) := True;
+         end if;
+      end loop;
+
+      --  I don't think there is a way to know the number of settings per
+      --  mode at compile time because it depends on the results of the
+      --  Valid_Setting function. So we compute the numbers here and cache
+      --  the result for futre calls.
+
+      for Top in Top_Settings loop
+         if Valid_Top_Settings (Mode, Top) then
+            Top_Settings_Count_Cache (Mode) :=
+              Top_Settings_Count_Cache (Mode) + 1;
+         end if;
+      end loop;
+
+      --  Same as Settings_Count, we compute the numbers here and cache the
+      --  result for futre calls.
+
+      declare
+         Cnt : Natural := 0;
+      begin
+         for Top in Top_Settings loop
+            if Valid_Top_Settings (Mode, Top) then
+               Top_Settings_Position_Cache (Mode, Top) := Cnt;
+               Cnt := Cnt + 1;
+            end if;
+         end loop;
+      end;
+
+   end loop;
 end WNM.GUI.Menu.Track_Settings;

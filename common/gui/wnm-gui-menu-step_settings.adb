@@ -51,10 +51,10 @@ package body WNM.GUI.Menu.Step_Settings is
           when Project.Velo => Note,
           when Project.Repeat => Repeat,
           when Project.Repeat_Rate => Repeat,
-          when Project.CC_A => CC_A,
-          when Project.CC_B => CC_B,
-          when Project.CC_C => CC_C,
-          when Project.CC_D => CC_D);
+          when Project.CC_A => CC_Value,
+          when Project.CC_B => CC_Value,
+          when Project.CC_C => CC_Value,
+          when Project.CC_D => CC_Value);
 
    ----------
    -- Draw --
@@ -115,23 +115,24 @@ package body WNM.GUI.Menu.Step_Settings is
               (Project.Img (Repeat_Rate (Step)),
                Selected => This.Current_Setting = Project.Repeat_Rate);
 
-         when CC_A .. CC_D =>
+         when CC_Value =>
             declare
-               Id : constant Project.CC_Id :=
+               Selected : constant Project.CC_Id :=
                  (case This.Current_Setting is
-                  when CC_A => Project.A,
-                  when CC_B => Project.B,
-                  when CC_C => Project.C,
-                  when others => Project.D);
+                     when CC_A => Project.A,
+                     when CC_B => Project.B,
+                     when CC_C => Project.C,
+                     when others => Project.D);
             begin
+               for Id in CC_Id loop
+                  Draw_CC_Value (Id, Project.CC_Value (Editing_Step, Id),
+                                 "   ",
+                                 Id = Selected,
+                                 Enabled => CC_Enabled (Step, Id));
+               end loop;
 
-               Draw_Title (CC_Controller_Label (Editing_Track, Id), "");
-
-               if CC_Enabled (Step, Id) then
-                  Draw_Value (CC_Image (Step, Id));
-               else
-                  Draw_Value ("- Disabled -");
-               end if;
+               Draw_Title
+                 (CC_Controller_Label (Editing_Track, Selected), "");
             end;
       end case;
    end Draw;
@@ -163,11 +164,20 @@ package body WNM.GUI.Menu.Step_Settings is
             end case;
 
          when Encoder_Right =>
-            if Event.Value > 0 then
-               Next_Value (This.Current_Setting);
-            else
-               Prev_Value (This.Current_Setting);
-            end if;
+            case This.Current_Setting is
+               when CC_A .. CC_D =>
+                  if Event.Value > 0 then
+                     Next_Value_Fast (This.Current_Setting);
+                  else
+                     Prev_Value_Fast (This.Current_Setting);
+                  end if;
+               when others =>
+                  if Event.Value > 0 then
+                     Next_Value (This.Current_Setting);
+                  else
+                     Prev_Value (This.Current_Setting);
+                  end if;
+            end case;
 
          when Encoder_Left =>
             if Event.Value > 0 then
