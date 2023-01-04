@@ -208,6 +208,17 @@ package WNM.Project is
           when Cymbal_Mode => "Symbal",
           when Lead_Mode => "Lead");
 
+   subtype Synth_Track_Mode_Kind is
+     Track_Mode_Kind range Kick_Mode .. Lead_Mode;
+
+   function Voice_MIDI_Chan (Voice : Synth_Track_Mode_Kind)
+                             return MIDI.MIDI_Channel
+   is (case Voice is
+          when Kick_Mode   => 1,
+          when Snare_Mode  => 2,
+          when Cymbal_Mode => 3,
+          when Lead_Mode   => 4);
+
    subtype Controller_Label is String (1 .. 17);
    Empty_Controller_Label : constant Controller_Label := (others => ' ');
 
@@ -252,6 +263,10 @@ package WNM.Project is
    function Selected_Sample (T : Tracks := Editing_Track)
                              return Sample_Library.Valid_Sample_Index;
    function Selected_Word (T : Tracks := Editing_Track) return Speech.Word;
+   function Selected_Engine (T : Tracks := Editing_Track)
+                             return MIDI.MIDI_Data;
+   function Selected_Engine_Img (T : Tracks := Editing_Track)
+                                 return String;
    function Arp_Mode (T : Tracks := Editing_Track) return Arp_Mode_Kind;
    function Arp_Notes (T : Tracks := Editing_Track) return Arp_Notes_Kind;
    function Notes_Per_Chord (T : Tracks := Editing_Track)
@@ -260,6 +275,11 @@ package WNM.Project is
    type Track_Settings is (Track_Mode,
                            Sample,
                            Speech_Word,
+                           Engine,
+                           CC_Default_A,
+                           CC_Default_B,
+                           CC_Default_C,
+                           CC_Default_D,
                            Volume,
                            Pan,
                            Arp_Mode,
@@ -267,10 +287,6 @@ package WNM.Project is
                            Notes_Per_Chord,
                            MIDI_Chan,
                            MIDI_Instrument,
-                           CC_Default_A,
-                           CC_Default_B,
-                           CC_Default_C,
-                           CC_Default_D,
                            CC_Ctrl_A, CC_Label_A,
                            CC_Ctrl_B, CC_Label_B,
                            CC_Ctrl_C, CC_Label_C,
@@ -280,25 +296,26 @@ package WNM.Project is
    for Track_Settings use (Track_Mode      => 0,
                            Sample          => 1,
                            Speech_Word     => 2,
-                           Volume          => 3,
-                           Pan             => 4,
-                           Arp_Mode        => 5,
-                           Arp_Notes       => 6,
-                           Notes_Per_Chord => 7,
-                           MIDI_Chan       => 8,
-                           MIDI_Instrument => 9,
-                           CC_Default_A    => 10,
-                           CC_Default_B    => 11,
-                           CC_Default_C    => 12,
-                           CC_Default_D    => 13,
-                           CC_Ctrl_A       => 14,
-                           CC_Label_A      => 15,
-                           CC_Ctrl_B       => 16,
-                           CC_Label_B      => 17,
-                           CC_Ctrl_C       => 18,
-                           CC_Label_C      => 19,
-                           CC_Ctrl_D       => 20,
-                           CC_Label_D      => 21);
+                           Engine          => 3,
+                           CC_Default_A    => 4,
+                           CC_Default_B    => 5,
+                           CC_Default_C    => 6,
+                           CC_Default_D    => 7,
+                           Volume          => 8,
+                           Pan             => 9,
+                           Arp_Mode        => 10,
+                           Arp_Notes       => 11,
+                           Notes_Per_Chord => 12,
+                           MIDI_Chan       => 13,
+                           MIDI_Instrument => 14,
+                           CC_Ctrl_A       => 15,
+                           CC_Label_A      => 16,
+                           CC_Ctrl_B       => 17,
+                           CC_Label_B      => 18,
+                           CC_Ctrl_C       => 19,
+                           CC_Label_C      => 20,
+                           CC_Ctrl_D       => 21,
+                           CC_Label_D      => 22);
 
    subtype User_Track_Settings
      is Track_Settings range Track_Mode .. CC_Label_D;
@@ -448,6 +465,7 @@ private
       CC : CC_Setting_Array;
       Sample : Sample_Library.Valid_Sample_Index := 1;
       Word   : Speech.Word := Speech.Word'First;
+      Engine : MIDI.MIDI_Data := 0;
       Arp_Mode : Arp_Mode_Kind := Arp_Mode_Kind'First;
       Arp_Notes : Arp_Notes_Kind := Arp_Notes_Kind'First;
       Notes_Per_Chord : Chord_Settings.Chord_Index_Range :=
@@ -468,6 +486,7 @@ private
             ),
       Sample => Sample_Library.Valid_Sample_Index'First,
       Word => Speech.Word'First,
+      Engine => 0,
       Arp_Mode => Arp_Mode_Kind'First,
       Arp_Notes => Arp_Notes_Kind'First,
       Notes_Per_Chord => Chord_Settings.Chord_Index_Range'Last
@@ -493,4 +512,14 @@ private
    end record;
 
    G_Project : Project_Rec := (others => <>);
+
+   procedure Synchronize_Voice_Settings (T : Tracks);
+   --  Send all the synth voice settings to the coprocessor to update the
+
+   procedure Synchronize_Voice_Engine (T : Tracks);
+   --  Send a message to coprocessor with selector engine for the track
+
+   procedure Synchronize_Coproc_Vol_Pan (T : Tracks);
+   --  Send a message to coprocessor with Volume and pan value for the track
+
 end WNM.Project;

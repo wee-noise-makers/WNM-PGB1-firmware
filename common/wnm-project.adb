@@ -22,11 +22,11 @@
 with HAL; use HAL;
 
 with WNM.Coproc;
+with WNM.Utils;
+
+with Tresses.Interfaces;
 
 package body WNM.Project is
-
-   procedure Update_Coproc_Vol_Pan (T : Tracks);
-   --  Send a message to coproc with Volume and pan value for the track
 
    -------------
    -- Do_Copy --
@@ -613,39 +613,35 @@ package body WNM.Project is
                                  Id   : CC_Id)
                                  return Controller_Label
    is
+      Result : Controller_Label;
+
+      Tresses_Id : constant Tresses.Interfaces.Param_Id := (case Id is
+                                                               when A => 1,
+                                                               when B => 2,
+                                                               when C => 3,
+                                                               when D => 4);
    begin
       case Mode (T) is
          when MIDI_Mode =>
             return G_Project.Tracks (T).CC (Id).Label;
 
          when Kick_Mode =>
-            case Id is
-               when A      => return "Decay            ";
-               when B      => return "Coefficient      ";
-               when C      => return "Drive            ";
-               when others => return "Nothing...       ";
-            end case;
+            Utils.Copy_Str (Synth.Kick_Param_Label (Tresses_Id), Result);
+            return Result;
 
          when Snare_Mode =>
-            case Id is
-               when A      => return "Tone             ";
-               when B      => return "Noise            ";
-               when others => return "Nothing...       ";
-            end case;
+            Utils.Copy_Str (Synth.Snare_Param_Label (Tresses_Id), Result);
+            return Result;
 
          when Cymbal_Mode =>
-            case Id is
-               when A      => return "Cutoff           ";
-               when B      => return "Noise            ";
-               when others => return "Nothing...       ";
-            end case;
+            Utils.Copy_Str (Synth.Cymbal_Param_Label (Tresses_Id), Result);
+            return Result;
 
          when Lead_Mode =>
-            case Id is
-               when A      => return "Timber           ";
-               when B      => return "Color            ";
-               when others => return "Nothing...       ";
-            end case;
+            Utils.Copy_Str (Synth.Lead_Param_Label (Selected_Engine (T),
+                                                    Tresses_Id),
+                            Result);
+            return Result;
 
          when Sample_Mode =>
             return "Not Applicable   ";
@@ -673,6 +669,29 @@ package body WNM.Project is
    function Selected_Word (T : Tracks := Editing_Track) return Speech.Word
    is (G_Project.Tracks (T).Word);
 
+   ---------------------
+   -- Selected_Engine --
+   ---------------------
+
+   function Selected_Engine (T : Tracks := Editing_Track)
+                             return MIDI.MIDI_Data
+   is (G_Project.Tracks (T).Engine);
+
+   -------------------------
+   -- Selected_Engine_Img --
+   -------------------------
+
+   function Selected_Engine_Img (T : Tracks := Editing_Track)
+                                 return String
+   is
+   begin
+      if Mode (T) = Lead_Mode then
+         return Synth.Lead_Engine_Img (Selected_Engine (T));
+      else
+         return "No Engine";
+      end if;
+   end Selected_Engine_Img;
+
    --------------
    -- Arp_Mode --
    --------------
@@ -695,19 +714,6 @@ package body WNM.Project is
                              return Natural
    is (Natural (G_Project.Tracks (T).Notes_Per_Chord) + 1);
 
-   ---------------------------
-   -- Update_Coproc_Vol_Pan --
-   ---------------------------
-
-   procedure Update_Coproc_Vol_Pan (T : Tracks) is
-      use WNM.Coproc;
-   begin
-      Coproc.Push ((Kind       => Track_Vol_Pan,
-                    TVP_Track  => T,
-                    TVP_Vol    => G_Project.Tracks (T).Volume,
-                    TVP_Pan    => G_Project.Tracks (T).Pan));
-   end Update_Coproc_Vol_Pan;
-
    ----------------
    -- Next_Value --
    ----------------
@@ -719,6 +725,7 @@ package body WNM.Project is
          when Track_Mode      => Next (Track.Mode);
          when Sample          => Next (Track.Sample);
          when Speech_Word     => Next (Track.Word);
+         when Engine          => Next (Track.Engine);
          when Volume          => Next (Track.Volume);
          when Pan             => Next (Track.Pan);
          when Arp_Mode        => Next (Track.Arp_Mode);
@@ -738,7 +745,9 @@ package body WNM.Project is
       end case;
 
       if S in Pan | Volume then
-         Update_Coproc_Vol_Pan (Editing_Track);
+         Synchronize_Coproc_Vol_Pan (Editing_Track);
+      elsif S in Engine then
+         Synchronize_Voice_Engine (Editing_Track);
       end if;
    end Next_Value;
 
@@ -753,6 +762,7 @@ package body WNM.Project is
          when Track_Mode      => Prev (Track.Mode);
          when Sample          => Prev (Track.Sample);
          when Speech_Word     => Prev (Track.Word);
+         when Engine          => Prev (Track.Engine);
          when Volume          => Prev (Track.Volume);
          when Pan             => Prev (Track.Pan);
          when Arp_Mode        => Prev (Track.Arp_Mode);
@@ -772,7 +782,9 @@ package body WNM.Project is
       end case;
 
       if S in Pan | Volume then
-         Update_Coproc_Vol_Pan (Editing_Track);
+         Synchronize_Coproc_Vol_Pan (Editing_Track);
+      elsif S in Engine then
+         Synchronize_Voice_Engine (Editing_Track);
       end if;
    end Prev_Value;
 
@@ -787,6 +799,7 @@ package body WNM.Project is
          when Track_Mode      => Next_Fast (Track.Mode);
          when Sample          => Next_Fast (Track.Sample);
          when Speech_Word     => Next_Fast (Track.Word);
+         when Engine          => Next_Fast (Track.Engine);
          when Volume          => Next_Fast (Track.Volume);
          when Pan             => Next_Fast (Track.Pan);
          when Arp_Mode        => Next_Fast (Track.Arp_Mode);
@@ -817,6 +830,7 @@ package body WNM.Project is
          when Track_Mode      => Prev_Fast (Track.Mode);
          when Sample          => Prev_Fast (Track.Sample);
          when Speech_Word     => Prev_Fast (Track.Word);
+         when Engine          => Prev_Fast (Track.Engine);
          when Volume          => Prev_Fast (Track.Volume);
          when Pan             => Prev_Fast (Track.Pan);
          when Arp_Mode        => Prev_Fast (Track.Arp_Mode);
@@ -933,5 +947,46 @@ package body WNM.Project is
    begin
       null; -- TODO..
    end Randomly_Pick_A_Progression;
+
+   --------------------------------
+   -- Synchronize_Voice_Settings --
+   --------------------------------
+
+   procedure Synchronize_Voice_Settings (T : Tracks) is
+   begin
+      Synchronize_Coproc_Vol_Pan (T);
+      Synchronize_Voice_Engine (T);
+   end Synchronize_Voice_Settings;
+
+   ------------------------------
+   -- Synchronize_Voice_Engine --
+   ------------------------------
+
+   procedure Synchronize_Voice_Engine (T : Tracks) is
+      use WNM.Coproc;
+      M : constant Track_Mode_Kind := Mode (T);
+   begin
+      if M in Synth_Track_Mode_Kind then
+         Coproc.Push ((Kind     => MIDI_Event,
+                       MIDI_Evt =>
+                         (Kind => MIDI.Continous_Controller,
+                          Chan => Voice_MIDI_Chan (M),
+                          Controller => 4,
+                          Controller_Value => Selected_Engine (T))));
+      end if;
+   end Synchronize_Voice_Engine;
+
+   --------------------------------
+   -- Synchronize_Coproc_Vol_Pan --
+   --------------------------------
+
+   procedure Synchronize_Coproc_Vol_Pan (T : Tracks) is
+      use WNM.Coproc;
+   begin
+      Coproc.Push ((Kind       => Track_Vol_Pan,
+                    TVP_Track  => T,
+                    TVP_Vol    => G_Project.Tracks (T).Volume,
+                    TVP_Pan    => G_Project.Tracks (T).Pan));
+   end Synchronize_Coproc_Vol_Pan;
 
 end WNM.Project;

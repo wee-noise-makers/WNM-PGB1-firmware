@@ -253,6 +253,9 @@ package body WNM.Project.Storage is
                   when Speech_Word =>
                      Output.Push (Out_UInt (Track.Word'Enum_Rep));
 
+                  when Engine =>
+                     Output.Push (Out_UInt (Track.Engine));
+
                   when Volume =>
                      Output.Push (Out_UInt (Track.Volume));
 
@@ -462,6 +465,7 @@ package body WNM.Project.Storage is
                when Track_Mode  => Read (Input, Track.Mode);
                when Sample      => Read (Input, Track.Sample);
                when Speech_Word => Read (Input, Track.Word);
+               when Engine      => Read (Input, Track.Engine);
                when Volume      => Read (Input, Track.Volume);
                when Pan         => Read (Input, Track.Pan);
                when Arp_Mode    => Read (Input, Track.Arp_Mode);
@@ -732,6 +736,14 @@ package body WNM.Project.Storage is
       end loop;
 
       File_System.Close;
+
+      if Input.Status = Ok then
+         --  Update all the synth settings after loading a project
+         for T in Tracks loop
+            Synchronize_Voice_Settings (T);
+         end loop;
+      end if;
+
       return Ok;
    end Load;
 

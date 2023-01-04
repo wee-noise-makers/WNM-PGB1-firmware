@@ -31,6 +31,8 @@ private
    type Top_Settings is (Track_Mode,
                          Sample,
                          Speech_Word,
+                         Engine,
+                         CC_Default,
                          Volume,
                          Pan,
                          Arp_Mode,
@@ -38,7 +40,6 @@ private
                          Notes_Per_Chord,
                          MIDI_Chan,
                          MIDI_Instrument,
-                         CC_Default,
                          CC_Ctrl_A, CC_Label_A,
                          CC_Ctrl_B, CC_Label_B,
                          CC_Ctrl_C, CC_Label_C,
@@ -66,8 +67,12 @@ private
                   Arp_Notes | CC_Default_A,
 
           when Project.Kick_Mode | Project.Snare_Mode |
-               Project.Cymbal_Mode | Project.Lead_Mode =>
+               Project.Cymbal_Mode =>
              S in Track_Mode | Volume | Pan | Arp_Mode | Arp_Notes |
+                  CC_Default_A .. CC_Default_D,
+
+          when Project.Lead_Mode =>
+             S in Track_Mode | Engine | Volume | Pan | Arp_Mode | Arp_Notes |
                   CC_Default_A .. CC_Default_D
       );
    --  Return True if the given setting is available for the given track mode.
@@ -79,7 +84,7 @@ private
                                  S : in out Sub_Settings);
 
    type Track_Settings_Menu is new Menu_Window with record
-      Current_Setting : Sub_Settings := CC_Default_A;
+      Current_Setting : Sub_Settings := Sub_Settings'First;
       Instrument : Natural := 0;
    end record;
 

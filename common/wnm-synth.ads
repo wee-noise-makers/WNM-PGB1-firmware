@@ -26,6 +26,9 @@ with WNM_HAL;
 with WNM.Time;
 with WNM.Sample_Library;
 with WNM.Sample_Stream;
+with WNM.MIDI;
+
+with Tresses.Interfaces;
 
 package WNM.Synth is
 
@@ -45,6 +48,22 @@ package WNM.Synth is
 
    procedure Set_Passthrough (Kind : Audio_Input_Kind);
    function Get_Passthrough return Audio_Input_Kind;
+
+   -----------
+   -- Synth --
+   -----------
+
+   function Lead_Engine_Img (Engine : MIDI.MIDI_Data) return String;
+   function Lead_Param_Label (Engine : MIDI.MIDI_Data;
+                              Id : Tresses.Interfaces.Param_Id)
+                              return String;
+
+   function Kick_Param_Label (Id : Tresses.Interfaces.Param_Id)
+                              return String;
+   function Snare_Param_Label (Id : Tresses.Interfaces.Param_Id)
+                               return String;
+   function Cymbal_Param_Label (Id : Tresses.Interfaces.Param_Id)
+                                return String;
 
    ---------------
    -- Recording --

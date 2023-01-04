@@ -50,14 +50,6 @@ package body WNM.Project.Step_Sequencer is
    procedure Play_Step (P : Patterns; T : Tracks; S : Sequencer_Steps;
                         Now : Time.Time_Microseconds := Time.Clock);
 
-   function Voice_MIDI_Chan (Voice : Track_Mode_Kind) return MIDI.MIDI_Channel
-   is (case Voice is
-          when Kick_Mode   => 1,
-          when Snare_Mode  => 2,
-          when Cymbal_Mode => 3,
-          when Lead_Mode   => 4,
-          when others => raise Program_Error);
-
    ------------
    -- Offset --
    ------------

@@ -38,9 +38,6 @@ package WNM.Coproc is
                          MIDI_Event)
      with Size => 4;
 
-   type Synth_Voice_Id is (Kick, Snare, Cymbal, Lead)
-     with Size => 2;
-
    subtype MIDI_Event_Rec is MIDI.Message;
 
    type Message (Kind : Message_Kind := Sampler_Event) is record

@@ -47,6 +47,7 @@ package body WNM.GUI.Menu.Track_Settings is
        when Project.Track_Mode => Track_Mode,
        when Project.Sample => Sample,
        when Project.Speech_Word => Speech_Word,
+       when Project.Engine => Engine,
        when Project.Volume => Volume,
        when Project.Pan => Pan,
        when Project.Arp_Mode => Arp_Mode,
@@ -174,11 +175,15 @@ package body WNM.GUI.Menu.Track_Settings is
    procedure Draw
      (This : in out Track_Settings_Menu)
    is
-      Mode : constant Project.Track_Mode_Kind := Project.Mode (Editing_Track);
-      Sub : constant Sub_Settings := This.Current_Setting;
-      Top : constant Top_Settings := To_Top (This.Current_Setting);
+      Mode : Project.Track_Mode_Kind;
+      Sub : Sub_Settings;
+      Top : Top_Settings;
    begin
       This.Fix_Current_Setting;
+
+      Mode := Project.Mode (Editing_Track);
+      Sub := This.Current_Setting;
+      Top := To_Top (This.Current_Setting);
 
       Draw_Menu_Box ("Track settings",
                      Count => Top_Settings_Count (Mode),
@@ -221,6 +226,11 @@ package body WNM.GUI.Menu.Track_Settings is
          when Speech_Word =>
 
             Draw_Word_Select (Project.Selected_Word (Editing_Track));
+
+         when Engine =>
+
+            Draw_Title ("Synth Engine:", "");
+            Draw_Value (Project.Selected_Engine_Img (Editing_Track));
 
          when CC_Default =>
             declare

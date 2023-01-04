@@ -26,30 +26,44 @@ with WNM.Sample_Library;         use WNM.Sample_Library;
 with WNM.Coproc;
 with MIDI;
 
-pragma Warnings (Off, "hides compilation unit");
-with WNM.MIDI;
-pragma Warnings (On, "hides compilation unit");
-
 with WNM.Speech;
 
 with Tresses.Drums.Kick;
-with Tresses.Drums.Snare;
+with Tresses.Drums.Clap;
 with Tresses.Drums.Cymbal;
 with Tresses.Voices.Macro;
-with Tresses.Interfaces;
+with Tresses.Macro;
 
 package body WNM.Synth is
 
    TK   : aliased Tresses.Drums.Kick.Instance;
-   TS   : aliased Tresses.Drums.Snare.Instance;
+   TS   : aliased Tresses.Drums.Clap.Instance;
    TC   : aliased Tresses.Drums.Cymbal.Instance;
    Lead : aliased Tresses.Voices.Macro.Instance;
 
    subtype Voice_Class is Tresses.Interfaces.Four_Params_Voice'Class;
    type Voice_Access is access all Voice_Class;
+
+   function Lead_Engines (V : MIDI.MIDI_Data) return Tresses.Synth_Engines
+   is (case V is
+          when 0 => Tresses.Voice_Saw_Swarm,
+          when 1 => Tresses.Voice_Acid,
+          when 2 => Tresses.Voice_Analog_Buzz,
+          when 3 => Tresses.Voice_Analog_Morph,
+          when 4 => Tresses.Voice_FM2OP,
+          when others => Tresses.Voice_Plucked);
+
+   Kick_Channel   : constant MIDI.MIDI_Channel := 1;
+   Snare_Channel  : constant MIDI.MIDI_Channel := 2;
+   Cymbal_Channel : constant MIDI.MIDI_Channel := 3;
+   Lead_Channel   : constant MIDI.MIDI_Channel := 4;
+
    Synth_Voices : constant array (MIDI.MIDI_Channel range 1 .. 4) of
      Voice_Access :=
-       (TK'Access, TS'Access, TC'Access, Lead'Access);
+       (Kick_Channel   => TK'Access,
+        Snare_Channel  => TS'Access,
+        Cymbal_Channel => TC'Access,
+        Lead_Channel   => Lead'Access);
 
    Recording_Source : Rec_Source;
    Recording_Size   : Natural;
@@ -172,6 +186,8 @@ package body WNM.Synth is
 
                if Msg.MIDI_Evt.Chan in Synth_Voices'Range then
                   declare
+                     use MIDI;
+
                      Voice : Voice_Class renames
                        Synth_Voices (Msg.MIDI_Evt.Chan).all;
                   begin
@@ -189,6 +205,13 @@ package body WNM.Synth is
                                 (Msg.MIDI_Evt.Controller + 1),
                               MIDI_Val_To_Tresses_Param
                                 (Msg.MIDI_Evt.Controller_Value));
+
+                        elsif Msg.MIDI_Evt.Controller = 4
+                          and then
+                            Msg.MIDI_Evt.Chan = Lead_Channel
+                        then
+                           Lead.Set_Engine
+                             (Lead_Engines (Msg.MIDI_Evt.Controller_Value));
                         end if;
 
                      when others =>
@@ -321,6 +344,47 @@ package body WNM.Synth is
    begin
       return Passthrough;
    end Get_Passthrough;
+
+   ---------------------
+   -- Lead_Engine_Img --
+   ---------------------
+
+   function Lead_Engine_Img (Engine : MIDI.MIDI_Data) return String
+   is (Tresses.Img (Lead_Engines (Engine)));
+
+   ----------------------
+   -- Lead_Param_Label --
+   ----------------------
+
+   function Lead_Param_Label (Engine : MIDI.MIDI_Data;
+                              Id : Tresses.Interfaces.Param_Id)
+                              return String
+   is
+      E : constant Tresses.Synth_Engines := Lead_Engines (Engine);
+   begin
+      return Tresses.Macro.Param_Label (E, Id);
+   end Lead_Param_Label;
+
+   ----------------------
+   -- Kick_Param_Label --
+   ----------------------
+
+   function Kick_Param_Label (Id : Tresses.Interfaces.Param_Id) return String
+   is (Tresses.Macro.Param_Label (Tresses.Drum_Kick, Id));
+
+   -----------------------
+   -- Snare_Param_Label --
+   -----------------------
+
+   function Snare_Param_Label (Id : Tresses.Interfaces.Param_Id) return String
+   is (Tresses.Macro.Param_Label (Tresses.Drum_Snare, Id));
+
+   ------------------------
+   -- Cymbal_Param_Label --
+   ------------------------
+
+   function Cymbal_Param_Label (Id : Tresses.Interfaces.Param_Id) return String
+   is (Tresses.Macro.Param_Label (Tresses.Drum_Cymbal, Id));
 
    -------------------
    -- Now_Recording --
