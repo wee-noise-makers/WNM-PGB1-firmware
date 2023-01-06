@@ -33,6 +33,7 @@ with Tresses.Drums.Clap;
 with Tresses.Drums.Cymbal;
 with Tresses.Voices.Macro;
 with Tresses.Macro;
+with Tresses.Interfaces;
 
 package body WNM.Synth is
 
@@ -201,7 +202,7 @@ package body WNM.Synth is
                      when MIDI.Continous_Controller =>
                         if Msg.MIDI_Evt.Controller <= 3 then
                            Voice.Set_Param
-                             (Tresses.Interfaces.Param_Id
+                             (Tresses.Param_Id
                                 (Msg.MIDI_Evt.Controller + 1),
                               MIDI_Val_To_Tresses_Param
                                 (Msg.MIDI_Evt.Controller_Value));
@@ -357,7 +358,7 @@ package body WNM.Synth is
    ----------------------
 
    function Lead_Param_Label (Engine : MIDI.MIDI_Data;
-                              Id : Tresses.Interfaces.Param_Id)
+                              Id : Tresses.Param_Id)
                               return String
    is
       E : constant Tresses.Synth_Engines := Lead_Engines (Engine);
@@ -365,26 +366,63 @@ package body WNM.Synth is
       return Tresses.Macro.Param_Label (E, Id);
    end Lead_Param_Label;
 
+   ----------------------------
+   -- Lead_Param_Short_Label --
+   ----------------------------
+
+   function Lead_Param_Short_Label (Engine : MIDI.MIDI_Data;
+                                    Id : Tresses.Param_Id)
+                                    return Tresses.Short_Label
+   is
+      E : constant Tresses.Synth_Engines := Lead_Engines (Engine);
+   begin
+      return Tresses.Macro.Param_Short_Label (E, Id);
+   end Lead_Param_Short_Label;
+
    ----------------------
    -- Kick_Param_Label --
    ----------------------
 
-   function Kick_Param_Label (Id : Tresses.Interfaces.Param_Id) return String
+   function Kick_Param_Label (Id : Tresses.Param_Id) return String
    is (Tresses.Macro.Param_Label (Tresses.Drum_Kick, Id));
+
+   ----------------------------
+   -- Kick_Param_Short_Label --
+   ----------------------------
+
+   function Kick_Param_Short_Label (Id : Tresses.Param_Id)
+                                    return Tresses.Short_Label
+   is (Tresses.Macro.Param_Short_Label (Tresses.Drum_Kick, Id));
 
    -----------------------
    -- Snare_Param_Label --
    -----------------------
 
-   function Snare_Param_Label (Id : Tresses.Interfaces.Param_Id) return String
+   function Snare_Param_Label (Id : Tresses.Param_Id) return String
    is (Tresses.Macro.Param_Label (Tresses.Drum_Snare, Id));
+
+   -----------------------------
+   -- Snare_Param_Short_Label --
+   -----------------------------
+
+   function Snare_Param_Short_Label (Id : Tresses.Param_Id)
+                                    return Tresses.Short_Label
+   is (Tresses.Macro.Param_Short_Label (Tresses.Drum_Snare, Id));
 
    ------------------------
    -- Cymbal_Param_Label --
    ------------------------
 
-   function Cymbal_Param_Label (Id : Tresses.Interfaces.Param_Id) return String
+   function Cymbal_Param_Label (Id : Tresses.Param_Id) return String
    is (Tresses.Macro.Param_Label (Tresses.Drum_Cymbal, Id));
+
+   ------------------------------
+   -- Cymbal_Param_Short_Label --
+   ------------------------------
+
+   function Cymbal_Param_Short_Label (Id : Tresses.Param_Id)
+                                      return Tresses.Short_Label
+   is (Tresses.Macro.Param_Short_Label (Tresses.Drum_Cymbal, Id));
 
    -------------------
    -- Now_Recording --

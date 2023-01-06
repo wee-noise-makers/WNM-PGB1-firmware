@@ -24,8 +24,6 @@ with HAL; use HAL;
 with WNM.Coproc;
 with WNM.Utils;
 
-with Tresses.Interfaces;
-
 package body WNM.Project is
 
    -------------
@@ -615,11 +613,11 @@ package body WNM.Project is
    is
       Result : Controller_Label;
 
-      Tresses_Id : constant Tresses.Interfaces.Param_Id := (case Id is
-                                                               when A => 1,
-                                                               when B => 2,
-                                                               when C => 3,
-                                                               when D => 4);
+      Tresses_Id : constant Tresses.Param_Id := (case Id is
+                                                    when A => 1,
+                                                    when B => 2,
+                                                    when C => 3,
+                                                    when D => 4);
    begin
       case Mode (T) is
          when MIDI_Mode =>
@@ -653,6 +651,48 @@ package body WNM.Project is
             end case;
       end case;
    end CC_Controller_Label;
+
+   -------------------------------
+   -- CC_Controller_Short_Label --
+   -------------------------------
+
+   function CC_Controller_Short_Label (T    : Tracks := Editing_Track;
+                                       Id   : CC_Id)
+                                       return Tresses.Short_Label
+   is
+      Tresses_Id : constant Tresses.Param_Id := (case Id is
+                                                    when A => 1,
+                                                    when B => 2,
+                                                    when C => 3,
+                                                    when D => 4);
+   begin
+      case Mode (T) is
+         when MIDI_Mode =>
+            return G_Project.Tracks (T).CC (Id).Label (1 .. 3);
+
+         when Kick_Mode =>
+            return Synth.Kick_Param_Short_Label (Tresses_Id);
+
+         when Snare_Mode =>
+            return Synth.Snare_Param_Short_Label (Tresses_Id);
+
+         when Cymbal_Mode =>
+            return Synth.Cymbal_Param_Short_Label (Tresses_Id);
+
+         when Lead_Mode =>
+            return Synth.Lead_Param_Short_Label (Selected_Engine (T),
+                                                 Tresses_Id);
+
+         when Sample_Mode =>
+            return "N/A";
+
+         when Speech_Mode =>
+            case Id is
+               when A => return "TIM";
+               when others => return "N/A";
+            end case;
+      end case;
+   end CC_Controller_Short_Label;
 
    ---------------------
    -- Selected_Sample --

@@ -87,8 +87,8 @@ package body WNM.GUI.Menu.Text_Dialog is
    begin
       Text_Dialog.Len := Len;
 
-      Text_Dialog.Text
-        (1 .. Len - 1) := Str (Str'First .. Str'First + Len - 1);
+      Text_Dialog.Text (Text_Range'First .. Text_Range'First + Len - 1) :=
+        Str (Str'First .. Str'First + Len - 1);
 
       Text_Dialog.Index := Len;
    end Set_Value;

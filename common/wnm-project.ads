@@ -27,6 +27,8 @@ with WNM.Chord_Settings;
 with WNM.Synth;
 with WNM.Time;
 
+with Tresses;
+
 private with Enum_Next;
 
 package WNM.Project is
@@ -260,6 +262,9 @@ package WNM.Project is
    function CC_Controller_Label (T    : Tracks := Editing_Track;
                                  Id   : CC_Id)
                                  return Controller_Label;
+   function CC_Controller_Short_Label (T    : Tracks := Editing_Track;
+                                       Id   : CC_Id)
+                                       return Tresses.Short_Label;
    function Selected_Sample (T : Tracks := Editing_Track)
                              return Sample_Library.Valid_Sample_Index;
    function Selected_Word (T : Tracks := Editing_Track) return Speech.Word;
@@ -479,10 +484,10 @@ private
       Chan => 0,
       Volume => Init_Volume,
       Pan => Init_Pan,
-      CC => ((0, 63, "Control 0        "),
-             (1, 63, "Control 1        "),
-             (2, 63, "Control 2        "),
-             (3, 63, "Control 3        ")
+      CC => ((0, 63, "CC0              "),
+             (1, 63, "CC1              "),
+             (2, 63, "CC2              "),
+             (3, 63, "CC3              ")
             ),
       Sample => Sample_Library.Valid_Sample_Index'First,
       Word => Speech.Word'First,

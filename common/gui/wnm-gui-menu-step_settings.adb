@@ -125,10 +125,11 @@ package body WNM.GUI.Menu.Step_Settings is
                      when others => Project.D);
             begin
                for Id in CC_Id loop
-                  Draw_CC_Value (Id, Project.CC_Value (Editing_Step, Id),
-                                 "   ",
-                                 Id = Selected,
-                                 Enabled => CC_Enabled (Step, Id));
+                  Draw_CC_Value
+                    (Id, Project.CC_Value (Editing_Step, Id),
+                     CC_Controller_Short_Label (Editing_Track, Id),
+                     Id = Selected,
+                     Enabled => CC_Enabled (Step, Id));
                end loop;
 
                Draw_Title

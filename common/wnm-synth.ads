@@ -28,7 +28,7 @@ with WNM.Sample_Library;
 with WNM.Sample_Stream;
 with WNM.MIDI;
 
-with Tresses.Interfaces;
+with Tresses;
 
 package WNM.Synth is
 
@@ -55,15 +55,26 @@ package WNM.Synth is
 
    function Lead_Engine_Img (Engine : MIDI.MIDI_Data) return String;
    function Lead_Param_Label (Engine : MIDI.MIDI_Data;
-                              Id : Tresses.Interfaces.Param_Id)
+                              Id : Tresses.Param_Id)
                               return String;
+   function Lead_Param_Short_Label (Engine : MIDI.MIDI_Data;
+                                    Id : Tresses.Param_Id)
+                                    return Tresses.Short_Label;
 
-   function Kick_Param_Label (Id : Tresses.Interfaces.Param_Id)
+   function Kick_Param_Label (Id : Tresses.Param_Id)
                               return String;
-   function Snare_Param_Label (Id : Tresses.Interfaces.Param_Id)
+   function Kick_Param_Short_Label (Id : Tresses.Param_Id)
+                                    return Tresses.Short_Label;
+
+   function Snare_Param_Label (Id : Tresses.Param_Id)
                                return String;
-   function Cymbal_Param_Label (Id : Tresses.Interfaces.Param_Id)
+   function Snare_Param_Short_Label (Id : Tresses.Param_Id)
+                                     return Tresses.Short_Label;
+
+   function Cymbal_Param_Label (Id : Tresses.Param_Id)
                                 return String;
+   function Cymbal_Param_Short_Label (Id : Tresses.Param_Id)
+                                      return Tresses.Short_Label;
 
    ---------------
    -- Recording --

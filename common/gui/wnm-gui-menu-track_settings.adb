@@ -238,9 +238,10 @@ package body WNM.GUI.Menu.Track_Settings is
             begin
 
                for Id in CC_Id loop
-                  Draw_CC_Value (Id, Project.CC_Default (Editing_Track, Id),
-                                 "   ",
-                                 Id = Selected);
+                  Draw_CC_Value
+                    (Id, Project.CC_Default (Editing_Track, Id),
+                     Project.CC_Controller_Short_Label (Editing_Track, Id),
+                     Id = Selected);
                end loop;
 
                Draw_Title
