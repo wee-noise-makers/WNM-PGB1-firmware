@@ -21,6 +21,8 @@
 
 with WNM_HAL;
 
+with WNM_Configuration;
+
 package WNM.Sample_Library
 with Elaborate_Body
 is
@@ -32,8 +34,8 @@ is
    --  The minimum erasable flash size a 4096 byte sector, so this is the base
    --  unit.
    --
-   --  We allocate 2200 sectors (~8.6 MB) for all the sample data. At 44100Hz
-   --  that's (2220 * 4096) / (44100 * 2) = 102.17, so a little over 102
+   --  We allocate 5632 sectors (22.0 MB) for all the sample data. At 44100Hz
+   --  that's (5632 * 4096) / (44100 * 2) = 261.5, so a little over 261
    --  seconds of audio data. We can either use this space for 100 samples of
    --  ~1 seconds or 50 samples of ~2 seconds.
    --
@@ -62,8 +64,12 @@ is
    --
    --  The sample is then written back into flash.
 
-   Samples                 : constant := Storage.Nbr_Samples;
-   Single_Sample_Byte_Size : constant := Storage.Sample_Library_Size / Samples;
+   Samples                 : constant :=
+     WNM_Configuration.Storage.Nbr_Samples;
+
+   Single_Sample_Byte_Size : constant :=
+     WNM_Configuration.Storage.Sample_Library_Byte_Size / Samples;
+
    Single_Sample_Point_Cnt : constant := Single_Sample_Byte_Size / 2;
 
    subtype Sample_Index is Natural range 0 .. Samples;
@@ -82,7 +88,7 @@ is
 
    type Global_Sample_Array
    is array (Valid_Sample_Index) of aliased Single_Sample_Data
-     with Size => Storage.Sample_Library_Size * 8;
+     with Size => Storage.Sample_Library_Byte_Size * 8;
 
    type Global_Sample_Array_Access is access all Global_Sample_Array;
 

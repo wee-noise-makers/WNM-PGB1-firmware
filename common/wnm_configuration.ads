@@ -51,18 +51,27 @@ package WNM_Configuration is
    package Storage is
       pragma Style_Checks ("M120");
 
-      Sector_Size : constant := 4096;
+      Sector_Byte_Size : constant := 4096;
 
-      Sample_Library_Sectors : constant := 2200;
-      Sample_Library_Size : constant := Sector_Size * Sample_Library_Sectors;
+      Total_Storage_Byte_Size : constant := 32 * 1024 * 1024;
+      Total_Sectors : constant := Total_Storage_Byte_Size / Sector_Byte_Size;
 
-      FS_Sectors : constant := 512;
-      FS_Size    : constant := Sector_Size * FS_Sectors;
+      Code_Sectors : constant := 1024;
+      Sample_Library_Sectors : constant := 5632;
+      FS_Sectors : constant := 1536;
 
-      Total_Storage_Size : constant := Sample_Library_Size + FS_Size;
+      pragma Compile_Time_Error
+        ((Code_Sectors + Sample_Library_Sectors + FS_Sectors) /=
+             Total_Sectors,
+         "Invalid number of used sectors");
 
-      Nbr_Samples             : constant := 50;
-      Global_Sample_Byte_Size : constant := Sample_Library_Sectors * Sector_Size;
+      Sample_Library_Byte_Size : constant :=
+        Sector_Byte_Size * Sample_Library_Sectors;
+
+      FS_Byte_Size    : constant := Sector_Byte_Size * FS_Sectors;
+
+      Nbr_Samples             : constant := 128;
+      Global_Sample_Byte_Size : constant := Sample_Library_Sectors * Sector_Byte_Size;
       Sectors_Per_Sample      : constant := Sample_Library_Sectors / Nbr_Samples;
       Single_Sample_Byte_Size : constant := Global_Sample_Byte_Size / Nbr_Samples;
       Single_Sample_Point_Cnt : constant := Single_Sample_Byte_Size / 2;

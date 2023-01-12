@@ -546,6 +546,14 @@ package body WNM.Project is
 
    function Mode (T : Tracks := Editing_Track) return Track_Mode_Kind
    is (G_Project.Tracks (T).Mode);
+   --  is (case T is
+   --         when 1 => Kick_Mode,
+   --         when 2 => Snare_Mode,
+   --         when 3 => Cymbal_Mode,
+   --         when 4 => Lead_Mode,
+   --         when 5 => Sample_Mode,
+   --         when 6 => Speech_Mode,
+   --         when others => MIDI_Mode);
 
    ---------------
    -- MIDI_Chan --
@@ -646,7 +654,8 @@ package body WNM.Project is
 
          when Speech_Mode =>
             case Id is
-               when A => return "Time Stretch     ";
+               when A => return "Word             ";
+               when B => return "Time Stretch     ";
                when others => return "Not Applicable   ";
             end case;
       end case;
@@ -688,7 +697,8 @@ package body WNM.Project is
 
          when Speech_Mode =>
             case Id is
-               when A => return "TIM";
+               when A => return "WRD";
+               when B => return "TIM";
                when others => return "N/A";
             end case;
       end case;
@@ -763,8 +773,6 @@ package body WNM.Project is
    begin
       case S is
          when Track_Mode      => Next (Track.Mode);
-         when Sample          => Next (Track.Sample);
-         when Speech_Word     => Next (Track.Word);
          when Engine          => Next (Track.Engine);
          when Volume          => Next (Track.Volume);
          when Pan             => Next (Track.Pan);
@@ -800,8 +808,6 @@ package body WNM.Project is
    begin
       case S is
          when Track_Mode      => Prev (Track.Mode);
-         when Sample          => Prev (Track.Sample);
-         when Speech_Word     => Prev (Track.Word);
          when Engine          => Prev (Track.Engine);
          when Volume          => Prev (Track.Volume);
          when Pan             => Prev (Track.Pan);
@@ -837,8 +843,6 @@ package body WNM.Project is
    begin
       case S is
          when Track_Mode      => Next_Fast (Track.Mode);
-         when Sample          => Next_Fast (Track.Sample);
-         when Speech_Word     => Next_Fast (Track.Word);
          when Engine          => Next_Fast (Track.Engine);
          when Volume          => Next_Fast (Track.Volume);
          when Pan             => Next_Fast (Track.Pan);
@@ -868,8 +872,6 @@ package body WNM.Project is
    begin
       case S is
          when Track_Mode      => Prev_Fast (Track.Mode);
-         when Sample          => Prev_Fast (Track.Sample);
-         when Speech_Word     => Prev_Fast (Track.Word);
          when Engine          => Prev_Fast (Track.Engine);
          when Volume          => Prev_Fast (Track.Volume);
          when Pan             => Prev_Fast (Track.Pan);

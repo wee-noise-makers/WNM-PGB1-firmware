@@ -26,12 +26,11 @@ with WNM.Speech_Dictionary;
 package body WNM.Speech is
 
    LPC_Out : LPC_Synth.Out_Array (Mono_Buffer'Range);
-   LPC_Arr : array (Tracks) of LPC_Synth.Instance;
-   Pitch : array (Tracks) of Float :=
-     (others => MIDI.Key_To_Frequency (MIDI.C4));
-
-   Stretch : array (Tracks) of LPC_Synth.Time_Stretch_Factor
-     := (others => MIDI_To_Stretch (No_Strech_MIDI_Val));
+   LPC     : LPC_Synth.Instance;
+   Pitch   : Float := MIDI.Key_To_Frequency (MIDI.C4);
+   Selected_Word : Word := Word'First;
+   Stretch : LPC_Synth.Time_Stretch_Factor :=
+     MIDI_To_Stretch (No_Strech_MIDI_Val);
 
    ---------
    -- Img --
@@ -40,21 +39,30 @@ package body WNM.Speech is
    function Img (W : Word) return String
    is (WNM.Speech_Dictionary.Image (W).all);
 
+   --------------
+   -- Set_Word --
+   --------------
+
+   procedure Set_Word (W : Word) is
+   begin
+      Selected_Word := W;
+   end Set_Word;
+
    -----------
    -- Start --
    -----------
 
-   procedure Start (T : Tracks; W : Word; K : MIDI.MIDI_Key) is
+   procedure Start (K : MIDI.MIDI_Key) is
    begin
-      LPC_Synth.Set_Data (LPC_Arr (T), WNM.Speech_Dictionary.Data (W));
-      Pitch (T) := MIDI.Key_To_Frequency (K);
+      LPC_Synth.Set_Data (LPC, WNM.Speech_Dictionary.Data (Selected_Word));
+      Pitch := MIDI.Key_To_Frequency (K);
    end Start;
 
    ----------
    -- Stop --
    ----------
 
-   procedure Stop (T : Tracks) is
+   procedure Stop is
    begin
       null;
    end Stop;
@@ -63,9 +71,9 @@ package body WNM.Speech is
    -- Set_Stretch --
    -----------------
 
-   procedure Set_Stretch (T : Tracks; V : MIDI.MIDI_Data) is
+   procedure Set_Stretch (V : MIDI.MIDI_Data) is
    begin
-      Stretch (T) := MIDI_To_Stretch (V);
+      Stretch := MIDI_To_Stretch (V);
    end Set_Stretch;
 
    -----------------
@@ -77,41 +85,35 @@ package body WNM.Speech is
 
       Val : Integer_32;
    begin
-      for T in Tracks loop
-         declare
-            LPC : LPC_Synth.Instance renames LPC_Arr (T);
-         begin
-            if LPC_Synth.Has_Data (LPC) then
-               LPC_Synth.Next_Points
-                 (LPC, LPC_Out,
-                  Sample_Rate => WNM_Configuration.Audio.Sample_Frequency,
-                  Pitch => Pitch (T),
-                  Time_Stretch => Stretch (T));
+      if LPC_Synth.Has_Data (LPC) then
+         LPC_Synth.Next_Points
+           (LPC, LPC_Out,
+            Sample_Rate => WNM_Configuration.Audio.Sample_Frequency,
+            Pitch => Pitch,
+            Time_Stretch => Stretch);
 
-               for Idx in Buffer'Range loop
-                  Val :=
-                    Integer_32 (Buffer (Idx).L) + Integer_32 (LPC_Out (Idx));
-                  if Val > Integer_32 (Mono_Point'Last) then
-                     Buffer (Idx).L := Mono_Point'Last;
-                  elsif Val < Integer_32 (Mono_Point'First) then
-                     Buffer (Idx).L := Mono_Point'First;
-                  else
-                     Buffer (Idx).L := Mono_Point (Val);
-                  end if;
-
-                  Val :=
-                    Integer_32 (Buffer (Idx).R) + Integer_32 (LPC_Out (Idx));
-                  if Val > Integer_32 (Mono_Point'Last) then
-                     Buffer (Idx).R := Mono_Point'Last;
-                  elsif Val < Integer_32 (Mono_Point'First) then
-                     Buffer (Idx).R := Mono_Point'First;
-                  else
-                     Buffer (Idx).R := Mono_Point (Val);
-                  end if;
-               end loop;
+         for Idx in Buffer'Range loop
+            Val :=
+              Integer_32 (Buffer (Idx).L) + Integer_32 (LPC_Out (Idx));
+            if Val > Integer_32 (Mono_Point'Last) then
+               Buffer (Idx).L := Mono_Point'Last;
+            elsif Val < Integer_32 (Mono_Point'First) then
+               Buffer (Idx).L := Mono_Point'First;
+            else
+               Buffer (Idx).L := Mono_Point (Val);
             end if;
-         end;
-      end loop;
+
+            Val :=
+              Integer_32 (Buffer (Idx).R) + Integer_32 (LPC_Out (Idx));
+            if Val > Integer_32 (Mono_Point'Last) then
+               Buffer (Idx).R := Mono_Point'Last;
+            elsif Val < Integer_32 (Mono_Point'First) then
+               Buffer (Idx).R := Mono_Point'First;
+            else
+               Buffer (Idx).R := Mono_Point (Val);
+            end if;
+         end loop;
+      end if;
    end Next_Points;
 
 end WNM.Speech;

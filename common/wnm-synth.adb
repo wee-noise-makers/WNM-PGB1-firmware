@@ -54,17 +54,25 @@ package body WNM.Synth is
           when 4 => Tresses.Voice_FM2OP,
           when others => Tresses.Voice_Plucked);
 
-   Kick_Channel   : constant MIDI.MIDI_Channel := 1;
-   Snare_Channel  : constant MIDI.MIDI_Channel := 2;
-   Cymbal_Channel : constant MIDI.MIDI_Channel := 3;
-   Lead_Channel   : constant MIDI.MIDI_Channel := 4;
+   Sample_Channel : constant MIDI.MIDI_Channel := 1;
+   Speech_Channel : constant MIDI.MIDI_Channel := 2;
+   Kick_Channel   : constant MIDI.MIDI_Channel := 3;
+   Snare_Channel  : constant MIDI.MIDI_Channel := 4;
+   Cymbal_Channel : constant MIDI.MIDI_Channel := 5;
+   Lead_Channel   : constant MIDI.MIDI_Channel := 6;
 
-   Synth_Voices : constant array (MIDI.MIDI_Channel range 1 .. 4) of
+   subtype Tresses_Channels is MIDI.MIDI_Channel range 3 .. 6;
+
+   Synth_Voices : constant array (Tresses_Channels) of
      Voice_Access :=
        (Kick_Channel   => TK'Access,
         Snare_Channel  => TS'Access,
         Cymbal_Channel => TC'Access,
         Lead_Channel   => Lead'Access);
+
+   Last_Key : array (MIDI.MIDI_Channel) of MIDI.MIDI_Key := (others => 0);
+
+   Selected_Sample : MIDI.MIDI_Data := 0;
 
    Recording_Source : Rec_Source;
    Recording_Size   : Natural;
@@ -150,6 +158,8 @@ package body WNM.Synth is
    ---------------------------
 
    procedure Process_Coproc_Events is
+      use MIDI;
+
       Msg : WNM.Coproc.Message;
       Success : Boolean;
    begin
@@ -160,35 +170,83 @@ package body WNM.Synth is
 
          case Msg.Kind is
 
-            when WNM.Coproc.Sampler_Event =>
-               if Msg.Sampler_Evt.On then
-                  Trig (Msg.Sampler_Evt.Track, Msg.Sampler_Evt.Sample);
-               end if;
-
-            when WNM.Coproc.Speech_Event =>
-               if Msg.Speech_Evt.On then
-                  WNM.Speech.Start (Msg.Speech_Evt.Track,
-                                    Msg.Speech_Evt.W,
-                                    Msg.Speech_Evt.Key);
-               else
-                  WNM.Speech.Stop (Msg.Speech_Evt.Track);
-               end if;
-
-            when WNM.Coproc.Speech_CC_Event =>
-
-               WNM.Speech.Set_Stretch (Msg.Speech_CC_Evt.Track,
-                                       Msg.Speech_CC_Evt.Stretch);
-
             when WNM.Coproc.Track_Vol_Pan =>
                Volume_For_Track (Msg.TVP_Track) := Msg.TVP_Vol;
                Pan_For_Track (Msg.TVP_Track) := Msg.TVP_Pan;
 
             when WNM.Coproc.MIDI_Event =>
 
-               if Msg.MIDI_Evt.Chan in Synth_Voices'Range then
-                  declare
-                     use MIDI;
+               --  Ada.Text_IO.Put_Line
+               --    (Clock'Img & " - " &
+               --     MIDI.Img (Msg.MIDI_Evt));
 
+               if Msg.MIDI_Evt.Chan = Sample_Channel then
+                  case Msg.MIDI_Evt.Kind is
+                     when MIDI.Note_On =>
+                        WNM.Sample_Stream.Start
+                          (1,
+                           Sample_Library.Sample_Index (Selected_Sample) + 1,
+                           Sample_Library.Sample_Point_Index'First,
+                           Sample_Library.Sample_Point_Index'Last,
+                           False);
+
+                        Last_Key (Msg.MIDI_Evt.Chan) := Msg.MIDI_Evt.Key;
+
+                     when MIDI.Note_Off =>
+
+                        if Last_Key (Msg.MIDI_Evt.Chan) = Msg.MIDI_Evt.Key
+                        then
+                           Last_Key (Msg.MIDI_Evt.Chan) := 0;
+                        end if;
+
+                     when MIDI.Continous_Controller =>
+                        case Msg.MIDI_Evt.Controller is
+                           when 0 =>
+                              Selected_Sample :=
+                                Msg.MIDI_Evt.Controller_Value;
+                           when others =>
+                              null;
+                        end case;
+
+                     when others =>
+                        null;
+                  end case;
+
+               elsif Msg.MIDI_Evt.Chan = Speech_Channel then
+                  case Msg.MIDI_Evt.Kind is
+                     when MIDI.Note_On =>
+                        WNM.Speech.Start (Msg.MIDI_Evt.Key);
+
+                        Last_Key (Msg.MIDI_Evt.Chan) := Msg.MIDI_Evt.Key;
+
+                     when MIDI.Note_Off =>
+
+                        if Last_Key (Msg.MIDI_Evt.Chan) = Msg.MIDI_Evt.Key
+                        then
+                           WNM.Speech.Stop;
+                           Last_Key (Msg.MIDI_Evt.Chan) := 0;
+                        end if;
+
+                     when MIDI.Continous_Controller =>
+                        case Msg.MIDI_Evt.Controller is
+                           when 0 =>
+                              WNM.Speech.Set_Word
+                                (WNM.Speech.Word
+                                   (Natural
+                                        (Msg.MIDI_Evt.Controller_Value + 1)));
+                           when 1 =>
+                              WNM.Speech.Set_Stretch
+                                (Msg.MIDI_Evt.Controller_Value);
+                           when others =>
+                              null;
+                        end case;
+
+                     when others =>
+                        null;
+                  end case;
+
+               elsif Msg.MIDI_Evt.Chan in Synth_Voices'Range then
+                  declare
                      Voice : Voice_Class renames
                        Synth_Voices (Msg.MIDI_Evt.Chan).all;
                   begin
@@ -197,7 +255,21 @@ package body WNM.Synth is
                         Voice.Set_Pitch (Tresses.MIDI_Pitch
                                          (Standard.MIDI.MIDI_UInt8
                                             (Msg.MIDI_Evt.Key)));
-                        Voice.Strike;
+
+                        Voice.Note_On (MIDI_Val_To_Tresses_Param
+                                       (Msg.MIDI_Evt.Velocity));
+
+                        Last_Key (Msg.MIDI_Evt.Chan) := Msg.MIDI_Evt.Key;
+
+                     when MIDI.Note_Off =>
+
+                        if Last_Key (Msg.MIDI_Evt.Chan) = Msg.MIDI_Evt.Key
+                        then
+                           --  Only apply note_off if it matches the last
+                           --  played key.
+                           Voice.Note_Off;
+                           Last_Key (Msg.MIDI_Evt.Chan) := 0;
+                        end if;
 
                      when MIDI.Continous_Controller =>
                         if Msg.MIDI_Evt.Controller <= 3 then

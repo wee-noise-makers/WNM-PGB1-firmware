@@ -29,7 +29,7 @@ private
    is new FSmaker.Sink.Instance
    with record
       Data : System.Storage_Elements.Storage_Array
-        (1 .. WNM_Configuration.Storage.Total_Storage_Size);
+        (1 .. WNM_Configuration.Storage.Total_Storage_Byte_Size);
       Next_In : System.Storage_Elements.Storage_Count := 1;
    end record;
 

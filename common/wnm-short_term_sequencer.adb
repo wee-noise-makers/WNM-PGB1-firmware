@@ -20,6 +20,9 @@
 -------------------------------------------------------------------------------
 
 with HAL; use HAL;
+with WNM.MIDI.Queues;
+with WNM.Coproc;
+with WNM.Note_Off_Sequencer;
 
 package body WNM.Short_Term_Sequencer is
 
@@ -90,7 +93,7 @@ package body WNM.Short_Term_Sequencer is
    ------------
 
    procedure Insert (Node : not null Event_Access) is
-      Exp : constant Expiration_Time := Node.Expiration;
+      Exp : constant Time.Time_Microseconds := Node.Expiration;
 
       procedure Insert_After (First : Event_Access);
 
@@ -133,11 +136,17 @@ package body WNM.Short_Term_Sequencer is
       Last_Insert := Node;
    end Insert;
 
-   ----------
-   -- Push --
-   ----------
+   -------------
+   -- Play_At --
+   -------------
 
-   procedure Push (D : Event_Data; Expiration : Expiration_Time) is
+   procedure Play_At (Start    : Time.Time_Microseconds;
+                      Target   : MIDI_Target;
+                      Chan     : MIDI.MIDI_Channel;
+                      Key      : MIDI.MIDI_Key;
+                      Velocity : MIDI.MIDI_Data;
+                      Duration : Time.Time_Microseconds)
+     is
       Node : constant Event_Access := Alloc;
    begin
       if Node = null then
@@ -145,23 +154,71 @@ package body WNM.Short_Term_Sequencer is
          return;
       end if;
 
-      Node.D := D;
-      Node.Expiration := Expiration;
+      Node.D.Target := Target;
+      Node.D.Chan := Chan;
+      Node.D.Key := Key;
+      Node.D.Velocity := Velocity;
+      Node.D.Duration := Duration;
+      Node.Expiration := Start;
 
       Insert (Node);
-   end Push;
+   end Play_At;
 
-   ---------
-   -- Pop --
-   ---------
+   --  ----------
+   --  -- Push --
+   --  ----------
+   --
+   --  procedure Push (D : Event_Data; Expiration : Expiration_Time) is
+   --     Node : constant Event_Access := Alloc;
+   --  begin
+   --     if Node = null then
+   --        --  This event is discarded...
+   --        return;
+   --     end if;
+   --
+   --     Node.D := D;
+   --     Node.Expiration := Expiration;
+   --
+   --     Insert (Node);
+   --  end Push;
+   --
+   --  ---------
+   --  -- Pop --
+   --  ---------
+   --
+   --  procedure Pop (Now     :     Expiration_Time;
+   --                 D       : out Event_Data;
+   --                 Success : out Boolean)
+   --  is
+   --     Node : Event_Access;
+   --  begin
+   --     if List_Head /= null and then List_Head.Expiration <= Now then
+   --        Node := List_Head;
+   --
+   --        if Last_Insert = Node then
+   --           Last_Insert := null;
+   --        end if;
+   --
+   --        List_Head := Node.Next;
+   --
+   --        D := Node.D;
+   --        Success := True;
+   --
+   --        Free (Node);
+   --     else
+   --        Success := False;
+   --     end if;
+   --  end Pop;
 
-   procedure Pop (Now     :     Expiration_Time;
-                  D       : out Event_Data;
-                  Success : out Boolean)
-   is
+   ------------
+   -- Update --
+   ------------
+
+   procedure Update (Now : Time.Time_Microseconds) is
       Node : Event_Access;
    begin
-      if List_Head /= null and then List_Head.Expiration <= Now then
+
+      while List_Head /= null and then List_Head.Expiration <= Now loop
          Node := List_Head;
 
          if Last_Insert = Node then
@@ -170,14 +227,24 @@ package body WNM.Short_Term_Sequencer is
 
          List_Head := Node.Next;
 
-         D := Node.D;
-         Success := True;
+         case Node.D.Target is
+            when External =>
+               WNM.MIDI.Queues.Sequencer_Push
+                 ((MIDI.Note_On, Node.D.Chan, Node.D.Key, Node.D.Velocity));
+
+            when Internal =>
+               WNM.Coproc.Push
+                 ((WNM.Coproc.MIDI_Event,
+                  (MIDI.Note_On, Node.D.Chan, Node.D.Key, Node.D.Velocity)));
+         end case;
+
+         WNM.Note_Off_Sequencer.Note_Off
+           (Node.D.Target, Node.D.Chan, Node.D.Key,
+            Node.Expiration + Node.D.Duration);
 
          Free (Node);
-      else
-         Success := False;
-      end if;
-   end Pop;
+      end loop;
+   end Update;
 
    --  -----------------
    --  -- Print_Queue --

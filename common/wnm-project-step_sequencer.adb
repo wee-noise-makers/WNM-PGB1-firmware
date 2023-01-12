@@ -20,13 +20,13 @@
 -------------------------------------------------------------------------------
 
 with WNM.Short_Term_Sequencer;
+with WNM.Note_Off_Sequencer;
 with WNM.Pattern_Sequencer;
 with WNM.Chord_Settings;
 with WNM.Project.Arpeggiator;
 with WNM.UI; use WNM.UI;
 with WNM.MIDI.Queues;
 with WNM.Coproc;
-with WNM.Sample_Stream;
 with WNM.Project.Chord_Sequencer;
 
 with HAL;                   use HAL;
@@ -38,8 +38,6 @@ package body WNM.Project.Step_Sequencer is
 
    Pattern_Counter : array (Patterns) of UInt32;
    --  Count how many times a pattern has played
-
-   type Note_On_Off is (On, Off);
 
    type Microstep_Cnt is mod 2;
    Microstep : Microstep_Cnt := 1;
@@ -197,143 +195,71 @@ package body WNM.Project.Step_Sequencer is
    end On_Release;
 
    --------------
-   -- Send_Now --
+   -- Play_Now --
    --------------
 
-   procedure Send_Now (T    : Tracks;
-                       Key  : MIDI.MIDI_Key;
-                       Velo : MIDI.MIDI_Data;
-                       Kind : Note_On_Off)
+   procedure Play_Now (Now      : Time.Time_Microseconds;
+                       T        : Tracks;
+                       Key      : MIDI.MIDI_Key;
+                       Velo     : MIDI.MIDI_Data;
+                       Duration : Time.Time_Microseconds)
    is
-      use WNM.Sample_Stream;
    begin
       case Mode (T) is
-         when Sample_Mode =>
-            WNM.Coproc.Push ((WNM.Coproc.Sampler_Event,
-                              (On       => Kind = On,
-                               Track    => To_Stream_Track (T),
-                               Sample   => Selected_Sample (T),
-                               Key      => Key,
-                               Velocity => Velo)
-                              )
-                            );
-
-         when Speech_Mode =>
-            WNM.Coproc.Push ((WNM.Coproc.Speech_Event,
-                             (On => Kind = On,
-                              Track => T,
-                              W     => Selected_Word (T),
-                              Key   => Key)
-                             )
-                            );
-
-         when Kick_Mode | Snare_Mode | Cymbal_Mode | Lead_Mode =>
+         when Synth_Track_Mode_Kind =>
             declare
                Chan : constant MIDI.MIDI_Channel :=
                  Voice_MIDI_Chan (Mode (T));
             begin
 
-               case Kind is
-               when On =>
-                  WNM.Coproc.Push ((WNM.Coproc.MIDI_Event,
-                                   (MIDI.Note_On, Chan, Key, Velo)));
-               when Off =>
-                  WNM.Coproc.Push ((WNM.Coproc.MIDI_Event,
-                                   (MIDI.Note_Off, Chan, Key, Velo)));
-               end case;
+               WNM.Coproc.Push ((WNM.Coproc.MIDI_Event,
+                                (MIDI.Note_On, Chan, Key, Velo)));
+
+               WNM.Note_Off_Sequencer.Note_Off
+                 (Internal, Chan, Key, Now + Duration);
             end;
 
          when MIDI_Mode =>
-            case Kind is
-               when On =>
-                  WNM.MIDI.Queues.Sequencer_Push
-                    ((MIDI.Note_On, MIDI_Chan (T), Key, Velo));
-               when Off =>
-                  WNM.MIDI.Queues.Sequencer_Push
-                    ((MIDI.Note_Off, MIDI_Chan (T), Key, Velo));
-            end case;
+            WNM.MIDI.Queues.Sequencer_Push
+              ((MIDI.Note_On, MIDI_Chan (T), Key, Velo));
+
+            WNM.Note_Off_Sequencer.Note_Off
+              (External, MIDI_Chan (T), Key, Now + Duration);
       end case;
-   end Send_Now;
+   end Play_Now;
 
    ----------------
-   -- Send_Later --
+   -- Play_Later --
    ----------------
 
-   procedure Send_Later (T           : Tracks;
+   procedure Play_Later (T           : Tracks;
                          Deadline    : Time.Time_Microseconds;
                          Key         : MIDI.MIDI_Key;
                          Velo        : MIDI.MIDI_Data;
-                         Kind        : Note_On_Off)
+                         Duration    : Time.Time_Microseconds)
    is
-      use WNM.Sample_Stream;
+      Target : MIDI_Target;
+      Chan : MIDI.MIDI_Channel;
    begin
       case Mode (T) is
-         when Sample_Mode =>
-            WNM.Short_Term_Sequencer.Push
-              ((Short_Term_Sequencer.Sampler_Event,
-               (On       => Kind = On,
-                Track    => To_Stream_Track (T),
-                Sample   => Selected_Sample (T),
-                Key      => Key,
-                Velocity => Velo)
-               ),
-               Deadline);
-
-         when Speech_Mode =>
-            WNM.Short_Term_Sequencer.Push
-              ((Short_Term_Sequencer.Speech_Event,
-                          (On => Kind = On,
-                           Track => T,
-                           W     => Selected_Word (T),
-                           Key   => Key)
-                          ),
-               Deadline);
-
-         when Kick_Mode | Snare_Mode | Cymbal_Mode | Lead_Mode =>
-            case Kind is
-               when On =>
-                  WNM.Short_Term_Sequencer.Push
-                    ((Short_Term_Sequencer.Synth_Event,
-                     (MIDI.Note_On,
-                      Voice_MIDI_Chan (Mode (T)),
-                      Key,
-                      Velo)
-                    ),
-                     Deadline);
-               when Off =>
-                  WNM.Short_Term_Sequencer.Push
-                    ((Short_Term_Sequencer.Synth_Event,
-                     (MIDI.Note_Off,
-                      Voice_MIDI_Chan (Mode (T)),
-                      Key,
-                      Velo)
-                    ),
-                     Deadline);
-            end case;
+         when Synth_Track_Mode_Kind =>
+            Chan := Voice_MIDI_Chan (Mode (T));
+            Target := Internal;
 
          when MIDI_Mode =>
-            case Kind is
-               when On =>
-                  WNM.Short_Term_Sequencer.Push
-                    ((Short_Term_Sequencer.MIDI_Event,
-                      (MIDI.Note_On,
-                       MIDI_Chan (T),
-                       Key,
-                       Velo)
-                      ),
-                     Deadline);
-               when Off =>
-                  WNM.Short_Term_Sequencer.Push
-                    ((Short_Term_Sequencer.MIDI_Event,
-                      (MIDI.Note_Off,
-                       MIDI_Chan (T),
-                       Key,
-                       Velo)
-                      ),
-                     Deadline);
-            end case;
+            Chan := MIDI_Chan (T);
+            Target := External;
       end case;
-   end Send_Later;
+
+      WNM.Short_Term_Sequencer.Play_At
+        (Start  => Deadline,
+         Target => Target,
+         Chan => Chan,
+         Key => Key,
+         Velocity => Velo,
+         Duration => Duration);
+
+   end Play_Later;
 
    -----------------------
    -- Process_CC_Values --
@@ -348,40 +274,27 @@ package body WNM.Project.Step_Sequencer is
       M    : constant Track_Mode_Kind := Mode (T);
       Chan : constant MIDI.MIDI_Channel :=
         (case M is
-            when MIDI_Mode =>
-              G_Project.Tracks (T).Chan,
-            when Kick_Mode | Snare_Mode | Cymbal_Mode | Lead_Mode =>
+            when Synth_Track_Mode_Kind =>
               Voice_MIDI_Chan (M),
-            when Speech_Mode | Sample_Mode =>
-              0);
+            when MIDI_Mode =>
+              G_Project.Tracks (T).Chan);
    begin
       for Id in CC_Id loop
          Val := CC_Value_To_Use (P, T, S, Id);
          Ctrl := G_Project.Tracks (T).CC (Id).Controller;
          case Mode (T) is
 
-         when MIDI_Mode =>
-            WNM.MIDI.Queues.Sequencer_Push
-              ((MIDI.Continous_Controller,
-               Chan, Ctrl, Val));
+            when Synth_Track_Mode_Kind =>
+               WNM.Coproc.Push ((Kind => WNM.Coproc.MIDI_Event,
+                                 MIDI_Evt =>
+                                   (MIDI.Continous_Controller,
+                                    Chan, Ctrl, Val)));
 
-         when Speech_Mode =>
-            if Id = A then
-               WNM.Coproc.Push ((Kind => WNM.Coproc.Speech_CC_Event,
-                                 Speech_CC_Evt => (T, Val)));
-            end if;
+            when MIDI_Mode =>
+               WNM.MIDI.Queues.Sequencer_Push
+                 ((MIDI.Continous_Controller,
+                  Chan, Ctrl, Val));
 
-         when Sample_Mode =>
-            null;
-
-         when Kick_Mode | Snare_Mode | Cymbal_Mode | Lead_Mode =>
-
-            WNM.Coproc.Push ((Kind => WNM.Coproc.MIDI_Event,
-                              MIDI_Evt =>
-                                (MIDI.Continous_Controller,
-                                 Chan, Ctrl, Val)));
-
-            null;
          end case;
       end loop;
    end Process_CC_Values;
@@ -393,16 +306,11 @@ package body WNM.Project.Step_Sequencer is
    procedure Do_Preview_Trigger (T : Tracks) is
    begin
       Process_CC_Values (Editing_Pattern, T, 1);
-      Send_Now (T,
+      Play_Now (Time.Clock,
+                T,
                 MIDI.C4,
                 MIDI.MIDI_Data'Last,
-                On);
-
-      Send_Later (T,
-                  Time.Clock + Microseconds_Per_Beat,
-                  MIDI.C4,
-                  MIDI.MIDI_Data'Last,
-                  Off);
+                Microseconds_Per_Beat);
    end Do_Preview_Trigger;
 
    ---------------
@@ -420,14 +328,11 @@ package body WNM.Project.Step_Sequencer is
       Repeat_Time : Time.Time_Microseconds := Now;
    begin
 
-      Send_Now (T, Key, Velo, On);
-      Send_Later (T, Now + Duration, Key, 0, Off);
+      Play_Now (Now, T, Key, Velo, Duration);
 
       for X in 1 .. Rep loop
          Repeat_Time := Repeat_Time + Repeat_Span;
-
-         Send_Later (T, Repeat_Time, Key, Velo, On);
-         Send_Later (T, Repeat_Time + Duration, Key, 0, Off);
+         Play_Later (T, Repeat_Time, Key, Velo, Duration);
       end loop;
 
    end Play_Note;
@@ -448,15 +353,13 @@ package body WNM.Project.Step_Sequencer is
       Key : MIDI.MIDI_Key := Offset (Arpeggiator.Next_Note (T), Oct);
    begin
 
-      Send_Now (T, Key, Velo, On);
-      Send_Later (T, Now + Duration, Key, 0, Off);
+      Play_Now (Now, T, Key, Velo, Duration);
 
       for X in 1 .. Rep loop
          Repeat_Time := Repeat_Time + Repeat_Span;
          Key := Arpeggiator.Next_Note (T);
 
-         Send_Later (T, Repeat_Time, Key, Velo, On);
-         Send_Later (T, Repeat_Time + Duration, Key, 0, Off);
+         Play_Later (T, Repeat_Time, Key, Velo, Duration);
       end loop;
 
    end Play_Arp;
@@ -483,16 +386,14 @@ package body WNM.Project.Step_Sequencer is
       end loop;
 
       for X in Chord'First .. Last_Note loop
-         Send_Now (T, Offset_Chord (X), Velo, On);
-         Send_Later (T, Now + Duration, Offset_Chord (X), 0, Off);
+         Play_Now (Now, T, Offset_Chord (X), Velo, Duration);
       end loop;
 
       for X in 1 .. Rep loop
          Repeat_Time := Repeat_Time + Repeat_Span;
 
          for X in Chord'First .. Last_Note loop
-            Send_Later (T, Repeat_Time, Offset_Chord (X), Velo, On);
-            Send_Later (T, Repeat_Span + Duration, Offset_Chord (X), 0, Off);
+            Play_Later (T, Repeat_Time, Offset_Chord (X), Velo, Duration);
          end loop;
       end loop;
    end Play_Chord;
@@ -684,28 +585,13 @@ package body WNM.Project.Step_Sequencer is
 
    function Update return Time.Time_Microseconds is
       Now      : constant Time.Time_Microseconds := Time.Clock;
-      Success : Boolean;
-      Data    : Short_Term_Sequencer.Event_Data;
    begin
       if Now >= Next_Start then
          Execute_Step;
       end if;
 
-      loop
-         WNM.Short_Term_Sequencer.Pop (Now, Data, Success);
-         exit when not Success;
-
-         case Data.Kind is
-            when Short_Term_Sequencer.Sampler_Event =>
-               WNM.Coproc.Push ((WNM.Coproc.Sampler_Event, Data.Sampler_Evt));
-            when Short_Term_Sequencer.Speech_Event =>
-               WNM.Coproc.Push ((WNM.Coproc.Speech_Event, Data.Speech_Evt));
-            when Short_Term_Sequencer.Synth_Event =>
-               WNM.Coproc.Push ((WNM.Coproc.MIDI_Event, Data.Synth_Evt));
-            when Short_Term_Sequencer.MIDI_Event =>
-               WNM.MIDI.Queues.Sequencer_Push (Data.Msg);
-         end case;
-      end loop;
+      WNM.Short_Term_Sequencer.Update (Now);
+      WNM.Note_Off_Sequencer.Update (Now);
 
       return Time.Time_Microseconds'First;
    end Update;

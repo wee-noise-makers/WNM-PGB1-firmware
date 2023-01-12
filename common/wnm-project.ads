@@ -195,7 +195,7 @@ package WNM.Project is
    -- Track --
    -----------
 
-   type Track_Mode_Kind is (Sample_Mode, MIDI_Mode, Speech_Mode,
+   type Track_Mode_Kind is (MIDI_Mode, Sample_Mode, Speech_Mode,
                             Kick_Mode, Snare_Mode, Cymbal_Mode, Lead_Mode);
    package Track_Mode_Kind_Next is new Enum_Next (Track_Mode_Kind);
    use Track_Mode_Kind_Next;
@@ -211,15 +211,17 @@ package WNM.Project is
           when Lead_Mode => "Lead");
 
    subtype Synth_Track_Mode_Kind is
-     Track_Mode_Kind range Kick_Mode .. Lead_Mode;
+     Track_Mode_Kind range Sample_Mode .. Lead_Mode;
 
    function Voice_MIDI_Chan (Voice : Synth_Track_Mode_Kind)
                              return MIDI.MIDI_Channel
    is (case Voice is
-          when Kick_Mode   => 1,
-          when Snare_Mode  => 2,
-          when Cymbal_Mode => 3,
-          when Lead_Mode   => 4);
+          when Sample_Mode => 1,
+          when Speech_Mode => 2,
+          when Kick_Mode   => 3,
+          when Snare_Mode  => 4,
+          when Cymbal_Mode => 5,
+          when Lead_Mode   => 6);
 
    subtype Controller_Label is String (1 .. 17);
    Empty_Controller_Label : constant Controller_Label := (others => ' ');
@@ -278,8 +280,6 @@ package WNM.Project is
                              return Natural;
 
    type Track_Settings is (Track_Mode,
-                           Sample,
-                           Speech_Word,
                            Engine,
                            CC_Default_A,
                            CC_Default_B,
@@ -299,8 +299,6 @@ package WNM.Project is
 
    for Track_Settings'Size use 8;
    for Track_Settings use (Track_Mode      => 0,
-                           Sample          => 1,
-                           Speech_Word     => 2,
                            Engine          => 3,
                            CC_Default_A    => 4,
                            CC_Default_B    => 5,
@@ -397,14 +395,6 @@ private
    package Audio_Pan_Next is new Enum_Next (T    => Audio_Pan,
                                             Wrap => False);
    use Audio_Pan_Next;
-
-   package Valid_Sample_Index_Next
-   is new Enum_Next (Sample_Library.Valid_Sample_Index);
-   use Valid_Sample_Index_Next;
-
-   package Speech_Word_Next
-   is new Enum_Next (Speech.Word);
-   use Speech_Word_Next;
 
    package Arp_Mode_Next is new Enum_Next (Arp_Mode_Kind);
    use Arp_Mode_Next;

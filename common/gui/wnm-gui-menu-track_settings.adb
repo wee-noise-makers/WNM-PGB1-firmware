@@ -23,6 +23,8 @@ with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
 with WNM.GUI.Popup;
 with WNM.GUI.Menu.Text_Dialog;
 
+with WNM.Sample_Library;
+with WNM.Speech;
 with WNM.Utils;
 
 package body WNM.GUI.Menu.Track_Settings is
@@ -45,8 +47,6 @@ package body WNM.GUI.Menu.Track_Settings is
    function To_Top (S : Sub_Settings) return Top_Settings
    is (case S is
        when Project.Track_Mode => Track_Mode,
-       when Project.Sample => Sample,
-       when Project.Speech_Word => Speech_Word,
        when Project.Engine => Engine,
        when Project.Volume => Volume,
        when Project.Pan => Pan,
@@ -219,14 +219,6 @@ package body WNM.GUI.Menu.Track_Settings is
             Draw_Title ("MIDI instrument:", "");
             Draw_Value (Builtin_Instruments (This.Instrument).Name);
 
-         when Sample =>
-
-            Draw_Sample_Select (Project.Selected_Sample (Editing_Track));
-
-         when Speech_Word =>
-
-            Draw_Word_Select (Project.Selected_Word (Editing_Track));
-
          when Engine =>
 
             Draw_Title ("Synth Engine:", "");
@@ -235,17 +227,46 @@ package body WNM.GUI.Menu.Track_Settings is
          when CC_Default =>
             declare
                Selected : constant Project.CC_Id := To_CC_Id (Sub);
+               First : Project.CC_Id;
             begin
 
-               for Id in CC_Id loop
-                  Draw_CC_Value
-                    (Id, Project.CC_Default (Editing_Track, Id),
-                     Project.CC_Controller_Short_Label (Editing_Track, Id),
-                     Id = Selected);
-               end loop;
+               if Mode = Sample_Mode and then Selected = A then
+                  declare
+                     Id : constant Natural :=
+                       Natural (Project.CC_Default (Editing_Track, A)) + 1;
+                  begin
+                     Draw_Sample_Select
+                       (Sample_Library.Valid_Sample_Index (Id));
+                  end;
 
-               Draw_Title
-                 (Project.CC_Controller_Label (Editing_Track, Selected), "");
+               elsif Mode = Speech_Mode and then Selected = A then
+                  declare
+                     Id : constant Natural :=
+                       Natural (Project.CC_Default (Editing_Track, A)) + 1;
+                  begin
+                     Draw_Word_Select (Speech.Word (Id));
+                  end;
+
+               else
+
+                  case Mode is
+                     when Speech_Mode | Sample_Mode =>
+                        First := B;
+                     when others =>
+                        First := A;
+                  end case;
+
+                  for Id in CC_Id range First .. CC_Id'Last loop
+                     Draw_CC_Value
+                       (Id, Project.CC_Default (Editing_Track, Id),
+                        Project.CC_Controller_Short_Label (Editing_Track, Id),
+                        Id = Selected);
+                  end loop;
+
+                  Draw_Title
+                    (Project.CC_Controller_Label (Editing_Track, Selected),
+                     "");
+               end if;
             end;
 
          when CC_Ctrl_A | CC_Ctrl_B | CC_Ctrl_C | CC_Ctrl_D =>
@@ -341,13 +362,6 @@ package body WNM.GUI.Menu.Track_Settings is
 
                when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D =>
                   GUI.Popup.Display ("L press to edit ", 500_000);
-
-               when CC_Default_A .. CC_Default_D =>
-                  if Event.Value > 0 then
-                     Project.Next_Value_Fast (This.Current_Setting);
-                  else
-                     Project.Prev_Value_Fast (This.Current_Setting);
-                  end if;
 
                when others =>
                   if Event.Value > 0 then

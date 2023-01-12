@@ -247,12 +247,6 @@ package body WNM.Project.Storage is
                   when Track_Mode =>
                      Output.Push (Out_UInt (Track.Mode'Enum_Rep));
 
-                  when Sample =>
-                     Output.Push (Out_UInt (Track.Sample'Enum_Rep));
-
-                  when Speech_Word =>
-                     Output.Push (Out_UInt (Track.Word'Enum_Rep));
-
                   when Engine =>
                      Output.Push (Out_UInt (Track.Engine));
 
@@ -422,9 +416,6 @@ package body WNM.Project.Storage is
       procedure To_Track_Settings is new Convert_To_Enum (Track_Settings);
 
       procedure Read is new File_In.Read_Gen_Enum (Track_Mode_Kind);
-      procedure Read is new File_In.Read_Gen_Int
-        (Sample_Library.Valid_Sample_Index);
-      procedure Read is new File_In.Read_Gen_Int (Speech.Word);
       procedure Read is new File_In.Read_Gen_Int (Audio_Volume);
       procedure Read is new File_In.Read_Gen_Int (Audio_Pan);
       procedure Read is new File_In.Read_Gen_Enum (Arp_Mode_Kind);
@@ -463,8 +454,6 @@ package body WNM.Project.Storage is
 
             case S is
                when Track_Mode  => Read (Input, Track.Mode);
-               when Sample      => Read (Input, Track.Sample);
-               when Speech_Word => Read (Input, Track.Word);
                when Engine      => Read (Input, Track.Engine);
                when Volume      => Read (Input, Track.Volume);
                when Pan         => Read (Input, Track.Pan);

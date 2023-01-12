@@ -7,10 +7,12 @@ with Littlefs; use Littlefs;
 with WNM.Screen;
 with WNM.GUI.Bitmap_Fonts;
 
+with WNM_Configuration;
+
 package body WNM.File_System is
 
    File_Buffer : Storage_Array
-     (1 .. WNM_Configuration.Storage.Sector_Size);
+     (1 .. WNM_Configuration.Storage.Sector_Byte_Size);
 
    File_Conf : aliased constant Littlefs.lfs_file_config :=
      (Buffer => File_Buffer'Address,
@@ -248,7 +250,8 @@ package body WNM.File_System is
 
    function Available return File_Signed_Size is
    begin
-      return Storage.FS_Size - Littlefs.Size (FS) * Storage.Sector_Size;
+      return Storage.FS_Byte_Size -
+        Littlefs.Size (FS) * Storage.Sector_Byte_Size;
    end Available;
 
    --------------------------

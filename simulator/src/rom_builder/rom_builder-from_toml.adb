@@ -42,7 +42,7 @@ package body ROM_Builder.From_TOML is
 
    function Samples_Addr (Img : RAM_Image) return System.Address is
       Offset : constant Storage_Offset :=
-        Img.Data'First + WNM_Configuration.Storage.FS_Size;
+        Img.Data'First + WNM_Configuration.Storage.FS_Byte_Size;
    begin
       return Img.Data (Offset)'Address;
    end Samples_Addr;

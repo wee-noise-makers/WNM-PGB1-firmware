@@ -81,4 +81,6 @@ package WNM is
       type T is (<>);
    function Enum_Count return Natural;
 
+   type MIDI_Target is (External, Internal);
+
 end WNM;

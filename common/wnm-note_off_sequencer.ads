@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2017 Fabien Chouteau                    --
+--                     Copyright (C) 2023 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,45 +19,33 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM_HAL;
-
-with WNM.Sample_Library;
 with WNM.MIDI;
+with WNM.Time;
 
-package WNM.Sample_Stream is
-   pragma Elaborate_Body;
+package WNM.Note_Off_Sequencer is
 
-   type Stream_Track is range 0 .. Tracks'Last;
-   Always_On : constant Stream_Track := 0;
+   --  Circular buffer of notes to turn off at a given date
 
-   function To_Stream_Track (T : Tracks) return Stream_Track;
-   function To_Track (ST : Stream_Track) return Tracks
-     with Pre => ST /= Always_On;
+   procedure Note_Off (Target     : MIDI_Target;
+                       Chan       : MIDI.MIDI_Channel;
+                       Key        : MIDI.MIDI_Key;
+                       Expiration : Time.Time_Microseconds);
+   --  Check if there's already a note off for that key and update its
+   --  expiration time. Otherwise, add a new note off event. If buffer full
+   --  -> kill oldest note.
 
-   procedure Start (Track       : Stream_Track;
-                    Sample      : Sample_Library.Sample_Index;
-                    Start_Point : Sample_Library.Sample_Point_Index;
-                    End_Point   : Sample_Library.Sample_Point_Index;
-                    Looping     : Boolean);
-
-   procedure Next_Buffer (Track   :     Stream_Track;
-                          Buffer  : out WNM_HAL.Mono_Buffer;
-                          Success : out Boolean);
+   procedure Update (Now : Time.Time_Microseconds);
 
 private
 
-   type Stream_State is (Ready, Running);
+   Notes_Per_Track : constant := 8;
+   type Event_Index is range 1 .. Notes_Per_Track;
 
-   type Stream_Info is record
-      State       : Stream_State := Ready;
-      Sample      : Sample_Library.Sample_Index :=
-        Sample_Library.Invalid_Sample_Entry;
-      Cursor      : Sample_Library.Sample_Point_Index;
-      Start_Point : Sample_Library.Sample_Point_Index;
-      End_Point   : Sample_Library.Sample_Point_Index;
-      Looping     : Boolean;
+   type Event is record
+      Key        : MIDI.MIDI_Key := 0;
+      Expiration : Time.Time_Microseconds := 0;
    end record;
 
-   Streams : array (Stream_Track) of Stream_Info;
+   Events : array (MIDI_Target, MIDI.MIDI_Channel, Event_Index) of Event;
 
-end WNM.Sample_Stream;
+end WNM.Note_Off_Sequencer;

@@ -21,33 +21,48 @@
 
 with WNM.MIDI;
 with WNM.Time;
-with WNM.Sample_Stream;
-with WNM.Speech;
-with WNM.Coproc;
+--  with WNM.Sample_Stream;
+--  with WNM.Speech;
+--  with WNM.Coproc;
 
 package WNM.Short_Term_Sequencer is
 
    type Event_Kind is (Sampler_Event, MIDI_Event, Speech_Event, Synth_Event);
 
-   type Event_Data (Kind : Event_Kind := Sampler_Event) is record
-      case Kind is
-         when Sampler_Event =>
-            Sampler_Evt : Sample_Stream.Sampler_Event_Rec;
-         when MIDI_Event =>
-            Msg : MIDI.Message;
-         when Speech_Event =>
-            Speech_Evt : Speech.Speech_Event_Rec;
-         when Synth_Event =>
-            Synth_Evt : Coproc.MIDI_Event_Rec;
-      end case;
+   --  type Event_Data (Kind : Event_Kind := Sampler_Event) is record
+   --     case Kind is
+   --        when Sampler_Event =>
+   --           Sampler_Evt : Sample_Stream.Sampler_Event_Rec;
+   --        when MIDI_Event =>
+   --           Msg : MIDI.Message;
+   --        when Speech_Event =>
+   --           Speech_Evt : Speech.Speech_Event_Rec;
+   --        when Synth_Event =>
+   --           Synth_Evt : Coproc.MIDI_Event_Rec;
+   --     end case;
+   --  end record;
+
+   type Event_Data is record
+      Target   : MIDI_Target := External;
+      Chan     : MIDI.MIDI_Channel;
+      Key      : MIDI.MIDI_Key;
+      Velocity : MIDI.MIDI_Data;
+      Duration : Time.Time_Microseconds;
    end record;
 
-   subtype Expiration_Time is Time.Time_Microseconds;
+   procedure Play_At (Start    : Time.Time_Microseconds;
+                      Target   : MIDI_Target;
+                      Chan     : MIDI.MIDI_Channel;
+                      Key      : MIDI.MIDI_Key;
+                      Velocity : MIDI.MIDI_Data;
+                      Duration : Time.Time_Microseconds);
 
-   procedure Push (D : Event_Data; Expiration : Expiration_Time);
-   procedure Pop (Now     :     Expiration_Time;
-                  D       : out Event_Data;
-                  Success : out Boolean);
+   procedure Update (Now : Time.Time_Microseconds);
+
+   --  procedure Push (D : Event_Data; Expiration : Expiration_Time);
+   --  procedure Pop (Now     :     Expiration_Time;
+   --                 D       : out Event_Data;
+   --                 Success : out Boolean);
 
    --  procedure Print_Queue;
 
@@ -66,7 +81,7 @@ private
 
    type Event is record
       D : Event_Data;
-      Expiration : Expiration_Time;
+      Expiration : Time.Time_Microseconds;
       Next : Event_Access := null;
    end record;
 

@@ -30,13 +30,11 @@ package WNM.Speech is
 
    function Img (W : Word) return String;
 
-   procedure Start (T : Tracks;
-                    W : Word;
-                    K : MIDI.MIDI_Key);
+   procedure Set_Word (W : Word);
+   procedure Start (K : MIDI.MIDI_Key);
+   procedure Stop;
 
-   procedure Stop (T : Tracks);
-
-   procedure Set_Stretch (T : Tracks; V : MIDI.MIDI_Data);
+   procedure Set_Stretch (V : MIDI.MIDI_Data);
 
    procedure Next_Points (Buffer : in out WNM_HAL.Stereo_Buffer);
 

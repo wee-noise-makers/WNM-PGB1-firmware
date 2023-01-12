@@ -29,8 +29,6 @@ package WNM.GUI.Menu.Track_Settings is
 private
 
    type Top_Settings is (Track_Mode,
-                         Sample,
-                         Speech_Word,
                          Engine,
                          CC_Default,
                          Volume,
@@ -56,15 +54,16 @@ private
                            return Boolean
    is (case M is
           when Project.Sample_Mode =>
-             S in Track_Mode | Sample | Volume | Pan | Arp_Mode | Arp_Notes,
+             S in Track_Mode | Volume | Pan | Arp_Mode | Arp_Notes |
+                  CC_Default_A,
 
           when Project.MIDI_Mode =>
              S in Track_Mode | MIDI_Chan | MIDI_Instrument | Arp_Mode |
                   Arp_Notes | Notes_Per_Chord | CC_Default_A .. CC_Label_D,
 
           when Project.Speech_Mode =>
-             S in Track_Mode | Speech_Word | Volume | Pan | Arp_Mode |
-                  Arp_Notes | CC_Default_A,
+             S in Track_Mode | Volume | Pan | Arp_Mode |
+                  Arp_Notes | CC_Default_A .. CC_Default_B,
 
           when Project.Kick_Mode | Project.Snare_Mode |
                Project.Cymbal_Mode =>

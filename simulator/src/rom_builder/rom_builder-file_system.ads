@@ -26,9 +26,9 @@ private
 
    type Instance is tagged record
       Target : FSmaker.Target.LittleFS.Instance
-        (WNM_Configuration.Storage.Sector_Size);
+        (WNM_Configuration.Storage.Sector_Byte_Size);
       BD     : aliased FSmaker.Block_Device.RAM.Instance
-        (Block_Size       => WNM_Configuration.Storage.Sector_Size,
+        (Block_Size       => WNM_Configuration.Storage.Sector_Byte_Size,
          Number_Of_Blocks => WNM_Configuration.Storage.FS_Sectors);
    end record;
 

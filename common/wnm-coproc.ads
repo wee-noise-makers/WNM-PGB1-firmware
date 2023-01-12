@@ -22,35 +22,20 @@
 with WNM_Configuration;
 with WNM_HAL;
 
-with WNM.Sample_Stream;
-with WNM.Speech;
-
 with WNM.MIDI;
 
 private with Ada.Unchecked_Conversion;
 
 package WNM.Coproc is
 
-   type Message_Kind is (Sampler_Event,
-                         Speech_Event,
-                         Speech_CC_Event,
-                         Track_Vol_Pan,
+   type Message_Kind is (Track_Vol_Pan,
                          MIDI_Event)
      with Size => 4;
 
    subtype MIDI_Event_Rec is MIDI.Message;
 
-   type Message (Kind : Message_Kind := Sampler_Event) is record
+   type Message (Kind : Message_Kind := Track_Vol_Pan) is record
       case Kind is
-         when Sampler_Event =>
-            Sampler_Evt : Sample_Stream.Sampler_Event_Rec;
-
-         when Speech_Event =>
-            Speech_Evt : Speech.Speech_Event_Rec;
-
-         when Speech_CC_Event =>
-            Speech_CC_Evt : Speech.Speech_CC_Event_Rec;
-
          when Track_Vol_Pan =>
             TVP_Track : Tracks;
             TVP_Vol : WNM_HAL.Audio_Volume;
@@ -64,8 +49,6 @@ package WNM.Coproc is
 
    for Message use record
       Kind        at 0 range 0 .. 3;
-      Sampler_Evt at 0 range 6 .. 31;
-      Speech_Evt  at 0 range 6 .. 31;
       MIDI_Evt    at 0 range 6 .. 31;
    end record;
 

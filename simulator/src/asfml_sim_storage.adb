@@ -20,7 +20,7 @@ package body ASFML_SIM_Storage is
 
    Sample_Data : WNM.Sample_Library.Global_Sample_Array;
 
-   LFS_Block_Size : constant := WNM_Configuration.Storage.Sector_Size;
+   LFS_Block_Size : constant := WNM_Configuration.Storage.Sector_Byte_Size;
    LFS_Read_Buffer : Storage_Array (1 .. LFS_Block_Size);
    LFS_Prog_Buffer : Storage_Array (1 .. LFS_Block_Size);
    LFS_Lookahead_Buffer : Storage_Array (1 .. LFS_Block_Size);
@@ -81,7 +81,7 @@ package body ASFML_SIM_Storage is
          Dst : Storage_Array (1 .. Storage_Offset (Size))
            with Address => Buffer;
 
-         Src : Storage_Array (1 .. WNM_Configuration.Storage.FS_Size)
+         Src : Storage_Array (1 .. WNM_Configuration.Storage.FS_Byte_Size)
            with Address => C.Context;
 
       begin
@@ -109,7 +109,7 @@ package body ASFML_SIM_Storage is
          Src : Storage_Array (1 .. Storage_Offset (Size))
            with Address => Buffer;
 
-         Dst : Storage_Array (1 .. WNM_Configuration.Storage.FS_Size)
+         Dst : Storage_Array (1 .. WNM_Configuration.Storage.FS_Byte_Size)
            with Address => C.Context;
 
       begin
@@ -135,7 +135,7 @@ package body ASFML_SIM_Storage is
          Src : constant Storage_Array (1 .. Storage_Offset (Size)) :=
            (others => 16#FF#);
 
-         Dst : Storage_Array (1 .. WNM_Configuration.Storage.FS_Size)
+         Dst : Storage_Array (1 .. WNM_Configuration.Storage.FS_Byte_Size)
            with Address => C.Context;
 
          First : constant Storage_Offset :=
@@ -333,12 +333,12 @@ package body ASFML_SIM_Storage is
            GNAT.OS_Lib.Errno_Message;
       end if;
 
-      if File_Length (FD) /= WNM_Configuration.Storage.Total_Storage_Size
+      if File_Length (FD) /= WNM_Configuration.Storage.Total_Storage_Byte_Size
       then
          return "Invalid size for image file" & ASCII.LF &
            "'" & Path & "'" & ASCII.LF &
            "Expected: " &
-           WNM_Configuration.Storage.Total_Storage_Size'Img &
+           WNM_Configuration.Storage.Total_Storage_Byte_Size'Img &
            " Actual: " & File_Length (FD)'Img;
       end if;
 
@@ -396,7 +396,8 @@ package body ASFML_SIM_Storage is
                then Getenv ("HOMEDRIVE").all & Getenv ("HOMEPATH").all
                else Getenv ("HOME").all);
 
-            ROM_Dir : constant String := Home_Dir & "/.config/wnm-ps1/";
+            ROM_Dir : constant String := Home_Dir & "/.config/wnm-ps1/" &
+              Wnm_Ps1_Simulator_Config.Crate_Version & "/";
          begin
             Ada.Directories.Create_Path (ROM_Dir);
 
