@@ -33,6 +33,7 @@ private
                          CC_Default,
                          Volume,
                          Pan,
+                         Master_FX,
                          Arp_Mode,
                          Arp_Notes,
                          Notes_Per_Chord,
@@ -54,25 +55,25 @@ private
                            return Boolean
    is (case M is
           when Project.Sample_Mode =>
-             S in Track_Mode | Volume | Pan | Arp_Mode | Arp_Notes |
-                  CC_Default_A,
+             S in Track_Mode | Volume | Pan | Master_FX | Arp_Mode |
+                  Arp_Notes | CC_Default_A,
 
           when Project.MIDI_Mode =>
              S in Track_Mode | MIDI_Chan | MIDI_Instrument | Arp_Mode |
                   Arp_Notes | Notes_Per_Chord | CC_Default_A .. CC_Label_D,
 
           when Project.Speech_Mode =>
-             S in Track_Mode | Volume | Pan | Arp_Mode |
+             S in Track_Mode | Volume | Pan | Master_FX | Arp_Mode |
                   Arp_Notes | CC_Default_A .. CC_Default_B,
 
           when Project.Kick_Mode | Project.Snare_Mode |
                Project.Cymbal_Mode =>
-             S in Track_Mode | Volume | Pan | Arp_Mode | Arp_Notes |
-                  CC_Default_A .. CC_Default_D,
+             S in Track_Mode | Volume | Pan | Master_FX | Arp_Mode |
+                  Arp_Notes | CC_Default_A .. CC_Default_D,
 
-          when Project.Lead_Mode =>
-             S in Track_Mode | Engine | Volume | Pan | Arp_Mode | Arp_Notes |
-                  CC_Default_A .. CC_Default_D
+          when Project.Lead_Mode | Bass_Mode =>
+             S in Track_Mode | Engine | Volume | Pan | Master_FX | Arp_Mode |
+                  Arp_Notes | CC_Default_A .. CC_Default_D
       );
    --  Return True if the given setting is available for the given track mode.
    --  For instance, volume setting is not available in MIDI mode.

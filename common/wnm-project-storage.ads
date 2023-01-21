@@ -34,6 +34,7 @@ private
    type Token_Kind is (Global_Section,
                        Track_Section,
                        Chord_Section,
+                       FX_Section,
                        Step_Section,
                        Sequence_Section,
 
@@ -46,11 +47,12 @@ private
    for Token_Kind use (Global_Section     => 0,
                        Track_Section      => 1,
                        Chord_Section      => 2,
-                       Step_Section       => 3,
-                       Sequence_Section   => 4,
-                       Seq_Change_Pattern => 5,
-                       Seq_Change_Track   => 6,
-                       End_Of_File        => 7,
+                       FX_Section         => 3,
+                       Step_Section       => 4,
+                       Sequence_Section   => 5,
+                       Seq_Change_Pattern => 6,
+                       Seq_Change_Track   => 7,
+                       End_Of_File        => 8,
                        End_Of_Section     => End_Of_Section_Value);
 
 end WNM.Project.Storage;

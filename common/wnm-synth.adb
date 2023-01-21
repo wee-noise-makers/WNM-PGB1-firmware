@@ -34,13 +34,35 @@ with Tresses.Drums.Cymbal;
 with Tresses.Voices.Macro;
 with Tresses.Macro;
 with Tresses.Interfaces;
+with Tresses.FX.Delay_Line;
+with Tresses.FX.Overdrive;
+with Tresses.Filters.SVF;
 
 package body WNM.Synth is
+
+   type FX_Kind is (Bypass, Overdrive, Delayline, Filter);
 
    TK   : aliased Tresses.Drums.Kick.Instance;
    TS   : aliased Tresses.Drums.Clap.Instance;
    TC   : aliased Tresses.Drums.Cymbal.Instance;
    Lead : aliased Tresses.Voices.Macro.Instance;
+   Bass : aliased Tresses.Voices.Macro.Instance;
+
+   DLL : Tresses.FX.Delay_Line.Instance
+     (Unsigned_16 (MIDI.MIDI_Data'Last) * 100 + 1);
+   DLR : Tresses.FX.Delay_Line.Instance
+     (Unsigned_16 (MIDI.MIDI_Data'Last) * 100 + 1);
+
+   FL : Tresses.Filters.SVF.Instance;
+   FR : Tresses.Filters.SVF.Instance;
+
+   Drive_Amount : Tresses.Param_Range := 0;
+   Delay_Time : Tresses.Param_Range := 0;
+   Delay_Feedback : Tresses.Param_Range := 0;
+   Filter_Mode : Tresses.Filters.SVF.Mode_Kind :=
+     Tresses.Filters.SVF.Mode_Kind'First;
+   Filter_Cutoff : Tresses.Param_Range := 20_000;
+   Filter_Resonance : Tresses.Param_Range := 0;
 
    subtype Voice_Class is Tresses.Interfaces.Four_Params_Voice'Class;
    type Voice_Access is access all Voice_Class;
@@ -52,25 +74,21 @@ package body WNM.Synth is
           when 2 => Tresses.Voice_Analog_Buzz,
           when 3 => Tresses.Voice_Analog_Morph,
           when 4 => Tresses.Voice_FM2OP,
+          when 5 => Tresses.Voice_Sand,
           when others => Tresses.Voice_Plucked);
 
-   Sample_Channel : constant MIDI.MIDI_Channel := 1;
-   Speech_Channel : constant MIDI.MIDI_Channel := 2;
-   Kick_Channel   : constant MIDI.MIDI_Channel := 3;
-   Snare_Channel  : constant MIDI.MIDI_Channel := 4;
-   Cymbal_Channel : constant MIDI.MIDI_Channel := 5;
-   Lead_Channel   : constant MIDI.MIDI_Channel := 6;
-
-   subtype Tresses_Channels is MIDI.MIDI_Channel range 3 .. 6;
+   subtype Tresses_Channels is MIDI.MIDI_Channel range 3 .. 7;
 
    Synth_Voices : constant array (Tresses_Channels) of
      Voice_Access :=
        (Kick_Channel   => TK'Access,
         Snare_Channel  => TS'Access,
         Cymbal_Channel => TC'Access,
-        Lead_Channel   => Lead'Access);
+        Lead_Channel   => Lead'Access,
+        Bass_Channel   => Bass'Access);
 
    Last_Key : array (MIDI.MIDI_Channel) of MIDI.MIDI_Key := (others => 0);
+   FX_Send : array (MIDI.MIDI_Channel) of FX_Kind := (others => Bypass);
 
    Selected_Sample : MIDI.MIDI_Data := 0;
 
@@ -245,6 +263,53 @@ package body WNM.Synth is
                         null;
                   end case;
 
+               elsif Msg.MIDI_Evt.Chan = FX_Settings_Channel then
+                  case Msg.MIDI_Evt.Kind is
+                     when MIDI.Continous_Controller =>
+                        case Msg.MIDI_Evt.Controller is
+                           when FX_Drive_Amount_CC =>
+                              Drive_Amount :=
+                                MIDI_Val_To_Tresses_Param
+                                  (Msg.MIDI_Evt.Controller_Value);
+
+                           when FX_Delay_Time_CC =>
+                              Delay_Time :=
+                                MIDI_Val_To_Tresses_Param
+                                  (Msg.MIDI_Evt.Controller_Value);
+
+                           when FX_Delay_Feedback_CC =>
+                              Delay_Feedback :=
+                                MIDI_Val_To_Tresses_Param
+                                  (Msg.MIDI_Evt.Controller_Value);
+
+                           when FX_Filter_Mode_CC =>
+
+                              declare
+                                 use Tresses.Filters.SVF;
+                                 Val : constant MIDI_Data :=
+                                   Msg.MIDI_Evt.Controller_Value;
+                              begin
+                                 if Val <= Mode_Kind'Pos (Mode_Kind'Last)
+                                 then
+                                    Filter_Mode := Mode_Kind'Val (Val);
+                                 end if;
+                              end;
+
+                           when FX_Filter_Cutoff_CC =>
+                              Filter_Cutoff :=
+                                MIDI_Val_To_Tresses_Param
+                                  (Msg.MIDI_Evt.Controller_Value);
+
+                           when FX_Filter_Reso_CC =>
+                              Filter_Resonance :=
+                                MIDI_Val_To_Tresses_Param
+                                  (Msg.MIDI_Evt.Controller_Value);
+
+                           when others => null;
+                        end case;
+                     when others => null;
+                  end case;
+
                elsif Msg.MIDI_Evt.Chan in Synth_Voices'Range then
                   declare
                      Voice : Voice_Class renames
@@ -272,21 +337,41 @@ package body WNM.Synth is
                         end if;
 
                      when MIDI.Continous_Controller =>
-                        if Msg.MIDI_Evt.Controller <= 3 then
-                           Voice.Set_Param
-                             (Tresses.Param_Id
-                                (Msg.MIDI_Evt.Controller + 1),
-                              MIDI_Val_To_Tresses_Param
-                                (Msg.MIDI_Evt.Controller_Value));
+                        case Msg.MIDI_Evt.Controller is
+                           when Voice_Param_1_CC .. Voice_Param_4_CC =>
+                              Voice.Set_Param
+                                (Tresses.Param_Id
+                                   (Msg.MIDI_Evt.Controller + 1),
+                                 MIDI_Val_To_Tresses_Param
+                                   (Msg.MIDI_Evt.Controller_Value));
 
-                        elsif Msg.MIDI_Evt.Controller = 4
-                          and then
-                            Msg.MIDI_Evt.Chan = Lead_Channel
-                        then
-                           Lead.Set_Engine
-                             (Lead_Engines (Msg.MIDI_Evt.Controller_Value));
-                        end if;
+                           when Voice_Engine_CC =>
 
+                              case Msg.MIDI_Evt.Chan is
+                              when Lead_Channel =>
+                                 Lead.Set_Engine
+                                   (Lead_Engines
+                                      (Msg.MIDI_Evt.Controller_Value));
+                              when Bass_Channel =>
+                                 Bass.Set_Engine
+                                   (Lead_Engines
+                                      (Msg.MIDI_Evt.Controller_Value));
+                              when others =>
+                                 null;
+                              end case;
+
+                           when Voice_FX_CC =>
+                              FX_Send (Msg.MIDI_Evt.Chan) :=
+                                (case Msg.MIDI_Evt.Controller_Value is
+                                    when FX_Select_Bypass => Bypass,
+                                    when FX_Select_Overdrive => Overdrive,
+                                    when FX_Select_Delayline => Delayline,
+                                    when FX_Select_Filter => Filter,
+                                    when others => Bypass);
+
+                           when others =>
+                              null;
+                        end case;
                      when others =>
                         null;
                      end case;
@@ -321,6 +406,15 @@ package body WNM.Synth is
    procedure Next_Points (Output : out WNM_HAL.Stereo_Buffer;
                           Input  :     WNM_HAL.Stereo_Buffer)
    is
+      Send_L_Buffers : array (FX_Kind) of Mono_Buffer :=
+        (others => (others => 0));
+      Send_R_Buffers : array (FX_Kind) of Mono_Buffer :=
+        (others => (others => 0));
+      --  Why allocated on the stack? RP2040 has faster "scratch mem" for
+      --  stacks.
+
+      Buffer, Aux_Buffer : Mono_Buffer;
+
    begin
       if Passthrough /= None then
          Output := Input;
@@ -329,14 +423,14 @@ package body WNM.Synth is
       end if;
 
       declare
-         Sample_Buf : Mono_Buffer;
          Success : Boolean;
       begin
          for Track in Stream_Track loop
-            Next_Buffer (Track, Sample_Buf, Success);
+            Next_Buffer (Track, Buffer, Success);
             if Success then
-               WNM_HAL.Mix (Output,
-                            Sample_Buf,
+               WNM_HAL.Mix (Send_L_Buffers (FX_Send (Sample_Channel)),
+                            Send_R_Buffers (FX_Send (Sample_Channel)),
+                            Buffer,
                             Volume_For_Track (To_Track (Track)),
                             Pan_For_Track (To_Track (Track)));
             end if;
@@ -344,36 +438,99 @@ package body WNM.Synth is
       end;
 
       -- Speech synth --
-      Speech.Next_Points (Output);
+      Speech.Next_Points (Buffer);
+
+      WNM_HAL.Mix (Send_L_Buffers (FX_Send (Sample_Channel)),
+                   Send_R_Buffers (FX_Send (Sample_Channel)),
+                   Buffer,
+                   50,
+                   50);
 
       declare
-         Buffer, Aux_Buffer : Mono_Buffer;
 
       begin
          TK.Render (Buffer);
-         WNM_HAL.Mix (Output => Output,
+         WNM_HAL.Mix (Send_L_Buffers (FX_Send (Kick_Channel)),
+                      Send_R_Buffers (FX_Send (Kick_Channel)),
                       Input => Buffer,
                       Volume => 50,
                       Pan => 50);
 
          TS.Render (Buffer);
-         WNM_HAL.Mix (Output => Output,
+         WNM_HAL.Mix (Send_L_Buffers (FX_Send (Snare_Channel)),
+                      Send_R_Buffers (FX_Send (Snare_Channel)),
                       Input => Buffer,
                       Volume => 50,
                       Pan => 50);
 
          TC.Render (Buffer);
-         WNM_HAL.Mix (Output => Output,
+         WNM_HAL.Mix (Send_L_Buffers (FX_Send (Cymbal_Channel)),
+                      Send_R_Buffers (FX_Send (Cymbal_Channel)),
                       Input => Buffer,
                       Volume => 50,
                       Pan => 50);
 
          Lead.Render (Buffer, Aux_Buffer);
-         WNM_HAL.Mix (Output => Output,
+         WNM_HAL.Mix (Send_L_Buffers (FX_Send (Lead_Channel)),
+                      Send_R_Buffers (FX_Send (Lead_Channel)),
+                      Input => Buffer,
+                      Volume => 50,
+                      Pan => 50);
+
+         Bass.Render (Buffer, Aux_Buffer);
+         WNM_HAL.Mix (Send_L_Buffers (FX_Send (Bass_Channel)),
+                      Send_R_Buffers (FX_Send (Bass_Channel)),
                       Input => Buffer,
                       Volume => 50,
                       Pan => 50);
       end;
+
+      declare
+         use Tresses;
+      begin
+
+         --  Overdrive
+         Tresses.FX.Overdrive.Process (Send_L_Buffers (Overdrive),
+                                       Drive_Amount);
+         Tresses.FX.Overdrive.Process (Send_R_Buffers (Overdrive),
+                                       Drive_Amount);
+
+         --  Delay
+         Tresses.FX.Delay_Line.Process
+           (DLL,
+            Send_L_Buffers (Delayline),
+            Delay_Time,
+            Delay_Feedback);
+
+         Tresses.FX.Delay_Line.Process
+           (DLR,
+            Send_R_Buffers (Delayline),
+            Delay_Time,
+            Delay_Feedback);
+
+         --  Filter
+         Tresses.Filters.SVF.Set_Frequency (FL, Filter_Cutoff);
+         Tresses.Filters.SVF.Set_Frequency (FR, Filter_Cutoff);
+
+         Tresses.Filters.SVF.Set_Resonance (FL, Filter_Resonance);
+         Tresses.Filters.SVF.Set_Resonance (FR, Filter_Resonance);
+
+         Tresses.Filters.SVF.Set_Mode (FL, Filter_Mode);
+         Tresses.Filters.SVF.Set_Mode (FR, Filter_Mode);
+
+         for Elt of Send_L_Buffers (Filter) loop
+            Elt := S16 (Tresses.Filters.SVF.Process (FL, S32 (Elt)));
+         end loop;
+
+         for Elt of Send_R_Buffers (Filter) loop
+            Elt := S16 (Tresses.Filters.SVF.Process (FR, S32 (Elt)));
+         end loop;
+      end;
+
+      --  Final mix
+      for Fx in FX_Kind loop
+         WNM_HAL.Mix (Output, Send_L_Buffers (Fx), Send_R_Buffers (Fx));
+      end loop;
 
       -- Recording --
       --  if Recording_Source /= None then

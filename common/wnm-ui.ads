@@ -30,6 +30,7 @@ package WNM.UI is
                             Track_Mode,
                             Step_Mode,
                             Chord_Mode,
+                            FX_Mode,
 
                             Pattern_Select,
                             Track_Select,
@@ -42,7 +43,7 @@ package WNM.UI is
                             Copy
                            );
 
-   subtype Main_Modes is Input_Mode_Type range Pattern_Mode .. Chord_Mode;
+   subtype Main_Modes is Input_Mode_Type range Pattern_Mode .. FX_Mode;
    function Input_Mode return Input_Mode_Type;
    function Input_GUI_Mode return Input_Mode_Type;
 

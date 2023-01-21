@@ -24,6 +24,7 @@ with WNM.GUI.Menu.Track_Settings;
 with WNM.GUI.Menu.Pattern_Settings;
 with WNM.GUI.Menu.Step_Settings;
 with WNM.GUI.Menu.Chord_Settings;
+with WNM.GUI.Menu.FX_Settings;
 
 package body WNM.GUI.Menu is
 
@@ -46,6 +47,8 @@ package body WNM.GUI.Menu is
             GUI.Menu.Pattern_Settings.Push_Window;
          when Chord_Menu =>
             GUI.Menu.Chord_Settings.Push_Window;
+         when FX_Menu =>
+            GUI.Menu.FX_Settings.Push_Window;
       end case;
    end Open;
 

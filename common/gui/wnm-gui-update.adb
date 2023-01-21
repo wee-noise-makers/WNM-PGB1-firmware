@@ -129,7 +129,8 @@ package body WNM.GUI.Update is
          when WNM.UI.Pattern_Mode |
               WNM.UI.Track_Mode |
               WNM.UI.Step_Mode |
-              WNM.UI.Chord_Mode =>
+              WNM.UI.Chord_Mode |
+              WNM.UI.FX_Mode =>
 
             Menu.Draw;
 

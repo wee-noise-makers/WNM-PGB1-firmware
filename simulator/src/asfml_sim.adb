@@ -376,15 +376,13 @@ package body ASFML_Sim is
                      --  Put_Line ("Attempting to close");
                      --  GNAT.OS_Lib.OS_Exit (0);
                   elsif Event.key.code = sfKeyRight then
-                     Encoder_Left := 1;
+                     Encoder_Left := (if Event.key.shift then 2 else 1);
                   elsif Event.key.code = sfKeyLeft then
-                     Encoder_Left := -1;
+                     Encoder_Left := (if Event.key.shift then -2 else -1);
                   elsif Event.key.code = sfKeyDown then
-                     Encoder_Right := -1;
+                     Encoder_Right := (if Event.key.shift then -2 else -1);
                   elsif Event.key.code = sfKeyUp then
-                     Encoder_Right := 1;
-                  elsif Event.key.code = sfKeyN then
-                     Sim_Clock.Release;
+                     Encoder_Right := (if Event.key.shift then 2 else 1);
                   end if;
                end if;
 

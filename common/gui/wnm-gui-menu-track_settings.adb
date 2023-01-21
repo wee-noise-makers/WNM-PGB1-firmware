@@ -50,6 +50,7 @@ package body WNM.GUI.Menu.Track_Settings is
        when Project.Engine => Engine,
        when Project.Volume => Volume,
        when Project.Pan => Pan,
+       when Project.Master_FX => Master_FX,
        when Project.Arp_Mode => Arp_Mode,
        when Project.Arp_Notes => Arp_Notes,
        when Project.Notes_Per_Chord => Notes_Per_Chord,
@@ -198,6 +199,10 @@ package body WNM.GUI.Menu.Track_Settings is
 
          when Pan =>
             Draw_Pan ("Pan:", Project.Track_Pan);
+
+         when Master_FX =>
+            Draw_Title ("FX send:", "");
+            Draw_Value (Project.Img (Project.Master_FX));
 
          when Arp_Mode =>
             Draw_Title ("Arpeggiator mode:", "");
@@ -364,11 +369,18 @@ package body WNM.GUI.Menu.Track_Settings is
                   GUI.Popup.Display ("L press to edit ", 500_000);
 
                when others =>
-                  if Event.Value > 0 then
-                     Project.Next_Value (This.Current_Setting);
-                  else
-                     Project.Prev_Value (This.Current_Setting);
-                  end if;
+                  case Event.Value is
+                     when 0 =>
+                        null;
+                     when 1 =>
+                        Project.Next_Value (This.Current_Setting);
+                     when 2 .. Integer'Last =>
+                        Project.Next_Value_Fast (This.Current_Setting);
+                     when -1 =>
+                        Project.Prev_Value (This.Current_Setting);
+                     when Integer'First .. -2 =>
+                        Project.Prev_Value_Fast (This.Current_Setting);
+                  end case;
             end case;
          when Encoder_Left =>
             if Event.Value > 0 then

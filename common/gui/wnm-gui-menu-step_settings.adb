@@ -165,19 +165,17 @@ package body WNM.GUI.Menu.Step_Settings is
             end case;
 
          when Encoder_Right =>
-            case This.Current_Setting is
-               when CC_A .. CC_D =>
-                  if Event.Value > 0 then
-                     Next_Value_Fast (This.Current_Setting);
-                  else
-                     Prev_Value_Fast (This.Current_Setting);
-                  end if;
-               when others =>
-                  if Event.Value > 0 then
-                     Next_Value (This.Current_Setting);
-                  else
-                     Prev_Value (This.Current_Setting);
-                  end if;
+            case Event.Value is
+               when 0 =>
+                  null;
+               when 1 =>
+                  Next_Value (This.Current_Setting);
+               when 2 .. Integer'Last =>
+                  Next_Value_Fast (This.Current_Setting);
+               when -1 =>
+                  Prev_Value (This.Current_Setting);
+               when Integer'First .. -2 =>
+                  Prev_Value_Fast (This.Current_Setting);
             end case;
 
          when Encoder_Left =>

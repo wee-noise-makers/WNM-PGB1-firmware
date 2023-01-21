@@ -80,7 +80,7 @@ package body WNM.Speech is
    -- Next_Points --
    -----------------
 
-   procedure Next_Points (Buffer : in out WNM_HAL.Stereo_Buffer) is
+   procedure Next_Points (Buffer : in out WNM_HAL.Mono_Buffer) is
       use Interfaces;
 
       Val : Integer_32;
@@ -94,23 +94,13 @@ package body WNM.Speech is
 
          for Idx in Buffer'Range loop
             Val :=
-              Integer_32 (Buffer (Idx).L) + Integer_32 (LPC_Out (Idx));
+              Integer_32 (Buffer (Idx)) + Integer_32 (LPC_Out (Idx));
             if Val > Integer_32 (Mono_Point'Last) then
-               Buffer (Idx).L := Mono_Point'Last;
+               Buffer (Idx) := Mono_Point'Last;
             elsif Val < Integer_32 (Mono_Point'First) then
-               Buffer (Idx).L := Mono_Point'First;
+               Buffer (Idx) := Mono_Point'First;
             else
-               Buffer (Idx).L := Mono_Point (Val);
-            end if;
-
-            Val :=
-              Integer_32 (Buffer (Idx).R) + Integer_32 (LPC_Out (Idx));
-            if Val > Integer_32 (Mono_Point'Last) then
-               Buffer (Idx).R := Mono_Point'Last;
-            elsif Val < Integer_32 (Mono_Point'First) then
-               Buffer (Idx).R := Mono_Point'First;
-            else
-               Buffer (Idx).R := Mono_Point (Val);
+               Buffer (Idx) := Mono_Point (Val);
             end if;
          end loop;
       end if;

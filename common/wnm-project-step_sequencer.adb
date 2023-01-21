@@ -171,6 +171,9 @@ package body WNM.Project.Step_Sequencer is
 
                end if;
             end if;
+
+         when UI.FX_Mode =>
+            null;
       end case;
    end On_Press;
 
@@ -189,7 +192,7 @@ package body WNM.Project.Step_Sequencer is
          when UI.Chord_Mode =>
             Project.Chord_Sequencer.Chain.On_Release (Button);
 
-         when UI.Track_Mode | UI.Step_Mode =>
+         when UI.Track_Mode | UI.Step_Mode | UI.FX_Mode =>
             null;
       end case;
    end On_Release;

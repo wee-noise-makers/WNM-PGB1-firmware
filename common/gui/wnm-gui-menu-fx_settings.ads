@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                  Copyright (C) 2016-2017 Fabien Chouteau                  --
+--                  Copyright (C) 2016-2023 Fabien Chouteau                  --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,56 +19,36 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-package WNM.GUI.Menu is
+with WNM.Project;
 
-   type Base_Menu_Kind is (Main_Menu, Step_Menu, Track_Menu, Pattern_Menu,
-                           Chord_Menu, FX_Menu);
+package WNM.GUI.Menu.FX_Settings is
 
-   procedure Open (Kind : Base_Menu_Kind);
+   procedure Push_Window;
 
-   function In_Menu return Boolean;
-   procedure Draw;
+private
 
-   type Menu_Event_Kind is (Left_Press,
-                            Right_Press,
-                            Encoder_Left,
-                            Encoder_Right);
+   type Top_Settings is (Overdrive, Delayline, Filter);
+   function Top_Settings_Count is new Enum_Count (Top_Settings);
 
-   type Menu_Event (Kind : Menu_Event_Kind := Left_Press) is record
-      case Kind is
-         when Encoder_Left | Encoder_Right =>
-            Value : Integer;
-         when others =>
-            null;
-      end case;
+   subtype Sub_Settings is WNM.Project.User_FX_Settings;
+   function Sub_Settings_Count is new Enum_Count (Sub_Settings);
+
+   type Pattern_Settings_Menu is new Menu_Window with record
+      Current_Setting : Sub_Settings := Sub_Settings'First;
    end record;
 
-   procedure On_Event (Event : Menu_Event);
+   overriding
+   procedure Draw (This : in out Pattern_Settings_Menu);
 
-   type Window_Exit_Value is (None, Success, Failure);
+   overriding
+   procedure On_Event (This  : in out Pattern_Settings_Menu;
+                       Event : Menu_Event);
 
-   type Menu_Window is interface;
+   overriding
+   procedure On_Pushed (This  : in out Pattern_Settings_Menu);
 
-   type Any_Menu_Window is access all Menu_Window'Class;
+   overriding
+   procedure On_Focus (This       : in out Pattern_Settings_Menu;
+                       Exit_Value : Window_Exit_Value);
 
-   procedure Draw (This : in out Menu_Window)
-   is abstract;
-
-   procedure On_Event (This  : in out Menu_Window;
-                       Event : Menu_Event)
-   is abstract;
-
-   procedure On_Pushed (This  : in out Menu_Window)
-   is abstract;
-
-   procedure On_Focus (This       : in out Menu_Window;
-                       Exit_Value : Window_Exit_Value)
-   is abstract;
-
-   procedure Push (Window : not null Any_Menu_Window);
-   procedure Pop (Exit_Value : Window_Exit_Value);
-
-   procedure Exit_Menu;
-   --  Pop all the windows in stack with a None exit value
-
-end WNM.GUI.Menu;
+end WNM.GUI.Menu.FX_Settings;

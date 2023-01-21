@@ -256,6 +256,9 @@ package body WNM.Project.Storage is
                   when Pan =>
                      Output.Push (Out_UInt (Track.Pan));
 
+                  when Master_FX =>
+                     Output.Push (Out_UInt (Track.FX_Kind'Enum_Rep));
+
                   when Arp_Mode =>
                      Output.Push (Out_UInt (Track.Arp_Mode'Enum_Rep));
 
@@ -367,6 +370,49 @@ package body WNM.Project.Storage is
 
    end Save_Chords;
 
+   -------------
+   -- Save_FX --
+   -------------
+
+   procedure Save_FX (Output : in out File_Out.Instance) is
+   begin
+      Output.Start_FX;
+      --  Using a loop over all settings and a case statement, we make
+      --  sure all settings are handled. This will hopefully prevent
+      --  mistakes when new settings are introduced.
+      for Set in FX_Setting_Kind loop
+
+         Output.Push (Out_UInt (Set'Enum_Rep));
+
+         case Set is
+            when Drive_Amount =>
+               Output.Push (G_Project.FX.Drive_Amt);
+
+            when Delay_Time =>
+               Output.Push (G_Project.FX.Delay_Time);
+
+            when Delay_Feedback =>
+               Output.Push (G_Project.FX.Delay_Feedback);
+
+            when Filter_Mode =>
+               Output.Push (Out_UInt (G_Project.FX.Filter_Mode'Enum_Rep));
+
+            when Filter_Cutoff =>
+               Output.Push (G_Project.FX.Filter_Cutoff);
+
+            when Filter_Reso =>
+               Output.Push (G_Project.FX.Filter_Reso);
+
+         end case;
+
+         if Output.Status /= Ok then
+            return;
+         end if;
+
+      end loop;
+      Output.End_Section;
+   end Save_FX;
+
    -----------------
    -- Save_Global --
    -----------------
@@ -400,6 +446,10 @@ package body WNM.Project.Storage is
       end if;
 
       if Output.Status = Ok then
+         Save_FX (Output);
+      end if;
+
+      if Output.Status = Ok then
          Save_Sequences (Output);
       end if;
 
@@ -418,6 +468,7 @@ package body WNM.Project.Storage is
       procedure Read is new File_In.Read_Gen_Enum (Track_Mode_Kind);
       procedure Read is new File_In.Read_Gen_Int (Audio_Volume);
       procedure Read is new File_In.Read_Gen_Int (Audio_Pan);
+      procedure Read is new File_In.Read_Gen_Enum (Master_FX_Kind);
       procedure Read is new File_In.Read_Gen_Enum (Arp_Mode_Kind);
       procedure Read is new File_In.Read_Gen_Enum (Arp_Notes_Kind);
       procedure Read is new File_In.Read_Gen_Mod (MIDI.MIDI_Channel);
@@ -457,6 +508,7 @@ package body WNM.Project.Storage is
                when Engine      => Read (Input, Track.Engine);
                when Volume      => Read (Input, Track.Volume);
                when Pan         => Read (Input, Track.Pan);
+               when Master_FX   => Read (Input, Track.FX_Kind);
                when Arp_Mode    => Read (Input, Track.Arp_Mode);
                when Arp_Notes   => Read (Input, Track.Arp_Notes);
                when Notes_Per_Chord => Read (Input, Track.Notes_Per_Chord);
@@ -683,6 +735,43 @@ package body WNM.Project.Storage is
       end loop;
    end Load_Global;
 
+   -------------
+   -- Load_FX --
+   -------------
+
+   procedure Load_FX (Input : in out File_In.Instance) is
+      procedure To_FX_Settings is new Convert_To_Enum (FX_Setting_Kind);
+
+      procedure Read is new File_In.Read_Gen_Enum (Filter_Mode_Kind);
+      procedure Read is new File_In.Read_Gen_Mod (MIDI.MIDI_Data);
+
+      S : FX_Setting_Kind;
+      Raw : In_UInt := 0;
+      Success : Boolean;
+   begin
+      loop
+         Input.Read (Raw);
+
+         exit when Input.Status /= Ok
+           or else Raw = End_Of_Section_Value;
+
+         To_FX_Settings (Raw, S, Success);
+
+         exit when not Success;
+
+         case S is
+            when Drive_Amount => Read (Input, G_Project.FX.Drive_Amt);
+            when Delay_Time => Read (Input, G_Project.FX.Delay_Time);
+            when Delay_Feedback => Read (Input, G_Project.FX.Delay_Feedback);
+            when Filter_Mode => Read (Input, G_Project.FX.Filter_Mode);
+            when Filter_Cutoff => Read (Input, G_Project.FX.Filter_Cutoff);
+            when Filter_Reso => Read (Input, G_Project.FX.Filter_Reso);
+         end case;
+
+         exit when Input.Status /= Ok;
+      end loop;
+   end Load_FX;
+
    ----------
    -- Load --
    ----------
@@ -709,6 +798,9 @@ package body WNM.Project.Storage is
             when Chord_Section =>
                Load_Chord (Input);
 
+            when FX_Section =>
+               Load_FX (Input);
+
             when Sequence_Section =>
                Load_Sequences (Input);
 
@@ -731,6 +823,8 @@ package body WNM.Project.Storage is
          for T in Tracks loop
             Synchronize_Voice_Settings (T);
          end loop;
+
+         Synchronize_All_FX_Settings;
       end if;
 
       return Ok;

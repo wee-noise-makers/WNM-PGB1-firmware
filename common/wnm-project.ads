@@ -196,7 +196,8 @@ package WNM.Project is
    -----------
 
    type Track_Mode_Kind is (MIDI_Mode, Sample_Mode, Speech_Mode,
-                            Kick_Mode, Snare_Mode, Cymbal_Mode, Lead_Mode);
+                            Kick_Mode, Snare_Mode, Cymbal_Mode,
+                            Bass_Mode, Lead_Mode);
    package Track_Mode_Kind_Next is new Enum_Next (Track_Mode_Kind);
    use Track_Mode_Kind_Next;
 
@@ -208,7 +209,8 @@ package WNM.Project is
           when Kick_Mode   => "Kick",
           when Snare_Mode  => "Snare",
           when Cymbal_Mode => "Symbal",
-          when Lead_Mode => "Lead");
+          when Lead_Mode   => "Bass",
+          when Bass_Mode   => "Lead");
 
    subtype Synth_Track_Mode_Kind is
      Track_Mode_Kind range Sample_Mode .. Lead_Mode;
@@ -216,12 +218,15 @@ package WNM.Project is
    function Voice_MIDI_Chan (Voice : Synth_Track_Mode_Kind)
                              return MIDI.MIDI_Channel
    is (case Voice is
-          when Sample_Mode => 1,
-          when Speech_Mode => 2,
-          when Kick_Mode   => 3,
-          when Snare_Mode  => 4,
-          when Cymbal_Mode => 5,
-          when Lead_Mode   => 6);
+          when Sample_Mode => Synth.Sample_Channel,
+          when Speech_Mode => Synth.Speech_Channel,
+          when Kick_Mode   => Synth.Kick_Channel,
+          when Snare_Mode  => Synth.Snare_Channel,
+          when Cymbal_Mode => Synth.Cymbal_Channel,
+          when Bass_Mode   => Synth.Bass_Channel,
+          when Lead_Mode   => Synth.Lead_Channel);
+
+   FX_MIDI_Chan : constant MIDI.MIDI_Channel := Synth.FX_Settings_Channel;
 
    subtype Controller_Label is String (1 .. 17);
    Empty_Controller_Label : constant Controller_Label := (others => ' ');
@@ -244,6 +249,15 @@ package WNM.Project is
    is (case N is
           when Chord => "Notes of chord");
 
+   type Master_FX_Kind is (Bypass, Overdrive, Delayline, Filter);
+
+   function Img (M : Master_FX_Kind) return String
+   is (case M is
+          when Bypass    => "Bypass",
+          when Overdrive => "Overdrive",
+          when Delayline => "Delay",
+          when Filter    => "Filter");
+
    -- Track Getters --
    function Mode (T : Tracks := Editing_Track) return Track_Mode_Kind;
    function MIDI_Chan (T : Tracks := Editing_Track) return MIDI.MIDI_Channel;
@@ -252,6 +266,7 @@ package WNM.Project is
    function CC_Default (T : Tracks := Editing_Track;
                         Id : CC_Id)
                         return MIDI.MIDI_Data;
+   function Master_FX (T : Tracks := Editing_Track) return Master_FX_Kind;
 
    function CC_Value_To_Use (P : Patterns; T : Tracks; S : Sequencer_Steps;
                              Id : CC_Id)
@@ -287,6 +302,7 @@ package WNM.Project is
                            CC_Default_D,
                            Volume,
                            Pan,
+                           Master_FX,
                            Arp_Mode,
                            Arp_Notes,
                            Notes_Per_Chord,
@@ -306,19 +322,20 @@ package WNM.Project is
                            CC_Default_D    => 7,
                            Volume          => 8,
                            Pan             => 9,
-                           Arp_Mode        => 10,
-                           Arp_Notes       => 11,
-                           Notes_Per_Chord => 12,
-                           MIDI_Chan       => 13,
-                           MIDI_Instrument => 14,
-                           CC_Ctrl_A       => 15,
-                           CC_Label_A      => 16,
-                           CC_Ctrl_B       => 17,
-                           CC_Label_B      => 18,
-                           CC_Ctrl_C       => 19,
-                           CC_Label_C      => 20,
-                           CC_Ctrl_D       => 21,
-                           CC_Label_D      => 22);
+                           Master_FX       => 10,
+                           Arp_Mode        => 11,
+                           Arp_Notes       => 12,
+                           Notes_Per_Chord => 13,
+                           MIDI_Chan       => 14,
+                           MIDI_Instrument => 15,
+                           CC_Ctrl_A       => 16,
+                           CC_Label_A      => 17,
+                           CC_Ctrl_B       => 18,
+                           CC_Label_B      => 19,
+                           CC_Ctrl_C       => 20,
+                           CC_Label_C      => 21,
+                           CC_Ctrl_D       => 22,
+                           CC_Label_D      => 23);
 
    subtype User_Track_Settings
      is Track_Settings range Track_Mode .. CC_Label_D;
@@ -363,6 +380,43 @@ package WNM.Project is
    procedure Randomly_Pick_A_Progression;
    --  a.k.a. The Magic Hat of Chord Progression
 
+   --------
+   -- FX --
+   --------
+
+   type FX_Setting_Kind is (Drive_Amount,
+                            Delay_Time,
+                            Delay_Feedback,
+                            Filter_Mode,
+                            Filter_Cutoff,
+                            Filter_Reso);
+
+   for FX_Setting_Kind use (Drive_Amount   => 0,
+                            Delay_Time     => 1,
+                            Delay_Feedback => 2,
+                            Filter_Mode    => 3,
+                            Filter_Cutoff  => 4,
+                            Filter_Reso    => 5);
+
+   subtype User_FX_Settings is FX_Setting_Kind;
+
+   -- FX Getters --
+
+   function Drive_Amount_Value return MIDI.MIDI_Data;
+   function Delay_Time_Value return MIDI.MIDI_Data;
+   function Delay_Feedback_Value return MIDI.MIDI_Data;
+   function Filter_Cutoff_Value return MIDI.MIDI_Data;
+   function Filter_Reso_Value return MIDI.MIDI_Data;
+
+   type Filter_Mode_Kind is (Low_Pass, Band_Pass, High_Pass);
+   function Filter_Mode_Value return Filter_Mode_Kind;
+
+   procedure Next_Value (S : User_FX_Settings);
+   procedure Prev_Value (S : User_FX_Settings);
+
+   procedure Next_Value_Fast (S : User_FX_Settings);
+   procedure Prev_Value_Fast (S : User_FX_Settings);
+
 private
 
    type Global_Settings is (BPM);
@@ -396,6 +450,10 @@ private
                                             Wrap => False);
    use Audio_Pan_Next;
 
+   package Master_FX_Next is new Enum_Next (T    => Master_FX_Kind,
+                                            Wrap => False);
+   use Master_FX_Next;
+
    package Arp_Mode_Next is new Enum_Next (Arp_Mode_Kind);
    use Arp_Mode_Next;
 
@@ -408,6 +466,10 @@ private
    package Notes_Per_Chord_Next
    is new Enum_Next (Chord_Settings.Chord_Index_Range, Wrap => False);
    use Notes_Per_Chord_Next;
+
+   package Filter_Mode_Next is new Enum_Next (T    => Filter_Mode_Kind,
+                                              Wrap => False);
+   use Filter_Mode_Next;
 
    type CC_Val_Array is array (CC_Id) of MIDI.MIDI_Data;
    type CC_Ena_Array is array (CC_Id) of Boolean;
@@ -457,6 +519,7 @@ private
       Chan : MIDI.MIDI_Channel := 0;
       Volume : Audio_Volume := Init_Volume;
       Pan : Audio_Pan := Init_Pan;
+      FX_Kind : Master_FX_Kind := Bypass;
       CC : CC_Setting_Array;
       Sample : Sample_Library.Valid_Sample_Index := 1;
       Word   : Speech.Word := Speech.Word'First;
@@ -474,6 +537,7 @@ private
       Chan => 0,
       Volume => Init_Volume,
       Pan => Init_Pan,
+      FX_Kind => Bypass,
       CC => ((0, 63, "CC0              "),
              (1, 63, "CC1              "),
              (2, 63, "CC2              "),
@@ -499,22 +563,46 @@ private
      (Tonic => MIDI.C4,
       Name => WNM.Chord_Settings.Chord_Name'First);
 
+   type FX_Rec is record
+      Drive_Amt : MIDI.MIDI_Data := 60;
+      Delay_Time : MIDI.MIDI_Data := 60;
+      Delay_Feedback : MIDI.MIDI_Data := 60;
+      Filter_Mode : Filter_Mode_Kind := Filter_Mode_Kind'First;
+      Filter_Cutoff : MIDI.MIDI_Data := 60;
+      Filter_Reso : MIDI.MIDI_Data := 60;
+   end record;
+
+   Default_FX : constant FX_Rec := (Drive_Amt => 60,
+                                    Delay_Time => 60,
+                                    Delay_Feedback => 60,
+                                    Filter_Mode => Filter_Mode_Kind'First,
+                                    Filter_Cutoff => 60,
+                                    Filter_Reso => 60);
+
    type Project_Rec is record
       BPM : Beat_Per_Minute := 120;
       Seqs : All_Patterns := (others => (others => (others => Default_Step)));
       Tracks : Track_Arr := (others => Default_Track);
       Chords : Chord_Arr := (others => Default_Chord);
+      FX     : FX_Rec := Default_FX;
    end record;
 
    G_Project : Project_Rec := (others => <>);
 
    procedure Synchronize_Voice_Settings (T : Tracks);
-   --  Send all the synth voice settings to the coprocessor to update the
+   --  Send all the synth voice settings to the coprocessor to update it
 
    procedure Synchronize_Voice_Engine (T : Tracks);
    --  Send a message to coprocessor with selector engine for the track
 
-   procedure Synchronize_Coproc_Vol_Pan (T : Tracks);
-   --  Send a message to coprocessor with Volume and pan value for the track
+   procedure Synchronize_Track_Mix_Settings (T : Tracks);
+   --  Send a message to coprocessor with Volume, Pan, and FX values for the
+   --  track
+
+   procedure Synchronize_FX_Setting (S : User_FX_Settings);
+   --  Send one of the FX settings to the coprocessor
+
+   procedure Synchronize_All_FX_Settings;
+   --  Send all the FX settings to the coprocessor
 
 end WNM.Project;

@@ -252,7 +252,8 @@ package body WNM.Project is
    is
    begin
       case Mode (Editing_Track) is
-         when MIDI_Mode | Kick_Mode | Snare_Mode | Cymbal_Mode | Lead_Mode =>
+         when MIDI_Mode | Kick_Mode | Snare_Mode | Cymbal_Mode | Lead_Mode |
+              Bass_Mode =>
             return CC_Value (Step, Id)'Img;
 
          when Sample_Mode =>
@@ -594,6 +595,13 @@ package body WNM.Project is
                         return MIDI.MIDI_Data
    is (G_Project.Tracks (T).CC (Id).Value);
 
+   ---------------
+   -- Master_FX --
+   ---------------
+
+   function Master_FX (T : Tracks := Editing_Track) return Master_FX_Kind
+   is (G_Project.Tracks (T).FX_Kind);
+
    ---------------------
    -- CC_Value_To_Use --
    ---------------------
@@ -643,7 +651,7 @@ package body WNM.Project is
             Utils.Copy_Str (Synth.Cymbal_Param_Label (Tresses_Id), Result);
             return Result;
 
-         when Lead_Mode =>
+         when Lead_Mode | Bass_Mode =>
             Utils.Copy_Str (Synth.Lead_Param_Label (Selected_Engine (T),
                                                     Tresses_Id),
                             Result);
@@ -688,7 +696,7 @@ package body WNM.Project is
          when Cymbal_Mode =>
             return Synth.Cymbal_Param_Short_Label (Tresses_Id);
 
-         when Lead_Mode =>
+         when Lead_Mode | Bass_Mode =>
             return Synth.Lead_Param_Short_Label (Selected_Engine (T),
                                                  Tresses_Id);
 
@@ -735,7 +743,7 @@ package body WNM.Project is
                                  return String
    is
    begin
-      if Mode (T) = Lead_Mode then
+      if Mode (T) in Lead_Mode | Bass_Mode then
          return Synth.Lead_Engine_Img (Selected_Engine (T));
       else
          return "No Engine";
@@ -776,6 +784,7 @@ package body WNM.Project is
          when Engine          => Next (Track.Engine);
          when Volume          => Next (Track.Volume);
          when Pan             => Next (Track.Pan);
+         when Master_FX       => Next (Track.FX_Kind);
          when Arp_Mode        => Next (Track.Arp_Mode);
          when Arp_Notes       => Next (Track.Arp_Notes);
          when Notes_Per_Chord => Next (Track.Notes_Per_Chord);
@@ -792,8 +801,8 @@ package body WNM.Project is
          when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D => null;
       end case;
 
-      if S in Pan | Volume then
-         Synchronize_Coproc_Vol_Pan (Editing_Track);
+      if S in Pan | Volume | Master_FX then
+         Synchronize_Track_Mix_Settings (Editing_Track);
       elsif S in Engine then
          Synchronize_Voice_Engine (Editing_Track);
       end if;
@@ -811,6 +820,7 @@ package body WNM.Project is
          when Engine          => Prev (Track.Engine);
          when Volume          => Prev (Track.Volume);
          when Pan             => Prev (Track.Pan);
+         when Master_FX       => Prev (Track.FX_Kind);
          when Arp_Mode        => Prev (Track.Arp_Mode);
          when Arp_Notes       => Prev (Track.Arp_Notes);
          when Notes_Per_Chord => Prev (Track.Notes_Per_Chord);
@@ -827,8 +837,8 @@ package body WNM.Project is
          when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D => null;
       end case;
 
-      if S in Pan | Volume then
-         Synchronize_Coproc_Vol_Pan (Editing_Track);
+      if S in Pan | Volume | Master_FX then
+         Synchronize_Track_Mix_Settings (Editing_Track);
       elsif S in Engine then
          Synchronize_Voice_Engine (Editing_Track);
       end if;
@@ -846,6 +856,7 @@ package body WNM.Project is
          when Engine          => Next_Fast (Track.Engine);
          when Volume          => Next_Fast (Track.Volume);
          when Pan             => Next_Fast (Track.Pan);
+         when Master_FX       => Next_Fast (Track.FX_Kind);
          when Arp_Mode        => Next_Fast (Track.Arp_Mode);
          when Arp_Notes       => Next_Fast (Track.Arp_Notes);
          when Notes_Per_Chord => Next_Fast (Track.Notes_Per_Chord);
@@ -861,6 +872,12 @@ package body WNM.Project is
          when CC_Ctrl_D       => Next_Fast (Track.CC (D).Controller);
          when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D => null;
       end case;
+
+      if S in Pan | Volume | Master_FX then
+         Synchronize_Track_Mix_Settings (Editing_Track);
+      elsif S in Engine then
+         Synchronize_Voice_Engine (Editing_Track);
+      end if;
    end Next_Value_Fast;
 
    ---------------------
@@ -875,6 +892,7 @@ package body WNM.Project is
          when Engine          => Prev_Fast (Track.Engine);
          when Volume          => Prev_Fast (Track.Volume);
          when Pan             => Prev_Fast (Track.Pan);
+         when Master_FX       => Prev_Fast (Track.FX_Kind);
          when Arp_Mode        => Prev_Fast (Track.Arp_Mode);
          when Arp_Notes       => Prev_Fast (Track.Arp_Notes);
          when Notes_Per_Chord => Prev_Fast (Track.Notes_Per_Chord);
@@ -890,6 +908,12 @@ package body WNM.Project is
          when CC_Ctrl_D       => Prev_Fast (Track.CC (D).Controller);
          when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D => null;
       end case;
+
+      if S in Pan | Volume | Master_FX then
+         Synchronize_Track_Mix_Settings (Editing_Track);
+      elsif S in Engine then
+         Synchronize_Voice_Engine (Editing_Track);
+      end if;
    end Prev_Value_Fast;
 
    -----------------------
@@ -981,6 +1005,120 @@ package body WNM.Project is
       end case;
    end Prev_Value_Fast;
 
+   ------------------------
+   -- Drive_Amount_Value --
+   ------------------------
+
+   function Drive_Amount_Value return MIDI.MIDI_Data
+   is (G_Project.FX.Drive_Amt);
+
+   ----------------------
+   -- Delay_Time_Value --
+   ----------------------
+
+   function Delay_Time_Value return MIDI.MIDI_Data
+   is (G_Project.FX.Delay_Time);
+
+   --------------------------
+   -- Delay_Feedback_Value --
+   --------------------------
+
+   function Delay_Feedback_Value return MIDI.MIDI_Data
+   is (G_Project.FX.Delay_Feedback);
+
+   -------------------------
+   -- Filter_Cutoff_Value --
+   -------------------------
+
+   function Filter_Cutoff_Value return MIDI.MIDI_Data
+   is (G_Project.FX.Filter_Cutoff);
+
+   -----------------------
+   -- Filter_Reso_Value --
+   -----------------------
+
+   function Filter_Reso_Value return MIDI.MIDI_Data
+   is (G_Project.FX.Filter_Reso);
+
+   -----------------------
+   -- Filter_Mode_Value --
+   -----------------------
+
+   function Filter_Mode_Value return Filter_Mode_Kind
+   is (G_Project.FX.Filter_Mode);
+
+   ----------------
+   -- Next_Value --
+   ----------------
+
+   procedure Next_Value (S : User_FX_Settings) is
+   begin
+      case S is
+         when Drive_Amount   => Next (G_Project.FX.Drive_Amt);
+         when Delay_Time     => Next (G_Project.FX.Delay_Time);
+         when Delay_Feedback => Next (G_Project.FX.Delay_Feedback);
+         when Filter_Mode    => Next (G_Project.FX.Filter_Mode);
+         when Filter_Cutoff  => Next (G_Project.FX.Filter_Cutoff);
+         when Filter_Reso    => Next (G_Project.FX.Filter_Reso);
+      end case;
+
+      Synchronize_FX_Setting (S);
+   end Next_Value;
+
+   ----------------
+   -- Prev_Value --
+   ----------------
+
+   procedure Prev_Value (S : User_FX_Settings) is
+   begin
+      case S is
+         when Drive_Amount   => Prev (G_Project.FX.Drive_Amt);
+         when Delay_Time     => Prev (G_Project.FX.Delay_Time);
+         when Delay_Feedback => Prev (G_Project.FX.Delay_Feedback);
+         when Filter_Mode    => Prev (G_Project.FX.Filter_Mode);
+         when Filter_Cutoff  => Prev (G_Project.FX.Filter_Cutoff);
+         when Filter_Reso    => Prev (G_Project.FX.Filter_Reso);
+      end case;
+
+      Synchronize_FX_Setting (S);
+   end Prev_Value;
+
+   ---------------------
+   -- Next_Value_Fast --
+   ---------------------
+
+   procedure Next_Value_Fast (S : User_FX_Settings) is
+   begin
+      case S is
+         when Drive_Amount   => Next_Fast (G_Project.FX.Drive_Amt);
+         when Delay_Time     => Next_Fast (G_Project.FX.Delay_Time);
+         when Delay_Feedback => Next_Fast (G_Project.FX.Delay_Feedback);
+         when Filter_Mode    => Next_Fast (G_Project.FX.Filter_Mode);
+         when Filter_Cutoff  => Next_Fast (G_Project.FX.Filter_Cutoff);
+         when Filter_Reso    => Next_Fast (G_Project.FX.Filter_Reso);
+      end case;
+
+      Synchronize_FX_Setting (S);
+   end Next_Value_Fast;
+
+   ---------------------
+   -- Prev_Value_Fast --
+   ---------------------
+
+   procedure Prev_Value_Fast (S : User_FX_Settings) is
+   begin
+      case S is
+         when Drive_Amount   => Prev_Fast (G_Project.FX.Drive_Amt);
+         when Delay_Time     => Prev_Fast (G_Project.FX.Delay_Time);
+         when Delay_Feedback => Prev_Fast (G_Project.FX.Delay_Feedback);
+         when Filter_Mode    => Prev_Fast (G_Project.FX.Filter_Mode);
+         when Filter_Cutoff  => Prev_Fast (G_Project.FX.Filter_Cutoff);
+         when Filter_Reso    => Prev_Fast (G_Project.FX.Filter_Reso);
+      end case;
+
+      Synchronize_FX_Setting (S);
+   end Prev_Value_Fast;
+
    ---------------------------------
    -- Randomly_Pick_A_Progression --
    ---------------------------------
@@ -996,7 +1134,7 @@ package body WNM.Project is
 
    procedure Synchronize_Voice_Settings (T : Tracks) is
    begin
-      Synchronize_Coproc_Vol_Pan (T);
+      Synchronize_Track_Mix_Settings (T);
       Synchronize_Voice_Engine (T);
    end Synchronize_Voice_Settings;
 
@@ -1022,13 +1160,79 @@ package body WNM.Project is
    -- Synchronize_Coproc_Vol_Pan --
    --------------------------------
 
-   procedure Synchronize_Coproc_Vol_Pan (T : Tracks) is
+   procedure Synchronize_Track_Mix_Settings (T : Tracks) is
       use WNM.Coproc;
+      M : constant Track_Mode_Kind := Mode (T);
+      FX_Val : MIDI.MIDI_Data;
    begin
-      Coproc.Push ((Kind       => Track_Vol_Pan,
-                    TVP_Track  => T,
-                    TVP_Vol    => G_Project.Tracks (T).Volume,
-                    TVP_Pan    => G_Project.Tracks (T).Pan));
-   end Synchronize_Coproc_Vol_Pan;
+      if M in Synth_Track_Mode_Kind then
+         Coproc.Push ((Kind       => Track_Vol_Pan,
+                       TVP_Track  => T,
+                       TVP_Vol    => G_Project.Tracks (T).Volume,
+                       TVP_Pan    => G_Project.Tracks (T).Pan));
+
+         FX_Val := (case Master_FX (T) is
+                       when Bypass    => Synth.FX_Select_Bypass,
+                       when Overdrive => Synth.FX_Select_Overdrive,
+                       when Delayline => Synth.FX_Select_Delayline,
+                       when Filter    => Synth.FX_Select_Filter);
+
+         Coproc.Push ((Kind     => MIDI_Event,
+                       MIDI_Evt =>
+                         (Kind => MIDI.Continous_Controller,
+                          Chan => Voice_MIDI_Chan (M),
+                          Controller => Synth.Voice_FX_CC,
+                          Controller_Value => FX_Val)));
+      end if;
+   end Synchronize_Track_Mix_Settings;
+
+   ----------------------------
+   -- Synchronize_FX_Setting --
+   ----------------------------
+
+   procedure Synchronize_FX_Setting (S : User_FX_Settings) is
+      use WNM.Coproc;
+      CC : MIDI.MIDI_Data;
+      Val : MIDI.MIDI_Data;
+   begin
+      case S is
+         when Drive_Amount =>
+            CC := Synth.FX_Drive_Amount_CC;
+            Val := G_Project.FX.Drive_Amt;
+         when Delay_Time =>
+            CC := Synth.FX_Delay_Time_CC;
+            Val := G_Project.FX.Delay_Time;
+         when Delay_Feedback =>
+            CC := Synth.FX_Delay_Feedback_CC;
+            Val := G_Project.FX.Delay_Feedback;
+         when Filter_Mode =>
+            CC := Synth.FX_Filter_Mode_CC;
+            Val := Filter_Mode_Kind'Pos (G_Project.FX.Filter_Mode);
+         when Filter_Cutoff =>
+            CC := Synth.FX_Filter_Cutoff_CC;
+            Val := G_Project.FX.Filter_Cutoff;
+         when Filter_Reso =>
+            CC := Synth.FX_Filter_Reso_CC;
+            Val := G_Project.FX.Filter_Reso;
+      end case;
+
+      Coproc.Push ((Kind     => MIDI_Event,
+                    MIDI_Evt =>
+                      (Kind => MIDI.Continous_Controller,
+                       Chan => FX_MIDI_Chan,
+                       Controller => CC,
+                       Controller_Value => Val)));
+   end Synchronize_FX_Setting;
+
+   ---------------------------------
+   -- Synchronize_All_FX_Settings --
+   ---------------------------------
+
+   procedure Synchronize_All_FX_Settings is
+   begin
+      for S in User_FX_Settings loop
+         Synchronize_FX_Setting (S);
+      end loop;
+   end Synchronize_All_FX_Settings;
 
 end WNM.Project;

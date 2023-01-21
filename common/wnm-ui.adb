@@ -121,6 +121,7 @@ package body WNM.UI is
                   when Func =>
                      --  Switch to Func mode
                      Current_Input_Mode := FX_Alt;
+                     Select_Done := False;
 
                   when Menu =>
                      GUI.Menu.Open (GUI.Menu.Main_Menu);
@@ -297,26 +298,47 @@ package body WNM.UI is
                   case B is
                      when Keyboard_Button =>
                         Toggle_FX (B);
+                        Select_Done := True;
+
                      when Pattern_Button =>
                         Copy_T := WNM.Sequence_Copy.Start_Copy_Pattern;
                         Current_Input_Mode := Copy;
+                        Select_Done := True;
+
                      when Track_Button =>
                         Copy_T := WNM.Sequence_Copy.Start_Copy_Track
                           (Project.Editing_Pattern);
 
                         Current_Input_Mode := Copy;
+                        Select_Done := True;
+
                      when Step_Button =>
                         Copy_T := WNM.Sequence_Copy.Start_Copy_Step
                           (Project.Editing_Pattern,
                            Project.Editing_Track);
 
                         Current_Input_Mode := Copy;
+                        Select_Done := True;
+
                      when others =>
                         null;
                   end case;
                when On_Release =>
                   if B = Func then
-                     Current_Input_Mode := Last_Main_Mode;
+                     if Select_Done then
+                        --  Go back a main mode
+                        Current_Input_Mode := Last_Main_Mode;
+
+                     else
+                        --  Switch to FX mode
+                        Current_Input_Mode := FX_Mode;
+                        GUI.Menu.Open (GUI.Menu.FX_Menu);
+                        Last_Main_Mode := Current_Input_Mode;
+
+                        --  Switching mode disables recording.
+                        --  TODO: Is that a good thing?
+                        Recording_On := False;
+                     end if;
                   end if;
                when others =>
                   null;
@@ -817,6 +839,9 @@ package body WNM.UI is
                   end loop;
                end if;
 
+            when FX_Mode =>
+               LEDs.Turn_On (Func);
+               null;
             end case;
       end case;
 

@@ -33,6 +33,15 @@ package body WNM.Project.Storage.File_Out is
       This.Push (Global_Section);
    end Start_Global;
 
+   --------------
+   -- Start_FX --
+   --------------
+
+   procedure Start_FX (This : in out Instance) is
+   begin
+      This.Push (FX_Section);
+   end Start_FX;
+
    --------------------------
    -- Start_Chord_Settings --
    --------------------------

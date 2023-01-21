@@ -32,6 +32,37 @@ with Tresses;
 
 package WNM.Synth is
 
+   Sample_Channel : constant MIDI.MIDI_Channel := 1;
+   Speech_Channel : constant MIDI.MIDI_Channel := 2;
+   Kick_Channel   : constant MIDI.MIDI_Channel := 3;
+   Snare_Channel  : constant MIDI.MIDI_Channel := 4;
+   Cymbal_Channel : constant MIDI.MIDI_Channel := 5;
+   Lead_Channel   : constant MIDI.MIDI_Channel := 6;
+   Bass_Channel   : constant MIDI.MIDI_Channel := 7;
+   Chord_Channel  : constant MIDI.MIDI_Channel := 8;
+
+   Voice_Param_1_CC : constant MIDI.MIDI_Data := 0;
+   Voice_Param_2_CC : constant MIDI.MIDI_Data := 1;
+   Voice_Param_3_CC : constant MIDI.MIDI_Data := 2;
+   Voice_Param_4_CC : constant MIDI.MIDI_Data := 3;
+   Voice_Engine_CC  : constant MIDI.MIDI_Data := 4;
+   Voice_Volume_CC  : constant MIDI.MIDI_Data := 5;
+   Voice_Pan_CC     : constant MIDI.MIDI_Data := 6;
+   Voice_FX_CC      : constant MIDI.MIDI_Data := 7;
+
+   FX_Select_Bypass    : constant MIDI.MIDI_Data := 0;
+   FX_Select_Overdrive : constant MIDI.MIDI_Data := 1;
+   FX_Select_Delayline : constant MIDI.MIDI_Data := 2;
+   FX_Select_Filter    : constant MIDI.MIDI_Data := 3;
+
+   FX_Settings_Channel  : constant MIDI.MIDI_Channel := 15;
+   FX_Drive_Amount_CC   : constant MIDI.MIDI_Data := 0;
+   FX_Delay_Time_CC     : constant MIDI.MIDI_Data := 1;
+   FX_Delay_Feedback_CC : constant MIDI.MIDI_Data := 2;
+   FX_Filter_Mode_CC    : constant MIDI.MIDI_Data := 3;
+   FX_Filter_Cutoff_CC  : constant MIDI.MIDI_Data := 4;
+   FX_Filter_Reso_CC    : constant MIDI.MIDI_Data := 5;
+
    type Sample_Time is new Interfaces.Unsigned_64;
 
    function Sample_Clock return Sample_Time;

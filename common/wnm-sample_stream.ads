@@ -22,7 +22,6 @@
 with WNM_HAL;
 
 with WNM.Sample_Library;
-with WNM.MIDI;
 
 package WNM.Sample_Stream is
    pragma Elaborate_Body;
