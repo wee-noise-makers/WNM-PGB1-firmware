@@ -38,21 +38,26 @@ private
                        Step_Section,
                        Sequence_Section,
 
+                       Chord_Chain_Section,
+                       Pattern_Chain_Section,
+
                        Seq_Change_Pattern,
                        Seq_Change_Track,
 
                        End_Of_File,
                        End_Of_Section);
 
-   for Token_Kind use (Global_Section     => 0,
-                       Track_Section      => 1,
-                       Chord_Section      => 2,
-                       FX_Section         => 3,
-                       Step_Section       => 4,
-                       Sequence_Section   => 5,
-                       Seq_Change_Pattern => 6,
-                       Seq_Change_Track   => 7,
-                       End_Of_File        => 8,
-                       End_Of_Section     => End_Of_Section_Value);
+   for Token_Kind use (Global_Section        => 0,
+                       Track_Section         => 1,
+                       Chord_Section         => 2,
+                       FX_Section            => 3,
+                       Step_Section          => 4,
+                       Sequence_Section      => 5,
+                       Chord_Chain_Section   => 6,
+                       Pattern_Chain_Section => 7,
+                       Seq_Change_Pattern    => 8,
+                       Seq_Change_Track      => 9,
+                       End_Of_File           => 10,
+                       End_Of_Section        => End_Of_Section_Value);
 
 end WNM.Project.Storage;

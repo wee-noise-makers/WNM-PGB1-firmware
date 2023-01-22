@@ -22,6 +22,9 @@
 --  This package provides a common implementation of chain sequencing that
 --  will be used for patterns as well as chords (maybe more in the future).
 
+with WNM.File_System.LEB128_File_Out;
+with WNM.File_System.LEB128_File_In;
+
 generic
    Max_Patterns_In_Sequence : Natural := 30;
 package WNM.Gen_Chain_Sequencer is
@@ -43,5 +46,11 @@ package WNM.Gen_Chain_Sequencer is
 
    procedure Signal_End_Of_Pattern;
    procedure Signal_Mid_Pattern;
+
+   procedure Save
+     (Output : in out File_System.LEB128_File_Out.Instance'Class);
+
+   procedure Load
+     (Input : in out File_System.LEB128_File_In.Instance'Class);
 
 end WNM.Gen_Chain_Sequencer;

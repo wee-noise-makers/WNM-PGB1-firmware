@@ -42,6 +42,24 @@ package body WNM.Project.Storage.File_Out is
       This.Push (FX_Section);
    end Start_FX;
 
+   -----------------------
+   -- Start_Chord_Chain --
+   -----------------------
+
+   procedure Start_Chord_Chain (This : in out Instance) is
+   begin
+      This.Push (Chord_Chain_Section);
+   end Start_Chord_Chain;
+
+   -------------------------
+   -- Start_Pattern_Chain --
+   -------------------------
+
+   procedure Start_Pattern_Chain (This : in out Instance) is
+   begin
+      This.Push (Pattern_Chain_Section);
+   end Start_Pattern_Chain;
+
    --------------------------
    -- Start_Chord_Settings --
    --------------------------

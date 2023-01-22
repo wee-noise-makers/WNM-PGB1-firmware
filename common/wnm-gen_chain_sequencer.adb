@@ -264,4 +264,76 @@ package body WNM.Gen_Chain_Sequencer is
       null;
    end Signal_Mid_Pattern;
 
+   ----------
+   -- Save --
+   ----------
+
+   procedure Save
+     (Output : in out File_System.LEB128_File_Out.Instance'Class)
+   is
+      use File_System.LEB128_File_Out;
+      use File_System;
+
+      Seq : Pattern_Seq renames Sequences (Seq_Flip);
+   begin
+      for Idx in Seq.Sequence_Of_Pattern'First .. Seq.Last_In loop
+         Output.Push (Out_UInt (Seq.Sequence_Of_Pattern (Idx)));
+
+         if Output.Status /= Ok then
+            return;
+         end if;
+
+      end loop;
+
+      Output.Push (0);
+   end Save;
+
+   ----------
+   -- Load --
+   ----------
+
+   procedure Load
+     (Input : in out File_System.LEB128_File_In.Instance'Class)
+   is
+      use File_System.LEB128_File_In;
+      use File_System;
+
+      Seq : Pattern_Seq renames Sequences (Seq_Flip);
+      Raw : In_UInt;
+      V : Keyboard_Value;
+   begin
+      Seq.Last_In := Sequence_Range'First;
+      Seq.Playing := Sequence_Range'First;
+      Seq.Is_In_Sequence := (others => False);
+
+      loop
+         Input.Read (Raw);
+         if Input.Status /= Ok then
+            return;
+         end if;
+
+         exit when Raw = 0; -- End of sequence
+
+         if Seq.Last_In = Sequence_Range'Last then
+            Input.Set_Format_Error;
+            return;
+         end if;
+
+         --  Try to convert to Keyboard_Value
+         if Raw not in
+           In_UInt (Keyboard_Value'First) .. In_UInt (Keyboard_Value'Last)
+         then
+            Input.Set_Format_Error;
+            return;
+         end if;
+
+         --  Add to sequence
+         V := Keyboard_Value (Raw);
+         Seq.Sequence_Of_Pattern (Seq.Last_In) := V;
+         Seq.Is_In_Sequence (V) := True;
+         Seq.Last_In := Seq.Last_In + 1;
+      end loop;
+
+   end Load;
+
 end WNM.Gen_Chain_Sequencer;

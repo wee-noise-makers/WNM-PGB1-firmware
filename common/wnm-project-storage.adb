@@ -84,6 +84,9 @@ with WNM.Project.Storage.File_Out;
 with WNM.Project.Storage.File_In;
 with WNM.File_System; use WNM.File_System;
 
+with WNM.Project.Chord_Sequencer;
+with WNM.Pattern_Sequencer;
+
 package body WNM.Project.Storage is
 
    --------------------
@@ -446,6 +449,18 @@ package body WNM.Project.Storage is
       end if;
 
       if Output.Status = Ok then
+         Output.Start_Chord_Chain;
+         Chord_Sequencer.Chain.Save (Output);
+         Output.End_Section;
+      end if;
+
+      if Output.Status = Ok then
+         Output.Start_Pattern_Chain;
+         Pattern_Sequencer.Save (Output);
+         Output.End_Section;
+      end if;
+
+      if Output.Status = Ok then
          Save_FX (Output);
       end if;
 
@@ -804,6 +819,28 @@ package body WNM.Project.Storage is
             when Sequence_Section =>
                Load_Sequences (Input);
 
+            when Chord_Chain_Section =>
+               Project.Chord_Sequencer.Chain.Load (Input);
+               declare
+                  End_Sec : Token_Kind;
+               begin
+                  Input.Read (End_Sec);
+                  if End_Sec /= End_Of_Section then
+                     Input.Set_Format_Error;
+                  end if;
+               end;
+
+            when Pattern_Chain_Section =>
+               WNM.Pattern_Sequencer.Load (Input);
+               declare
+                  End_Sec : Token_Kind;
+               begin
+                  Input.Read (End_Sec);
+                  if End_Sec /= End_Of_Section then
+                     Input.Set_Format_Error;
+                  end if;
+               end;
+
             when End_Of_File =>
                exit;
 
@@ -827,7 +864,7 @@ package body WNM.Project.Storage is
          Synchronize_All_FX_Settings;
       end if;
 
-      return Ok;
+      return Input.Status;
    end Load;
 
 end WNM.Project.Storage;
