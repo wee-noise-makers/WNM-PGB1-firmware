@@ -77,7 +77,8 @@ package body WNM.Synth is
           when 5 => Tresses.Voice_Sand,
           when others => Tresses.Voice_Plucked);
 
-   subtype Tresses_Channels is MIDI.MIDI_Channel range 3 .. 7;
+   subtype Tresses_Channels
+     is MIDI.MIDI_Channel range Kick_Channel .. Bass_Channel;
 
    Synth_Voices : constant array (Tresses_Channels) of
      Voice_Access :=
@@ -90,25 +91,21 @@ package body WNM.Synth is
    Last_Key : array (MIDI.MIDI_Channel) of MIDI.MIDI_Key := (others => 0);
    FX_Send : array (MIDI.MIDI_Channel) of FX_Kind := (others => Bypass);
 
+   Pan_For_Chan : array (MIDI.MIDI_Channel) of WNM_HAL.Audio_Pan :=
+     (others => WNM_HAL.Init_Pan);
+
+   Volume_For_Chan : array (MIDI.MIDI_Channel) of WNM_HAL.Audio_Volume :=
+     (others => WNM_HAL.Init_Volume);
+
    Selected_Sample : MIDI.MIDI_Data := 0;
 
    Recording_Source : Rec_Source;
    Recording_Size   : Natural;
 
-   Pan_For_Track : array (WNM.Tracks) of WNM_HAL.Audio_Pan :=
-     (others => WNM_HAL.Init_Pan);
-
-   Volume_For_Track : array (WNM.Tracks) of WNM_HAL.Audio_Volume :=
-     (others => WNM_HAL.Init_Volume);
-
    Passthrough : Audio_Input_Kind := Line_In;
 
    Next_Start : WNM.Time.Time_Microseconds := WNM.Time.Time_Microseconds'First;
    Glob_Sample_Clock : Sample_Time := 0 with Volatile;
-
-   procedure Copy_Stereo_To_Mono (L, R : Mono_Buffer;
-                                  Dst : out Mono_Buffer);
-   pragma Unreferenced (Copy_Stereo_To_Mono);
 
    procedure Process_Coproc_Events;
 
@@ -131,30 +128,6 @@ package body WNM.Synth is
 
    function Sample_Clock return Sample_Time
    is (Glob_Sample_Clock);
-
-   -------------------------
-   -- Copy_Stereo_To_Mono --
-   -------------------------
-
-   procedure Copy_Stereo_To_Mono (L, R : Mono_Buffer;
-                                  Dst : out Mono_Buffer)
-   is
-      Tmp  : Integer_32;
-   begin
-
-      for Index in Dst'Range loop
-         Tmp := Integer_32 (L (Index)) + Integer_32 (R (Index));
-         Tmp := Tmp / 2;
-
-         if Tmp > Integer_32 (Mono_Point'Last) then
-            Dst (Index) := Mono_Point'Last;
-         elsif Tmp < Integer_32 (Integer_16'First) then
-            Dst (Index) := Mono_Point'First;
-         else
-            Dst (Index) := Mono_Point (Tmp);
-         end if;
-      end loop;
-   end Copy_Stereo_To_Mono;
 
    ----------
    -- Trig --
@@ -187,10 +160,6 @@ package body WNM.Synth is
          exit when not Success;
 
          case Msg.Kind is
-
-            when WNM.Coproc.Track_Vol_Pan =>
-               Volume_For_Track (Msg.TVP_Track) := Msg.TVP_Vol;
-               Pan_For_Track (Msg.TVP_Track) := Msg.TVP_Pan;
 
             when WNM.Coproc.MIDI_Event =>
 
@@ -360,6 +329,24 @@ package body WNM.Synth is
                                  null;
                               end case;
 
+                           when Voice_Volume_CC =>
+                              if Msg.MIDI_Evt.Controller_Value <= 100 then
+                                 Volume_For_Chan (Msg.MIDI_Evt.Chan) :=
+                                   Audio_Volume
+                                     (Msg.MIDI_Evt.Controller_Value);
+                              else
+                                 Volume_For_Chan (Msg.MIDI_Evt.Chan) := 100;
+                              end if;
+
+                           when Voice_Pan_CC =>
+                              if Msg.MIDI_Evt.Controller_Value <= 100 then
+                                 Pan_For_Chan (Msg.MIDI_Evt.Chan) :=
+                                   Audio_Pan
+                                     (Msg.MIDI_Evt.Controller_Value);
+                              else
+                                 Pan_For_Chan (Msg.MIDI_Evt.Chan) := 100;
+                              end if;
+
                            when Voice_FX_CC =>
                               FX_Send (Msg.MIDI_Evt.Chan) :=
                                 (case Msg.MIDI_Evt.Controller_Value is
@@ -422,6 +409,7 @@ package body WNM.Synth is
          Output := (others => (0, 0));
       end if;
 
+      --  Samples
       declare
          Success : Boolean;
       begin
@@ -431,58 +419,63 @@ package body WNM.Synth is
                WNM_HAL.Mix (Send_L_Buffers (FX_Send (Sample_Channel)),
                             Send_R_Buffers (FX_Send (Sample_Channel)),
                             Buffer,
-                            Volume_For_Track (To_Track (Track)),
-                            Pan_For_Track (To_Track (Track)));
+                            Volume_For_Chan (Sample_Channel),
+                            Pan_For_Chan (Sample_Channel));
             end if;
          end loop;
       end;
 
       -- Speech synth --
-      Speech.Next_Points (Buffer);
+      declare
+         Success : Boolean;
+      begin
+         Speech.Next_Points (Buffer, Success);
 
-      WNM_HAL.Mix (Send_L_Buffers (FX_Send (Sample_Channel)),
-                   Send_R_Buffers (FX_Send (Sample_Channel)),
-                   Buffer,
-                   50,
-                   50);
+         if Success then
+            WNM_HAL.Mix (Send_L_Buffers (FX_Send (Speech_Channel)),
+                         Send_R_Buffers (FX_Send (Speech_Channel)),
+                         Buffer,
+                         Volume_For_Chan (Speech_Channel),
+                         Pan_For_Chan (Speech_Channel));
+         end if;
+      end;
 
       declare
-
       begin
          TK.Render (Buffer);
          WNM_HAL.Mix (Send_L_Buffers (FX_Send (Kick_Channel)),
                       Send_R_Buffers (FX_Send (Kick_Channel)),
                       Input => Buffer,
-                      Volume => 50,
-                      Pan => 50);
+                      Volume => Volume_For_Chan (Kick_Channel),
+                      Pan => Pan_For_Chan (Kick_Channel));
 
          TS.Render (Buffer);
          WNM_HAL.Mix (Send_L_Buffers (FX_Send (Snare_Channel)),
                       Send_R_Buffers (FX_Send (Snare_Channel)),
                       Input => Buffer,
-                      Volume => 50,
-                      Pan => 50);
+                      Volume => Volume_For_Chan (Snare_Channel),
+                      Pan => Pan_For_Chan (Snare_Channel));
 
          TC.Render (Buffer);
          WNM_HAL.Mix (Send_L_Buffers (FX_Send (Cymbal_Channel)),
                       Send_R_Buffers (FX_Send (Cymbal_Channel)),
                       Input => Buffer,
-                      Volume => 50,
-                      Pan => 50);
+                      Volume => Volume_For_Chan (Cymbal_Channel),
+                      Pan => Pan_For_Chan (Cymbal_Channel));
 
          Lead.Render (Buffer, Aux_Buffer);
          WNM_HAL.Mix (Send_L_Buffers (FX_Send (Lead_Channel)),
                       Send_R_Buffers (FX_Send (Lead_Channel)),
                       Input => Buffer,
-                      Volume => 50,
-                      Pan => 50);
+                      Volume => Volume_For_Chan (Lead_Channel),
+                      Pan => Pan_For_Chan (Lead_Channel));
 
          Bass.Render (Buffer, Aux_Buffer);
          WNM_HAL.Mix (Send_L_Buffers (FX_Send (Bass_Channel)),
                       Send_R_Buffers (FX_Send (Bass_Channel)),
                       Input => Buffer,
-                      Volume => 50,
-                      Pan => 50);
+                      Volume => Volume_For_Chan (Bass_Channel),
+                      Pan => Pan_For_Chan (Bass_Channel));
       end;
 
       declare
@@ -694,8 +687,4 @@ package body WNM.Synth is
    function Record_Size return Natural
    is (Recording_Size);
 
-begin
-   Lead.Set_Engine (Tresses.Voice_Saw_Swarm);
-   Lead.Set_Param (3, 0);
-   Lead.Set_Param (4, Tresses.Param_Range'Last);
 end WNM.Synth;

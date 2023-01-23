@@ -19,8 +19,6 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Interfaces;
-
 with WNM.Speech_Dictionary;
 
 package body WNM.Speech is
@@ -80,10 +78,9 @@ package body WNM.Speech is
    -- Next_Points --
    -----------------
 
-   procedure Next_Points (Buffer : in out WNM_HAL.Mono_Buffer) is
-      use Interfaces;
-
-      Val : Integer_32;
+   procedure Next_Points (Buffer  : out WNM_HAL.Mono_Buffer;
+                          Success : out Boolean)
+   is
    begin
       if LPC_Synth.Has_Data (LPC) then
          LPC_Synth.Next_Points
@@ -93,16 +90,11 @@ package body WNM.Speech is
             Time_Stretch => Stretch);
 
          for Idx in Buffer'Range loop
-            Val :=
-              Integer_32 (Buffer (Idx)) + Integer_32 (LPC_Out (Idx));
-            if Val > Integer_32 (Mono_Point'Last) then
-               Buffer (Idx) := Mono_Point'Last;
-            elsif Val < Integer_32 (Mono_Point'First) then
-               Buffer (Idx) := Mono_Point'First;
-            else
-               Buffer (Idx) := Mono_Point (Val);
-            end if;
+            Buffer (Idx) := LPC_Out (Idx);
          end loop;
+         Success := True;
+      else
+         Success := False;
       end if;
    end Next_Points;
 

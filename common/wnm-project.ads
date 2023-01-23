@@ -208,9 +208,9 @@ package WNM.Project is
           when Speech_Mode => "Speech",
           when Kick_Mode   => "Kick",
           when Snare_Mode  => "Snare",
-          when Cymbal_Mode => "Symbal",
-          when Lead_Mode   => "Bass",
-          when Bass_Mode   => "Lead");
+          when Cymbal_Mode => "Cymbal",
+          when Lead_Mode   => "Lead",
+          when Bass_Mode   => "Bass");
 
    subtype Synth_Track_Mode_Kind is
      Track_Mode_Kind range Sample_Mode .. Lead_Mode;

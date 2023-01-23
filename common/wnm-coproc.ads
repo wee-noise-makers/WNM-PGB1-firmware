@@ -28,19 +28,13 @@ private with Ada.Unchecked_Conversion;
 
 package WNM.Coproc is
 
-   type Message_Kind is (Track_Vol_Pan,
-                         MIDI_Event)
+   type Message_Kind is (MIDI_Event)
      with Size => 4;
 
    subtype MIDI_Event_Rec is MIDI.Message;
 
-   type Message (Kind : Message_Kind := Track_Vol_Pan) is record
+   type Message (Kind : Message_Kind := MIDI_Event) is record
       case Kind is
-         when Track_Vol_Pan =>
-            TVP_Track : Tracks;
-            TVP_Vol : WNM_HAL.Audio_Volume;
-            TVP_Pan : WNM_HAL.Audio_Pan;
-
          when MIDI_Event =>
             MIDI_Evt : MIDI_Event_Rec;
       end case;

@@ -1163,26 +1163,41 @@ package body WNM.Project is
    procedure Synchronize_Track_Mix_Settings (T : Tracks) is
       use WNM.Coproc;
       M : constant Track_Mode_Kind := Mode (T);
-      FX_Val : MIDI.MIDI_Data;
+      Chan : MIDI.MIDI_Channel;
+      Val : MIDI.MIDI_Data;
    begin
       if M in Synth_Track_Mode_Kind then
-         Coproc.Push ((Kind       => Track_Vol_Pan,
-                       TVP_Track  => T,
-                       TVP_Vol    => G_Project.Tracks (T).Volume,
-                       TVP_Pan    => G_Project.Tracks (T).Pan));
 
-         FX_Val := (case Master_FX (T) is
-                       when Bypass    => Synth.FX_Select_Bypass,
-                       when Overdrive => Synth.FX_Select_Overdrive,
-                       when Delayline => Synth.FX_Select_Delayline,
-                       when Filter    => Synth.FX_Select_Filter);
+         Chan := Voice_MIDI_Chan (M);
+
+         Val := MIDI.MIDI_Data (G_Project.Tracks (T).Volume);
+         Coproc.Push ((Kind     => MIDI_Event,
+                       MIDI_Evt =>
+                         (Kind => MIDI.Continous_Controller,
+                          Chan => Chan,
+                          Controller => Synth.Voice_Volume_CC,
+                          Controller_Value => Val)));
+
+         Val := MIDI.MIDI_Data (G_Project.Tracks (T).Pan);
+         Coproc.Push ((Kind     => MIDI_Event,
+                       MIDI_Evt =>
+                         (Kind => MIDI.Continous_Controller,
+                          Chan => Chan,
+                          Controller => Synth.Voice_Pan_CC,
+                          Controller_Value => Val)));
+
+         Val := (case Master_FX (T) is
+                    when Bypass    => Synth.FX_Select_Bypass,
+                    when Overdrive => Synth.FX_Select_Overdrive,
+                    when Delayline => Synth.FX_Select_Delayline,
+                    when Filter    => Synth.FX_Select_Filter);
 
          Coproc.Push ((Kind     => MIDI_Event,
                        MIDI_Evt =>
                          (Kind => MIDI.Continous_Controller,
-                          Chan => Voice_MIDI_Chan (M),
+                          Chan => Chan,
                           Controller => Synth.Voice_FX_CC,
-                          Controller_Value => FX_Val)));
+                          Controller_Value => Val)));
       end if;
    end Synchronize_Track_Mix_Settings;
 

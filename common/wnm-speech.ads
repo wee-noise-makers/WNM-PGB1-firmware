@@ -36,7 +36,8 @@ package WNM.Speech is
 
    procedure Set_Stretch (V : MIDI.MIDI_Data);
 
-   procedure Next_Points (Buffer : in out WNM_HAL.Mono_Buffer);
+   procedure Next_Points (Buffer  : out WNM_HAL.Mono_Buffer;
+                          Success : out Boolean);
 
    type Speech_Event_Rec is record
       On       : Boolean;
