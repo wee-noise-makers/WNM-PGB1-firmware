@@ -41,14 +41,21 @@ package WNM.Synth is
    Bass_Channel   : constant MIDI.MIDI_Channel := 7;
    Chord_Channel  : constant MIDI.MIDI_Channel := 8;
 
-   Voice_Param_1_CC : constant MIDI.MIDI_Data := 0;
-   Voice_Param_2_CC : constant MIDI.MIDI_Data := 1;
-   Voice_Param_3_CC : constant MIDI.MIDI_Data := 2;
-   Voice_Param_4_CC : constant MIDI.MIDI_Data := 3;
-   Voice_Engine_CC  : constant MIDI.MIDI_Data := 4;
-   Voice_Volume_CC  : constant MIDI.MIDI_Data := 5;
-   Voice_Pan_CC     : constant MIDI.MIDI_Data := 6;
-   Voice_FX_CC      : constant MIDI.MIDI_Data := 7;
+   Voice_Param_1_CC    : constant MIDI.MIDI_Data := 0;
+   Voice_Param_2_CC    : constant MIDI.MIDI_Data := 1;
+   Voice_Param_3_CC    : constant MIDI.MIDI_Data := 2;
+   Voice_Param_4_CC    : constant MIDI.MIDI_Data := 3;
+   Voice_Volume_CC     : constant MIDI.MIDI_Data := 4;
+   Voice_Pan_CC        : constant MIDI.MIDI_Data := 5;
+   Voice_Engine_CC     : constant MIDI.MIDI_Data := 6;
+   Voice_FX_CC         : constant MIDI.MIDI_Data := 7;
+   Voice_LFO_Rate_CC   : constant MIDI.MIDI_Data := 8;
+   Voice_LFO_Amp_CC    : constant MIDI.MIDI_Data := 9;
+   Voice_LFO_Target_CC : constant MIDI.MIDI_Data := 10;
+   Voice_LFO_Shape_CC  : constant MIDI.MIDI_Data := 11;
+
+   subtype LFO_Compatible_CC
+     is MIDI.MIDI_Data range Voice_Param_1_CC .. Voice_Pan_CC;
 
    FX_Select_Bypass    : constant MIDI.MIDI_Data := 0;
    FX_Select_Overdrive : constant MIDI.MIDI_Data := 1;

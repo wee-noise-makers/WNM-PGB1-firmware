@@ -28,6 +28,7 @@ with MIDI;
 
 with WNM.Speech;
 
+with Tresses; use Tresses;
 with Tresses.Drums.Kick;
 with Tresses.Drums.Clap;
 with Tresses.Drums.Cymbal;
@@ -37,6 +38,7 @@ with Tresses.Interfaces;
 with Tresses.FX.Delay_Line;
 with Tresses.FX.Overdrive;
 with Tresses.Filters.SVF;
+with Tresses.LFO;
 
 package body WNM.Synth is
 
@@ -77,6 +79,9 @@ package body WNM.Synth is
           when 5 => Tresses.Voice_Sand,
           when others => Tresses.Voice_Plucked);
 
+   subtype Synth_Channels
+     is MIDI.MIDI_Channel range Sample_Channel .. Bass_Channel;
+
    subtype Tresses_Channels
      is MIDI.MIDI_Channel range Kick_Channel .. Bass_Channel;
 
@@ -87,6 +92,18 @@ package body WNM.Synth is
         Cymbal_Channel => TC'Access,
         Lead_Channel   => Lead'Access,
         Bass_Channel   => Bass'Access);
+
+   LFO_Targets : array (Synth_Channels) of MIDI.MIDI_Data :=
+     (others => Voice_Pan_CC);
+     --  (others => MIDI.MIDI_Data'Last);
+
+   LFOs : array (Synth_Channels) of Tresses.LFO.Instance;
+   LFO_Values : array (Synth_Channels) of Tresses.Param_Range;
+
+   type Voice_Parameters_Array is array (Synth_Channels, LFO_Compatible_CC)
+     of Tresses.Param_Range;
+   In_Voice_Parameters : Voice_Parameters_Array := (others => (others => 0));
+   Out_Voice_Parameters : Voice_Parameters_Array := (others => (others => 0));
 
    Last_Key : array (MIDI.MIDI_Channel) of MIDI.MIDI_Key := (others => 0);
    FX_Send : array (MIDI.MIDI_Channel) of FX_Kind := (others => Bypass);
@@ -109,18 +126,39 @@ package body WNM.Synth is
 
    procedure Process_Coproc_Events;
 
-   -------------------------------
-   -- MIDI_Val_To_Tresses_Param --
-   -------------------------------
+   --------------
+   -- To_Param --
+   --------------
 
-   function MIDI_Val_To_Tresses_Param (V : MIDI.MIDI_Data)
-                                       return Tresses.Param_Range
+   function To_Param (V : MIDI.MIDI_Data)
+                      return Tresses.Param_Range
    is
-      use Tresses;
    begin
       return Param_Range (V) *
         (Param_Range'Last / Param_Range (MIDI.MIDI_Data'Last));
-   end MIDI_Val_To_Tresses_Param;
+   end To_Param;
+
+   ---------------
+   -- To_Volume --
+   ---------------
+
+   function To_Volume (V : Tresses.Param_Range)
+                       return WNM_HAL.Audio_Volume
+   is
+   begin
+      return WNM_HAL.Audio_Volume (V / 328);
+   end To_Volume;
+
+   ------------
+   -- To_Pan --
+   ------------
+
+   function To_Pan (V : Tresses.Param_Range)
+                    return WNM_HAL.Audio_Pan
+   is
+   begin
+      return WNM_HAL.Audio_Pan (V / 328);
+   end To_Pan;
 
    ------------------
    -- Sample_Clock --
@@ -238,17 +276,17 @@ package body WNM.Synth is
                         case Msg.MIDI_Evt.Controller is
                            when FX_Drive_Amount_CC =>
                               Drive_Amount :=
-                                MIDI_Val_To_Tresses_Param
+                                To_Param
                                   (Msg.MIDI_Evt.Controller_Value);
 
                            when FX_Delay_Time_CC =>
                               Delay_Time :=
-                                MIDI_Val_To_Tresses_Param
+                                To_Param
                                   (Msg.MIDI_Evt.Controller_Value);
 
                            when FX_Delay_Feedback_CC =>
                               Delay_Feedback :=
-                                MIDI_Val_To_Tresses_Param
+                                To_Param
                                   (Msg.MIDI_Evt.Controller_Value);
 
                            when FX_Filter_Mode_CC =>
@@ -266,12 +304,12 @@ package body WNM.Synth is
 
                            when FX_Filter_Cutoff_CC =>
                               Filter_Cutoff :=
-                                MIDI_Val_To_Tresses_Param
+                                To_Param
                                   (Msg.MIDI_Evt.Controller_Value);
 
                            when FX_Filter_Reso_CC =>
                               Filter_Resonance :=
-                                MIDI_Val_To_Tresses_Param
+                                To_Param
                                   (Msg.MIDI_Evt.Controller_Value);
 
                            when others => null;
@@ -290,7 +328,7 @@ package body WNM.Synth is
                                          (Standard.MIDI.MIDI_UInt8
                                             (Msg.MIDI_Evt.Key)));
 
-                        Voice.Note_On (MIDI_Val_To_Tresses_Param
+                        Voice.Note_On (To_Param
                                        (Msg.MIDI_Evt.Velocity));
 
                         Last_Key (Msg.MIDI_Evt.Chan) := Msg.MIDI_Evt.Key;
@@ -307,12 +345,11 @@ package body WNM.Synth is
 
                      when MIDI.Continous_Controller =>
                         case Msg.MIDI_Evt.Controller is
-                           when Voice_Param_1_CC .. Voice_Param_4_CC =>
-                              Voice.Set_Param
-                                (Tresses.Param_Id
-                                   (Msg.MIDI_Evt.Controller + 1),
-                                 MIDI_Val_To_Tresses_Param
-                                   (Msg.MIDI_Evt.Controller_Value));
+                           when LFO_Compatible_CC =>
+                              In_Voice_Parameters (Msg.MIDI_Evt.Chan,
+                                                   Msg.MIDI_Evt.Controller)
+                                := To_Param
+                                  (Msg.MIDI_Evt.Controller_Value);
 
                            when Voice_Engine_CC =>
 
@@ -329,24 +366,6 @@ package body WNM.Synth is
                                  null;
                               end case;
 
-                           when Voice_Volume_CC =>
-                              if Msg.MIDI_Evt.Controller_Value <= 100 then
-                                 Volume_For_Chan (Msg.MIDI_Evt.Chan) :=
-                                   Audio_Volume
-                                     (Msg.MIDI_Evt.Controller_Value);
-                              else
-                                 Volume_For_Chan (Msg.MIDI_Evt.Chan) := 100;
-                              end if;
-
-                           when Voice_Pan_CC =>
-                              if Msg.MIDI_Evt.Controller_Value <= 100 then
-                                 Pan_For_Chan (Msg.MIDI_Evt.Chan) :=
-                                   Audio_Pan
-                                     (Msg.MIDI_Evt.Controller_Value);
-                              else
-                                 Pan_For_Chan (Msg.MIDI_Evt.Chan) := 100;
-                              end if;
-
                            when Voice_FX_CC =>
                               FX_Send (Msg.MIDI_Evt.Chan) :=
                                 (case Msg.MIDI_Evt.Controller_Value is
@@ -355,6 +374,20 @@ package body WNM.Synth is
                                     when FX_Select_Delayline => Delayline,
                                     when FX_Select_Filter => Filter,
                                     when others => Bypass);
+
+                           when Voice_LFO_Rate_CC =>
+                              LFOs (Msg.MIDI_Evt.Chan).Set_Rate
+                                (To_Param (Msg.MIDI_Evt.Controller_Value),
+                                 WNM_Configuration.Audio.Samples_Per_Buffer);
+
+                           when Voice_LFO_Amp_CC =>
+                              LFOs (Msg.MIDI_Evt.Chan).Set_Amplitude
+                                (To_Param
+                                   (Msg.MIDI_Evt.Controller_Value));
+
+                           when Voice_LFO_Target_CC =>
+                              LFO_Targets (Msg.MIDI_Evt.Chan) :=
+                                Msg.MIDI_Evt.Controller_Value;
 
                            when others =>
                               null;
@@ -393,16 +426,66 @@ package body WNM.Synth is
    procedure Next_Points (Output : out WNM_HAL.Stereo_Buffer;
                           Input  :     WNM_HAL.Stereo_Buffer)
    is
-      Send_L_Buffers : array (FX_Kind) of Mono_Buffer :=
+      Send_L_Buffers : array (FX_Kind) of WNM_HAL.Mono_Buffer :=
         (others => (others => 0));
-      Send_R_Buffers : array (FX_Kind) of Mono_Buffer :=
+      Send_R_Buffers : array (FX_Kind) of WNM_HAL.Mono_Buffer :=
         (others => (others => 0));
       --  Why allocated on the stack? RP2040 has faster "scratch mem" for
       --  stacks.
 
-      Buffer, Aux_Buffer : Mono_Buffer;
+      Buffer, Aux_Buffer : WNM_HAL.Mono_Buffer;
+
+      -------------
+      -- Add_Sat --
+      -------------
+
+      function Add_Sat (A, B : Param_Range) return Param_Range is
+         Result : constant U16 := U16 (A) + U16 (B);
+      begin
+         if Result > U16 (Param_Range'Last) then
+            return Param_Range'Last;
+         else
+            return Param_Range (Result);
+         end if;
+      end Add_Sat;
 
    begin
+
+      --  Take input params
+      Out_Voice_Parameters := In_Voice_Parameters;
+
+      --  Compute LFOs
+      for Chan in LFOs'Range loop
+         LFO_Values (Chan) := LFOs (Chan).Render;
+      end loop;
+
+      --  Apply LFOs
+      for Chan in Tresses_Channels loop
+         if LFO_Targets (Chan) in LFO_Compatible_CC then
+            Out_Voice_Parameters (Chan, LFO_Targets (Chan)) :=
+              Add_Sat (Out_Voice_Parameters (Chan, LFO_Targets (Chan)),
+                       LFO_Values (Chan));
+         end if;
+      end loop;
+
+      --  Set params
+      for Chan in Tresses_Channels loop
+         Synth_Voices (Chan).Set_Param
+           (1, Out_Voice_Parameters (Chan, Voice_Param_1_CC));
+         Synth_Voices (Chan).Set_Param
+           (2, Out_Voice_Parameters (Chan, Voice_Param_2_CC));
+         Synth_Voices (Chan).Set_Param
+           (3, Out_Voice_Parameters (Chan, Voice_Param_3_CC));
+         Synth_Voices (Chan).Set_Param
+           (4, Out_Voice_Parameters (Chan, Voice_Param_4_CC));
+
+         Pan_For_Chan (Chan) :=
+           To_Pan (Out_Voice_Parameters (Chan, Voice_Pan_CC));
+
+         Volume_For_Chan (Chan) :=
+           To_Volume (Out_Voice_Parameters (Chan, Voice_Volume_CC));
+      end loop;
+
       if Passthrough /= None then
          Output := Input;
       else
@@ -479,7 +562,6 @@ package body WNM.Synth is
       end;
 
       declare
-         use Tresses;
       begin
 
          --  Overdrive

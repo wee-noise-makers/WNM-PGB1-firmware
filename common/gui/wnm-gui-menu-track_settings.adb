@@ -51,6 +51,10 @@ package body WNM.GUI.Menu.Track_Settings is
        when Project.Volume => Volume,
        when Project.Pan => Pan,
        when Project.Master_FX => Master_FX,
+       when Project.LFO_Rate => LFO,
+       when Project.LFO_Amplitude => LFO,
+       when Project.LFO_Shape => LFO,
+       when Project.LFO_Target => LFO,
        when Project.Arp_Mode => Arp_Mode,
        when Project.Arp_Notes => Arp_Notes,
        when Project.Notes_Per_Chord => Notes_Per_Chord,
@@ -228,6 +232,45 @@ package body WNM.GUI.Menu.Track_Settings is
 
             Draw_Title ("Synth Engine:", "");
             Draw_Value (Project.Selected_Engine_Img (Editing_Track));
+
+         when LFO =>
+
+            case Sub is
+               when LFO_Rate =>
+                  Draw_Title ("LFO Rate:", "");
+               when LFO_Amplitude =>
+                  Draw_Title ("LFO Amplitude:", "");
+               when LFO_Shape =>
+                  Draw_Title ("LFO Shape:", "");
+               when LFO_Target =>
+                  Draw_Title ("LFO Target:", "");
+               when others =>
+                  null;
+            end case;
+
+            Draw_CC_Value
+              (A,
+               Project.LFO_Rate,
+               "RAT",
+               Sub = LFO_Rate);
+
+            Draw_CC_Value
+              (B,
+               Project.LFO_Amp,
+               "AMP",
+               Sub = LFO_Amplitude);
+
+            Draw_CC_Value
+              (C,
+               0,
+               Project.LFO_Shape (Editing_Track)'Img,
+               Sub = LFO_Shape);
+
+            Draw_CC_Value
+              (D,
+               0,
+               Project.LFO_Target (Editing_Track)'Img,
+               Sub = LFO_Target);
 
          when CC_Default =>
             declare

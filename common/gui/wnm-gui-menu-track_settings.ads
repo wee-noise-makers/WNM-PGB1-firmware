@@ -31,6 +31,7 @@ private
    type Top_Settings is (Track_Mode,
                          Engine,
                          CC_Default,
+                         LFO,
                          Volume,
                          Pan,
                          Master_FX,
@@ -69,11 +70,13 @@ private
           when Project.Kick_Mode | Project.Snare_Mode |
                Project.Cymbal_Mode =>
              S in Track_Mode | Volume | Pan | Master_FX | Arp_Mode |
-                  Arp_Notes | CC_Default_A .. CC_Default_D,
+                  Arp_Notes | CC_Default_A .. CC_Default_D |
+                  LFO_Rate | LFO_Amplitude | LFO_Target | LFO_Shape,
 
           when Project.Lead_Mode | Bass_Mode =>
              S in Track_Mode | Engine | Volume | Pan | Master_FX | Arp_Mode |
-                  Arp_Notes | CC_Default_A .. CC_Default_D
+                  Arp_Notes | CC_Default_A .. CC_Default_D |
+                  LFO_Rate | LFO_Amplitude | LFO_Target | LFO_Shape
       );
    --  Return True if the given setting is available for the given track mode.
    --  For instance, volume setting is not available in MIDI mode.

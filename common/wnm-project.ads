@@ -268,6 +268,23 @@ package WNM.Project is
                         return MIDI.MIDI_Data;
    function Master_FX (T : Tracks := Editing_Track) return Master_FX_Kind;
 
+   function LFO_Rate (T : Tracks := Editing_Track) return MIDI.MIDI_Data;
+   function LFO_Amp (T : Tracks := Editing_Track) return MIDI.MIDI_Data;
+
+   type LFO_Target_Kind is (P1, P2, P3, P4, Vol, Pan, None);
+   for LFO_Target_Kind use (P1 => Synth.Voice_Param_1_CC,
+                            P2 => Synth.Voice_Param_2_CC,
+                            P3 => Synth.Voice_Param_3_CC,
+                            P4 => Synth.Voice_Param_4_CC,
+                            Vol => Synth.Voice_Volume_CC,
+                            Pan => Synth.Voice_Pan_CC,
+                            None => MIDI.MIDI_Data'Last);
+   function LFO_Target (T : Tracks := Editing_Track) return LFO_Target_Kind;
+
+   type LFO_Shape_Kind is (Sine);
+   for LFO_Shape_Kind use (Sine => 0);
+   function LFO_Shape (T : Tracks := Editing_Track) return LFO_Shape_Kind;
+
    function CC_Value_To_Use (P : Patterns; T : Tracks; S : Sequencer_Steps;
                              Id : CC_Id)
                              return MIDI.MIDI_Data;
@@ -300,6 +317,10 @@ package WNM.Project is
                            CC_Default_B,
                            CC_Default_C,
                            CC_Default_D,
+                           LFO_Rate,
+                           LFO_Amplitude,
+                           LFO_Shape,
+                           LFO_Target,
                            Volume,
                            Pan,
                            Master_FX,
@@ -315,27 +336,31 @@ package WNM.Project is
 
    for Track_Settings'Size use 8;
    for Track_Settings use (Track_Mode      => 0,
-                           Engine          => 3,
-                           CC_Default_A    => 4,
-                           CC_Default_B    => 5,
-                           CC_Default_C    => 6,
-                           CC_Default_D    => 7,
-                           Volume          => 8,
-                           Pan             => 9,
-                           Master_FX       => 10,
-                           Arp_Mode        => 11,
-                           Arp_Notes       => 12,
-                           Notes_Per_Chord => 13,
-                           MIDI_Chan       => 14,
-                           MIDI_Instrument => 15,
-                           CC_Ctrl_A       => 16,
-                           CC_Label_A      => 17,
-                           CC_Ctrl_B       => 18,
-                           CC_Label_B      => 19,
-                           CC_Ctrl_C       => 20,
-                           CC_Label_C      => 21,
-                           CC_Ctrl_D       => 22,
-                           CC_Label_D      => 23);
+                           Engine          => 1,
+                           CC_Default_A    => 2,
+                           CC_Default_B    => 3,
+                           CC_Default_C    => 4,
+                           CC_Default_D    => 5,
+                           LFO_Rate        => 6,
+                           LFO_Amplitude   => 7,
+                           LFO_Shape       => 8,
+                           LFO_Target      => 9,
+                           Volume          => 10,
+                           Pan             => 11,
+                           Master_FX       => 12,
+                           Arp_Mode        => 13,
+                           Arp_Notes       => 14,
+                           Notes_Per_Chord => 15,
+                           MIDI_Chan       => 16,
+                           MIDI_Instrument => 17,
+                           CC_Ctrl_A       => 18,
+                           CC_Label_A      => 19,
+                           CC_Ctrl_B       => 20,
+                           CC_Label_B      => 21,
+                           CC_Ctrl_C       => 22,
+                           CC_Label_C      => 23,
+                           CC_Ctrl_D       => 24,
+                           CC_Label_D      => 25);
 
    subtype User_Track_Settings
      is Track_Settings range Track_Mode .. CC_Label_D;
@@ -471,6 +496,14 @@ private
                                               Wrap => False);
    use Filter_Mode_Next;
 
+   package LFO_Shape_Next is new Enum_Next (T    => LFO_Shape_Kind,
+                                            Wrap => True);
+   use LFO_Shape_Next;
+
+   package LFO_Target_Next is new Enum_Next (T    => LFO_Target_Kind,
+                                             Wrap => True);
+   use LFO_Target_Next;
+
    type CC_Val_Array is array (CC_Id) of MIDI.MIDI_Data;
    type CC_Ena_Array is array (CC_Id) of Boolean;
 
@@ -520,6 +553,10 @@ private
       Volume : Audio_Volume := Init_Volume;
       Pan : Audio_Pan := Init_Pan;
       FX_Kind : Master_FX_Kind := Bypass;
+      LFO_Rate : MIDI.MIDI_Data := 0;
+      LFO_Amp : MIDI.MIDI_Data := 0;
+      LFO_Shape : LFO_Shape_Kind := LFO_Shape_Kind'First;
+      LFO_Target : LFO_Target_Kind := LFO_Target_Kind'Last;
       CC : CC_Setting_Array;
       Sample : Sample_Library.Valid_Sample_Index := 1;
       Word   : Speech.Word := Speech.Word'First;
@@ -538,6 +575,10 @@ private
       Volume => Init_Volume,
       Pan => Init_Pan,
       FX_Kind => Bypass,
+      LFO_Rate => 63,
+      LFO_Amp => 63,
+      LFO_Shape => LFO_Shape_Kind'First,
+      LFO_Target => LFO_Target_Kind'Last,
       CC => ((0, 63, "CC0              "),
              (1, 63, "CC1              "),
              (2, 63, "CC2              "),
