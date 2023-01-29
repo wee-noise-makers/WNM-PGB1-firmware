@@ -630,6 +630,27 @@ package body WNM.Project is
    function LFO_Shape (T : Tracks := Editing_Track) return LFO_Shape_Kind
    is (G_Project.Tracks (T).LFO_Shape);
 
+   --------------
+   -- LFO_Sync --
+   --------------
+
+   function LFO_Sync (T : Tracks := Editing_Track) return LFO_Sync_Kind
+   is (G_Project.Tracks (T).LFO_Sync);
+
+   --------------
+   -- LFO_Loop --
+   --------------
+
+   function LFO_Loop (T : Tracks := Editing_Track) return LFO_Loop_Kind
+   is (G_Project.Tracks (T).LFO_Loop);
+
+   ------------------
+   -- LFO_Amp_Mode --
+   ------------------
+
+   function LFO_Amp_Mode (T : Tracks := Editing_Track) return LFO_Amp_Kind
+   is (G_Project.Tracks (T).LFO_Amp_Mode);
+
    ---------------------
    -- CC_Value_To_Use --
    ---------------------
@@ -800,6 +821,116 @@ package body WNM.Project is
                              return Natural
    is (Natural (G_Project.Tracks (T).Notes_Per_Chord) + 1);
 
+   ----------
+   -- Next --
+   ----------
+
+   procedure Next (Shape : in out LFO_Shape_Kind;
+                   Sync  : in out LFO_Sync_Kind;
+                   Loo   : in out LFO_Loop_Kind)
+   is
+   begin
+      --         Loop
+      --  Sync + Loop
+      --  Sync
+      if Loo = On and then Sync = Off then
+         Sync := On;
+      elsif Loo = On and then Sync = On then
+         Loo := Off;
+      else
+         Sync := Off;
+         Loo := On;
+         Next (Shape);
+      end if;
+   end Next;
+
+   ----------
+   -- Prev --
+   ----------
+
+   procedure Prev (Shape : in out LFO_Shape_Kind;
+                   Sync  : in out LFO_Sync_Kind;
+                   Loo   : in out LFO_Loop_Kind)
+   is
+   begin
+      --  Sync
+      --  Sync + Loop
+      --         Loop
+      if Loo = Off and then Sync = On then
+         Loo := On;
+      elsif Loo = On and then Sync = On then
+         Sync := Off;
+      else
+         Sync := On;
+         Loo := Off;
+         Prev (Shape);
+      end if;
+   end Prev;
+
+   ----------
+   -- Next --
+   ----------
+
+   procedure Next (Amp    : in out MIDI.MIDI_Data;
+                   Mode   : in out LFO_Amp_Kind;
+                   Amount :        MIDI.MIDI_Data)
+   is
+      use MIDI;
+   begin
+      case Mode is
+         when Positive =>
+            if Amp <= MIDI_Data'Last - Amount then
+               Amp := Amp + Amount;
+            end if;
+         when Center =>
+            if Amp <= MIDI_Data'Last - Amount then
+               Amp := Amp + Amount;
+            else
+               Mode := Positive;
+               Amp := 0;
+            end if;
+         when Negative =>
+            if Amp >= Amount then
+               Amp := Amp - Amount;
+            else
+               Mode := Center;
+               Amp := 0;
+            end if;
+      end case;
+   end Next;
+
+   ----------
+   -- Prev --
+   ----------
+
+   procedure Prev (Amp    : in out MIDI.MIDI_Data;
+                   Mode   : in out LFO_Amp_Kind;
+                   Amount :        MIDI.MIDI_Data)
+   is
+      use MIDI;
+   begin
+      case Mode is
+         when Positive =>
+            if Amp >= Amount then
+               Amp := Amp - Amount;
+            else
+               Mode := Center;
+               Amp := MIDI_Data'Last;
+            end if;
+         when Center =>
+            if Amp >= Amount then
+               Amp := Amp - Amount;
+            else
+               Mode := Negative;
+               Amp := 0;
+            end if;
+         when Negative =>
+            if Amp <= MIDI_Data'Last - Amount then
+               Amp := Amp + Amount;
+            end if;
+      end case;
+   end Prev;
+
    ----------------
    -- Next_Value --
    ----------------
@@ -814,8 +945,10 @@ package body WNM.Project is
          when Pan             => Next (Track.Pan);
          when Master_FX       => Next (Track.FX_Kind);
          when LFO_Rate        => Next (Track.LFO_Rate);
-         when LFO_Amplitude   => Next (Track.LFO_Amp);
-         when LFO_Shape       => Next (Track.LFO_Shape);
+         when LFO_Amplitude   => Next (Track.LFO_Amp, Track.LFO_Amp_Mode, 1);
+         when LFO_Shape       => Next (Track.LFO_Shape,
+                                       Track.LFO_Sync,
+                                       Track.LFO_Loop);
          when LFO_Target      => Next (Track.LFO_Target);
          when Arp_Mode        => Next (Track.Arp_Mode);
          when Arp_Notes       => Next (Track.Arp_Notes);
@@ -856,8 +989,10 @@ package body WNM.Project is
          when Pan             => Prev (Track.Pan);
          when Master_FX       => Prev (Track.FX_Kind);
          when LFO_Rate        => Prev (Track.LFO_Rate);
-         when LFO_Amplitude   => Prev (Track.LFO_Amp);
-         when LFO_Shape       => Prev (Track.LFO_Shape);
+         when LFO_Amplitude   => Prev (Track.LFO_Amp, Track.LFO_Amp_Mode, 1);
+         when LFO_Shape       => Prev (Track.LFO_Shape,
+                                       Track.LFO_Sync,
+                                       Track.LFO_Loop);
          when LFO_Target      => Prev (Track.LFO_Target);
          when Arp_Mode        => Prev (Track.Arp_Mode);
          when Arp_Notes       => Prev (Track.Arp_Notes);
@@ -898,8 +1033,10 @@ package body WNM.Project is
          when Pan             => Next_Fast (Track.Pan);
          when Master_FX       => Next_Fast (Track.FX_Kind);
          when LFO_Rate        => Next_Fast (Track.LFO_Rate);
-         when LFO_Amplitude   => Next_Fast (Track.LFO_Amp);
-         when LFO_Shape       => Next_Fast (Track.LFO_Shape);
+         when LFO_Amplitude   => Next (Track.LFO_Amp, Track.LFO_Amp_Mode, 10);
+         when LFO_Shape       => Next (Track.LFO_Shape,
+                                       Track.LFO_Sync,
+                                       Track.LFO_Loop);
          when LFO_Target      => Next_Fast (Track.LFO_Target);
          when Arp_Mode        => Next_Fast (Track.Arp_Mode);
          when Arp_Notes       => Next_Fast (Track.Arp_Notes);
@@ -940,8 +1077,10 @@ package body WNM.Project is
          when Pan             => Prev_Fast (Track.Pan);
          when Master_FX       => Prev_Fast (Track.FX_Kind);
          when LFO_Rate        => Prev_Fast (Track.LFO_Rate);
-         when LFO_Amplitude   => Prev_Fast (Track.LFO_Amp);
-         when LFO_Shape       => Prev_Fast (Track.LFO_Shape);
+         when LFO_Amplitude   => Prev (Track.LFO_Amp, Track.LFO_Amp_Mode, 10);
+         when LFO_Shape       => Prev (Track.LFO_Shape,
+                                       Track.LFO_Sync,
+                                       Track.LFO_Loop);
          when LFO_Target      => Prev_Fast (Track.LFO_Target);
          when Arp_Mode        => Prev_Fast (Track.Arp_Mode);
          when Arp_Notes       => Prev_Fast (Track.Arp_Notes);
@@ -1259,6 +1398,18 @@ package body WNM.Project is
          Send_CC (Chan,
                   Synth.Voice_LFO_Shape_CC,
                   G_Project.Tracks (T).LFO_Shape'Enum_Rep);
+
+         Send_CC (Chan,
+                  Synth.Voice_LFO_Amp_Mode_CC,
+                  G_Project.Tracks (T).LFO_Amp_Mode'Enum_Rep);
+
+         Send_CC (Chan,
+                  Synth.Voice_LFO_Loop_CC,
+                  G_Project.Tracks (T).LFO_Loop'Enum_Rep);
+
+         Send_CC (Chan,
+                  Synth.Voice_LFO_Sync_CC,
+                  G_Project.Tracks (T).LFO_Sync'Enum_Rep);
 
          Send_CC (Chan,
                   Synth.Voice_FX_CC,

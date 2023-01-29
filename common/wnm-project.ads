@@ -281,9 +281,29 @@ package WNM.Project is
                             None => MIDI.MIDI_Data'Last);
    function LFO_Target (T : Tracks := Editing_Track) return LFO_Target_Kind;
 
-   type LFO_Shape_Kind is (Sine);
-   for LFO_Shape_Kind use (Sine => 0);
+   type LFO_Shape_Kind is (Sine, Triangle, Ramp_Up, Ramp_Down,
+                           Exp_Up, Exp_Down);
+   for LFO_Shape_Kind use (Sine      => 0,
+                           Triangle  => 1,
+                           Ramp_Up   => 2,
+                           Ramp_Down => 3,
+                           Exp_Up    => 4,
+                           Exp_Down  => 5);
    function LFO_Shape (T : Tracks := Editing_Track) return LFO_Shape_Kind;
+
+   type LFO_Sync_Kind is (Off, On);
+   for LFO_Sync_Kind use (Off => 0, On => 1);
+   function LFO_Sync (T : Tracks := Editing_Track) return LFO_Sync_Kind;
+
+   type LFO_Loop_Kind is (Off, On);
+   for LFO_Loop_Kind use (Off => 0, On => 1);
+   function LFO_Loop (T : Tracks := Editing_Track) return LFO_Loop_Kind;
+
+   type LFO_Amp_Kind is (Positive, Center, Negative);
+   for LFO_Amp_Kind use (Positive => 0,
+                         Center   => 1,
+                         Negative => 2);
+   function LFO_Amp_Mode (T : Tracks := Editing_Track) return LFO_Amp_Kind;
 
    function CC_Value_To_Use (P : Patterns; T : Tracks; S : Sequencer_Steps;
                              Id : CC_Id)
@@ -332,7 +352,11 @@ package WNM.Project is
                            CC_Ctrl_A, CC_Label_A,
                            CC_Ctrl_B, CC_Label_B,
                            CC_Ctrl_C, CC_Label_C,
-                           CC_Ctrl_D, CC_Label_D);
+                           CC_Ctrl_D, CC_Label_D,
+
+                           LFO_Amp_Mode,
+                           LFO_Loop,
+                           LFO_Sync);
 
    for Track_Settings'Size use 8;
    for Track_Settings use (Track_Mode      => 0,
@@ -360,7 +384,11 @@ package WNM.Project is
                            CC_Ctrl_C       => 22,
                            CC_Label_C      => 23,
                            CC_Ctrl_D       => 24,
-                           CC_Label_D      => 25);
+                           CC_Label_D      => 25,
+
+                           LFO_Amp_Mode    => 26,
+                           LFO_Loop        => 27,
+                           LFO_Sync        => 28);
 
    subtype User_Track_Settings
      is Track_Settings range Track_Mode .. CC_Label_D;
@@ -557,6 +585,9 @@ private
       LFO_Amp : MIDI.MIDI_Data := 0;
       LFO_Shape : LFO_Shape_Kind := LFO_Shape_Kind'First;
       LFO_Target : LFO_Target_Kind := LFO_Target_Kind'Last;
+      LFO_Amp_Mode : LFO_Amp_Kind := LFO_Amp_Kind'First;
+      LFO_Sync : LFO_Sync_Kind := Off;
+      LFO_Loop : LFO_Loop_Kind := On;
       CC : CC_Setting_Array;
       Sample : Sample_Library.Valid_Sample_Index := 1;
       Word   : Speech.Word := Speech.Word'First;
@@ -579,6 +610,9 @@ private
       LFO_Amp => 63,
       LFO_Shape => LFO_Shape_Kind'First,
       LFO_Target => LFO_Target_Kind'Last,
+      LFO_Amp_Mode => LFO_Amp_Kind'First,
+      LFO_Sync => Off,
+      LFO_Loop => On,
       CC => ((0, 63, "CC0              "),
              (1, 63, "CC1              "),
              (2, 63, "CC2              "),

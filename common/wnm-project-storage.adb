@@ -274,6 +274,15 @@ package body WNM.Project.Storage is
                   when LFO_Target =>
                      Output.Push (Out_UInt (Track.LFO_Target'Enum_Rep));
 
+                  when LFO_Amp_Mode =>
+                     Output.Push (Out_UInt (Track.LFO_Amp_Mode'Enum_Rep));
+
+                  when LFO_Sync =>
+                     Output.Push (Out_UInt (Track.LFO_Sync'Enum_Rep));
+
+                  when LFO_Loop =>
+                     Output.Push (Out_UInt (Track.LFO_Loop'Enum_Rep));
+
                   when Arp_Mode =>
                      Output.Push (Out_UInt (Track.Arp_Mode'Enum_Rep));
 
@@ -497,6 +506,9 @@ package body WNM.Project.Storage is
       procedure Read is new File_In.Read_Gen_Int (Audio_Pan);
       procedure Read is new File_In.Read_Gen_Enum (LFO_Shape_Kind);
       procedure Read is new File_In.Read_Gen_Enum (LFO_Target_Kind);
+      procedure Read is new File_In.Read_Gen_Enum (LFO_Amp_Kind);
+      procedure Read is new File_In.Read_Gen_Enum (LFO_Loop_Kind);
+      procedure Read is new File_In.Read_Gen_Enum (LFO_Sync_Kind);
       procedure Read is new File_In.Read_Gen_Enum (Master_FX_Kind);
       procedure Read is new File_In.Read_Gen_Enum (Arp_Mode_Kind);
       procedure Read is new File_In.Read_Gen_Enum (Arp_Notes_Kind);
@@ -542,6 +554,9 @@ package body WNM.Project.Storage is
                when LFO_Amplitude => Read (Input, Track.LFO_Amp);
                when LFO_Shape => Read (Input, Track.LFO_Shape);
                when LFO_Target => Read (Input, Track.LFO_Target);
+               when LFO_Amp_Mode => Read (Input, Track.LFO_Amp_Mode);
+               when LFO_Sync    => Read (Input, Track.LFO_Sync);
+               when LFO_Loop    => Read (Input, Track.LFO_Loop);
                when Arp_Mode    => Read (Input, Track.Arp_Mode);
                when Arp_Notes   => Read (Input, Track.Arp_Notes);
                when Notes_Per_Chord => Read (Input, Track.Notes_Per_Chord);

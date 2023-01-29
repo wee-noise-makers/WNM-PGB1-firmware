@@ -38,7 +38,6 @@ with Tresses.Interfaces;
 with Tresses.FX.Delay_Line;
 with Tresses.FX.Overdrive;
 with Tresses.Filters.SVF;
-with Tresses.LFO;
 
 package body WNM.Synth is
 
@@ -77,6 +76,8 @@ package body WNM.Synth is
           when 3 => Tresses.Voice_Analog_Morph,
           when 4 => Tresses.Voice_FM2OP,
           when 5 => Tresses.Voice_Sand,
+          when 6 => Tresses.Voice_Bass_808,
+          when 7 => Tresses.Voice_House_Bass,
           when others => Tresses.Voice_Plucked);
 
    subtype Synth_Channels
@@ -98,7 +99,8 @@ package body WNM.Synth is
      --  (others => MIDI.MIDI_Data'Last);
 
    LFOs : array (Synth_Channels) of Tresses.LFO.Instance;
-   LFO_Values : array (Synth_Channels) of Tresses.Param_Range;
+   LFO_Syncs : array (Synth_Channels) of Boolean := (others => False);
+   LFO_Values : array (Synth_Channels) of Tresses.S16;
 
    type Voice_Parameters_Array is array (Synth_Channels, LFO_Compatible_CC)
      of Tresses.Param_Range;
@@ -144,10 +146,7 @@ package body WNM.Synth is
 
    function To_Volume (V : Tresses.Param_Range)
                        return WNM_HAL.Audio_Volume
-   is
-   begin
-      return WNM_HAL.Audio_Volume (V / 328);
-   end To_Volume;
+   is (WNM_HAL.Audio_Volume (V / 328));
 
    ------------
    -- To_Pan --
@@ -155,10 +154,22 @@ package body WNM.Synth is
 
    function To_Pan (V : Tresses.Param_Range)
                     return WNM_HAL.Audio_Pan
-   is
-   begin
-      return WNM_HAL.Audio_Pan (V / 328);
-   end To_Pan;
+   is (WNM_HAL.Audio_Pan (V / 328));
+
+   --------------
+   -- To_Shape --
+   --------------
+
+   function To_Shape (V : MIDI.MIDI_Data)
+                      return Tresses.LFO.Shape_Kind
+   is (case V is
+          when 0 => Tresses.LFO.Sine,
+          when 1 => Tresses.LFO.Triangle,
+          when 2 => Tresses.LFO.Ramp_Up,
+          when 3 => Tresses.LFO.Ramp_Down,
+          when 4 => Tresses.LFO.Exp_Up,
+          when others => Tresses.LFO.Exp_Down
+      );
 
    ------------------
    -- Sample_Clock --
@@ -217,6 +228,10 @@ package body WNM.Synth is
 
                         Last_Key (Msg.MIDI_Evt.Chan) := Msg.MIDI_Evt.Key;
 
+                        if LFO_Syncs (Msg.MIDI_Evt.Chan) then
+                           LFOs (Msg.MIDI_Evt.Chan).Sync;
+                        end if;
+
                      when MIDI.Note_Off =>
 
                         if Last_Key (Msg.MIDI_Evt.Chan) = Msg.MIDI_Evt.Key
@@ -243,6 +258,10 @@ package body WNM.Synth is
                         WNM.Speech.Start (Msg.MIDI_Evt.Key);
 
                         Last_Key (Msg.MIDI_Evt.Chan) := Msg.MIDI_Evt.Key;
+
+                        if LFO_Syncs (Msg.MIDI_Evt.Chan) then
+                           LFOs (Msg.MIDI_Evt.Chan).Sync;
+                        end if;
 
                      when MIDI.Note_Off =>
 
@@ -333,6 +352,10 @@ package body WNM.Synth is
 
                         Last_Key (Msg.MIDI_Evt.Chan) := Msg.MIDI_Evt.Key;
 
+                        if LFO_Syncs (Msg.MIDI_Evt.Chan) then
+                           LFOs (Msg.MIDI_Evt.Chan).Sync;
+                        end if;
+
                      when MIDI.Note_Off =>
 
                         if Last_Key (Msg.MIDI_Evt.Chan) = Msg.MIDI_Evt.Key
@@ -380,14 +403,32 @@ package body WNM.Synth is
                                 (To_Param (Msg.MIDI_Evt.Controller_Value),
                                  WNM_Configuration.Audio.Samples_Per_Buffer);
 
+                           when Voice_LFO_Shape_CC =>
+                              LFOs (Msg.MIDI_Evt.Chan).Set_Shape
+                                (To_Shape (Msg.MIDI_Evt.Controller_Value));
+
                            when Voice_LFO_Amp_CC =>
                               LFOs (Msg.MIDI_Evt.Chan).Set_Amplitude
-                                (To_Param
+                                (To_Param (Msg.MIDI_Evt.Controller_Value));
+
+                           when Voice_LFO_Amp_Mode_CC =>
+                              LFOs (Msg.MIDI_Evt.Chan).Set_Amp_Mode
+                                (Tresses.LFO.Amplitude_Kind'Enum_Val
                                    (Msg.MIDI_Evt.Controller_Value));
 
                            when Voice_LFO_Target_CC =>
                               LFO_Targets (Msg.MIDI_Evt.Chan) :=
                                 Msg.MIDI_Evt.Controller_Value;
+
+                           when Voice_LFO_Loop_CC =>
+                              LFOs (Msg.MIDI_Evt.Chan).Set_Loop_Mode
+                                (if Msg.MIDI_Evt.Controller_Value /= 0
+                                 then Tresses.LFO.Repeat
+                                 else Tresses.LFO.One_Shot);
+
+                           when Voice_LFO_Sync_CC =>
+                              LFO_Syncs (Msg.MIDI_Evt.Chan) :=
+                                Msg.MIDI_Evt.Controller_Value /= 0;
 
                            when others =>
                               null;
@@ -435,19 +476,21 @@ package body WNM.Synth is
 
       Buffer, Aux_Buffer : WNM_HAL.Mono_Buffer;
 
-      -------------
-      -- Add_Sat --
-      -------------
+      --------------
+      -- Add_Clip --
+      --------------
 
-      function Add_Sat (A, B : Param_Range) return Param_Range is
-         Result : constant U16 := U16 (A) + U16 (B);
+      function Add_Clip (A : Param_Range; B : S16) return Param_Range is
+         Result : constant S32 := S32 (A) + S32 (B);
       begin
-         if Result > U16 (Param_Range'Last) then
+         if Result > S32 (Param_Range'Last) then
             return Param_Range'Last;
+         elsif Result < S32 (Param_Range'First) then
+            return Param_Range'First;
          else
             return Param_Range (Result);
          end if;
-      end Add_Sat;
+      end Add_Clip;
 
    begin
 
@@ -463,8 +506,8 @@ package body WNM.Synth is
       for Chan in Tresses_Channels loop
          if LFO_Targets (Chan) in LFO_Compatible_CC then
             Out_Voice_Parameters (Chan, LFO_Targets (Chan)) :=
-              Add_Sat (Out_Voice_Parameters (Chan, LFO_Targets (Chan)),
-                       LFO_Values (Chan));
+              Add_Clip (Out_Voice_Parameters (Chan, LFO_Targets (Chan)),
+                        LFO_Values (Chan));
          end if;
       end loop;
 

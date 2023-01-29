@@ -29,6 +29,7 @@ with WNM.Sample_Stream;
 with WNM.MIDI;
 
 with Tresses;
+with Tresses.LFO;
 
 package WNM.Synth is
 
@@ -41,18 +42,28 @@ package WNM.Synth is
    Bass_Channel   : constant MIDI.MIDI_Channel := 7;
    Chord_Channel  : constant MIDI.MIDI_Channel := 8;
 
-   Voice_Param_1_CC    : constant MIDI.MIDI_Data := 0;
-   Voice_Param_2_CC    : constant MIDI.MIDI_Data := 1;
-   Voice_Param_3_CC    : constant MIDI.MIDI_Data := 2;
-   Voice_Param_4_CC    : constant MIDI.MIDI_Data := 3;
-   Voice_Volume_CC     : constant MIDI.MIDI_Data := 4;
-   Voice_Pan_CC        : constant MIDI.MIDI_Data := 5;
-   Voice_Engine_CC     : constant MIDI.MIDI_Data := 6;
-   Voice_FX_CC         : constant MIDI.MIDI_Data := 7;
-   Voice_LFO_Rate_CC   : constant MIDI.MIDI_Data := 8;
-   Voice_LFO_Amp_CC    : constant MIDI.MIDI_Data := 9;
-   Voice_LFO_Target_CC : constant MIDI.MIDI_Data := 10;
-   Voice_LFO_Shape_CC  : constant MIDI.MIDI_Data := 11;
+   Voice_Param_1_CC      : constant MIDI.MIDI_Data := 0;
+   Voice_Param_2_CC      : constant MIDI.MIDI_Data := 1;
+   Voice_Param_3_CC      : constant MIDI.MIDI_Data := 2;
+   Voice_Param_4_CC      : constant MIDI.MIDI_Data := 3;
+   Voice_Volume_CC       : constant MIDI.MIDI_Data := 4;
+   Voice_Pan_CC          : constant MIDI.MIDI_Data := 5;
+   Voice_Engine_CC       : constant MIDI.MIDI_Data := 6;
+   Voice_FX_CC           : constant MIDI.MIDI_Data := 7;
+   Voice_LFO_Rate_CC     : constant MIDI.MIDI_Data := 8;
+   Voice_LFO_Amp_CC      : constant MIDI.MIDI_Data := 9;
+   Voice_LFO_Amp_Mode_CC : constant MIDI.MIDI_Data := 10;
+   Voice_LFO_Target_CC   : constant MIDI.MIDI_Data := 11;
+   Voice_LFO_Shape_CC    : constant MIDI.MIDI_Data := 12;
+   Voice_LFO_Loop_CC     : constant MIDI.MIDI_Data := 13;
+   Voice_LFO_Sync_CC     : constant MIDI.MIDI_Data := 14;
+
+   LFO_Amp_Mode_Positive : constant MIDI.MIDI_Data :=
+     Tresses.LFO.Positive'Enum_Rep;
+   LFO_Amp_Mode_Center   : constant MIDI.MIDI_Data :=
+     Tresses.LFO.Center'Enum_Rep;
+   LFO_Amp_Mode_Negative : constant MIDI.MIDI_Data :=
+     Tresses.LFO.Negative'Enum_Rep;
 
    subtype LFO_Compatible_CC
      is MIDI.MIDI_Data range Voice_Param_1_CC .. Voice_Pan_CC;
