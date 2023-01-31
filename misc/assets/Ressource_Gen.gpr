@@ -5,13 +5,13 @@ project Ressource_Gen is
 
    for Languages use ("BMP");
    for Source_Dirs use (".");
-   for Object_Dir use "../src/generated";
+   for Object_Dir use "../../common/generated";
    for Objects_Linked ("BMP") use "false";
    --  for Object_Generated ("BMP") use "false";
 
    package Compiler is
       for Driver ("BMP") use Ressource_Gen'Project_Dir &
-        "../Giza/bmp2ada/bmp2ada";
+        "../bmp2ada/bin/bmp2ada";
       for Object_File_Suffix ("BMP") use ".ads";
       for Object_File_Switches ("BMP") use ("-o");
       for Object_Path_Switches ("BMP") use ("-d");

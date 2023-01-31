@@ -239,9 +239,7 @@ package body WNM.GUI.Menu.Track_Settings is
                when LFO_Rate =>
                   Draw_Title ("LFO Rate:", "");
                when LFO_Amplitude =>
-                  Draw_Title ("LFO Amplitude:" &
-                                Project.LFO_Amp_Mode (Editing_Track)'Img,
-                              "");
+                  Draw_Title ("LFO Amplitude:", "");
                when LFO_Shape =>
                   Draw_Title ("LFO Shape:", "");
                when LFO_Target =>
@@ -249,13 +247,6 @@ package body WNM.GUI.Menu.Track_Settings is
                when others =>
                   null;
             end case;
-
-            if Project.LFO_Loop (Editing_Track) = Project.On then
-               Draw_Title ("", "           L");
-            end if;
-            if Project.LFO_Sync (Editing_Track) = Project.On then
-               Draw_Title ("", "          S");
-            end if;
 
             Draw_CC_Value
               (A,
@@ -267,13 +258,18 @@ package body WNM.GUI.Menu.Track_Settings is
               (B,
                Project.LFO_Amp,
                "AMP",
-               Sub = LFO_Amplitude);
+               Sub = LFO_Amplitude,
+               Style => (case LFO_Amp_Mode (Editing_Track) is
+                            when Project.Positive => Drawing.Positive,
+                            when Project.Center   => Drawing.Center,
+                            when Project.Negative => Drawing.Negative));
 
-            Draw_CC_Value
-              (C,
-               0,
-               Project.LFO_Shape (Editing_Track)'Img,
-               Sub = LFO_Shape);
+            Draw_LFO_Shape (C,
+                            "SHP",
+                            Sub = LFO_Shape,
+                            Project.LFO_Shape (Editing_Track),
+                            Project.LFO_Sync (Editing_Track),
+                            Project.LFO_Loop (Editing_Track));
 
             Draw_CC_Value
               (D,

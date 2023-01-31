@@ -23,6 +23,15 @@ with WNM.GUI.Bitmap_Fonts; use WNM.GUI.Bitmap_Fonts;
 
 with WNM.Sample_Edit;
 
+with lfo_sine;
+with lfo_ramp_up;
+with lfo_ramp_down;
+with lfo_exp_up;
+with lfo_exp_down;
+with lfo_triangle;
+with lfo_sync;
+with lfo_loop;
+
 package body WNM.GUI.Menu.Drawing is
 
    Title_Y_Offset : constant := 10;
@@ -418,7 +427,8 @@ package body WNM.GUI.Menu.Drawing is
                             Value : MIDI.MIDI_Data;
                             Label : String;
                             Selected : Boolean;
-                            Enabled : Boolean := True)
+                            Enabled : Boolean := True;
+                            Style   : CC_Draw_Style := Positive)
    is
       Val : Natural := Natural (Value) + 1;
       Last_Width : Natural;
@@ -438,6 +448,7 @@ package body WNM.GUI.Menu.Drawing is
       Bar_Left : constant Natural :=
         Left + (Sub_Label_Width - Bar_Width) / 2;
       Bar_Bottom : constant := Value_Text_Y + 2;
+      Bar_Top    : constant := Bar_Bottom - Bar_Height;
       Bar_Center : constant Screen.Point :=
         (Bar_Left + Bar_Width / 2,
          Bar_Bottom - Bar_Height / 2);
@@ -458,17 +469,47 @@ package body WNM.GUI.Menu.Drawing is
              Str      => Label);
 
       if Enabled then
-         while Val >= Bar_Width loop
-            Val := Val - Bar_Width;
-            Screen.Draw_Line ((Bar_Left, Y), (Bar_Left + Bar_Width - 1, Y));
-            Y := Y - 1;
-         end loop;
 
-         if Val > 0 then
-            Last_Width := Val - 1;
-            Screen.Draw_Line ((Bar_Left, Y),
-                              (Bar_Left + Last_Width, Y));
-         end if;
+         case Style is
+            when Positive =>
+
+               Y := Bar_Bottom;
+
+               while Val >= Bar_Width loop
+                  Val := Val - Bar_Width;
+                  Screen.Draw_Line ((Bar_Left, Y),
+                                    (Bar_Left + Bar_Width - 1, Y));
+                  Y := Y - 1;
+               end loop;
+
+               if Val > 0 then
+                  Last_Width := Val - 1;
+                  Screen.Draw_Line ((Bar_Left, Y),
+                                    (Bar_Left + Last_Width, Y));
+               end if;
+
+            when Center | Negative =>
+
+               if Style = Center then
+                  Y := Bar_Top + (Bar_Height / 2 - (Val / Bar_Width) / 2);
+               else
+                  Y := Bar_Top;
+               end if;
+
+               while Val >= Bar_Width loop
+                  Val := Val - Bar_Width;
+                  Screen.Draw_Line ((Bar_Left, Y),
+                                    (Bar_Left + Bar_Width - 1, Y));
+                  Y := Y + 1;
+               end loop;
+
+               if Val > 0 then
+                  Last_Width := Val - 1;
+                  Screen.Draw_Line ((Bar_Left, Y),
+                                    (Bar_Left + Last_Width, Y));
+               end if;
+
+         end case;
       else
          Screen.Draw_Line
            ((Bar_Center.X - Bar_Width / 2, Bar_Center.Y + Bar_Width / 2),
@@ -479,6 +520,97 @@ package body WNM.GUI.Menu.Drawing is
       end if;
 
    end Draw_CC_Value;
+
+   --------------------
+   -- Draw_LFO_Shape --
+   --------------------
+
+   procedure Draw_LFO_Shape (Id    : WNM.Project.CC_Id;
+                             Label : String;
+                             Selected : Boolean;
+                             Shape    : WNM.Project.LFO_Shape_Kind;
+                             Sync     : WNM.Project.LFO_Sync_Kind;
+                             Loo      : WNM.Project.LFO_Loop_Kind)
+   is
+      use WNM.Project;
+
+      X, Y : Natural;
+
+      Spacing : constant := 30;
+      Left : constant Natural := Box_Left + 5 +
+        (case Id is
+            when WNM.Project.A => 0 * Spacing,
+            when WNM.Project.B => 1 * Spacing,
+            when WNM.Project.C => 2 * Spacing,
+            when WNM.Project.D => 3 * Spacing);
+
+      Sub_Label_Width : constant := (Bitmap_Fonts.Width * 3) - 1;
+      Bar_Width : constant := 8;
+      Bar_Height : constant := 128 / Bar_Width - 1;
+      Bar_Left : constant Natural :=
+        Left + (Sub_Label_Width - Bar_Width) / 2;
+      Bar_Bottom : constant := Value_Text_Y + 2;
+      Bar_Top    : constant := Bar_Bottom - Bar_Height;
+      --  Bar_Center : constant Screen.Point :=
+      --    (Bar_Left + Bar_Width / 2,
+      --     Bar_Bottom - Bar_Height / 2);
+   begin
+
+      Y := Bar_Bottom;
+
+      if Selected then
+         Screen.Draw_Line ((Bar_Left - 3, Y), (Bar_Left - 3, Y - Bar_Height));
+         Screen.Draw_Line ((Bar_Left + Bar_Width + 2, Y),
+                           (Bar_Left + Bar_Width + 2, Y - Bar_Height));
+      end if;
+
+      --  Short label
+      X := Left;
+      Print (X_Offset => X,
+             Y_Offset => Value_Text_Y + 4,
+             Str      => Label);
+
+      if Sync = On then
+         Screen.Copy_Bitmap
+           (lfo_sync.Data,
+            Bar_Left,
+            Value_Text_Y - 2,
+            Invert_Color => True);
+      end if;
+
+      if Loo = On then
+         Screen.Copy_Bitmap
+           (lfo_loop.Data,
+            Bar_Left + 5,
+            Value_Text_Y - 2,
+            Invert_Color => True);
+      end if;
+
+      X := Bar_Left - 1;
+      Y := Bar_Top;
+      case Shape is
+         when Sine =>
+            Screen.Copy_Bitmap
+              (lfo_sine.Data, X, Y, Invert_Color => True);
+         when Ramp_Up =>
+            Screen.Copy_Bitmap
+              (lfo_ramp_up.Data, X, Y, Invert_Color => True);
+         when Ramp_Down =>
+            Screen.Copy_Bitmap
+              (lfo_ramp_down.Data, X, Y, Invert_Color => True);
+         when Exp_Up =>
+            Screen.Copy_Bitmap
+              (lfo_exp_up.Data, X, Y, Invert_Color => True);
+         when Exp_Down =>
+            Screen.Copy_Bitmap
+              (lfo_exp_down.Data, X, Y, Invert_Color => True);
+         when Triangle =>
+            Screen.Copy_Bitmap
+              (lfo_triangle.Data, X, Y, Invert_Color => True);
+      end case;
+
+   end Draw_LFO_Shape;
+
    ---------------
    -- Draw_Knob --
    ---------------

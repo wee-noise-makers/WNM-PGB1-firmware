@@ -48,12 +48,12 @@ package body WNM.GUI.Bitmap_Fonts is
          type Bit_Array is array (Positive range <>) of Boolean
            with Pack;
 
-         Data : Bit_Array (1 .. font_5x7.BMP.W * font_5x7.BMP.H)
-           with Address => font_5x7.BMP.Data'Address;
+         Data : Bit_Array (1 .. font_5x7.Data.W * font_5x7.Data.H)
+           with Address => font_5x7.Data.Data'Address;
 
       begin
          if Index in 0 .. 93 and then X in 0 .. 4 and then Y in 0 .. 6 then
-            return not Data (1 + X + Bitmap_Offset + Y * font_5x7.BMP.W);
+            return not Data (1 + X + Bitmap_Offset + Y * font_5x7.Data.W);
          else
             return False;
          end if;

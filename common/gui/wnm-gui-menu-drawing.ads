@@ -65,11 +65,21 @@ package WNM.GUI.Menu.Drawing is
    procedure Draw_Value (Val      : String;
                          Selected : Boolean := False);
 
+   type CC_Draw_Style is (Positive, Center, Negative);
+
    procedure Draw_CC_Value (Id    : WNM.Project.CC_Id;
                             Value : MIDI.MIDI_Data;
                             Label : String;
                             Selected : Boolean;
-                            Enabled : Boolean := True);
+                            Enabled : Boolean := True;
+                            Style   : CC_Draw_Style := Positive);
+
+   procedure Draw_LFO_Shape (Id    : WNM.Project.CC_Id;
+                             Label : String;
+                             Selected : Boolean;
+                             Shape    : WNM.Project.LFO_Shape_Kind;
+                             Sync     : WNM.Project.LFO_Sync_Kind;
+                             Loo      : WNM.Project.LFO_Loop_Kind);
 
    procedure Draw_Value_Left (Val      : String;
                               Selected : Boolean := False);
