@@ -1,8 +1,6 @@
 with Ada.Synchronous_Task_Control;
-
+with System.Storage_Elements;
 with GNAT.OS_Lib;
-
-with GNAT.Bounded_Buffers;
 with Interfaces;
 
 with Sf;
@@ -13,13 +11,15 @@ with ASFML_SIM_Storage;
 
 with RtMIDI;
 
+with BBqueue;
+
 package body WNM_HAL is
 
-   package Coproc_BB is new GNAT.Bounded_Buffers (Coproc_Data);
+   use type System.Storage_Elements.Storage_Offset;
 
-   Coproc_Queue : Coproc_BB.Bounded_Buffer
-     (Capacity => Coproc_Queue_Capacity,
-      Ceiling  => Coproc_BB.Default_Ceiling);
+   Coproc_Queue : BBqueue.Offsets_Only (Coproc_Queue_Capacity);
+   Coproc_Buffer : array (BBqueue.Buffer_Offset range
+                            0 .. Coproc_Queue_Capacity - 1) of Coproc_Data;
 
    LEDs_Internal : ASFML_Sim.SFML_LED_Strip := ASFML_Sim.SFML_LEDs;
 
@@ -342,9 +342,16 @@ package body WNM_HAL is
    ----------
 
    procedure Push (D : Coproc_Data) is
+      use BBqueue;
+
+      WG : Write_Grant;
    begin
-      if not Coproc_Queue.Full then
-         Coproc_Queue.Insert (D);
+
+      Grant (Coproc_Queue, WG, 1);
+
+      if State (WG) = Valid then
+         Coproc_Buffer (Slice (WG).From) := D;
+         Commit (Coproc_Queue, WG, 1);
       else
          raise Program_Error with "Corproc queue is full";
       end if;
@@ -355,9 +362,16 @@ package body WNM_HAL is
    ---------
 
    procedure Pop (D : out Coproc_Data; Success : out Boolean) is
+      use BBqueue;
+
+      RG : Read_Grant;
    begin
-      if not Coproc_Queue.Empty then
-         Coproc_Queue.Remove (D);
+
+      Read (Coproc_Queue, RG, 1);
+
+      if State (RG) = Valid then
+         D := Coproc_Buffer (Slice (RG).From);
+         Release (Coproc_Queue, RG, 1);
          Success := True;
       else
          Success := False;
