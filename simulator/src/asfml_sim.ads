@@ -69,4 +69,6 @@ package ASFML_Sim is
    SFML_LEDs : SFML_LED_Strip :=
      (others => Sf.Graphics.Color.sfTransparent);
 
+   procedure Take_Screenshot (Path : String);
+
 end ASFML_Sim;

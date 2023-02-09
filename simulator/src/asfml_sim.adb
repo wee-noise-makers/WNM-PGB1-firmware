@@ -14,6 +14,7 @@ with Sf.Graphics.RenderWindow; use Sf.Graphics.RenderWindow;
 with Sf.Graphics.RectangleShape; use Sf.Graphics.RectangleShape;
 with Sf.Graphics.Font;
 with Sf.Graphics.Text;
+with Sf.Graphics.Image;
 with Sf.Window.Window; use Sf.Window.Window;
 with Sf.Window.Event; use Sf.Window.Event;
 with Sf; use Sf;
@@ -151,6 +152,7 @@ package body ASFML_Sim is
           when sfKeyNum2 => "2",
           when others => "UNKNOWN KEY EVT"
       ) & "]");
+
    ---------------
    -- Draw_Text --
    ---------------
@@ -238,8 +240,37 @@ package body ASFML_Sim is
       end loop;
    end Draw_Buttons;
 
+   ----------------------------
+   -- Screenshot_From_Window --
+   ----------------------------
+
+   procedure Screenshot_From_Window (Window : sfRenderWindow_Ptr;
+                                     Path : String)
+   is
+      Size : constant Sf.System.Vector2.sfVector2u :=
+        Sf.Graphics.RenderWindow.getSize (Window);
+
+      Tex : constant Sf.Graphics.sfTexture_Ptr :=
+        Sf.Graphics.Texture.create (Size.x, Size.y);
+
+      Img : Sf.Graphics.sfImage_Ptr;
+   begin
+      Sf.Graphics.Texture.updateFromRenderWindow
+        (Tex, Window, 0, 0);
+
+      Img := Sf.Graphics.Texture.copyToImage (Tex);
+
+      if not Sf.Graphics.Image.saveToFile (Img, Path) then
+         raise Program_Error with "Cannot save screenshot...";
+      end if;
+
+      Sf.Graphics.Image.destroy (Img);
+      Sf.Graphics.Texture.destroy (Tex);
+   end Screenshot_From_Window;
+
    task Periodic_Update is
       entry Start;
+      entry Take_Screenshot (Path : String);
    end Periodic_Update;
 
    ---------------------
@@ -383,6 +414,8 @@ package body ASFML_Sim is
                      Encoder_Right := (if Event.key.shift then -2 else -1);
                   elsif Event.key.code = sfKeyUp then
                      Encoder_Right := (if Event.key.shift then 2 else 1);
+                  elsif Event.key.code = sfKeyF12 then
+                     Screenshot_From_Window (Window, "WNM-screenshot.png");
                   end if;
                end if;
 
@@ -413,6 +446,14 @@ package body ASFML_Sim is
          drawSprite (Window, BG_Sprite);
          drawSprite (Window, Screen_Sprite);
          Draw_Buttons (Window);
+
+         select
+            accept Take_Screenshot (Path : String) do
+               Screenshot_From_Window (Window, Path);
+            end Take_Screenshot;
+         else
+            null;
+         end select;
 
          if Sim_Clock.Is_Held then
             ASFML_SIM_Menu.Render (Window, Font);
@@ -469,5 +510,14 @@ package body ASFML_Sim is
 
       Periodic_Update.Start;
    end Start;
+
+   ---------------------
+   -- Take_Screenshot --
+   ---------------------
+
+   procedure Take_Screenshot (Path : String) is
+   begin
+      Periodic_Update.Take_Screenshot (Path);
+   end Take_Screenshot;
 
 end ASFML_Sim;
