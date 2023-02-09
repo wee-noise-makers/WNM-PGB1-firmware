@@ -83,4 +83,8 @@ package WNM is
 
    type MIDI_Target is (External, Internal);
 
+   type CPU_Load is new Float range 0.0 .. Float'Last;
+
+   function Img (L : CPU_Load) return String;
+
 end WNM;

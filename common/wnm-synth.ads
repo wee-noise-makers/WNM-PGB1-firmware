@@ -19,6 +19,8 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with HAL;
+
 with Interfaces;
 
 with WNM_HAL;
@@ -81,6 +83,10 @@ package WNM.Synth is
    FX_Filter_Cutoff_CC  : constant MIDI.MIDI_Data := 4;
    FX_Filter_Reso_CC    : constant MIDI.MIDI_Data := 5;
 
+   function Last_CPU_Load return CPU_Load;
+   function Max_CPU_Load return CPU_Load;
+   function Missed_Deadlines return HAL.UInt32;
+
    type Sample_Time is new Interfaces.Unsigned_64;
 
    function Sample_Clock return Sample_Time;
@@ -89,8 +95,6 @@ package WNM.Synth is
 
    procedure Trig (Track  : Sample_Stream.Stream_Track;
                    Sample : Sample_Library.Valid_Sample_Index);
-
-   function Update return WNM.Time.Time_Microseconds;
 
    procedure Next_Points (Output : out WNM_HAL.Stereo_Buffer;
                           Input  :     WNM_HAL.Stereo_Buffer);

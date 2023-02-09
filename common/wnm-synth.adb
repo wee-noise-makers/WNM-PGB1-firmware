@@ -129,6 +129,10 @@ package body WNM.Synth is
    Next_Start : WNM.Time.Time_Microseconds := WNM.Time.Time_Microseconds'First;
    Glob_Sample_Clock : Sample_Time := 0 with Volatile;
 
+   G_CPU_Load : CPU_Load := 0.0 with Volatile;
+   G_Max_CPU_Load : CPU_Load := 0.0 with Volatile;
+   G_Count_Missed_Deadlines : HAL.UInt32 := 0 with Volatile;
+
    procedure Process_Coproc_Events;
 
    --------------
@@ -173,6 +177,27 @@ package body WNM.Synth is
           when 4 => Tresses.LFO.Exp_Up,
           when others => Tresses.LFO.Exp_Down
       );
+
+   -------------------
+   -- Last_CPU_Load --
+   -------------------
+
+   function Last_CPU_Load return CPU_Load
+   is (G_CPU_Load);
+
+   ------------------
+   -- Max_CPU_Load --
+   ------------------
+
+   function Max_CPU_Load return CPU_Load
+   is (G_Max_CPU_Load);
+
+   ----------------------
+   -- Missed_Deadlines --
+   ----------------------
+
+   function Missed_Deadlines return HAL.UInt32
+   is (G_Count_Missed_Deadlines);
 
    ------------------
    -- Sample_Clock --
@@ -445,24 +470,6 @@ package body WNM.Synth is
       end loop;
    end Process_Coproc_Events;
 
-   ------------
-   -- Update --
-   ------------
-
-   function Update return WNM.Time.Time_Microseconds is
-      Now : constant WNM.Time.Time_Microseconds := WNM.Time.Clock;
-   begin
-      if Now >= Next_Start then
-         Next_Start := Next_Start + 0;
-
-         Process_Coproc_Events;
-
-         --  Generate_Audio;
-      end if;
-
-      return Next_Start;
-   end Update;
-
    -----------------
    -- Next_Points --
    -----------------
@@ -495,7 +502,11 @@ package body WNM.Synth is
          end if;
       end Add_Clip;
 
+      Synthesis_Start : constant WNM_HAL.Time_Microseconds := WNM_HAL.Clock;
    begin
+
+      --  Get and process MIDI messages from sequencer
+      Process_Coproc_Events;
 
       --  Take input params
       Out_Voice_Parameters := In_Voice_Parameters;
@@ -675,6 +686,31 @@ package body WNM.Synth is
 
       Glob_Sample_Clock :=
         Glob_Sample_Clock + WNM_Configuration.Audio.Samples_Per_Buffer;
+
+      declare
+         Synthesis_End      : constant WNM_HAL.Time_Microseconds :=
+           WNM_HAL.Clock;
+         Synthesis_Duration : constant WNM_HAL.Time_Microseconds :=
+           Synthesis_End - Synthesis_Start;
+
+         Synthesis_Duration_Float : constant Float :=
+           Float (Synthesis_Duration) / 1_000.0;
+
+         Synthesized_Time : constant Float :=
+           (1.0 / Float (WNM_Configuration.Audio.Sample_Frequency) *
+                Float (WNM_Configuration.Audio.Samples_Per_Buffer));
+      begin
+         G_CPU_Load := CPU_Load (Synthesis_Duration_Float / Synthesized_Time);
+
+         if G_CPU_Load > 100.0 then
+            G_Count_Missed_Deadlines := G_Count_Missed_Deadlines + 1;
+         end if;
+
+         if G_CPU_Load < 500.0 and then G_CPU_Load > G_Max_CPU_Load then
+            G_Max_CPU_Load := G_CPU_Load;
+         end if;
+      end;
+
    end Next_Points;
 
    ---------------------

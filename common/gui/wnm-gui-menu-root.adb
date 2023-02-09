@@ -27,6 +27,7 @@ with WNM.GUI.Menu.Yes_No_Dialog;
 with WNM.GUI.Menu.Create_Sample;
 with WNM.GUI.Menu.Passthrough;
 with WNM.GUI.Menu.Save_Project;
+with WNM.GUI.Menu.System_Info;
 with WNM.GUI.Popup;
 with WNM.GUI.Menu.Project_Select;
 
@@ -50,7 +51,8 @@ package body WNM.GUI.Menu.Root is
           when Load            => "Load",
           when Save            => "Save",
           when Settings        => "Settings",
-          when Shutdown        => "Shutdown");
+          when Shutdown        => "Shutdown",
+          when System_Info     => "System Info");
 
    ----------------------
    -- Push_Root_Window --
@@ -113,6 +115,9 @@ package body WNM.GUI.Menu.Root is
                when Shutdown =>
                   Yes_No_Dialog.Set_Title ("Shutdown?");
                   Yes_No_Dialog.Push_Window;
+
+               when System_Info =>
+                  Menu.System_Info.Push_Window;
 
                when others =>
                   null;

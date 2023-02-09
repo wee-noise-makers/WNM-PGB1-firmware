@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2020 Fabien Chouteau                    --
+--                     Copyright (C) 2023 Fabien Chouteau                  --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,13 +19,12 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Utils;
 with WNM.GUI.Menu.Drawing;
+with WNM.Synth;
 
-package body WNM.GUI.Menu.Yes_No_Dialog is
+package body WNM.GUI.Menu.System_Info is
 
-   Yes_No_Dialog  : aliased Yes_No_Dialog_Window;
-   Dialog_Title : String (1 .. Title_Max_Len) := (others => ' ');
+   Singleton : aliased Instance;
 
    -----------------
    -- Push_Window --
@@ -33,28 +32,31 @@ package body WNM.GUI.Menu.Yes_No_Dialog is
 
    procedure Push_Window is
    begin
-      Push (Yes_No_Dialog'Access);
+      Push (Singleton'Access);
    end Push_Window;
-
-   ---------------
-   -- Set_Title --
-   ---------------
-
-   procedure Set_Title (Title : String) is
-   begin
-      WNM.Utils.Copy_Str (Title, Dialog_Title);
-   end Set_Title;
 
    ----------
    -- Draw --
    ----------
 
    overriding
-   procedure Draw (This : in out Yes_No_Dialog_Window)
-   is
+   procedure Draw (This : in out Instance) is
    begin
-      Drawing.Draw_Menu_Box (Dialog_Title, 0, 0);
-      Drawing.Draw_Value ("-> " & (if This.Yes then "Yes" else "No"));
+      Drawing.Draw_Menu_Box ("System info",
+                             Info_Kind_Count,
+                             Info_Kind'Pos (This.K));
+
+      case This.K is
+         when Synth_CPU_Load =>
+            Drawing.Draw_Title ("Synth CPU Load", "");
+            Drawing.Draw_Value (Img (Synth.Last_CPU_Load));
+         when Synth_Max_CPU_Load =>
+            Drawing.Draw_Title ("Synth Max CPU Load", "");
+            Drawing.Draw_Value (Img (Synth.Max_CPU_Load));
+         when Synth_Missed_Deadlines =>
+            Drawing.Draw_Title ("Synth Miss DL", "");
+            Drawing.Draw_Value (Synth.Missed_Deadlines'Img);
+      end case;
    end Draw;
 
    --------------
@@ -62,37 +64,20 @@ package body WNM.GUI.Menu.Yes_No_Dialog is
    --------------
 
    overriding
-   procedure On_Event
-     (This  : in out Yes_No_Dialog_Window;
-      Event : Menu_Event)
+   procedure On_Event (This  : in out Instance;
+                       Event : Menu_Event)
    is
    begin
       case Event.Kind is
          when Left_Press =>
-            if This.Yes then
-               Menu.Pop (Exit_Value => Success);
-            else
-               Menu.Pop (Exit_Value => Failure);
-            end if;
+            null;
          when Right_Press =>
             Menu.Pop (Exit_Value => Failure);
          when Encoder_Left =>
-            This.Yes := not This.Yes;
+            Next (This.K);
          when others =>
             null;
       end case;
    end On_Event;
 
-   ---------------
-   -- On_Pushed --
-   ---------------
-
-   overriding
-   procedure On_Pushed
-     (This  : in out Yes_No_Dialog_Window)
-   is
-   begin
-      This.Yes := False;
-   end On_Pushed;
-
-end WNM.GUI.Menu.Yes_No_Dialog;
+end WNM.GUI.Menu.System_Info;

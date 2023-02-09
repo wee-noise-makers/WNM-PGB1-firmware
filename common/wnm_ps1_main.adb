@@ -6,7 +6,6 @@ with WNM.Project.Step_Sequencer;
 with WNM.UI;
 with WNM.LEDs;
 with WNM.GUI.Update;
-with WNM.Synth;
 with WNM.File_System;
 with WNM.Sample_Library;
 with WNM.Project.Library;
@@ -32,7 +31,6 @@ begin
    loop
       Next_Start := Time_Microseconds'Last;
 
-      Next_Start := Time_Microseconds'Min (WNM.Synth.Update, Next_Start);
       Next_Start := Time_Microseconds'Min (WNM.Project.Step_Sequencer.Update,
                                            Next_Start);
       Next_Start := Time_Microseconds'Min (WNM.UI.Update, Next_Start);

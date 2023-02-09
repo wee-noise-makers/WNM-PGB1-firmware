@@ -85,50 +85,26 @@ package body WNM is
    function Enum_Count return Natural
    is (T'Pos (T'Last) - T'Pos (T'First) + 1);
 
-   --  --------------
-   --  -- To_Track --
-   --  --------------
-   --
-   --  function To_Track (Chan : MIDI.MIDI_Channel) return Tracks
-   --  is (case Chan is
-   --         when 0      => B1,
-   --         when 1      => B2,
-   --         when 2      => B3,
-   --         when 3      => B4,
-   --         when 4      => B5,
-   --         when 5      => B6,
-   --         when 6      => B7,
-   --         when 7      => B8,
-   --         when 8      => B9,
-   --         when 9      => B10,
-   --         when 10     => B11,
-   --         when 11     => B12,
-   --         when 12     => B13,
-   --         when 13     => B14,
-   --         when 14     => B15,
-   --         when 15     => B16);
-   --
-   --  ---------------------
-   --  -- To_MIDI_Channel --
-   --  ---------------------
-   --
-   --  function To_MIDI_Channel (Chan : Tracks) return MIDI.MIDI_Channel
-   --  is (case Chan is
-   --         when B1  => 0,
-   --         when B2  => 1,
-   --         when B3  => 2,
-   --         when B4  => 3,
-   --         when B5  => 4,
-   --         when B6  => 5,
-   --         when B7  => 6,
-   --         when B8  => 7,
-   --         when B9  => 8,
-   --         when B10 => 9,
-   --         when B11 => 10,
-   --         when B12 => 11,
-   --         when B13 => 12,
-   --         when B14 => 13,
-   --         when B15 => 14,
-   --         when B16 => 15);
+   ---------
+   -- Img --
+   ---------
+
+   function Img (L : CPU_Load) return String is
+      type Load_Img is delta 0.001 range 0.0 .. 1000.0;
+      --  Use a fixed point type to get a 'Img without
+      --  scientific notation...
+
+      Clamp : Load_Img;
+
+   begin
+      if L > CPU_Load (Load_Img'Last) then
+         Clamp := Load_Img'Last;
+      else
+         Clamp := Load_Img (L);
+      end if;
+
+      return Clamp'Img;
+   end Img;
+
 
 end WNM;
