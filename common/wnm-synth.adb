@@ -104,7 +104,10 @@ package body WNM.Synth is
 
    type Voice_Parameters_Array is array (Synth_Channels, LFO_Compatible_CC)
      of Tresses.Param_Range;
-   In_Voice_Parameters : Voice_Parameters_Array := (others => (others => 0));
+   In_Voice_Parameters : Voice_Parameters_Array :=
+     (others => (Voice_Volume_CC => Param_Range'Last / 2,
+                 Voice_Pan_CC    => Param_Range'Last / 2,
+                 others          => 0));
    Out_Voice_Parameters : Voice_Parameters_Array := (others => (others => 0));
 
    Last_Key : array (MIDI.MIDI_Channel) of MIDI.MIDI_Key := (others => 0);

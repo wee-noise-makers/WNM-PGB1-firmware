@@ -21,8 +21,6 @@
 
 with WNM.MIDI;
 with WNM.Sequence_Copy;
-with WNM.Sample_Library;
-with WNM.Speech;
 with WNM.Chord_Settings;
 with WNM.Synth;
 with WNM.Time;
@@ -198,8 +196,6 @@ package WNM.Project is
    type Track_Mode_Kind is (MIDI_Mode, Sample_Mode, Speech_Mode,
                             Kick_Mode, Snare_Mode, Cymbal_Mode,
                             Bass_Mode, Lead_Mode);
-   package Track_Mode_Kind_Next is new Enum_Next (Track_Mode_Kind);
-   use Track_Mode_Kind_Next;
 
    function Img (M : Track_Mode_Kind) return String
    is (case M is
@@ -261,6 +257,7 @@ package WNM.Project is
    -- Track Getters --
    function Mode (T : Tracks := Editing_Track) return Track_Mode_Kind;
    function MIDI_Chan (T : Tracks := Editing_Track) return MIDI.MIDI_Channel;
+   function Track_Name (T : Tracks := Editing_Track) return String;
    function Track_Volume (T : Tracks := Editing_Track) return Audio_Volume;
    function Track_Pan (T : Tracks := Editing_Track) return Audio_Pan;
    function CC_Default (T : Tracks := Editing_Track;
@@ -319,9 +316,6 @@ package WNM.Project is
    function CC_Controller_Short_Label (T    : Tracks := Editing_Track;
                                        Id   : CC_Id)
                                        return Tresses.Short_Label;
-   function Selected_Sample (T : Tracks := Editing_Track)
-                             return Sample_Library.Valid_Sample_Index;
-   function Selected_Word (T : Tracks := Editing_Track) return Speech.Word;
    function Selected_Engine (T : Tracks := Editing_Track)
                              return MIDI.MIDI_Data;
    function Selected_Engine_Img (T : Tracks := Editing_Track)
@@ -475,6 +469,9 @@ private
    type Global_Settings is (BPM);
    for Global_Settings use (BPM => 0);
 
+   package Boolean_Next is new Enum_Next (Boolean);
+   use Boolean_Next;
+
    package Trigger_Kind_Next is new Enum_Next (Trigger_Kind);
    use Trigger_Kind_Next;
 
@@ -576,7 +573,7 @@ private
    type CC_Setting_Array is array (CC_Id) of CC_Setting;
 
    type Track_Rec is record
-      Mode : Track_Mode_Kind := Sample_Mode;
+      MIDI_Enabled : Boolean := False;
       Chan : MIDI.MIDI_Channel := 0;
       Volume : Audio_Volume := Init_Volume;
       Pan : Audio_Pan := Init_Pan;
@@ -589,8 +586,6 @@ private
       LFO_Sync : LFO_Sync_Kind := Off;
       LFO_Loop : LFO_Loop_Kind := On;
       CC : CC_Setting_Array;
-      Sample : Sample_Library.Valid_Sample_Index := 1;
-      Word   : Speech.Word := Speech.Word'First;
       Engine : MIDI.MIDI_Data := 0;
       Arp_Mode : Arp_Mode_Kind := Arp_Mode_Kind'First;
       Arp_Notes : Arp_Notes_Kind := Arp_Notes_Kind'First;
@@ -601,7 +596,7 @@ private
    type Track_Arr is array (Tracks) of Track_Rec;
 
    Default_Track : constant Track_Rec :=
-     (Mode => MIDI_Mode,
+     (MIDI_Enabled => False,
       Chan => 0,
       Volume => Init_Volume,
       Pan => Init_Pan,
@@ -618,8 +613,6 @@ private
              (2, 63, "CC2              "),
              (3, 63, "CC3              ")
             ),
-      Sample => Sample_Library.Valid_Sample_Index'First,
-      Word => Speech.Word'First,
       Engine => 0,
       Arp_Mode => Arp_Mode_Kind'First,
       Arp_Notes => Arp_Notes_Kind'First,

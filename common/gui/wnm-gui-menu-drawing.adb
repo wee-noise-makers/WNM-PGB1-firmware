@@ -31,6 +31,9 @@ with lfo_exp_down;
 with lfo_triangle;
 with lfo_sync;
 with lfo_loop;
+with filter_bp;
+with filter_lp;
+with filter_hp;
 
 package body WNM.GUI.Menu.Drawing is
 
@@ -610,6 +613,69 @@ package body WNM.GUI.Menu.Drawing is
       end case;
 
    end Draw_LFO_Shape;
+
+   ----------------------
+   -- Draw_Filter_Mode --
+   ----------------------
+
+   procedure Draw_Filter_Mode (Id       : WNM.Project.CC_Id;
+                               Mode     : Project.Filter_Mode_Kind;
+                               Label    : String;
+                               Selected : Boolean)
+   is
+      use WNM.Project;
+
+      X, Y : Natural;
+
+      Spacing : constant := 30;
+      Left : constant Natural := Box_Left + 5 +
+        (case Id is
+            when WNM.Project.A => 0 * Spacing,
+            when WNM.Project.B => 1 * Spacing,
+            when WNM.Project.C => 2 * Spacing,
+            when WNM.Project.D => 3 * Spacing);
+
+      Sub_Label_Width : constant := (Bitmap_Fonts.Width * 3) - 1;
+      Bar_Width : constant := 8;
+      Bar_Height : constant := 128 / Bar_Width - 1;
+      Bar_Left : constant Natural :=
+        Left + (Sub_Label_Width - Bar_Width) / 2;
+      Bar_Bottom : constant := Value_Text_Y + 2;
+      Bar_Top    : constant := Bar_Bottom - Bar_Height;
+      --  Bar_Center : constant Screen.Point :=
+      --    (Bar_Left + Bar_Width / 2,
+      --     Bar_Bottom - Bar_Height / 2);
+   begin
+
+      Y := Bar_Bottom;
+
+      if Selected then
+         Screen.Draw_Line ((Bar_Left - 3, Y), (Bar_Left - 3, Y - Bar_Height));
+         Screen.Draw_Line ((Bar_Left + Bar_Width + 2, Y),
+                           (Bar_Left + Bar_Width + 2, Y - Bar_Height));
+      end if;
+
+      --  Short label
+      X := Left;
+      Print (X_Offset => X,
+             Y_Offset => Value_Text_Y + 4,
+             Str      => Label);
+
+      X := Bar_Left - 1;
+      Y := Bar_Top;
+      case Mode is
+         when Project.Low_Pass =>
+            Screen.Copy_Bitmap
+              (filter_lp.Data, X, Y, Invert_Color => True);
+         when Project.High_Pass =>
+            Screen.Copy_Bitmap
+              (filter_hp.Data, X, Y, Invert_Color => True);
+         when Project.Band_Pass =>
+            Screen.Copy_Bitmap
+              (filter_bp.Data, X, Y, Invert_Color => True);
+      end case;
+
+   end Draw_Filter_Mode;
 
    ---------------
    -- Draw_Knob --

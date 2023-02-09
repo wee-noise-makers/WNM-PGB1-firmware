@@ -40,14 +40,10 @@ package body WNM.GUI.Update is
    Next_Start : Time.Time_Microseconds := Time.Time_Microseconds'First;
 
    function Header_Str return String is
-      Result : String (1 .. 21) := "P00:T00:S00  P:00:S00";
+      Result : String (1 .. 7) := "P00:S00";
    begin
-      Result (2 .. 3) := Img (Project.Editing_Pattern);
-      Result (6 .. 7) := Img (Project.Editing_Track);
-      Result (10 .. 11) := Img (Project.Editing_Step);
-
-      Result (16 .. 17) := Img (Project.Step_Sequencer.Playing_Pattern);
-      Result (20 .. 21) := Img (Project.Step_Sequencer.Playing_Step);
+      Result (2 .. 3) := Img (Project.Step_Sequencer.Playing_Pattern);
+      Result (6 .. 7) := Img (Project.Step_Sequencer.Playing_Step);
       return Result;
    end Header_Str;
 
@@ -80,6 +76,10 @@ package body WNM.GUI.Update is
 
       -- Header --
       B := 1;
+      Print (X_Offset    => B,
+             Y_Offset    => 0,
+             Str         => Project.Track_Name);
+      B := Screen.Width - 42;
       Print (X_Offset    => B,
              Y_Offset    => 0,
              Str         => Header_Str);

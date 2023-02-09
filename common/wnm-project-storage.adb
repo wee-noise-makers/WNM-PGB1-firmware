@@ -248,7 +248,7 @@ package body WNM.Project.Storage is
 
                case Set is
                   when Track_Mode =>
-                     Output.Push (Out_UInt (Track.Mode'Enum_Rep));
+                     Output.Push (Out_UInt (Track.MIDI_Enabled'Enum_Rep));
 
                   when Engine =>
                      Output.Push (Out_UInt (Track.Engine));
@@ -501,7 +501,7 @@ package body WNM.Project.Storage is
    procedure Load_Track (Input : in out File_In.Instance) is
       procedure To_Track_Settings is new Convert_To_Enum (Track_Settings);
 
-      procedure Read is new File_In.Read_Gen_Enum (Track_Mode_Kind);
+      procedure Read is new File_In.Read_Gen_Enum (Boolean);
       procedure Read is new File_In.Read_Gen_Int (Audio_Volume);
       procedure Read is new File_In.Read_Gen_Int (Audio_Pan);
       procedure Read is new File_In.Read_Gen_Enum (LFO_Shape_Kind);
@@ -545,7 +545,7 @@ package body WNM.Project.Storage is
             exit when not Success;
 
             case S is
-               when Track_Mode  => Read (Input, Track.Mode);
+               when Track_Mode  => Read (Input, Track.MIDI_Enabled);
                when Engine      => Read (Input, Track.Engine);
                when Volume      => Read (Input, Track.Volume);
                when Pan         => Read (Input, Track.Pan);

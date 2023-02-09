@@ -81,6 +81,11 @@ package WNM.GUI.Menu.Drawing is
                              Sync     : WNM.Project.LFO_Sync_Kind;
                              Loo      : WNM.Project.LFO_Loop_Kind);
 
+   procedure Draw_Filter_Mode (Id       : WNM.Project.CC_Id;
+                               Mode     : Project.Filter_Mode_Kind;
+                               Label    : String;
+                               Selected : Boolean);
+
    procedure Draw_Value_Left (Val      : String;
                               Selected : Boolean := False);
 

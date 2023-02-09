@@ -93,11 +93,10 @@ package body WNM.GUI.Menu.FX_Settings is
          when Filter =>
             Draw_Title ("Filter", "");
 
-            Draw_CC_Value (Id => A,
-                           Value => Project.Filter_Mode_Kind'Pos
-                             (Project.Filter_Mode_Value),
-                           Label => "MOD",
-                           Selected => Sub_Setting = Filter_Mode);
+            Draw_Filter_Mode (A,
+                              Project.Filter_Mode_Value,
+                              Label => "MOD",
+                              Selected => Sub_Setting = Filter_Mode);
             Draw_CC_Value (Id => B,
                            Value => Project.Filter_Cutoff_Value,
                            Label => "CTF",

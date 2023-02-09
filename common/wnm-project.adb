@@ -23,6 +23,7 @@ with HAL; use HAL;
 
 with WNM.Coproc;
 with WNM.Utils;
+with WNM.Speech;
 
 package body WNM.Project is
 
@@ -545,16 +546,22 @@ package body WNM.Project is
    -- Mode --
    ----------
 
-   function Mode (T : Tracks := Editing_Track) return Track_Mode_Kind
-   is (G_Project.Tracks (T).Mode);
-   --  is (case T is
-   --         when 1 => Kick_Mode,
-   --         when 2 => Snare_Mode,
-   --         when 3 => Cymbal_Mode,
-   --         when 4 => Lead_Mode,
-   --         when 5 => Sample_Mode,
-   --         when 6 => Speech_Mode,
-   --         when others => MIDI_Mode);
+   function Mode (T : Tracks := Editing_Track) return Track_Mode_Kind is
+   begin
+      if G_Project.Tracks (T).MIDI_Enabled then
+         return MIDI_Mode;
+      else
+         return (case T is
+                    when 1 => Kick_Mode,
+                    when 2 => Snare_Mode,
+                    when 3 => Cymbal_Mode,
+                    when 4 => Bass_Mode,
+                    when 5 => Lead_Mode,
+                    when 6 => Sample_Mode,
+                    when 7 => Speech_Mode,
+                    when others => MIDI_Mode);
+      end if;
+   end Mode;
 
    ---------------
    -- MIDI_Chan --
@@ -562,6 +569,15 @@ package body WNM.Project is
 
    function MIDI_Chan (T : Tracks := Editing_Track) return MIDI.MIDI_Channel
    is (G_Project.Tracks (T).Chan);
+
+   ----------------
+   -- Track_Name --
+   ----------------
+
+   function Track_Name (T : Tracks := Editing_Track) return String
+   is (case Mode (T) is
+          when MIDI_Mode => "MIDI" & MIDI_Chan (T)'Img,
+          when others    =>  Img (Mode (T)));
 
    ------------------
    -- Track_Volume --
@@ -762,21 +778,6 @@ package body WNM.Project is
    end CC_Controller_Short_Label;
 
    ---------------------
-   -- Selected_Sample --
-   ---------------------
-
-   function Selected_Sample (T : Tracks := Editing_Track)
-                             return Sample_Library.Valid_Sample_Index
-   is (G_Project.Tracks (T).Sample);
-
-   -------------------
-   -- Selected_Word --
-   -------------------
-
-   function Selected_Word (T : Tracks := Editing_Track) return Speech.Word
-   is (G_Project.Tracks (T).Word);
-
-   ---------------------
    -- Selected_Engine --
    ---------------------
 
@@ -939,7 +940,7 @@ package body WNM.Project is
       Track : Track_Rec renames G_Project.Tracks (Editing_Track);
    begin
       case S is
-         when Track_Mode      => Next (Track.Mode);
+         when Track_Mode      => Next (Track.MIDI_Enabled);
          when Engine          => Next (Track.Engine);
          when Volume          => Next (Track.Volume);
          when Pan             => Next (Track.Pan);
@@ -983,7 +984,7 @@ package body WNM.Project is
       Track : Track_Rec renames G_Project.Tracks (Editing_Track);
    begin
       case S is
-         when Track_Mode      => Prev (Track.Mode);
+         when Track_Mode      => Prev (Track.MIDI_Enabled);
          when Engine          => Prev (Track.Engine);
          when Volume          => Prev (Track.Volume);
          when Pan             => Prev (Track.Pan);
@@ -1027,7 +1028,7 @@ package body WNM.Project is
       Track : Track_Rec renames G_Project.Tracks (Editing_Track);
    begin
       case S is
-         when Track_Mode      => Next_Fast (Track.Mode);
+         when Track_Mode      => Next_Fast (Track.MIDI_Enabled);
          when Engine          => Next_Fast (Track.Engine);
          when Volume          => Next_Fast (Track.Volume);
          when Pan             => Next_Fast (Track.Pan);
@@ -1071,7 +1072,7 @@ package body WNM.Project is
       Track : Track_Rec renames G_Project.Tracks (Editing_Track);
    begin
       case S is
-         when Track_Mode      => Prev_Fast (Track.Mode);
+         when Track_Mode      => Prev_Fast (Track.MIDI_Enabled);
          when Engine          => Prev_Fast (Track.Engine);
          when Volume          => Prev_Fast (Track.Volume);
          when Pan             => Prev_Fast (Track.Pan);
@@ -1316,6 +1317,7 @@ package body WNM.Project is
 
    procedure Randomly_Pick_A_Progression is
    begin
+      --  https://github.com/ldrolez/free-midi-chords
       null; -- TODO..
    end Randomly_Pick_A_Progression;
 
