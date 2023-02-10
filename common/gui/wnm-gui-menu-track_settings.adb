@@ -283,7 +283,8 @@ package body WNM.GUI.Menu.Track_Settings is
                First : Project.CC_Id;
             begin
 
-               if Mode = Sample_Mode and then Selected = A then
+               if Mode in Sample1_Mode | Sample2_Mode and then Selected = A
+               then
                   declare
                      Id : constant Natural :=
                        Natural (Project.CC_Default (Editing_Track, A)) + 1;
@@ -303,7 +304,7 @@ package body WNM.GUI.Menu.Track_Settings is
                else
 
                   case Mode is
-                     when Speech_Mode | Sample_Mode =>
+                     when Speech_Mode | Sample1_Mode | Sample2_Mode =>
                         First := B;
                      when others =>
                         First := A;

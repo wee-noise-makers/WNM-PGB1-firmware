@@ -27,7 +27,6 @@ with WNM_HAL;
 
 with WNM.Time;
 with WNM.Sample_Library;
-with WNM.Sample_Stream;
 with WNM.MIDI;
 
 with Tresses;
@@ -35,14 +34,15 @@ with Tresses.LFO;
 
 package WNM.Synth is
 
-   Sample_Channel : constant MIDI.MIDI_Channel := 1;
-   Speech_Channel : constant MIDI.MIDI_Channel := 2;
-   Kick_Channel   : constant MIDI.MIDI_Channel := 3;
-   Snare_Channel  : constant MIDI.MIDI_Channel := 4;
-   Cymbal_Channel : constant MIDI.MIDI_Channel := 5;
-   Lead_Channel   : constant MIDI.MIDI_Channel := 6;
-   Bass_Channel   : constant MIDI.MIDI_Channel := 7;
-   Chord_Channel  : constant MIDI.MIDI_Channel := 8;
+   Speech_Channel  : constant MIDI.MIDI_Channel := 1;
+   Sample1_Channel : constant MIDI.MIDI_Channel := 2;
+   Sample2_Channel : constant MIDI.MIDI_Channel := 3;
+   Kick_Channel    : constant MIDI.MIDI_Channel := 4;
+   Snare_Channel   : constant MIDI.MIDI_Channel := 5;
+   Cymbal_Channel  : constant MIDI.MIDI_Channel := 6;
+   Lead_Channel    : constant MIDI.MIDI_Channel := 7;
+   Bass_Channel    : constant MIDI.MIDI_Channel := 8;
+   Chord_Channel   : constant MIDI.MIDI_Channel := 9;
 
    Voice_Param_1_CC      : constant MIDI.MIDI_Data := 0;
    Voice_Param_2_CC      : constant MIDI.MIDI_Data := 1;
@@ -92,9 +92,6 @@ package WNM.Synth is
    function Sample_Clock return Sample_Time;
    --  How many audio samples have been sent to the DAC so far.
    --  This number can be used to count time between two events.
-
-   procedure Trig (Track  : Sample_Stream.Stream_Track;
-                   Sample : Sample_Library.Valid_Sample_Index);
 
    procedure Next_Points (Output : out WNM_HAL.Stereo_Buffer;
                           Input  :     WNM_HAL.Stereo_Buffer);

@@ -257,7 +257,7 @@ package body WNM.Project is
               Bass_Mode =>
             return CC_Value (Step, Id)'Img;
 
-         when Sample_Mode =>
+         when Sample1_Mode | Sample2_Mode =>
             return "N/A";
 
          when Speech_Mode =>
@@ -557,8 +557,9 @@ package body WNM.Project is
                     when 3 => Cymbal_Mode,
                     when 4 => Bass_Mode,
                     when 5 => Lead_Mode,
-                    when 6 => Sample_Mode,
-                    when 7 => Speech_Mode,
+                    when 6 => Sample1_Mode,
+                    when 7 => Sample2_Mode,
+                    when 8 => Speech_Mode,
                     when others => MIDI_Mode);
       end if;
    end Mode;
@@ -722,7 +723,7 @@ package body WNM.Project is
                             Result);
             return Result;
 
-         when Sample_Mode =>
+         when Sample1_Mode | Sample2_Mode =>
             return "Not Applicable   ";
 
          when Speech_Mode =>
@@ -765,7 +766,7 @@ package body WNM.Project is
             return Synth.Lead_Param_Short_Label (Selected_Engine (T),
                                                  Tresses_Id);
 
-         when Sample_Mode =>
+         when Sample1_Mode | Sample2_Mode =>
             return "N/A";
 
          when Speech_Mode =>

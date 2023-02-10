@@ -55,7 +55,7 @@ private
                            S : Sub_Settings)
                            return Boolean
    is (case M is
-          when Project.Sample_Mode =>
+          when Project.Sample1_Mode | Project.Sample2_Mode =>
              S in Track_Mode | Volume | Pan | Master_FX | Arp_Mode |
                   Arp_Notes | CC_Default_A,
 

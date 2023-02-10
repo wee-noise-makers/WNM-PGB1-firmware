@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2017 Fabien Chouteau                    --
+--                     Copyright (C) 2023 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,44 +19,57 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM_HAL;
+with Tresses;            use Tresses;
+with Tresses.Interfaces; use Tresses.Interfaces;
 
-with WNM.Sample_Library;
+private with Tresses.Envelopes.AR;
+private with WNM.Sample_Library;
 
-package WNM.Sample_Stream is
-   pragma Elaborate_Body;
+private package WNM.Synth.Sampler_Voice is
 
-   type Stream_Track is range 0 .. Tracks'Last;
-   Always_On : constant Stream_Track := 0;
+   type Instance
+   is new Four_Params_Voice
+   with private;
 
-   function To_Stream_Track (T : Tracks) return Stream_Track;
-   function To_Track (ST : Stream_Track) return Tracks
-     with Pre => ST /= Always_On;
+   procedure Set_Sample (This : in out Instance; Id : MIDI.MIDI_Data);
 
-   procedure Start (Track       : Stream_Track;
-                    Sample      : Sample_Library.Sample_Index;
-                    Start_Point : Sample_Library.Sample_Point_Index;
-                    End_Point   : Sample_Library.Sample_Point_Index;
-                    Looping     : Boolean);
+   procedure Init (This : in out Instance);
 
-   procedure Next_Buffer (Track   :     Stream_Track;
-                          Buffer  : out WNM_HAL.Mono_Buffer;
-                          Success : out Boolean);
+   procedure Render (This   : in out Instance;
+                     Buffer :    out Tresses.Mono_Buffer);
+
+   --  Interfaces --
+
+   overriding
+   function Param_Label (This : Instance; Id : Param_Id) return String
+   is (case Id is
+          when 1 => "Sample",
+          when 2 => "Start",
+          when 3 => "End",
+          when 4 => "Nothing...");
+
+   overriding
+   function Param_Short_Label (This : Instance; Id : Param_Id)
+                               return Short_Label
+   is (case Id is
+          when 1 => "SMP",
+          when 2 => "STR",
+          when 3 => "END",
+          when 4 => "N/A");
 
 private
 
-   type Stream_State is (Ready, Running);
+   type Instance
+   is new Four_Params_Voice
+   with record
+      Sample_Id : Sample_Library.Valid_Sample_Index :=
+        Sample_Library.Valid_Sample_Index'First;
 
-   type Stream_Info is record
-      State       : Stream_State := Ready;
-      Sample      : Sample_Library.Sample_Index :=
-        Sample_Library.Invalid_Sample_Entry;
-      Cursor      : Sample_Library.Sample_Point_Index;
-      Start_Point : Sample_Library.Sample_Point_Index;
-      End_Point   : Sample_Library.Sample_Point_Index;
-      Looping     : Boolean;
+      Cursor : Sample_Library.Sample_Point_Count := 0;
+
+      Env : Tresses.Envelopes.AR.Instance;
+
+      Do_Init : Boolean := True;
    end record;
 
-   Streams : array (Stream_Track) of Stream_Info;
-
-end WNM.Sample_Stream;
+end WNM.Synth.Sampler_Voice;

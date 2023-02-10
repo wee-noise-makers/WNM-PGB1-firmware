@@ -16,7 +16,9 @@ project Wnm_Ps1_Simulator is
    end Builder;
 
    package Compiler is
-      for Default_Switches ("Ada") use Wnm_Ps1_Simulator_Config.Ada_Compiler_Switches;
+      for Default_Switches ("Ada") use
+        Wnm_Ps1_Simulator_Config.Ada_Compiler_Switches &
+        ("-gnateE");
    end Compiler;
 
    package Linker is

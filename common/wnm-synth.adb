@@ -21,12 +21,11 @@
 
 with HAL; use HAL;
 with Interfaces; use Interfaces;
-with WNM.Sample_Stream;          use WNM.Sample_Stream;
-with WNM.Sample_Library;         use WNM.Sample_Library;
 with WNM.Coproc;
 with MIDI;
 
 with WNM.Synth.Snare_Voice;
+with WNM.Synth.Sampler_Voice;
 with WNM.Speech;
 
 with Tresses; use Tresses;
@@ -49,6 +48,8 @@ package body WNM.Synth is
    TC   : aliased Tresses.Drums.Cymbal.Instance;
    Lead : aliased Tresses.Voices.Macro.Instance;
    Bass : aliased Tresses.Voices.Macro.Instance;
+   Sampler1 : aliased WNM.Synth.Sampler_Voice.Instance;
+   Sampler2 : aliased WNM.Synth.Sampler_Voice.Instance;
 
    DLL : Tresses.FX.Delay_Line.Instance
      (Unsigned_16 (MIDI.MIDI_Data'Last) * 100 + 1);
@@ -87,18 +88,20 @@ package body WNM.Synth is
           when others => Snare_Voice.Clap);
 
    subtype Synth_Channels
-     is MIDI.MIDI_Channel range Sample_Channel .. Bass_Channel;
+     is MIDI.MIDI_Channel range Speech_Channel .. Bass_Channel;
 
    subtype Tresses_Channels
-     is MIDI.MIDI_Channel range Kick_Channel .. Bass_Channel;
+     is MIDI.MIDI_Channel range Sample1_Channel .. Bass_Channel;
 
    Synth_Voices : constant array (Tresses_Channels) of
      Voice_Access :=
-       (Kick_Channel   => TK'Access,
-        Snare_Channel  => TS'Access,
-        Cymbal_Channel => TC'Access,
-        Lead_Channel   => Lead'Access,
-        Bass_Channel   => Bass'Access);
+       (Sample1_Channel => Sampler1'Access,
+        Sample2_Channel => Sampler2'Access,
+        Kick_Channel    => TK'Access,
+        Snare_Channel   => TS'Access,
+        Cymbal_Channel  => TC'Access,
+        Lead_Channel    => Lead'Access,
+        Bass_Channel    => Bass'Access);
 
    LFO_Targets : array (Synth_Channels) of MIDI.MIDI_Data :=
      (others => Voice_Pan_CC);
@@ -124,8 +127,6 @@ package body WNM.Synth is
 
    Volume_For_Chan : array (MIDI.MIDI_Channel) of WNM_HAL.Audio_Volume :=
      (others => WNM_HAL.Init_Volume);
-
-   Selected_Sample : MIDI.MIDI_Data := 0;
 
    Recording_Source : Rec_Source;
    Recording_Size   : Natural;
@@ -212,21 +213,6 @@ package body WNM.Synth is
    function Sample_Clock return Sample_Time
    is (Glob_Sample_Clock);
 
-   ----------
-   -- Trig --
-   ----------
-
-   procedure Trig (Track  : Sample_Stream.Stream_Track;
-                   Sample : Sample_Library.Valid_Sample_Index)
-   is
-   begin
-      Start (Track       => Track,
-             Sample      => Sample,
-             Start_Point => Sample_Library.Sample_Point_Index'First,
-             End_Point   => Sample_Library.Sample_Point_Index'Last,
-             Looping     => False);
-   end Trig;
-
    ---------------------------
    -- Process_Coproc_Events --
    ---------------------------
@@ -250,43 +236,7 @@ package body WNM.Synth is
                --    (Clock'Img & " - " &
                --     MIDI.Img (Msg.MIDI_Evt));
 
-               if Msg.MIDI_Evt.Chan = Sample_Channel then
-                  case Msg.MIDI_Evt.Kind is
-                     when MIDI.Note_On =>
-                        WNM.Sample_Stream.Start
-                          (1,
-                           Sample_Library.Sample_Index (Selected_Sample) + 1,
-                           Sample_Library.Sample_Point_Index'First,
-                           Sample_Library.Sample_Point_Index'Last,
-                           False);
-
-                        Last_Key (Msg.MIDI_Evt.Chan) := Msg.MIDI_Evt.Key;
-
-                        if LFO_Syncs (Msg.MIDI_Evt.Chan) then
-                           LFOs (Msg.MIDI_Evt.Chan).Sync;
-                        end if;
-
-                     when MIDI.Note_Off =>
-
-                        if Last_Key (Msg.MIDI_Evt.Chan) = Msg.MIDI_Evt.Key
-                        then
-                           Last_Key (Msg.MIDI_Evt.Chan) := 0;
-                        end if;
-
-                     when MIDI.Continous_Controller =>
-                        case Msg.MIDI_Evt.Controller is
-                           when 0 =>
-                              Selected_Sample :=
-                                Msg.MIDI_Evt.Controller_Value;
-                           when others =>
-                              null;
-                        end case;
-
-                     when others =>
-                        null;
-                  end case;
-
-               elsif Msg.MIDI_Evt.Chan = Speech_Channel then
+               if Msg.MIDI_Evt.Chan = Speech_Channel then
                   case Msg.MIDI_Evt.Kind is
                      when MIDI.Note_On =>
                         WNM.Speech.Start (Msg.MIDI_Evt.Key);
@@ -403,10 +353,28 @@ package body WNM.Synth is
                      when MIDI.Continous_Controller =>
                         case Msg.MIDI_Evt.Controller is
                            when LFO_Compatible_CC =>
-                              In_Voice_Parameters (Msg.MIDI_Evt.Chan,
-                                                   Msg.MIDI_Evt.Controller)
-                                := To_Param
-                                  (Msg.MIDI_Evt.Controller_Value);
+
+                              if Msg.MIDI_Evt.Chan = Sample1_Channel
+                                and then
+                                  Msg.MIDI_Evt.Controller = Voice_Param_1_CC
+                              then
+                                 Sampler1.Set_Sample
+                                   (Msg.MIDI_Evt.Controller_Value);
+
+                              elsif Msg.MIDI_Evt.Chan = Sample2_Channel
+                                and then
+                                  Msg.MIDI_Evt.Controller = Voice_Param_1_CC
+                              then
+                                 Sampler2.Set_Sample
+                                   (Msg.MIDI_Evt.Controller_Value);
+
+                              else
+                                 In_Voice_Parameters
+                                   (Msg.MIDI_Evt.Chan,
+                                    Msg.MIDI_Evt.Controller)
+                                   := To_Param
+                                     (Msg.MIDI_Evt.Controller_Value);
+                              end if;
 
                            when Voice_Engine_CC =>
 
@@ -559,22 +527,6 @@ package body WNM.Synth is
          Output := (others => (0, 0));
       end if;
 
-      --  Samples
-      declare
-         Success : Boolean;
-      begin
-         for Track in Stream_Track loop
-            Next_Buffer (Track, Buffer, Success);
-            if Success then
-               WNM_HAL.Mix (Send_L_Buffers (FX_Send (Sample_Channel)),
-                            Send_R_Buffers (FX_Send (Sample_Channel)),
-                            Buffer,
-                            Volume_For_Chan (Sample_Channel),
-                            Pan_For_Chan (Sample_Channel));
-            end if;
-         end loop;
-      end;
-
       -- Speech synth --
       declare
          Success : Boolean;
@@ -626,6 +578,20 @@ package body WNM.Synth is
                       Input => Buffer,
                       Volume => Volume_For_Chan (Bass_Channel),
                       Pan => Pan_For_Chan (Bass_Channel));
+
+         Sampler1.Render (Buffer);
+         WNM_HAL.Mix (Send_L_Buffers (FX_Send (Sample1_Channel)),
+                      Send_R_Buffers (FX_Send (Sample1_Channel)),
+                      Input => Buffer,
+                      Volume => Volume_For_Chan (Sample1_Channel),
+                      Pan => Pan_For_Chan (Sample1_Channel));
+
+         Sampler2.Render (Buffer);
+         WNM_HAL.Mix (Send_L_Buffers (FX_Send (Sample2_Channel)),
+                      Send_R_Buffers (FX_Send (Sample2_Channel)),
+                      Input => Buffer,
+                      Volume => Volume_For_Chan (Sample2_Channel),
+                      Pan => Pan_For_Chan (Sample2_Channel));
       end;
 
       declare

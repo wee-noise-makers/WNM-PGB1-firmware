@@ -193,13 +193,14 @@ package WNM.Project is
    -- Track --
    -----------
 
-   type Track_Mode_Kind is (MIDI_Mode, Sample_Mode, Speech_Mode,
-                            Kick_Mode, Snare_Mode, Cymbal_Mode,
+   type Track_Mode_Kind is (MIDI_Mode, Sample1_Mode, Sample2_Mode,
+                            Speech_Mode, Kick_Mode, Snare_Mode, Cymbal_Mode,
                             Bass_Mode, Lead_Mode);
 
    function Img (M : Track_Mode_Kind) return String
    is (case M is
-          when Sample_Mode => "Sample",
+          when Sample1_Mode => "Sample 1",
+          when Sample2_Mode => "Sample 2",
           when MIDI_Mode   => "MIDI",
           when Speech_Mode => "Speech",
           when Kick_Mode   => "Kick",
@@ -209,12 +210,13 @@ package WNM.Project is
           when Bass_Mode   => "Bass");
 
    subtype Synth_Track_Mode_Kind is
-     Track_Mode_Kind range Sample_Mode .. Lead_Mode;
+     Track_Mode_Kind range Sample1_Mode .. Lead_Mode;
 
    function Voice_MIDI_Chan (Voice : Synth_Track_Mode_Kind)
                              return MIDI.MIDI_Channel
    is (case Voice is
-          when Sample_Mode => Synth.Sample_Channel,
+          when Sample1_Mode => Synth.Sample1_Channel,
+          when Sample2_Mode => Synth.Sample2_Channel,
           when Speech_Mode => Synth.Speech_Channel,
           when Kick_Mode   => Synth.Kick_Channel,
           when Snare_Mode  => Synth.Snare_Channel,
