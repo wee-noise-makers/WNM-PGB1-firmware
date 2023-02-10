@@ -548,7 +548,10 @@ package body WNM.Project.Step_Sequencer is
    procedure Execute_Step is
    begin
 
-      Next_Start := Next_Start + (Microseconds_Per_Beat / Steps_Per_Beat) / 2;
+      Next_Start := Next_Start +
+        (Microseconds_Per_Beat / Steps_Per_Beat) / (if WNM.UI.FX_On (B2)
+                                                    then 4
+                                                    else 2);
 
       if Pattern_Sequencer.Playing then
          case Microstep is
@@ -556,7 +559,14 @@ package body WNM.Project.Step_Sequencer is
             --  Begining of a new step
             when 0 =>
 
-               if Current_Playing_Step /= Sequencer_Steps'Last then
+               if (WNM.UI.FX_On (B2) or else WNM.UI.FX_On (B3))
+                 or else
+                  (Current_Playing_Step >= 2 and then WNM.UI.FX_On (B4))
+                 or else
+                  (Current_Playing_Step >= 4 and then WNM.UI.FX_On (B5))
+               then
+                  Current_Playing_Step := 1;
+               elsif Current_Playing_Step /= Sequencer_Steps'Last then
 
                   if Current_Playing_Step = 8 then
                      Pattern_Sequencer.Signal_Mid_Pattern;

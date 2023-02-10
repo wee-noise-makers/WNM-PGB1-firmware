@@ -558,6 +558,16 @@ package body WNM.UI is
 
    procedure Toggle_FX (B : Keyboard_Button) is
    begin
+
+      --  Mutually exlusive effects
+      if B in B2 .. B5 then
+         if not FX_Is_On (B) then
+            for X in B2 .. B5 loop
+               FX_Is_On (X) := False;
+            end loop;
+         end if;
+      end if;
+
       FX_Is_On (B) := not FX_Is_On (B);
    end Toggle_FX;
 
