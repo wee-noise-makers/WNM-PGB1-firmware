@@ -119,6 +119,7 @@ package WNM.Synth is
    function Kick_Param_Short_Label (Id : Tresses.Param_Id)
                                     return Tresses.Short_Label;
 
+   function Snare_Engine_Img (Engine : MIDI.MIDI_Data) return String;
    function Snare_Param_Label (Id : Tresses.Param_Id)
                                return String;
    function Snare_Param_Short_Label (Id : Tresses.Param_Id)

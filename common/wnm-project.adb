@@ -793,11 +793,14 @@ package body WNM.Project is
                                  return String
    is
    begin
-      if Mode (T) in Lead_Mode | Bass_Mode then
-         return Synth.Lead_Engine_Img (Selected_Engine (T));
-      else
-         return "No Engine";
-      end if;
+      case Mode (T) is
+         when Lead_Mode | Bass_Mode =>
+            return Synth.Lead_Engine_Img (Selected_Engine (T));
+         when Snare_Mode =>
+            return Synth.Snare_Engine_Img (Selected_Engine (T));
+         when others =>
+            return "No Engine";
+      end case;
    end Selected_Engine_Img;
 
    --------------

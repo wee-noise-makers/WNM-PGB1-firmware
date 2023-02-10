@@ -67,13 +67,12 @@ private
              S in Track_Mode | Volume | Pan | Master_FX | Arp_Mode |
                   Arp_Notes | CC_Default_A .. CC_Default_B,
 
-          when Project.Kick_Mode | Project.Snare_Mode |
-               Project.Cymbal_Mode =>
+          when Project.Kick_Mode | Project.Cymbal_Mode =>
              S in Track_Mode | Volume | Pan | Master_FX | Arp_Mode |
                   Arp_Notes | CC_Default_A .. CC_Default_D |
                   LFO_Rate | LFO_Amplitude | LFO_Target | LFO_Shape,
 
-          when Project.Lead_Mode | Bass_Mode =>
+          when Project.Lead_Mode | Bass_Mode | Project.Snare_Mode =>
              S in Track_Mode | Engine | Volume | Pan | Master_FX | Arp_Mode |
                   Arp_Notes | CC_Default_A .. CC_Default_D |
                   LFO_Rate | LFO_Amplitude | LFO_Target | LFO_Shape

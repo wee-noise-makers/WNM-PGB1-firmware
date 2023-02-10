@@ -1,0 +1,105 @@
+with Tresses.Drums.Clap;
+with Tresses.Drums.Snare;
+with Tresses.Macro;
+
+package body WNM.Synth.Snare_Voice is
+
+   ------------
+   -- Engine --
+   ------------
+
+   function Engine (This : Instance) return Snare_Engine
+   is (This.Engine);
+
+   ----------------
+   -- Set_Engine --
+   ----------------
+
+   procedure Set_Engine (This : in out Instance; E : Snare_Engine) is
+   begin
+      if E /= This.Engine then
+         This.Engine := E;
+         Init (This);
+      end if;
+   end Set_Engine;
+
+   ----------
+   -- Init --
+   ----------
+
+   procedure Init (This : in out Instance) is
+   begin
+      This.Do_Init := True;
+   end Init;
+
+   ------------
+   -- Render --
+   ------------
+
+   procedure Render (This   : in out Instance;
+                     Buffer :    out Tresses.Mono_Buffer)
+   is
+   begin
+      case This.Engine is
+         when Snare =>
+            Tresses.Drums.Snare.Render_Snare (Buffer,
+                                              Params => This.Params,
+                                              Pulse0 => This.Pulse0,
+                                              Pulse1 => This.Pulse1,
+                                              Pulse2 => This.Pulse2,
+                                              Pulse3 => This.Pulse3,
+                                              Filter0 => This.Filter0,
+                                              Filter1 => This.Filter1,
+                                              Filter2 => This.Filter3,
+                                              Rng =>  This.Rng,
+                                              Pitch => This.Pitch,
+                                              Do_Init => This.Do_Init,
+                                              Do_Strike => This.Do_Strike);
+         when Clap =>
+            Tresses.Drums.Clap.Render_Clap (Buffer,
+                                            Params => This.Params,
+                                            Filter => This.Filter0,
+                                            Rng =>  This.Rng,
+                                            Env => This.Env0,
+                                            Re_Trig => This.Re_Trig,
+                                            Pitch => This.Pitch,
+                                            Do_Init => This.Do_Init,
+                                            Do_Strike => This.Do_Strike);
+      end case;
+   end Render;
+
+
+   -------------------
+   -- Tresse_Engine --
+   -------------------
+
+   function Tresse_Engine (E : Snare_Engine) return Tresses.Engines
+   is (case E is
+          when Snare => Tresses.Drum_Snare,
+          when Clap  => Tresses.Drum_Clap);
+
+   ---------
+   -- Img --
+   ---------
+
+   function Img (E : Snare_Engine) return String
+   is (Tresses.Img (Tresse_Engine (E)));
+
+   -----------------
+   -- Param_Label --
+   -----------------
+
+   overriding
+   function Param_Label (This : Instance; Id : Param_Id) return String
+   is (Tresses.Macro.Param_Label (Tresse_Engine (This.Engine), Id));
+
+   -----------------------
+   -- Param_Short_Label --
+   -----------------------
+
+   overriding
+   function Param_Short_Label (This : Instance; Id : Param_Id)
+                               return Short_Label
+   is (Tresses.Macro.Param_Short_Label (Tresse_Engine (This.Engine), Id));
+
+end WNM.Synth.Snare_Voice;

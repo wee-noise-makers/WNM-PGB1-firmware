@@ -26,6 +26,7 @@ with WNM.Sample_Library;         use WNM.Sample_Library;
 with WNM.Coproc;
 with MIDI;
 
+with WNM.Synth.Snare_Voice;
 with WNM.Speech;
 
 with Tresses; use Tresses;
@@ -44,7 +45,7 @@ package body WNM.Synth is
    type FX_Kind is (Bypass, Overdrive, Delayline, Filter);
 
    TK   : aliased Tresses.Drums.Kick.Instance;
-   TS   : aliased Tresses.Drums.Clap.Instance;
+   TS   : aliased WNM.Synth.Snare_Voice.Instance;
    TC   : aliased Tresses.Drums.Cymbal.Instance;
    Lead : aliased Tresses.Voices.Macro.Instance;
    Bass : aliased Tresses.Voices.Macro.Instance;
@@ -79,6 +80,11 @@ package body WNM.Synth is
           when 6 => Tresses.Voice_Bass_808,
           when 7 => Tresses.Voice_House_Bass,
           when others => Tresses.Voice_Plucked);
+
+   function Snare_Engines (V : MIDI.MIDI_Data) return Snare_Voice.Snare_Engine
+   is (case V is
+          when 0     => Snare_Voice.Snare,
+          when others => Snare_Voice.Clap);
 
    subtype Synth_Channels
      is MIDI.MIDI_Channel range Sample_Channel .. Bass_Channel;
@@ -413,6 +419,10 @@ package body WNM.Synth is
                                  Bass.Set_Engine
                                    (Lead_Engines
                                       (Msg.MIDI_Evt.Controller_Value));
+                                 when Snare_Channel =>
+                                    TS.Set_Engine
+                                      (Snare_Engines
+                                         (Msg.MIDI_Evt.Controller_Value));
                               when others =>
                                  null;
                               end case;
@@ -780,12 +790,19 @@ package body WNM.Synth is
                                     return Tresses.Short_Label
    is (Tresses.Macro.Param_Short_Label (Tresses.Drum_Kick, Id));
 
+   ----------------------
+   -- Snare_Engine_Img --
+   ----------------------
+
+   function Snare_Engine_Img (Engine : MIDI.MIDI_Data) return String
+   is (WNM.Synth.Snare_Voice.Img (Snare_Engines (Engine)));
+
    -----------------------
    -- Snare_Param_Label --
    -----------------------
 
    function Snare_Param_Label (Id : Tresses.Param_Id) return String
-   is (Tresses.Macro.Param_Label (Tresses.Drum_Snare, Id));
+   is (TS.Param_Label (Id));
 
    -----------------------------
    -- Snare_Param_Short_Label --
@@ -793,7 +810,7 @@ package body WNM.Synth is
 
    function Snare_Param_Short_Label (Id : Tresses.Param_Id)
                                     return Tresses.Short_Label
-   is (Tresses.Macro.Param_Short_Label (Tresses.Drum_Snare, Id));
+   is (TS.Param_Short_Label (Id));
 
    ------------------------
    -- Cymbal_Param_Label --
