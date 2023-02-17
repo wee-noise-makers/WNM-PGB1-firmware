@@ -55,10 +55,6 @@ private
                            S : Sub_Settings)
                            return Boolean
    is (case M is
-          when Project.Sample1_Mode | Project.Sample2_Mode =>
-             S in Track_Mode | Volume | Pan | Master_FX | Arp_Mode |
-                  Arp_Notes | CC_Default_A,
-
           when Project.MIDI_Mode =>
              S in Track_Mode | MIDI_Chan | MIDI_Instrument | Arp_Mode |
                   Arp_Notes | Notes_Per_Chord | CC_Default_A .. CC_Label_D,
@@ -67,7 +63,8 @@ private
              S in Track_Mode | Volume | Pan | Master_FX | Arp_Mode |
                   Arp_Notes | CC_Default_A .. CC_Default_B,
 
-          when Project.Kick_Mode | Project.Cymbal_Mode =>
+          when Project.Kick_Mode | Project.Cymbal_Mode |
+               Project.Sample1_Mode | Project.Sample2_Mode =>
              S in Track_Mode | Volume | Pan | Master_FX | Arp_Mode |
                   Arp_Notes | CC_Default_A .. CC_Default_D |
                   LFO_Rate | LFO_Amplitude | LFO_Target | LFO_Shape,

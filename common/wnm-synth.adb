@@ -327,9 +327,16 @@ package body WNM.Synth is
                   begin
                      case Msg.MIDI_Evt.Kind is
                      when MIDI.Note_On =>
-                        Voice.Set_Pitch (Tresses.MIDI_Pitch
-                                         (Standard.MIDI.MIDI_UInt8
-                                            (Msg.MIDI_Evt.Key)));
+
+                        if Msg.MIDI_Evt.Chan = Sample1_Channel then
+                           Sampler1.Set_MIDI_Pitch (Msg.MIDI_Evt.Key);
+                        elsif Msg.MIDI_Evt.Chan = Sample2_Channel then
+                           Sampler2.Set_MIDI_Pitch (Msg.MIDI_Evt.Key);
+                        else
+                           Voice.Set_Pitch (Tresses.MIDI_Pitch
+                                            (Standard.MIDI.MIDI_UInt8
+                                               (Msg.MIDI_Evt.Key)));
+                        end if;
 
                         Voice.Note_On (To_Param
                                        (Msg.MIDI_Evt.Velocity));
@@ -792,6 +799,23 @@ package body WNM.Synth is
    function Cymbal_Param_Short_Label (Id : Tresses.Param_Id)
                                       return Tresses.Short_Label
    is (Tresses.Macro.Param_Short_Label (Tresses.Drum_Cymbal, Id));
+
+   -------------------------
+   -- Sampler_Param_Label --
+   -------------------------
+
+   function Sampler_Param_Label (Id : Tresses.Param_Id)
+                                 return String
+   is (Sampler1.Param_Label (Id));
+
+   -------------------------------
+   -- Sampler_Param_Short_Label --
+   -------------------------------
+
+   function Sampler_Param_Short_Label (Id : Tresses.Param_Id)
+                                       return Tresses.Short_Label
+   is (Sampler1.Param_Short_Label (Id));
+
 
    -------------------
    -- Now_Recording --

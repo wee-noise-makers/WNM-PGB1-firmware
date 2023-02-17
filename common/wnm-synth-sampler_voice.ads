@@ -38,26 +38,38 @@ private package WNM.Synth.Sampler_Voice is
    procedure Render (This   : in out Instance;
                      Buffer :    out Tresses.Mono_Buffer);
 
+   procedure Set_MIDI_Pitch (This : in out Instance;
+                             Key  :        MIDI.MIDI_Key);
+
+   P_Sample  : constant Tresses.Param_Id := 1;
+   P_Start   : constant Tresses.Param_Id := 2;
+   P_Release : constant Tresses.Param_Id := 3;
+   P_Drive   : constant Tresses.Param_Id := 4;
+
    --  Interfaces --
 
    overriding
    function Param_Label (This : Instance; Id : Param_Id) return String
    is (case Id is
-          when 1 => "Sample",
-          when 2 => "Start",
-          when 3 => "End",
-          when 4 => "Nothing...");
+          when P_Sample  => "Sample",
+          when P_Start   => "Start",
+          when P_Release => "Release",
+          when P_Drive   => "Drive");
 
    overriding
    function Param_Short_Label (This : Instance; Id : Param_Id)
                                return Short_Label
    is (case Id is
-          when 1 => "SMP",
-          when 2 => "STR",
-          when 3 => "END",
-          when 4 => "N/A");
+          when P_Sample  => "SMP",
+          when P_Start   => "STR",
+          when P_Release => "REL",
+          when P_Drive   => "DRV");
 
 private
+
+   type Sample_Pitch
+     is delta 0.00001
+     range 0.0 .. Sample_Library.Single_Sample_Point_Cnt * 1.0 + 64.0;
 
    type Instance
    is new Four_Params_Voice
@@ -65,7 +77,8 @@ private
       Sample_Id : Sample_Library.Valid_Sample_Index :=
         Sample_Library.Valid_Sample_Index'First;
 
-      Cursor : Sample_Library.Sample_Point_Count := 0;
+      Cursor : Sample_Pitch := 1.0;
+      S_Pitch : Sample_Pitch := 1.0;
 
       Env : Tresses.Envelopes.AR.Instance;
 

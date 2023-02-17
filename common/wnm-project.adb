@@ -724,7 +724,8 @@ package body WNM.Project is
             return Result;
 
          when Sample1_Mode | Sample2_Mode =>
-            return "Not Applicable   ";
+            Utils.Copy_Str (Synth.Sampler_Param_Label (Tresses_Id), Result);
+            return Result;
 
          when Speech_Mode =>
             case Id is
@@ -767,7 +768,7 @@ package body WNM.Project is
                                                  Tresses_Id);
 
          when Sample1_Mode | Sample2_Mode =>
-            return "N/A";
+            return Synth.Sampler_Param_Short_Label (Tresses_Id);
 
          when Speech_Mode =>
             case Id is

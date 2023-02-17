@@ -127,6 +127,11 @@ package WNM.Synth is
    function Cymbal_Param_Short_Label (Id : Tresses.Param_Id)
                                       return Tresses.Short_Label;
 
+   function Sampler_Param_Label (Id : Tresses.Param_Id)
+                                 return String;
+   function Sampler_Param_Short_Label (Id : Tresses.Param_Id)
+                                       return Tresses.Short_Label;
+
    ---------------
    -- Recording --
    ---------------

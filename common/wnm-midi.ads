@@ -104,6 +104,28 @@ package WNM.MIDI is
    is (MIDI_Key (12 + Natural (Oct) * 12 +
                    Notes'Pos (N) - Notes'Pos (Notes'First)));
 
+   C_1  : constant MIDI_Key := 16#00#;
+   Cs_1 : constant MIDI_Key := 16#01#;
+   D_1  : constant MIDI_Key := 16#02#;
+   Ds_1 : constant MIDI_Key := 16#03#;
+   E_1  : constant MIDI_Key := 16#04#;
+   F_1  : constant MIDI_Key := 16#05#;
+   Fs_1 : constant MIDI_Key := 16#06#;
+   G_1  : constant MIDI_Key := 16#07#;
+   Gs_1 : constant MIDI_Key := 16#08#;
+   A_1  : constant MIDI_Key := 16#09#;
+   As_1 : constant MIDI_Key := 16#0a#;
+   B_1  : constant MIDI_Key := 16#0b#;
+
+   C0  : constant MIDI_Key := 16#0c#;
+   Cs0 : constant MIDI_Key := 16#0d#;
+   D0  : constant MIDI_Key := 16#0e#;
+   Ds0 : constant MIDI_Key := 16#0f#;
+   E0  : constant MIDI_Key := 16#10#;
+   F0  : constant MIDI_Key := 16#11#;
+   Fs0 : constant MIDI_Key := 16#12#;
+   G0  : constant MIDI_Key := 16#13#;
+   Gs0 : constant MIDI_Key := 16#14#;
    A0  : constant MIDI_Key := 16#15#;
    As0 : constant MIDI_Key := 16#16#;
    B0  : constant MIDI_Key := 16#17#;
@@ -203,6 +225,15 @@ package WNM.MIDI is
    A8  : constant MIDI_Key := 16#75#;
    As8 : constant MIDI_Key := 16#76#;
    B8  : constant MIDI_Key := 16#77#;
+
+   C9  : constant MIDI_Key := 16#78#;
+   Cs9 : constant MIDI_Key := 16#79#;
+   D9  : constant MIDI_Key := 16#7a#;
+   Ds9 : constant MIDI_Key := 16#7b#;
+   E9  : constant MIDI_Key := 16#7c#;
+   F9  : constant MIDI_Key := 16#7d#;
+   Fs9 : constant MIDI_Key := 16#7e#;
+   G9  : constant MIDI_Key := 16#7f#;
 
    subtype Key_Img_Str is String (1 .. 3);
    function Key_Img (V : MIDI_Key) return Key_Img_Str
