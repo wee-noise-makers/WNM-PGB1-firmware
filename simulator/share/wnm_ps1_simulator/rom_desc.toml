@@ -54,3 +54,45 @@
 48 = {name = "Maraca1", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/Maraca-Soft.raw"}
 49 = {name = "Maraca2", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/Maraca-Med.raw"}
 50 = {name = "Tambourine", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_44100/Tambourine-Med.raw"}
+
+51 = {name = "Contrabass", file="samples/VSCO-2-CE/raw_44100/BKCtbss_Spic_C1_v3_rr2.raw"}
+52 = {name = "Violin Spic", file="samples/VSCO-2-CE/raw_44100/LLVln_spic_C4_v2_rr2.raw"}
+53 = {name = "Violin Pizz", file="samples/VSCO-2-CE/raw_44100/LLVln_Pizz_C4_f_RR1.raw"}
+54 = {name = "Violin Trem", file="samples/VSCO-2-CE/raw_44100/LLVln_trem_C4_v2_rr1.raw"}
+
+55 = {name = "Violas Spic", file="samples/VSCO-2-CE/raw_44100/Violas_spic_C4_v2_rr2.raw"}
+56 = {name = "Violas Trem", file="samples/VSCO-2-CE/raw_44100/Violas_trem_C4_v2_rr1.raw"}
+57 = {name = "Violin Section", file="samples/VSCO-2-CE/raw_44100/VlnEns_susVib_C4_v2.raw"}
+
+58 = {name = "Trombone", file="samples/VSCO-2-CE/raw_44100/Trombone_Sustain_C3_v5_2.raw"}
+59 = {name = "Trombone Buzz", file="samples/VSCO-2-CE/raw_44100/Trombone_Buzz_C3_v2_1.raw"}
+60 = {name = "Trombone Short", file="samples/VSCO-2-CE/raw_44100/Trombone_Short_C3_v3_4.raw"}
+
+61 = {name = "Trumpet Stac", file="samples/VSCO-2-CE/raw_44100/Sum_SHTrumpet_stac_C3_v1_rr2.raw"}
+62 = {name = "Trumpet Sus", file="samples/VSCO-2-CE/raw_44100/Sum_SHTrumpet_sus_C3_v3_rr1.raw"}
+
+63 = {name = "Horn Stac", file="samples/VSCO-2-CE/raw_44100/MOHorn_stac_C3_v3_rr2.raw"}
+64 = {name = "Horn Mute", file="samples/VSCO-2-CE/raw_44100/MOHorn_mute_C3_v3_1.raw"}
+
+65 = {name = "Organ", file="samples/VSCO-2-CE/raw_44100/Rode_Pedal_16.raw"}
+
+66 = {name = "Upright Piano", file="samples/VSCO-2-CE/raw_44100/Player_dyn3_rr1_020.raw"}
+67 = {name = "Upright NR1", file="samples/VSCO-2-CE/raw_44100/UR1_C4_mf_RR1.raw"}
+68 = {name = "Upright NR1", file="samples/VSCO-2-CE/raw_44100/UR1_C4_f_RR2.raw"}
+
+69 =  {name = "Xylo", file="samples/VSCO-2-CE/raw_44100/Xylo_Medium_C4_ff_01_far.raw"}
+
+70 = {name = "Glass Break 1", file="samples/VSCO-2-CE/raw_44100/glass_break5.raw"}
+71 = {name = "Glass Break 2", file="samples/VSCO-2-CE/raw_44100/glass_break7.raw"}
+
+72 = {name = "Metal Hit 1", file="samples/VSCO-2-CE/raw_44100/metal_hit8.raw"}
+73 = {name = "Metal Hit 2", file="samples/VSCO-2-CE/raw_44100/metal_hit10.raw"}
+
+74 = {name = "Cymb Timp 1", file="samples/VSCO-2-CE/raw_44100/cymb_timp.raw"}
+75 = {name = "Cymb Timp 2", file="samples/VSCO-2-CE/raw_44100/cymb_timp.raw"}
+
+76 = {name = "Vibrarting", file="samples/VSCO-2-CE/raw_44100/vibraring1.raw"}
+
+77 = {name = "Zap", file="samples/VSCO-2-CE/raw_44100/zap7.raw"}
+
+
