@@ -27,10 +27,9 @@ with Tresses.Resources;
 
 with WNM.Sample_Library; use WNM.Sample_Library;
 
-with GNAT.IO;
-
 package body WNM.Synth.Sampler_Voice is
 
+   pragma Warnings (Off, "not a multiple of Small");
    Pitch_Table : constant array (MIDI.MIDI_Key) of Sample_Pitch :=
      (
       00 => 0.03125 * 1.000000,
@@ -177,7 +176,6 @@ package body WNM.Synth.Sampler_Voice is
    ----------------
 
    procedure Set_Sample (This : in out Instance; Id : MIDI.MIDI_Data) is
-      use HAL;
       New_Sample : constant Valid_Sample_Index :=
         Valid_Sample_Index (Integer (Id) + 1);
    begin

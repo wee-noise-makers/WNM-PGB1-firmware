@@ -68,7 +68,7 @@ private package WNM.Synth.Sampler_Voice is
 private
 
    type Sample_Pitch
-     is delta 0.00001
+     is delta 0.0000001
      range 0.0 .. Sample_Library.Single_Sample_Point_Cnt * 1.0 + 64.0;
 
    type Instance

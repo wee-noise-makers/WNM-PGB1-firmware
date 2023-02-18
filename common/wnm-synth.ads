@@ -25,8 +25,6 @@ with Interfaces;
 
 with WNM_HAL;
 
-with WNM.Time;
-with WNM.Sample_Library;
 with WNM.MIDI;
 
 with Tresses;

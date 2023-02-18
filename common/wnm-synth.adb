@@ -30,7 +30,6 @@ with WNM.Speech;
 
 with Tresses; use Tresses;
 with Tresses.Drums.Kick;
-with Tresses.Drums.Clap;
 with Tresses.Drums.Cymbal;
 with Tresses.Voices.Macro;
 with Tresses.Macro;
@@ -93,6 +92,15 @@ package body WNM.Synth is
    subtype Tresses_Channels
      is MIDI.MIDI_Channel range Sample1_Channel .. Bass_Channel;
 
+   Synth_Oct_Offset : constant array (Tresses_Channels) of Integer :=
+       (Sample1_Channel => 0,
+        Sample2_Channel => 0,
+        Kick_Channel    => -4,
+        Snare_Channel   => 0,
+        Cymbal_Channel  => 0,
+        Lead_Channel    => 0,
+        Bass_Channel    => -3);
+
    Synth_Voices : constant array (Tresses_Channels) of
      Voice_Access :=
        (Sample1_Channel => Sampler1'Access,
@@ -133,7 +141,6 @@ package body WNM.Synth is
 
    Passthrough : Audio_Input_Kind := Line_In;
 
-   Next_Start : WNM.Time.Time_Microseconds := WNM.Time.Time_Microseconds'First;
    Glob_Sample_Clock : Sample_Time := 0 with Volatile;
 
    G_CPU_Load : CPU_Load := 0.0 with Volatile;
@@ -169,6 +176,22 @@ package body WNM.Synth is
    function To_Pan (V : Tresses.Param_Range)
                     return WNM_HAL.Audio_Pan
    is (WNM_HAL.Audio_Pan (V / 328));
+
+   -------------
+   -- Add_Sat --
+   -------------
+
+   function Add_Sat (K : MIDI.MIDI_Key; O : Integer) return MIDI.MIDI_Key is
+      Result : constant Integer := Integer (K) + O;
+   begin
+      if Result > Integer (MIDI.MIDI_Key'Last) then
+         return MIDI.MIDI_Key'Last;
+      elsif Result < Integer (MIDI.MIDI_Key'First) then
+         return MIDI.MIDI_Key'First;
+      else
+         return MIDI.MIDI_Key (Result);
+      end if;
+   end Add_Sat;
 
    --------------
    -- To_Shape --
@@ -328,24 +351,32 @@ package body WNM.Synth is
                      case Msg.MIDI_Evt.Kind is
                      when MIDI.Note_On =>
 
-                        if Msg.MIDI_Evt.Chan = Sample1_Channel then
-                           Sampler1.Set_MIDI_Pitch (Msg.MIDI_Evt.Key);
-                        elsif Msg.MIDI_Evt.Chan = Sample2_Channel then
-                           Sampler2.Set_MIDI_Pitch (Msg.MIDI_Evt.Key);
-                        else
-                           Voice.Set_Pitch (Tresses.MIDI_Pitch
-                                            (Standard.MIDI.MIDI_UInt8
-                                               (Msg.MIDI_Evt.Key)));
-                        end if;
+                        declare
+                           Offset : constant Integer :=
+                             Synth_Oct_Offset (Msg.MIDI_Evt.Chan) * 12;
 
-                        Voice.Note_On (To_Param
-                                       (Msg.MIDI_Evt.Velocity));
+                           Key : constant MIDI_Key :=
+                             Add_Sat (Msg.MIDI_Evt.Key, Offset);
+                        begin
+                           if Msg.MIDI_Evt.Chan = Sample1_Channel then
+                              Sampler1.Set_MIDI_Pitch (Key);
+                           elsif Msg.MIDI_Evt.Chan = Sample2_Channel then
+                              Sampler2.Set_MIDI_Pitch (Key);
+                           else
+                              Voice.Set_Pitch (Tresses.MIDI_Pitch
+                                               (Standard.MIDI.MIDI_UInt8
+                                                  (Key)));
+                           end if;
 
-                        Last_Key (Msg.MIDI_Evt.Chan) := Msg.MIDI_Evt.Key;
+                           Voice.Note_On (To_Param
+                                          (Msg.MIDI_Evt.Velocity));
 
-                        if LFO_Syncs (Msg.MIDI_Evt.Chan) then
-                           LFOs (Msg.MIDI_Evt.Chan).Sync;
-                        end if;
+                           Last_Key (Msg.MIDI_Evt.Chan) := Key;
+
+                           if LFO_Syncs (Msg.MIDI_Evt.Chan) then
+                              LFOs (Msg.MIDI_Evt.Chan).Sync;
+                           end if;
+                        end;
 
                      when MIDI.Note_Off =>
 
@@ -815,7 +846,6 @@ package body WNM.Synth is
    function Sampler_Param_Short_Label (Id : Tresses.Param_Id)
                                        return Tresses.Short_Label
    is (Sampler1.Param_Short_Label (Id));
-
 
    -------------------
    -- Now_Recording --
