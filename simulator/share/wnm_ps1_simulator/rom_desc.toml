@@ -78,21 +78,20 @@
 
 66 = {name = "Upright Piano", file="samples/VSCO-2-CE/raw_44100/Player_dyn3_rr1_020.raw"}
 67 = {name = "Upright NR1", file="samples/VSCO-2-CE/raw_44100/UR1_C4_mf_RR1.raw"}
-68 = {name = "Upright NR1", file="samples/VSCO-2-CE/raw_44100/UR1_C4_f_RR2.raw"}
 
-69 =  {name = "Xylo", file="samples/VSCO-2-CE/raw_44100/Xylo_Medium_C4_ff_01_far.raw"}
+68 = {name = "Xylo", file="samples/VSCO-2-CE/raw_44100/Xylo_Medium_C4_ff_01_far.raw"}
 
-70 = {name = "Glass Break 1", file="samples/VSCO-2-CE/raw_44100/glass_break5.raw"}
-71 = {name = "Glass Break 2", file="samples/VSCO-2-CE/raw_44100/glass_break7.raw"}
+69 = {name = "Glass Break 1", file="samples/VSCO-2-CE/raw_44100/glass_break5.raw"}
+70 = {name = "Glass Break 2", file="samples/VSCO-2-CE/raw_44100/glass_break7.raw"}
 
-72 = {name = "Metal Hit 1", file="samples/VSCO-2-CE/raw_44100/metal_hit8.raw"}
-73 = {name = "Metal Hit 2", file="samples/VSCO-2-CE/raw_44100/metal_hit10.raw"}
+71 = {name = "Metal Hit 1", file="samples/VSCO-2-CE/raw_44100/metal_hit8.raw"}
+72 = {name = "Metal Hit 2", file="samples/VSCO-2-CE/raw_44100/metal_hit10.raw"}
 
-74 = {name = "Cymb Timp 1", file="samples/VSCO-2-CE/raw_44100/cymb_timp.raw"}
-75 = {name = "Cymb Timp 2", file="samples/VSCO-2-CE/raw_44100/cymb_timp.raw"}
+73 = {name = "Cymb Timp 1", file="samples/VSCO-2-CE/raw_44100/cymb_timp.raw"}
+74 = {name = "Cymb Timp 2", file="samples/VSCO-2-CE/raw_44100/cymb_timp.raw"}
 
-76 = {name = "Vibrarting", file="samples/VSCO-2-CE/raw_44100/vibraring1.raw"}
+75 = {name = "Vibrarting", file="samples/VSCO-2-CE/raw_44100/vibraring1.raw"}
 
-77 = {name = "Zap", file="samples/VSCO-2-CE/raw_44100/zap7.raw"}
+76 = {name = "Zap", file="samples/VSCO-2-CE/raw_44100/zap7.raw"}
 
 
