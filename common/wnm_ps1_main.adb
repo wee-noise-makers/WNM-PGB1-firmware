@@ -5,7 +5,6 @@ with GNAT.OS_Lib;
 with WNM.Project.Step_Sequencer;
 with WNM.UI;
 with WNM.LEDs;
-with WNM.GUI.Update;
 with WNM.File_System;
 with WNM.Sample_Library;
 with WNM.Project.Library;
@@ -35,8 +34,6 @@ begin
                                            Next_Start);
       Next_Start := Time_Microseconds'Min (WNM.UI.Update, Next_Start);
       Next_Start := Time_Microseconds'Min (WNM.LEDs.Update, Next_Start);
-      Next_Start := Time_Microseconds'Min (WNM.GUI.Update.Update, Next_Start);
-
       Delay_Microseconds (Next_Start);
    end loop;
 

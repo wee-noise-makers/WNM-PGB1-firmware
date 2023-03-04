@@ -32,12 +32,11 @@ with WNM.GUI.Menu.Drawing;  use WNM.GUI.Menu.Drawing;
 with WNM.GUI.Logo;
 with WNM.GUI.Popup;
 with WNM.Project;
+with WNM.Time;
 
 package body WNM.GUI.Update is
 
    Anim_Step : HAL.UInt32 := 0;
-
-   Next_Start : Time.Time_Microseconds := Time.Time_Microseconds'First;
 
    function Header_Str return String is
       Result : String (1 .. 7) := "P00:S00";
@@ -51,18 +50,12 @@ package body WNM.GUI.Update is
    -- Update --
    ------------
 
-   function Update return Time.Time_Microseconds is
+   procedure Update is
       B : Integer;
 
       BPM : Natural;
       Volume : Natural;
-      Now : constant Time.Time_Microseconds := Time.Clock;
    begin
-      if Now < Next_Start then
-         return Next_Start;
-      end if;
-
-      Next_Start := Next_Start + GUI_Task_Period_Microseconds;
 
       WNM.Screen.Clear;
 
@@ -71,7 +64,7 @@ package body WNM.GUI.Update is
          WNM.GUI.Logo.Draw_On_Screen (UInt2 (Anim_Step mod 4));
          WNM.Screen.Update;
          Anim_Step := Anim_Step + 1;
-         return Next_Start;
+         return;
       end if;
 
       -- Header --
@@ -177,8 +170,6 @@ package body WNM.GUI.Update is
       WNM.Screen.Update;
 
       Anim_Step := Anim_Step + 1;
-
-      return Next_Start;
    end Update;
 
 end WNM.GUI.Update;

@@ -20,6 +20,7 @@ with Sf.Window.Event; use Sf.Window.Event;
 with Sf; use Sf;
 
 with WNM.Synth;
+with WNM.GUI.Update;
 
 with ASFML_Util; use ASFML_Util;
 
@@ -428,6 +429,8 @@ package body ASFML_Sim is
                end if;
             end if;
          end loop;
+
+         WNM.GUI.Update.Update;
 
          updateFromPixels (texture => Framebuffer_Texture,
                            pixels  => Frame_Buffer (Frame_Buffer'First)'Access,

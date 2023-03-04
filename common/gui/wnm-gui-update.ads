@@ -19,10 +19,8 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Time;
-
 package WNM.GUI.Update is
 
-   function Update return WNM.Time.Time_Microseconds;
+   procedure Update;
 
 end WNM.GUI.Update;

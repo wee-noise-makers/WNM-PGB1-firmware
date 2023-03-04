@@ -106,5 +106,4 @@ package body WNM is
       return Clamp'Img;
    end Img;
 
-
 end WNM;
