@@ -83,7 +83,8 @@ package body WNM.Synth is
 
    function Snare_Engines (V : MIDI.MIDI_Data) return Snare_Voice.Snare_Engine
    is (case V is
-          when 0     => Snare_Voice.Snare,
+          when 0      => Snare_Voice.Analog_Snare,
+          when 1      => Snare_Voice.Snare,
           when others => Snare_Voice.Clap);
 
    subtype Synth_Channels

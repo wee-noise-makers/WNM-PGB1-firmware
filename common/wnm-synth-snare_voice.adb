@@ -21,6 +21,7 @@
 
 with Tresses.Drums.Clap;
 with Tresses.Drums.Snare;
+with Tresses.Drums.Analog_Snare;
 with Tresses.Macro;
 
 package body WNM.Synth.Snare_Voice is
@@ -71,11 +72,25 @@ package body WNM.Synth.Snare_Voice is
                                               Pulse3 => This.Pulse3,
                                               Filter0 => This.Filter0,
                                               Filter1 => This.Filter1,
-                                              Filter2 => This.Filter3,
+                                              Filter2 => This.Filter2,
                                               Rng =>  This.Rng,
                                               Pitch => This.Pitch,
                                               Do_Init => This.Do_Init,
                                               Do_Strike => This.Do_Strike);
+         when Analog_Snare =>
+            Tresses.Drums.Analog_Snare.Render_Analog_Snare
+              (Buffer,
+               This.Params,
+               This.Phase,
+               This.Phase_Increment,
+               This.Target_Phase_Increment,
+               This.Filter0,
+               This.Env0,
+               This.Env1,
+               This.Rng,
+               This.Pitch,
+               This.Do_Init,
+               This.Do_Strike);
          when Clap =>
             Tresses.Drums.Clap.Render_Clap (Buffer,
                                             Params => This.Params,
@@ -89,13 +104,13 @@ package body WNM.Synth.Snare_Voice is
       end case;
    end Render;
 
-
    -------------------
    -- Tresse_Engine --
    -------------------
 
    function Tresse_Engine (E : Snare_Engine) return Tresses.Engines
    is (case E is
+          when Analog_Snare => Tresses.Drum_Analog_Snare,
           when Snare => Tresses.Drum_Snare,
           when Clap  => Tresses.Drum_Clap);
 
