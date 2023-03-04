@@ -18,7 +18,9 @@ project Wnm_Ps1_Simulator is
    package Compiler is
       for Default_Switches ("Ada") use
         Wnm_Ps1_Simulator_Config.Ada_Compiler_Switches &
-        ("-gnateE");
+      ("-gnateE",
+       "-gnatwJ" -- Suppress warnings on obsolescent features
+      );
    end Compiler;
 
    package Linker is

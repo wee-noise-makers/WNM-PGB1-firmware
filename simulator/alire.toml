@@ -36,6 +36,8 @@ littlefs.Trace = false
 # littlefs.No_Malloc = true # Triggers a bug in alr 1.2.1, var set in fsmaker anyway
 tresses.Sample_Rate = "SR44100"
 
+[build-switches]
+"*".ada_version = "ada2022"
 [gpr-set-externals]
 BBQUEUE_COMPILE_CHECKS = "disabled"
 BBQUEUE_RUNTIME_CHECKS = "disabled"
