@@ -381,13 +381,21 @@ package body WNM.Synth is
 
                      when MIDI.Note_Off =>
 
-                        if Last_Key (Msg.MIDI_Evt.Chan) = Msg.MIDI_Evt.Key
-                        then
-                           --  Only apply note_off if it matches the last
-                           --  played key.
-                           Voice.Note_Off;
-                           Last_Key (Msg.MIDI_Evt.Chan) := 0;
-                        end if;
+                        declare
+                           Offset : constant Integer :=
+                             Synth_Oct_Offset (Msg.MIDI_Evt.Chan) * 12;
+
+                           Key : constant MIDI_Key :=
+                             Add_Sat (Msg.MIDI_Evt.Key, Offset);
+                        begin
+                           if Last_Key (Msg.MIDI_Evt.Chan) = Key
+                           then
+                              --  Only apply note_off if it matches the last
+                              --  played key.
+                              Voice.Note_Off;
+                              Last_Key (Msg.MIDI_Evt.Chan) := 0;
+                           end if;
+                        end;
 
                      when MIDI.Continous_Controller =>
                         case Msg.MIDI_Evt.Controller is
