@@ -595,6 +595,15 @@ private
         Chord_Settings.Chord_Index_Range'Last;
    end record;
 
+   Kick_Track    : constant Tracks := 1;
+   Snare_Track   : constant Tracks := 2;
+   Cymbal_Track  : constant Tracks := 3;
+   Bass_Track    : constant Tracks := 4;
+   Lead_Track    : constant Tracks := 5;
+   Sample1_Track : constant Tracks := 6;
+   Sample2_Track : constant Tracks := 7;
+   Speech_Track  : constant Tracks := 8;
+
    type Track_Arr is array (Tracks) of Track_Rec;
 
    Default_Track : constant Track_Rec :=
@@ -620,6 +629,62 @@ private
       Arp_Notes => Arp_Notes_Kind'First,
       Notes_Per_Chord => Chord_Settings.Chord_Index_Range'Last
      );
+
+   Default_Kick_Track : constant Track_Rec :=
+     (Default_Track with delta CC => ((0, 63, "CC0              "),
+                                      (1, 63, "CC1              "),
+                                      (2, 63, "CC2              "),
+                                      (3, 63, "CC3              ")
+                                     ));
+
+   Default_Snare_Track : constant Track_Rec :=
+     (Default_Track with delta CC => ((0, 63, "CC0              "),
+                                      (1, 63, "CC1              "),
+                                      (2, 63, "CC2              "),
+                                      (3, 63, "CC3              ")
+                                     ));
+
+   Default_Cymbal_Track : constant Track_Rec :=
+     (Default_Track with delta CC => ((0, 127, "CC0              "),
+                                      (1, 16, "CC1              "),
+                                      (2, 0, "CC2              "),
+                                      (3, 0, "CC3              ")
+                                     ));
+
+   Default_Bass_Track : constant Track_Rec :=
+     (Default_Track with delta CC => ((0, 63, "CC0              "),
+                                      (1, 63, "CC1              "),
+                                      (2, 63, "CC2              "),
+                                      (3, 63, "CC3              ")
+                                     ));
+
+   Default_Lead_Track : constant Track_Rec :=
+     (Default_Track with delta CC => ((0, 63, "CC0              "),
+                                      (1, 63, "CC1              "),
+                                      (2, 63, "CC2              "),
+                                      (3, 63, "CC3              ")
+                                     ));
+
+   Default_Sample1_Track : constant Track_Rec :=
+     (Default_Track with delta CC => ((0, 63, "CC0              "),
+                                      (1, 0, "CC1              "),
+                                      (2, 127, "CC2              "),
+                                      (3, 63, "CC3              ")
+                                     ));
+
+   Default_Sample2_Track : constant Track_Rec :=
+     (Default_Track with delta CC => ((0, 63, "CC0              "),
+                                      (1, 0, "CC1              "),
+                                      (2, 127, "CC2              "),
+                                      (3, 63, "CC3              ")
+                                     ));
+
+   Default_Speech_Track : constant Track_Rec :=
+     (Default_Track with delta CC => ((0, 63, "CC0              "),
+                                      (1, 63, "CC1              "),
+                                      (2, 63, "CC2              "),
+                                      (3, 63, "CC3              ")
+                                     ));
 
    type Chord_Rec is record
       Tonic : MIDI.MIDI_Key := MIDI.C4;
@@ -652,7 +717,15 @@ private
    type Project_Rec is record
       BPM : Beat_Per_Minute := 120;
       Seqs : All_Patterns := (others => (others => (others => Default_Step)));
-      Tracks : Track_Arr := (others => Default_Track);
+      Tracks : Track_Arr := (Kick_Track    => Default_Kick_Track,
+                             Snare_Track   => Default_Snare_Track,
+                             Cymbal_Track  => Default_Cymbal_Track,
+                             Bass_Track    => Default_Bass_Track,
+                             Lead_Track    => Default_Lead_Track,
+                             Sample1_Track => Default_Sample1_Track,
+                             Sample2_Track => Default_Sample2_Track,
+                             Speech_Track  => Default_Speech_Track,
+                             others        => Default_Track);
       Chords : Chord_Arr := (others => Default_Chord);
       FX     : FX_Rec := Default_FX;
    end record;

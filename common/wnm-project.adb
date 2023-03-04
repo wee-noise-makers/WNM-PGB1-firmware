@@ -552,15 +552,15 @@ package body WNM.Project is
          return MIDI_Mode;
       else
          return (case T is
-                    when 1 => Kick_Mode,
-                    when 2 => Snare_Mode,
-                    when 3 => Cymbal_Mode,
-                    when 4 => Bass_Mode,
-                    when 5 => Lead_Mode,
-                    when 6 => Sample1_Mode,
-                    when 7 => Sample2_Mode,
-                    when 8 => Speech_Mode,
-                    when others => MIDI_Mode);
+                    when Kick_Track    => Kick_Mode,
+                    when Snare_Track   => Snare_Mode,
+                    when Cymbal_Track  => Cymbal_Mode,
+                    when Bass_Track    => Bass_Mode,
+                    when Lead_Track    => Lead_Mode,
+                    when Sample1_Track => Sample1_Mode,
+                    when Sample2_Track => Sample2_Mode,
+                    when Speech_Track  => Speech_Mode,
+                    when others        => MIDI_Mode);
       end if;
    end Mode;
 
