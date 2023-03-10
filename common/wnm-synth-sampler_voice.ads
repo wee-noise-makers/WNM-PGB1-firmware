@@ -67,9 +67,13 @@ private package WNM.Synth.Sampler_Voice is
 
 private
 
-   type Sample_Pitch
-     is delta 0.0000001
-     range 0.0 .. Sample_Library.Single_Sample_Point_Cnt * 1.0 + 64.0;
+   subtype Sample_Phase is Interfaces.Unsigned_32;
+   Phase_Integer_Bits : constant := 17;
+   Phase_Frac_Bits : constant := Sample_Phase'Size - Phase_Integer_Bits;
+
+   pragma Compile_Time_Error
+     (2**Phase_Integer_Bits < Sample_Library.Single_Sample_Point_Cnt,
+      "Interger part too small for sample point count");
 
    type Instance
    is new Four_Params_Voice
@@ -77,8 +81,8 @@ private
       Sample_Id : Sample_Library.Valid_Sample_Index :=
         Sample_Library.Valid_Sample_Index'First;
 
-      Cursor : Sample_Pitch := 1.0;
-      S_Pitch : Sample_Pitch := 1.0;
+      Phase : Sample_Phase := 0;
+      Phase_Increment : Sample_Phase := 0;
 
       Env : Tresses.Envelopes.AR.Instance;
 

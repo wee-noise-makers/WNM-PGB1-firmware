@@ -79,7 +79,7 @@ is
 
    type Sample_Point_Count is range 0 .. Single_Sample_Point_Cnt;
    subtype Sample_Point_Index
-     is Sample_Point_Count range 1 .. Sample_Point_Count'Last;
+     is Sample_Point_Count range 0 .. Sample_Point_Count'Last - 1;
 
    type Single_Sample_Data is array (Sample_Point_Index) of WNM_HAL.Mono_Point
      with Size => Single_Sample_Byte_Size * 8;
