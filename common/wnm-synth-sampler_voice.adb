@@ -31,7 +31,7 @@ with WNM.Sample_Library; use WNM.Sample_Library;
 
 package body WNM.Synth.Sampler_Voice is
 
-   C4_Phase_Incr : constant := 2.0**(Phase_Frac_Bits + 1);
+   C4_Phase_Incr : constant := 2.0**(Phase_Frac_Bits);
 
    Pitch_Table2 : constant array (MIDI.MIDI_Key) of Sample_Phase :=
      (
