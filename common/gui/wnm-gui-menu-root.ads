@@ -58,4 +58,7 @@ private
    procedure On_Focus (This       : in out Root_Menu;
                        Exit_Value : Window_Exit_Value);
 
+   overriding
+   procedure On_Pop (This : in out Root_Menu);
+
 end WNM.GUI.Menu.Root;

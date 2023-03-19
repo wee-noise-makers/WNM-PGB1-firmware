@@ -21,7 +21,7 @@
 
 package WNM.GUI.Menu is
 
-   type Base_Menu_Kind is (Main_Menu, Step_Menu, Track_Menu, Pattern_Menu,
+   type Base_Menu_Kind is (Step_Menu, Track_Menu, Pattern_Menu,
                            Chord_Menu, FX_Menu);
 
    procedure Open (Kind : Base_Menu_Kind);
@@ -64,6 +64,9 @@ package WNM.GUI.Menu is
    procedure On_Focus (This       : in out Menu_Window;
                        Exit_Value : Window_Exit_Value)
    is abstract;
+
+   procedure On_Pop (This : in out Menu_Window)
+   is null;
 
    procedure Push (Window : not null Any_Menu_Window);
    procedure Pop (Exit_Value : Window_Exit_Value);

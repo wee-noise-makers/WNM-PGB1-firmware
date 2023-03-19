@@ -37,6 +37,8 @@ with WNM.Power_Control;
 
 package body WNM.GUI.Menu.Root is
 
+   On_Stack : Boolean := False with Volatile;
+
    Root_Window_Singleton : aliased Root_Menu;
 
    function Menu_Item_Text (Item : Menu_Items) return String
@@ -60,7 +62,10 @@ package body WNM.GUI.Menu.Root is
 
    procedure Push_Root_Window is
    begin
-      Push (Root_Window_Singleton'Access);
+      if not On_Stack then
+         Push (Root_Window_Singleton'Access);
+         On_Stack := True;
+      end if;
    end Push_Root_Window;
 
    ----------
@@ -82,7 +87,8 @@ package body WNM.GUI.Menu.Root is
    -- On_Event --
    --------------
 
-   overriding procedure On_Event
+   overriding
+   procedure On_Event
      (This  : in out Root_Menu;
       Event : Menu_Event)
    is
@@ -150,7 +156,8 @@ package body WNM.GUI.Menu.Root is
    -- On_Pushed --
    ---------------
 
-   overriding procedure On_Pushed
+   overriding
+   procedure On_Pushed
      (This  : in out Root_Menu)
    is
    begin
@@ -198,5 +205,16 @@ package body WNM.GUI.Menu.Root is
             null;
       end case;
    end On_Focus;
+
+   ------------
+   -- On_Pop --
+   ------------
+
+   overriding
+   procedure On_Pop (This : in out Root_Menu) is
+   begin
+      On_Stack := False;
+   end On_Pop;
+
 
 end WNM.GUI.Menu.Root;

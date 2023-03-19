@@ -25,6 +25,7 @@ with WNM.Project.Chord_Sequencer;
 with WNM.Pattern_Sequencer;
 with WNM.Master_Volume;
 with WNM.GUI.Menu;
+with WNM.GUI.Menu.Root;
 with WNM.LEDs;
 with HAL; use HAL;
 
@@ -124,7 +125,7 @@ package body WNM.UI is
                      Select_Done := False;
 
                   when Menu =>
-                     GUI.Menu.Open (GUI.Menu.Main_Menu);
+                     GUI.Menu.Root.Push_Root_Window;
 
                   when Play =>
                      Project.Step_Sequencer.Play_Pause;

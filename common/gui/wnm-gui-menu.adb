@@ -37,8 +37,6 @@ package body WNM.GUI.Menu is
    begin
       Exit_Menu;
       case Kind is
-         when Main_Menu =>
-            GUI.Menu.Root.Push_Root_Window;
          when Step_Menu =>
             GUI.Menu.Step_Settings.Push_Window;
          when Track_Menu =>
@@ -107,6 +105,8 @@ package body WNM.GUI.Menu is
       if Stack_Cnt = 0 then
          raise Program_Error with "No window in the stack";
       end if;
+
+      Stack (Stack_Cnt).On_Pop;
 
       Stack_Cnt := Stack_Cnt - 1;
       if Stack_Cnt /= 0 then
