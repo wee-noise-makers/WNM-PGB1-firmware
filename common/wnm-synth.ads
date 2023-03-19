@@ -85,6 +85,9 @@ package WNM.Synth is
    function Max_CPU_Load return CPU_Load;
    function Missed_Deadlines return HAL.UInt32;
 
+   procedure Clear_Max_CPU_Load;
+   procedure Clear_Missed_Deadlines;
+
    type Sample_Time is new Interfaces.Unsigned_64;
 
    function Sample_Clock return Sample_Time;

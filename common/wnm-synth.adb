@@ -231,6 +231,24 @@ package body WNM.Synth is
    function Missed_Deadlines return HAL.UInt32
    is (G_Count_Missed_Deadlines);
 
+   ------------------------
+   -- Clear_Max_CPU_Load --
+   ------------------------
+
+   procedure Clear_Max_CPU_Load is
+   begin
+      G_Max_CPU_Load := 0.0;
+   end Clear_Max_CPU_Load;
+
+   ----------------------------
+   -- Clear_Missed_Deadlines --
+   ----------------------------
+
+   procedure Clear_Missed_Deadlines is
+   begin
+      G_Count_Missed_Deadlines := 0;
+   end Clear_Missed_Deadlines;
+
    ------------------
    -- Sample_Clock --
    ------------------
