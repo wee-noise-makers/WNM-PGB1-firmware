@@ -25,7 +25,7 @@ package body WNM.Speech is
 
    LPC_Out : LPC_Synth.Out_Array (Mono_Buffer'Range);
    LPC     : LPC_Synth.Instance;
-   Pitch   : Float := Key_To_Frequency (MIDI.C4);
+   Pitch   : Float := MIDI.Key_To_Frequency (MIDI.C4);
    Selected_Word : Word := Word'First;
    Stretch : LPC_Synth.Time_Stretch_Factor :=
      MIDI_To_Stretch (No_Strech_MIDI_Val);
@@ -53,7 +53,7 @@ package body WNM.Speech is
    procedure Start (K : MIDI.MIDI_Key) is
    begin
       LPC_Synth.Set_Data (LPC, WNM.Speech_Dictionary.Data (Selected_Word));
-      Pitch := Key_To_Frequency (K);
+      Pitch := MIDI.Key_To_Frequency (K);
    end Start;
 
    ----------
