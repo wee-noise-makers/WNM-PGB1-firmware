@@ -20,6 +20,7 @@
 -------------------------------------------------------------------------------
 
 with WNM.UI;
+with MIDI.Time;
 
 package WNM.Project.Step_Sequencer is
 
@@ -36,9 +37,11 @@ package WNM.Project.Step_Sequencer is
    procedure On_Release (Button : Keyboard_Button;
                          Mode : WNM.UI.Main_Modes);
 
-   procedure Execute_Step;
+   procedure MIDI_Clock_Tick (Step : MIDI.Time.Step_Count);
 
-   function Update return Time.Time_Microseconds;
+   procedure MIDI_Song_Start;
+   procedure MIDI_Song_Stop;
+   procedure MIDI_Song_Continue;
 
 private
 
@@ -46,5 +49,7 @@ private
 
    --  Current_Seq_State : Sequencer_State := Pause with Atomic;
    Current_Track     : Tracks := Tracks'First with Atomic;
+
+   procedure Execute_Step;
 
 end WNM.Project.Step_Sequencer;

@@ -30,25 +30,21 @@ with WNM.UI; use WNM.UI;
 with WNM.MIDI_Queues;
 with WNM.Coproc;
 with WNM.Project.Chord_Sequencer;
-
+with WNM.MIDI_Clock;
 with HAL;                   use HAL;
 
 package body WNM.Project.Step_Sequencer is
 
-   --  Next_Start : Synth.Sample_Time := Synth.Sample_Time'First;
-   Next_Start : Time.Time_Microseconds := Time.Time_Microseconds'First;
-
    Pattern_Counter : array (Patterns) of UInt32;
    --  Count how many times a pattern has played
-
-   type Microstep_Cnt is mod 2;
-   Microstep : Microstep_Cnt := 1;
 
    procedure Process_Step (Pattern : Patterns; Step : Sequencer_Steps);
 
    procedure Do_Preview_Trigger (T : Tracks);
    procedure Play_Step (P : Patterns; T : Tracks; S : Sequencer_Steps;
                         Now : Time.Time_Microseconds := Time.Clock);
+
+   Playing : Boolean := False;
 
    ------------
    -- Offset --
@@ -58,6 +54,7 @@ package body WNM.Project.Step_Sequencer is
                     return MIDI.MIDI_Key
    is
       use MIDI;
+
       Result : MIDI.MIDI_Key := K;
    begin
       if Oct >= 0 then
@@ -100,15 +97,11 @@ package body WNM.Project.Step_Sequencer is
 
    procedure Play_Pause is
    begin
-      if not Pattern_Sequencer.Playing then
-         Current_Playing_Step := Sequencer_Steps'First;
-         Microstep := 1;
-         Execute_Step;
+      if not Playing then
+         MIDI_Clock.Internal_Start;
+      else
+         MIDI_Clock.Internal_Stop;
       end if;
-
-      Pattern_Sequencer.Play_Pause;
-      WNM.Project.Chord_Sequencer.Play_Pause;
-
    end Play_Pause;
 
    --------------
@@ -551,65 +544,90 @@ package body WNM.Project.Step_Sequencer is
    procedure Execute_Step is
    begin
 
-      Next_Start := Next_Start +
-        (Microseconds_Per_Beat / Steps_Per_Beat) / (if WNM.UI.FX_On (B2)
-                                                    then 4
-                                                    else 2);
+      if Playing then
 
-      if Pattern_Sequencer.Playing then
-         case Microstep is
+         Process_Step (Pattern_Sequencer.Playing, Playing_Step);
 
-            --  Begining of a new step
-            when 0 =>
+         if Current_Playing_Step = 8 then
+            Pattern_Sequencer.Signal_Mid_Pattern;
+            Chord_Sequencer.Signal_Mid_Pattern;
+            WNM.Project.Chord_Sequencer.Signal_Mid_Pattern;
+            Arpeggiator.Signal_Mid_Pattern;
 
-               if (WNM.UI.FX_On (B2) or else WNM.UI.FX_On (B3))
-                 or else
-                  (Current_Playing_Step >= 2 and then WNM.UI.FX_On (B4))
-                 or else
-                  (Current_Playing_Step >= 4 and then WNM.UI.FX_On (B5))
-               then
-                  Current_Playing_Step := 1;
-               elsif Current_Playing_Step /= Sequencer_Steps'Last then
+         elsif Current_Playing_Step = Sequencer_Steps'Last then
 
-                  if Current_Playing_Step = 8 then
-                     Pattern_Sequencer.Signal_Mid_Pattern;
-                     Chord_Sequencer.Signal_Mid_Pattern;
-                     WNM.Project.Chord_Sequencer.Signal_Mid_Pattern;
-                     Arpeggiator.Signal_Mid_Pattern;
-                  end if;
+            Pattern_Sequencer.Signal_End_Of_Pattern;
+            Chord_Sequencer.Signal_End_Of_Pattern;
+            Arpeggiator.Signal_End_Of_Pattern;
+         end if;
 
-                  Current_Playing_Step := Current_Playing_Step + 1;
-               else
-                  Current_Playing_Step := Sequencer_Steps'First;
-                  Pattern_Sequencer.Signal_End_Of_Pattern;
-                  Chord_Sequencer.Signal_End_Of_Pattern;
-                  Arpeggiator.Signal_End_Of_Pattern;
-               end if;
+         if (WNM.UI.FX_On (B2) or else WNM.UI.FX_On (B3))
+           or else
+            (Current_Playing_Step >= 2 and then WNM.UI.FX_On (B4))
+           or else
+            (Current_Playing_Step >= 4 and then WNM.UI.FX_On (B5))
+         then
+            Current_Playing_Step := 1;
 
-               --  At the middle of the step we play the recorded notes
-            when 1 =>
-               Process_Step (Pattern_Sequencer.Playing, Playing_Step);
-         end case;
+         elsif Current_Playing_Step /= Sequencer_Steps'Last then
+            Current_Playing_Step := Current_Playing_Step + 1;
 
-         Microstep := Microstep + 1;
+         else
+            Current_Playing_Step := Sequencer_Steps'First;
+         end if;
       end if;
+
    end Execute_Step;
 
-   ------------
-   -- Update --
-   ------------
+   ---------------------
+   -- MIDI_Clock_Tick --
+   ---------------------
 
-   function Update return Time.Time_Microseconds is
-      Now      : constant Time.Time_Microseconds := Time.Clock;
+   procedure MIDI_Clock_Tick (Step : MIDI.Time.Step_Count) is
+      use MIDI.Time;
+
+      Clock_Div : constant MIDI.Time.Step_Count :=
+        (if WNM.UI.FX_On (B2) then 3 else 6);
+
    begin
-      if Now >= Next_Start then
+      if (Step mod Clock_Div) = 0 then
          Execute_Step;
       end if;
+   end MIDI_Clock_Tick;
 
-      WNM.Short_Term_Sequencer.Update (Now);
-      WNM.Note_Off_Sequencer.Update (Now);
+   ---------------------
+   -- MIDI_Song_Start --
+   ---------------------
 
-      return Time.Time_Microseconds'First;
-   end Update;
+   procedure MIDI_Song_Start is
+   begin
+      Playing := True;
+
+      Current_Playing_Step := Sequencer_Steps'First;
+
+      Pattern_Sequencer.Start;
+      WNM.Project.Chord_Sequencer.Start;
+   end MIDI_Song_Start;
+
+   --------------------
+   -- MIDI_Song_Stop --
+   --------------------
+
+   procedure MIDI_Song_Stop is
+   begin
+      Pattern_Sequencer.Stop;
+      WNM.Project.Chord_Sequencer.Stop;
+
+      Playing := False;
+   end MIDI_Song_Stop;
+
+   ------------------------
+   -- MIDI_Song_Continue --
+   ------------------------
+
+   procedure MIDI_Song_Continue is
+   begin
+      null;
+   end MIDI_Song_Continue;
 
 end WNM.Project.Step_Sequencer;

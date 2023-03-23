@@ -26,6 +26,7 @@ littlefs = { url = "https://github.com/Fabien-Chouteau/littlefs-ada", branch="re
 lpc_synth = { url="https://github.com/Fabien-Chouteau/lpc_synth" }
 flux = { url="https://github.com/Fabien-Chouteau/flux" }
 tresses = { url="https://github.com/wee-noise-maker/tresses" }
+midi = { url="https://github.com/Fabien-Chouteau/midi" }
 
 [configuration.values]
 littlefs.Assert = false

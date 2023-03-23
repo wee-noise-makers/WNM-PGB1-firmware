@@ -24,6 +24,7 @@ with WNM.Project.Step_Sequencer;
 with WNM.Project.Chord_Sequencer;
 with WNM.Pattern_Sequencer;
 with WNM.Master_Volume;
+with WNM.MIDI_Clock; use WNM.MIDI_Clock;
 with WNM.GUI.Menu;
 with WNM.GUI.Menu.Root;
 with WNM.LEDs;
@@ -722,7 +723,7 @@ package body WNM.UI is
       end if;
 
       -- Play LED --
-      if Pattern_Sequencer.Playing then
+      if WNM.MIDI_Clock.Running  then
          LEDs.Turn_On (Play);
          if Project.Step_Sequencer.Playing_Step in 1 | 5 | 9 | 13 then
             LEDs.Turn_On (Play);
@@ -790,7 +791,7 @@ package body WNM.UI is
                end loop;
 
                --  Blinking playing pattern
-               if Pattern_Sequencer.Playing then
+               if WNM.MIDI_Clock.Running then
                   if Project.Step_Sequencer.Playing_Step in 1 | 5 | 9 | 13
                   then
                      LEDs.Turn_On (To_Button (Pattern_Sequencer.Playing));
@@ -810,7 +811,7 @@ package body WNM.UI is
                end loop;
 
                --  Blinking playing Chord
-               if Project.Chord_Sequencer.Chain.Playing then
+               if WNM.MIDI_Clock.Running then
                   if Project.Step_Sequencer.Playing_Step in 1 | 5 | 9 | 13
                   then
                      LEDs.Turn_On
@@ -829,7 +830,7 @@ package body WNM.UI is
                   LEDs.Turn_On (Track_Button);
                end if;
 
-               if Pattern_Sequencer.Playing  then
+               if WNM.MIDI_Clock.Running  then
                   LEDs.Turn_On
                     (To_Button (Project.Step_Sequencer.Playing_Step));
                end if;

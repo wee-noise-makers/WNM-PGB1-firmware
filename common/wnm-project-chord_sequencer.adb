@@ -82,18 +82,24 @@ package body WNM.Project.Chord_Sequencer is
             Substitutions (Scale_Chords (Init_Scale)(0)).Sub (4))
      );
 
+   -----------
+   -- Start --
+   -----------
 
+   procedure Start is
    begin
-
-   ----------------
-   -- Play_Pause --
-   ----------------
-
-   procedure Play_Pause is
-   begin
-      Chain.Play_Pause;
+      Chain.Start;
       Update_Current;
-   end Play_Pause;
+   end Start;
+
+   ----------
+   -- Stop --
+   ----------
+
+   procedure Stop is
+   begin
+      Chain.Stop;
+   end Stop;
 
    ---------------------------
    -- Signal_End_Of_Pattern --

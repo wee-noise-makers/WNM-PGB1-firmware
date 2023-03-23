@@ -135,25 +135,30 @@ package body WNM.Gen_Chain_Sequencer is
       Recording_State := None;
    end End_Recording;
 
-   ----------------
-   -- Play_Pause --
-   ----------------
+   -----------
+   -- Start --
+   -----------
 
-   procedure Play_Pause is
+   procedure Start is
    begin
-      if Playing_State = Stop then
-         if Cue_Next then
+      if Cue_Next then
 
-            Cue_Next := False;
-            Seq_Flip := not Seq_Flip;
-         end if;
-
-         Play (Sequences (Seq_Flip));
-         Playing_State := Play_Loop;
-      else
-         Playing_State := Stop;
+         Cue_Next := False;
+         Seq_Flip := not Seq_Flip;
       end if;
-   end Play_Pause;
+
+      Play (Sequences (Seq_Flip));
+      Playing_State := Play_Loop;
+   end Start;
+
+   ----------
+   -- Stop --
+   ----------
+
+   procedure Stop is
+   begin
+      Playing_State := Stop;
+   end Stop;
 
    -------------
    -- Playing --
@@ -173,6 +178,7 @@ package body WNM.Gen_Chain_Sequencer is
       case Recording_State is
          when None =>
             Single_Play (V);
+
          when Waiting_First_Pattern =>
             if Playing then
                Start (Sequences (not Seq_Flip), V);
@@ -183,6 +189,7 @@ package body WNM.Gen_Chain_Sequencer is
             end if;
 
             Recording_State := Rec;
+
          when Rec =>
             if Cue_Next then
                Add_To_Sequence (Sequences (not Seq_Flip), V);
@@ -205,13 +212,11 @@ package body WNM.Gen_Chain_Sequencer is
 
    procedure Single_Play (K : Keyboard_Value) is
    begin
-
       if Playing then
          Cue_Next := True;
          Start (Sequences (not Seq_Flip), K);
       else
          Start (Sequences (Seq_Flip), K);
-         Playing_State := Play_Loop;
       end if;
    end Single_Play;
 

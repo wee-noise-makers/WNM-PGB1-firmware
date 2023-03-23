@@ -2,13 +2,16 @@ with Ada.Text_IO;
 with Ada.Exceptions;
 with GNAT.OS_Lib;
 
-with WNM.Project.Step_Sequencer;
+with WNM.Short_Term_Sequencer;
+with WNM.Note_Off_Sequencer;
+
 with WNM.UI;
 with WNM.LEDs;
 with WNM.File_System;
 with WNM.Sample_Library;
 with WNM.Project.Library;
 with WNM.Persistent;
+with WNM.MIDI_Clock;
 with WNM.Time; use WNM.Time;
 
 with WNM.GUI.Menu.Track_Settings;
@@ -30,11 +33,14 @@ begin
    loop
       Next_Start := Time_Microseconds'Last;
 
-      Next_Start := Time_Microseconds'Min (WNM.Project.Step_Sequencer.Update,
-                                           Next_Start);
+      WNM.MIDI_Clock.Update;
+      WNM.Short_Term_Sequencer.Update (Clock);
+      WNM.Note_Off_Sequencer.Update (Clock);
+
       Next_Start := Time_Microseconds'Min (WNM.UI.Update, Next_Start);
       Next_Start := Time_Microseconds'Min (WNM.LEDs.Update, Next_Start);
-      Delay_Microseconds (Next_Start);
+
+      Delay_Microseconds (Milliseconds (1));
    end loop;
 
 exception

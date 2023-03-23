@@ -26,7 +26,8 @@ package WNM.Project.Chord_Sequencer is
 
    package Chain is new WNM.Gen_Chain_Sequencer;
 
-   procedure Play_Pause;
+   procedure Start;
+   procedure Stop;
    procedure Signal_End_Of_Pattern;
    procedure Signal_Mid_Pattern;
 

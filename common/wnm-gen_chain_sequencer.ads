@@ -32,8 +32,8 @@ package WNM.Gen_Chain_Sequencer is
    procedure Start_Recording;
    procedure End_Recording;
 
-   procedure Play_Pause;
-   function Playing return Boolean;
+   procedure Start;
+   procedure Stop;
 
    procedure On_Press (Button : Keyboard_Button);
 

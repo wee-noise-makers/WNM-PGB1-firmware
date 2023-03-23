@@ -19,7 +19,7 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.MIDI;
+with MIDI;
 with WNM.Sequence_Copy;
 with WNM.Chord_Settings;
 with WNM.Synth;
