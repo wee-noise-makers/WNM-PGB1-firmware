@@ -19,7 +19,7 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.MIDI;
+with MIDI; use MIDI;
 
 package WNM.Chord_Settings is
 
@@ -178,5 +178,15 @@ package WNM.Chord_Settings is
    --
    --  package Chord_Name_Next is new Enum_Next (Chord_Name);
    --  use Chord_Name_Next;
+
+   function "+" (K : MIDI.MIDI_Key; I : Interval)
+                 return MIDI.MIDI_Key
+   is (K + I'Enum_Rep)
+   with Inline;
+
+   function "+" (K : MIDI.MIDI_Key; I : Chord_Intervals)
+                 return Chord_Notes
+   is ((K + I (0), K + I (1), K + I (2), K + I (3)))
+     with Inline;
 
 end WNM.Chord_Settings;

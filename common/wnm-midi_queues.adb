@@ -3,17 +3,17 @@ with System.Storage_Elements;
 
 with WNM_HAL;
 
-package body WNM.MIDI.Queues is
+package body WNM.MIDI_Queues is
 
    --------------------
    -- Sequencer_Push --
    --------------------
 
-   procedure Sequencer_Push (Msg : Message) is
+   procedure Send_External (Msg : MIDI.Message) is
       Data : System.Storage_Elements.Storage_Array (1 .. 3)
         with Address => Msg'Address;
    begin
       WNM_HAL.Send_MIDI (Data);
-   end Sequencer_Push;
+   end Send_External;
 
-end WNM.MIDI.Queues;
+end WNM.MIDI_Queues;

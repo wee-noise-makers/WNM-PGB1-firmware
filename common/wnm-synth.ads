@@ -25,7 +25,7 @@ with Interfaces;
 
 with WNM_HAL;
 
-with WNM.MIDI;
+with MIDI;
 
 with Tresses;
 with Tresses.LFO;

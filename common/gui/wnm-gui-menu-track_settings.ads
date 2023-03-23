@@ -20,7 +20,7 @@
 -------------------------------------------------------------------------------
 
 with WNM.Project; use WNM.Project;
-private with WNM.MIDI;
+private with MIDI;
 
 package WNM.GUI.Menu.Track_Settings is
 

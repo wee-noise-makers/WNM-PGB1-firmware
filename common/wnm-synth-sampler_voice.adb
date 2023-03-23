@@ -19,8 +19,6 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Ada.Text_IO;
-
 with Interfaces; use Interfaces;
 
 with Tresses.Envelopes.AR; use Tresses.Envelopes.AR;
@@ -48,18 +46,18 @@ package body WNM.Synth.Sampler_Voice is
       10 => Sample_Phase (C4_Phase_Incr * 0.03125 * 1.781797),
       11 => Sample_Phase (C4_Phase_Incr * 0.03125 * 1.887749),
 
-      MIDI.C0  => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.000000),
-      MIDI.Cs0 => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.059463),
-      MIDI.D0  => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.122462),
-      MIDI.Ds0 => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.189207),
-      MIDI.E0  => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.259921),
-      MIDI.F0  => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.334840),
-      MIDI.Fs0 => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.414214),
-      MIDI.G0  => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.498307),
-      MIDI.Gs0 => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.587401),
-      MIDI.A0  => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.681793),
-      MIDI.As0 => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.781797),
-      MIDI.B0  => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.887749),
+      12 => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.000000),
+      13 => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.059463),
+      14 => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.122462),
+      15 => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.189207),
+      16 => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.259921),
+      17 => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.334840),
+      18 => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.414214),
+      19 => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.498307),
+      20 => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.587401),
+      21 => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.681793),
+      22 => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.781797),
+      23 => Sample_Phase (C4_Phase_Incr * 0.0625 * 1.887749),
 
       MIDI.C1  => Sample_Phase (C4_Phase_Incr * 0.125 * 1.000000),
       MIDI.Cs1 => Sample_Phase (C4_Phase_Incr * 0.125 * 1.059463),
@@ -165,14 +163,14 @@ package body WNM.Synth.Sampler_Voice is
       MIDI.As8 => Sample_Phase (C4_Phase_Incr * 16.0 * 1.781797),
       MIDI.B8  => Sample_Phase (C4_Phase_Incr * 16.0 * 1.887749),
 
-      MIDI.C9  => Sample_Phase (C4_Phase_Incr * 32.0 * 1.000000),
-      MIDI.Cs9 => Sample_Phase (C4_Phase_Incr * 32.0 * 1.059463),
-      MIDI.D9  => Sample_Phase (C4_Phase_Incr * 32.0 * 1.122462),
-      MIDI.Ds9 => Sample_Phase (C4_Phase_Incr * 32.0 * 1.189207),
-      MIDI.E9  => Sample_Phase (C4_Phase_Incr * 32.0 * 1.259921),
-      MIDI.F9  => Sample_Phase (C4_Phase_Incr * 32.0 * 1.334840),
-      MIDI.Fs9 => Sample_Phase (C4_Phase_Incr * 32.0 * 1.414214),
-      MIDI.G9  => Sample_Phase (C4_Phase_Incr * 32.0 * 1.498307));
+      120 => Sample_Phase (C4_Phase_Incr * 32.0 * 1.000000),
+      121 => Sample_Phase (C4_Phase_Incr * 32.0 * 1.059463),
+      122 => Sample_Phase (C4_Phase_Incr * 32.0 * 1.122462),
+      123 => Sample_Phase (C4_Phase_Incr * 32.0 * 1.189207),
+      124 => Sample_Phase (C4_Phase_Incr * 32.0 * 1.259921),
+      125 => Sample_Phase (C4_Phase_Incr * 32.0 * 1.334840),
+      126 => Sample_Phase (C4_Phase_Incr * 32.0 * 1.414214),
+      127 => Sample_Phase (C4_Phase_Incr * 32.0 * 1.498307));
 
    ----------------
    -- Set_Sample --

@@ -19,7 +19,8 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.MIDI;
+with MIDI;
+
 with WNM.Screen;
 with WNM.GUI.Bitmap_Fonts;
 with WNM.Sample_Library;

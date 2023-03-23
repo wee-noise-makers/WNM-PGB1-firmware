@@ -20,7 +20,7 @@
 -------------------------------------------------------------------------------
 
 with HAL; use HAL;
-with WNM.MIDI.Queues;
+with WNM.MIDI_Queues;
 with WNM.Coproc;
 with WNM.Note_Off_Sequencer;
 
@@ -229,7 +229,7 @@ package body WNM.Short_Term_Sequencer is
 
          case Node.D.Target is
             when External =>
-               WNM.MIDI.Queues.Sequencer_Push
+               WNM.MIDI_Queues.Send_External
                  ((MIDI.Note_On, Node.D.Chan, Node.D.Key, Node.D.Velocity));
 
             when Internal =>

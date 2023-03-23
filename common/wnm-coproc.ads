@@ -19,10 +19,10 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with MIDI;
+
 with WNM_Configuration;
 with WNM_HAL;
-
-with WNM.MIDI;
 
 private with Ada.Unchecked_Conversion;
 

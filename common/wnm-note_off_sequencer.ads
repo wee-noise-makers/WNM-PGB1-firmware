@@ -19,7 +19,7 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.MIDI;
+with MIDI;
 with WNM.Time;
 
 package WNM.Note_Off_Sequencer is

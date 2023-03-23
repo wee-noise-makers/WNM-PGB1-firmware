@@ -19,13 +19,15 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with MIDI;
+
 with WNM.Short_Term_Sequencer;
 with WNM.Note_Off_Sequencer;
 with WNM.Pattern_Sequencer;
 with WNM.Chord_Settings;
 with WNM.Project.Arpeggiator;
 with WNM.UI; use WNM.UI;
-with WNM.MIDI.Queues;
+with WNM.MIDI_Queues;
 with WNM.Coproc;
 with WNM.Project.Chord_Sequencer;
 
@@ -55,6 +57,7 @@ package body WNM.Project.Step_Sequencer is
    function Offset (K : MIDI.MIDI_Key; Oct : Octave_Offset)
                     return MIDI.MIDI_Key
    is
+      use MIDI;
       Result : MIDI.MIDI_Key := K;
    begin
       if Oct >= 0 then
@@ -223,7 +226,7 @@ package body WNM.Project.Step_Sequencer is
             end;
 
          when MIDI_Mode =>
-            WNM.MIDI.Queues.Sequencer_Push
+            WNM.MIDI_Queues.Send_External
               ((MIDI.Note_On, MIDI_Chan (T), Key, Velo));
 
             WNM.Note_Off_Sequencer.Note_Off
@@ -294,7 +297,7 @@ package body WNM.Project.Step_Sequencer is
                                     Chan, Ctrl, Val)));
 
             when MIDI_Mode =>
-               WNM.MIDI.Queues.Sequencer_Push
+               WNM.MIDI_Queues.Send_External
                  ((MIDI.Continous_Controller,
                   Chan, Ctrl, Val));
 

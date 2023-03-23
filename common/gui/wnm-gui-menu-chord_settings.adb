@@ -19,7 +19,10 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with MIDI;
+
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
+with WNM.GUI.Bitmap_Fonts;
 with WNM.Chord_Settings;
 
 package body WNM.GUI.Menu.Chord_Settings is
@@ -55,9 +58,17 @@ package body WNM.GUI.Menu.Chord_Settings is
    overriding
    procedure Draw (This : in out Pattern_Settings_Menu)
    is
+      use WNM.Chord_Settings;
       use WNM.Project;
 
       Top_Setting : constant Top_Settings := To_Top (This.Current_Setting);
+
+      Tonic : constant MIDI.MIDI_Key := WNM.Project.Selected_Tonic;
+      Name : constant WNM.Chord_Settings.Chord_Name :=
+        WNM.Project.Selected_Name;
+
+      Notes : constant WNM.Chord_Settings.Chord_Notes :=
+        Tonic + WNM.Chord_Settings.Chords (Name);
    begin
       Draw_Menu_Box ("Chord settings",
                      Count => Top_Settings_Count,
@@ -66,12 +77,24 @@ package body WNM.GUI.Menu.Chord_Settings is
 
       case Top_Setting is
          when Chord_Type =>
-            Draw_MIDI_Note (WNM.Project.Selected_Tonic,
+            Draw_MIDI_Note (Tonic,
                             This.Current_Setting = WNM.Project.Tonic);
 
-            Draw_Value_Left (WNM.Chord_Settings.Img
-                             (WNM.Project.Selected_Name),
+            Draw_Value_Left (WNM.Chord_Settings.Img (Name),
                              This.Current_Setting = WNM.Project.Name);
+
+            declare
+               X : Natural := Menu.Drawing.Box_Left + 5;
+            begin
+               for K of Notes loop
+                  GUI.Bitmap_Fonts.Print (X,
+                                          Menu.Drawing.Box_Top + 10,
+                                          Key_Img (K));
+                  GUI.Bitmap_Fonts.Print (X,
+                                          Menu.Drawing.Box_Top + 10,
+                                          " ");
+               end loop;
+            end;
       end case;
 
    end Draw;

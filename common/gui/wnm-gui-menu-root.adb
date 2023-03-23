@@ -212,9 +212,9 @@ package body WNM.GUI.Menu.Root is
 
    overriding
    procedure On_Pop (This : in out Root_Menu) is
+      pragma Unreferenced (This);
    begin
       On_Stack := False;
    end On_Pop;
-
 
 end WNM.GUI.Menu.Root;

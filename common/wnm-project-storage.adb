@@ -94,6 +94,8 @@ package body WNM.Project.Storage is
    --------------------
 
    procedure Save_Sequences (Output : in out File_Out.Instance) is
+      use MIDI;
+
       Out_Pattern : Patterns := Patterns'First;
       Out_Track   : Tracks   := Tracks'First;
    begin
@@ -637,6 +639,7 @@ package body WNM.Project.Storage is
    is
       procedure To_Step_Settings is new Convert_To_Enum (Step_Settings);
 
+      procedure Read is new File_In.Read_Gen_Mod (HAL.UInt8);
       procedure Read is new File_In.Read_Gen_Enum (Trigger_Kind);
       procedure Read is new File_In.Read_Gen_Mod (MIDI.MIDI_Data);
       procedure Read is new File_In.Read_Gen_Enum (Note_Duration);

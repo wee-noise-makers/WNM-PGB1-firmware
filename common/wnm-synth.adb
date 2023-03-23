@@ -22,7 +22,6 @@
 with HAL; use HAL;
 with Interfaces; use Interfaces;
 with WNM.Coproc;
-with MIDI;
 
 with WNM.Synth.Snare_Voice;
 with WNM.Synth.Sampler_Voice;

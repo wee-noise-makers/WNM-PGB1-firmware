@@ -203,7 +203,7 @@ package body WNM.GUI.Menu.Drawing is
 
       Print (X_Offset    => X,
              Y_Offset    => Value_Text_Y,
-             Str         => WNM.MIDI.Key_Img (Key));
+             Str         => Key_Img (Key));
 
    end Draw_MIDI_Note;
 

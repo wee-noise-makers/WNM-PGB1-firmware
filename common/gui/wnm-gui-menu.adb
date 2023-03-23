@@ -19,7 +19,6 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.GUI.Menu.Root;
 with WNM.GUI.Menu.Track_Settings;
 with WNM.GUI.Menu.Pattern_Settings;
 with WNM.GUI.Menu.Step_Settings;

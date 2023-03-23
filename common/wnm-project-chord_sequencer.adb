@@ -19,20 +19,12 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with HAL; use HAL;
-with WNM.MIDI; use WNM.MIDI;
+with MIDI; use MIDI;
 
 package body WNM.Project.Chord_Sequencer is
 
    procedure Update_Current;
    --  Update the current tonic, name, and chord notes
-
-   function "+" (K : MIDI_Key; I : Interval) return MIDI_Key
-   is (K + I'Enum_Rep)
-   with Inline;
-
-   function "+" (K : MIDI_Key; I : Chord_Intervals) return Chord_Notes
-     with Inline;
 
    C_Tonic : MIDI_Key := MIDI.C4;
    C_Chord_Name : Chord_Name := Chord_Name'First;
@@ -90,18 +82,8 @@ package body WNM.Project.Chord_Sequencer is
             Substitutions (Scale_Chords (Init_Scale)(0)).Sub (4))
      );
 
-   ---------
-   -- "+" --
-   ---------
 
-   function "+" (K : MIDI_Key; I : Chord_Intervals) return Chord_Notes is
-      Result : Chord_Notes;
    begin
-      for X in Result'Range loop
-         Result (X) := K + I (X);
-      end loop;
-      return Result;
-   end "+";
 
    ----------------
    -- Play_Pause --

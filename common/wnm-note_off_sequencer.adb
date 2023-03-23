@@ -21,7 +21,7 @@
 
 with HAL; use HAL;
 
-with WNM.MIDI.Queues;
+with WNM.MIDI_Queues;
 with WNM.Coproc;
 
 package body WNM.Note_Off_Sequencer is
@@ -37,7 +37,7 @@ package body WNM.Note_Off_Sequencer is
    begin
       case Target is
          when External =>
-            WNM.MIDI.Queues.Sequencer_Push
+            WNM.MIDI_Queues.Send_External
               ((MIDI.Note_Off, Chan, Key, 0));
 
          when Internal =>
@@ -56,6 +56,8 @@ package body WNM.Note_Off_Sequencer is
                        Key        : MIDI.MIDI_Key;
                        Expiration : Time.Time_Microseconds)
    is
+      use MIDI;
+
       To_Kill : Event_Index := Event_Index'First;
       Sooner  : Time.Time_Microseconds := Time.Time_Microseconds'Last;
    begin

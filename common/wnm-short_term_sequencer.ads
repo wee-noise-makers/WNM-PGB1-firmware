@@ -19,28 +19,12 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.MIDI;
+with MIDI;
 with WNM.Time;
---  with WNM.Sample_Stream;
---  with WNM.Speech;
---  with WNM.Coproc;
 
 package WNM.Short_Term_Sequencer is
 
    type Event_Kind is (Sampler_Event, MIDI_Event, Speech_Event, Synth_Event);
-
-   --  type Event_Data (Kind : Event_Kind := Sampler_Event) is record
-   --     case Kind is
-   --        when Sampler_Event =>
-   --           Sampler_Evt : Sample_Stream.Sampler_Event_Rec;
-   --        when MIDI_Event =>
-   --           Msg : MIDI.Message;
-   --        when Speech_Event =>
-   --           Speech_Evt : Speech.Speech_Event_Rec;
-   --        when Synth_Event =>
-   --           Synth_Evt : Coproc.MIDI_Event_Rec;
-   --     end case;
-   --  end record;
 
    type Event_Data is record
       Target   : MIDI_Target := External;
@@ -58,13 +42,6 @@ package WNM.Short_Term_Sequencer is
                       Duration : Time.Time_Microseconds);
 
    procedure Update (Now : Time.Time_Microseconds);
-
-   --  procedure Push (D : Event_Data; Expiration : Expiration_Time);
-   --  procedure Pop (Now     :     Expiration_Time;
-   --                 D       : out Event_Data;
-   --                 Success : out Boolean);
-
-   --  procedure Print_Queue;
 
 private
 

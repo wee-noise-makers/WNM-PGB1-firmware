@@ -162,6 +162,8 @@ package body WNM.Project is
    function Note_Img (Step : Sequencer_Steps := Editing_Step)
                       return String
    is
+      use MIDI;
+
       S : Step_Rec renames G_Project.Seqs
         (Editing_Pattern)
         (Editing_Track)
@@ -193,7 +195,7 @@ package body WNM.Project is
    begin
       case S.Note_Mode is
          when Note =>
-            return MIDI.Key_Img (S.Note);
+            return Key_Img (S.Note);
          when Chord =>
             return Oct_Offset & " oct";
          when Note_In_Chord =>
@@ -388,6 +390,8 @@ package body WNM.Project is
                            Id : CC_Id;
                            Val : MIDI.MIDI_Data := 1)
    is
+      use MIDI;
+
       CC : MIDI.MIDI_Data renames G_Project.Seqs
         (Editing_Pattern)
         (Editing_Track)
@@ -414,6 +418,8 @@ package body WNM.Project is
                            Id   : CC_Id;
                            Val  : MIDI.MIDI_Data := 1)
    is
+      use MIDI;
+
       CC : MIDI.MIDI_Data renames G_Project.Seqs
         (Editing_Pattern)
         (Editing_Track)
