@@ -482,8 +482,6 @@ package body WNM.GUI.Menu.Track_Settings is
                Project.Set_CC_Controller_Label (Editing_Track, CC, Label);
             end;
          end if;
-      else
-         raise Program_Error;
       end if;
    end On_Focus;
 
