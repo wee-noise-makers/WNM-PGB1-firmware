@@ -79,6 +79,7 @@ package body WNM.Synth is
           when 6 => Tresses.Voice_Bass_808,
           when 7 => Tresses.Voice_House_Bass,
           when 8 => Tresses.Voice_Pluck_Bass,
+          when 9 => Tresses.Voice_Reese,
           when others => Tresses.Voice_Plucked);
 
    function Snare_Engines (V : MIDI.MIDI_Data) return Snare_Voice.Snare_Engine
