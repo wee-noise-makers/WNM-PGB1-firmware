@@ -1,6 +1,4 @@
-with System;
-with System.Storage_Elements;
-
+with MIDI.Encoder;
 with WNM_HAL;
 
 package body WNM.MIDI_Queues is
@@ -10,10 +8,8 @@ package body WNM.MIDI_Queues is
    --------------------
 
    procedure Send_External (Msg : MIDI.Message) is
-      Data : System.Storage_Elements.Storage_Array (1 .. 3)
-        with Address => Msg'Address;
    begin
-      WNM_HAL.Send_MIDI (Data);
+      WNM_HAL.Send_MIDI (MIDI.Encoder.Encode (Msg));
    end Send_External;
 
 end WNM.MIDI_Queues;
