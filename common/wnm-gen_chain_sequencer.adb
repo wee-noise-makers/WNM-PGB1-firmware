@@ -306,6 +306,7 @@ package body WNM.Gen_Chain_Sequencer is
       Seq : Pattern_Seq renames Sequences (Seq_Flip);
       Raw : In_UInt;
       V : Keyboard_Value;
+      Last_In : Natural := 0;
    begin
       Seq.Last_In := Sequence_Range'First;
       Seq.Playing := Sequence_Range'First;
@@ -334,11 +335,12 @@ package body WNM.Gen_Chain_Sequencer is
 
          --  Add to sequence
          V := Keyboard_Value (Raw);
-         Seq.Sequence_Of_Pattern (Seq.Last_In) := V;
+         Last_In := Last_In + 1;
+         Seq.Sequence_Of_Pattern (Last_In) := V;
          Seq.Is_In_Sequence (V) := True;
-         Seq.Last_In := Seq.Last_In + 1;
       end loop;
 
+      Seq.Last_In := Last_In;
    end Load;
 
 end WNM.Gen_Chain_Sequencer;

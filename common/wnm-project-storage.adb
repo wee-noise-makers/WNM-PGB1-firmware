@@ -25,7 +25,7 @@
 --  etc.). Sections are made of lists of setting identifier followed by a
 --  value.
 --
---  To reduce the output size, the sequences sections is a bit different in
+--  To reduce the output size, the sequences section is a bit different in
 --  that only Steps that are different than the Default_Step will be encoded.
 --
 --  Except for string characters, data is always encoded using variable
