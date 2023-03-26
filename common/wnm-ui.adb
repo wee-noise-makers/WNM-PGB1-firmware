@@ -719,14 +719,14 @@ package body WNM.UI is
 
       -- Rec LED --
       if Recording then
-         LEDs.Turn_On (Rec);
+         LEDs.Turn_On (Rec, LEDs.Recording);
       end if;
 
       -- Play LED --
       if WNM.MIDI_Clock.Running  then
-         LEDs.Turn_On (Play);
-         if Project.Step_Sequencer.Playing_Step in 1 | 5 | 9 | 13 then
-            LEDs.Turn_On (Play);
+         --  LEDs.Turn_On (Play);
+         if Project.Step_Sequencer.Playing_Step not in 1 | 5 | 9 | 13 then
+            LEDs.Turn_On (Play, LEDs.Play);
          end if;
       end if;
 
@@ -736,6 +736,8 @@ package body WNM.UI is
          -- FX selection mode --
          when FX_Alt =>
             --  The FX LED will be on if there's at least one FX enabled
+
+            LEDs.Set_Hue (LEDs.FX);
 
             for B in B1 .. B16 loop
                if FX_Is_On (B) then
@@ -747,7 +749,7 @@ package body WNM.UI is
          when Step_Select =>
             for B in B1 .. B16 loop
                if Project.Editing_Step = To_Value (B) then
-                  LEDs.Turn_On (B);
+                  LEDs.Turn_On (B, LEDs.Step);
                end if;
             end loop;
 
@@ -755,7 +757,7 @@ package body WNM.UI is
          when Track_Select =>
             for B in B1 .. B16 loop
                if Project.Editing_Track = To_Value (B) then
-                  LEDs.Turn_On (B);
+                  LEDs.Turn_On (B, LEDs.Track);
                end if;
             end loop;
 
@@ -763,12 +765,15 @@ package body WNM.UI is
          when Pattern_Select =>
             for B in B1 .. B16 loop
                if Project.Editing_Pattern = To_Value (B) then
-                  LEDs.Turn_On (B);
+                  LEDs.Turn_On (B, LEDs.Pattern);
                end if;
             end loop;
 
          --  Volume and BPM mode --
          when Volume_BPM_Mute | Volume_BPM_Solo =>
+
+            LEDs.Set_Hue (LEDs.Track);
+
             if Solo_Mode_Enabled then
                LEDs.Turn_On (To_Button (Solo));
             else
@@ -782,6 +787,7 @@ package body WNM.UI is
          when others =>
             case Last_Main_Mode is
             when Pattern_Mode =>
+               LEDs.Set_Hue (LEDs.Pattern);
                LEDs.Turn_On (Pattern_Button);
                for B in B1 .. B16 loop
                   if Pattern_Sequencer.Is_In_Sequence (To_Value (B))
@@ -795,12 +801,11 @@ package body WNM.UI is
                   if Project.Step_Sequencer.Playing_Step in 1 | 5 | 9 | 13
                   then
                      LEDs.Turn_On (To_Button (Pattern_Sequencer.Playing));
-                  else
-                     LEDs.Turn_Off (To_Button (Pattern_Sequencer.Playing));
                   end if;
                end if;
 
             when Chord_Mode =>
+               LEDs.Set_Hue (LEDs.Chord);
                LEDs.Turn_On (Chord_Button);
                for B in B1 .. B16 loop
                   if Project.Chord_Sequencer.Chain.Is_In_Sequence
@@ -816,23 +821,23 @@ package body WNM.UI is
                   then
                      LEDs.Turn_On
                        (To_Button (Project.Chord_Sequencer.Chain.Playing));
-                  else
-                     LEDs.Turn_Off
-                       (To_Button (Project.Chord_Sequencer.Chain.Playing));
                   end if;
                end if;
 
             when Track_Mode | Step_Mode =>
 
                if Last_Main_Mode = Step_Mode then
+                  LEDs.Set_Hue (LEDs.Step);
                   LEDs.Turn_On (Step_Button);
                else
+                  LEDs.Set_Hue (LEDs.Track);
                   LEDs.Turn_On (Track_Button);
                end if;
 
                if WNM.MIDI_Clock.Running  then
                   LEDs.Turn_On
-                    (To_Button (Project.Step_Sequencer.Playing_Step));
+                    (To_Button (Project.Step_Sequencer.Playing_Step),
+                     LEDs.Play);
                end if;
 
                if Last_Main_Mode = Step_Mode or else Recording then
@@ -852,6 +857,8 @@ package body WNM.UI is
                end if;
 
             when FX_Mode =>
+               LEDs.Set_Hue (LEDs.Violet);
+
                LEDs.Turn_On (Func);
                null;
             end case;

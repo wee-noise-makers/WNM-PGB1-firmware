@@ -33,7 +33,11 @@ package WNM_HAL is
    -- LEDs --
    ----------
 
-   procedure Set (L : LED; R, G, B : HAL.UInt8);
+   type RGB_Rec is record
+      R, G, B : HAL.UInt8;
+   end record;
+
+   procedure Set (L : LED; RGB : RGB_Rec);
    --  Set the internal RGB value for the given LED
 
    procedure Clear_LEDs;

@@ -73,13 +73,13 @@ package body WNM_HAL is
    -- Set --
    ---------
 
-   procedure Set (L : LED; R, G, B : HAL.UInt8) is
+   procedure Set (L : LED; RGB : RGB_Rec) is
       use Sf;
    begin
       LEDs_Internal (L) := (a => 255,
-                            r => sfUint8 (R),
-                            g => sfUint8 (G),
-                            b => sfUint8 (B));
+                            r => sfUint8 (RGB.R),
+                            g => sfUint8 (RGB.G),
+                            b => sfUint8 (RGB.B));
    end Set;
 
    ----------------

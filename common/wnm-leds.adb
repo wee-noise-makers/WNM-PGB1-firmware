@@ -21,13 +21,46 @@
 
 package body WNM.LEDs is
 
+   Hue_To_RGB : constant array (Hue) of RGB_Rec :=
+     (Red          => (255, 000, 000),
+      Rose         => (255, 000, 128),
+      Magenta      => (255, 000, 255),
+      Violet       => (128, 000, 255),
+      Blue         => (000, 000, 255),
+      Azure        => (000, 128, 255),
+      Cyan         => (000, 255, 255),
+      Spring_Green => (000, 255, 128),
+      Green        => (000, 255, 000),
+      Chartreuse   => (128, 255, 000),
+      Yellow       => (255, 255, 000));
+
+   G_Color : RGB_Rec := (255, 255, 255);
+
+   -------------
+   -- Set_Hue --
+   -------------
+
+   procedure Set_Hue (H : Hue) is
+   begin
+      G_Color := Hue_To_RGB (H);
+   end Set_Hue;
+
    -------------
    -- Turn_On --
    -------------
 
    procedure Turn_On (B : LED) is
    begin
-      Set (B, 255, 0, 0);
+      Set (B, G_Color);
+   end Turn_On;
+
+   -------------
+   -- Turn_On --
+   -------------
+
+   procedure Turn_On (B : LED; H : Hue) is
+   begin
+      Set (B, Hue_To_RGB (H));
    end Turn_On;
 
    --------------
@@ -36,7 +69,7 @@ package body WNM.LEDs is
 
    procedure Turn_Off (B : LED) is
    begin
-      Set (B, 0, 0, 0);
+      Set (B, (0, 0, 0));
    end Turn_Off;
 
    ------------------
