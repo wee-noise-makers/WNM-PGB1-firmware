@@ -27,16 +27,16 @@ private
 
    type Menu_Items is (Save_Project,
                        Load_Project,
-                       Edit_Sample,
-                       Create_Sample,
-                       Change_Sample,
-                       Set_Passthrough,
+                       --  Edit_Sample,
+                       --  Create_Sample,
+                       --  Change_Sample,
+                       --  Set_Passthrough,
                        Test_Text_Input,
-                       Load,
-                       Save,
-                       Settings,
-                       Shutdown,
-                       System_Info);
+                       --  Load,
+                       --  Save,
+                       --  Settings,
+                       System_Info,
+                       Shutdown);
 
    function Menu_Items_Count is new Enum_Count (Menu_Items);
 

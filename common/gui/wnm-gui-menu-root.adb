@@ -20,12 +20,12 @@
 -------------------------------------------------------------------------------
 
 with WNM.GUI.Menu.Drawing;           use WNM.GUI.Menu.Drawing;
-with WNM.GUI.Menu.Sample_Select;     use WNM.GUI.Menu.Sample_Select;
+--  with WNM.GUI.Menu.Sample_Select;     use WNM.GUI.Menu.Sample_Select;
 with WNM.GUI.Menu.Text_Dialog;       use WNM.GUI.Menu.Text_Dialog;
-with WNM.GUI.Menu.Sample_Edit;
+--  with WNM.GUI.Menu.Sample_Edit;
 with WNM.GUI.Menu.Yes_No_Dialog;
-with WNM.GUI.Menu.Create_Sample;
-with WNM.GUI.Menu.Passthrough;
+--  with WNM.GUI.Menu.Create_Sample;
+--  with WNM.GUI.Menu.Passthrough;
 with WNM.GUI.Menu.Save_Project;
 with WNM.GUI.Menu.System_Info;
 with WNM.GUI.Popup;
@@ -45,14 +45,14 @@ package body WNM.GUI.Menu.Root is
    is (case Item is
           when Save_Project    => "Save project",
           when Load_Project    => "Load project",
-          when Edit_Sample     => "Edit sample",
-          when Create_Sample   => "Create sample",
-          when Change_Sample   => "Change sample",
-          when Set_Passthrough => "Passthrough",
+          --  when Edit_Sample     => "Edit sample",
+          --  when Create_Sample   => "Create sample",
+          --  when Change_Sample   => "Change sample",
+          --  when Set_Passthrough => "Passthrough",
           when Test_Text_Input => "Test text input",
-          when Load            => "Load",
-          when Save            => "Save",
-          when Settings        => "Settings",
+          --  when Load            => "Load",
+          --  when Save            => "Save",
+          --  when Settings        => "Settings",
           when Shutdown        => "Shutdown",
           when System_Info     => "System Info");
 
@@ -102,17 +102,17 @@ package body WNM.GUI.Menu.Root is
                when Load_Project =>
                   Menu.Project_Select.Push_Window;
 
-               when Edit_Sample =>
-                  Menu.Sample_Edit.Push_Window;
-
-               when Create_Sample =>
-                  Menu.Create_Sample.Push_Window;
-
-               when Change_Sample =>
-                  Sample_Select.Push_Window;
-
-               when Set_Passthrough =>
-                  Passthrough.Push_Window;
+               --  when Edit_Sample =>
+               --     Menu.Sample_Edit.Push_Window;
+               --
+               --  when Create_Sample =>
+               --     Menu.Create_Sample.Push_Window;
+               --
+               --  when Change_Sample =>
+               --     Sample_Select.Push_Window;
+               --
+               --  when Set_Passthrough =>
+               --     Passthrough.Push_Window;
 
                when Test_Text_Input =>
                   Text_Dialog.Set_Title ("Enter some text");
@@ -125,8 +125,8 @@ package body WNM.GUI.Menu.Root is
                when System_Info =>
                   Menu.System_Info.Push_Window;
 
-               when others =>
-                  null;
+               --  when others =>
+               --     null;
             end case;
 
          when Right_Press =>
