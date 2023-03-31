@@ -563,6 +563,30 @@ private
       CC_Ena => (others => False),
       CC_Val => (others => 0));
 
+   Default_Step_Lead : constant Step_Rec :=
+     (Trig => None,
+      Repeat => 0,
+      Repeat_Rate => Rate_1_8,
+      Note_Mode => Arp,
+      Note => 0,
+      Oct => 0,
+      Duration => Quarter,
+      Velo => MIDI.MIDI_Data'Last,
+      CC_Ena => (others => False),
+      CC_Val => (others => 0));
+
+   Default_Step_Bass : constant Step_Rec :=
+     (Trig => None,
+      Repeat => 0,
+      Repeat_Rate => Rate_1_8,
+      Note_Mode => Note_In_Chord,
+      Note => 0,
+      Oct => 0,
+      Duration => Quarter,
+      Velo => MIDI.MIDI_Data'Last,
+      CC_Ena => (others => False),
+      CC_Val => (others => 0));
+
    type Sequence is array (Sequencer_Steps) of Step_Rec with Pack;
    type Pattern is array (Tracks) of Sequence;
    type All_Patterns is array (Patterns) of Pattern;
@@ -716,7 +740,12 @@ private
 
    type Project_Rec is record
       BPM : Beat_Per_Minute := 120;
-      Seqs : All_Patterns := (others => (others => (others => Default_Step)));
+
+      Seqs : All_Patterns :=
+        (others => (4 => (others => Default_Step_Bass),
+                    5 => (others => Default_Step_Lead),
+                    others => (others => Default_Step)));
+
       Tracks : Track_Arr := (Kick_Track    => Default_Kick_Track,
                              Snare_Track   => Default_Snare_Track,
                              Cymbal_Track  => Default_Cymbal_Track,
