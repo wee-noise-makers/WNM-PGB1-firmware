@@ -2,11 +2,12 @@ with Ada.Text_IO;
 with Ada.Exceptions;
 with GNAT.OS_Lib;
 
+with HAL; use HAL;
+
 with WNM.Short_Term_Sequencer;
 with WNM.Note_Off_Sequencer;
 
 with WNM.UI;
-with WNM.LEDs;
 with WNM.File_System;
 with WNM.Sample_Library;
 with WNM.Project.Library;
@@ -19,6 +20,7 @@ with WNM.GUI.Menu.Track_Settings;
 procedure WNM_PS1_Main is
    Next_Start : Time_Microseconds;
 
+   Loop_Cnt : UInt32 := 0;
 begin
 
    WNM.File_System.Mount;
@@ -30,17 +32,25 @@ begin
 
    --  Test_Executor.Start;
 
+   Next_Start := Clock;
+
    loop
-      Next_Start := Time_Microseconds'Last;
+      Next_Start := Next_Start + Milliseconds (1);
+      Loop_Cnt := Loop_Cnt + 1;
 
       WNM.MIDI_Clock.Update;
       WNM.Short_Term_Sequencer.Update (Clock);
       WNM.Note_Off_Sequencer.Update (Clock);
 
-      Next_Start := Time_Microseconds'Min (WNM.UI.Update, Next_Start);
-      Next_Start := Time_Microseconds'Min (WNM.LEDs.Update, Next_Start);
+      if (Loop_Cnt mod 50) = 0 then
+         WNM.UI.Update;
+      end if;
 
-      Delay_Microseconds (Milliseconds (1));
+      if (Loop_Cnt mod 100) = 0 then
+         WNM.UI.Update_LEDs;
+      end if;
+
+      Delay_Until (Next_Start);
    end loop;
 
 exception

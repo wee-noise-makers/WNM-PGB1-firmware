@@ -19,12 +19,13 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Time;
 with WNM.Sequence_Copy;
 
 package WNM.UI is
 
-   function Update return Time.Time_Microseconds;
+   procedure Update;
+
+   procedure Update_LEDs;
 
    type Input_Mode_Type is (Pattern_Mode,
                             Track_Mode,

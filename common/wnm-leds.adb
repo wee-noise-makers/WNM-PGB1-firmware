@@ -32,7 +32,8 @@ package body WNM.LEDs is
       Spring_Green => (000, 255, 128),
       Green        => (000, 255, 000),
       Chartreuse   => (128, 255, 000),
-      Yellow       => (255, 255, 000));
+      Yellow       => (255, 255, 000),
+      Orange       => (255, 128, 000));
 
    G_Color : RGB_Rec := (255, 255, 255);
 
@@ -85,11 +86,9 @@ package body WNM.LEDs is
    -- Update --
    ------------
 
-   function Update return WNM.Time.Time_Microseconds is
+   procedure Update is
    begin
       Update_LEDs;
-
-      return 0;
    end Update;
 
 end WNM.LEDs;

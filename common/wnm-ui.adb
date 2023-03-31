@@ -28,6 +28,7 @@ with WNM.MIDI_Clock; use WNM.MIDI_Clock;
 with WNM.GUI.Menu;
 with WNM.GUI.Menu.Root;
 with WNM.LEDs;
+with WNM.Time;
 with HAL; use HAL;
 
 with WNM.GUI.Popup;
@@ -619,13 +620,12 @@ package body WNM.UI is
    Pressed_Since : array (Button) of WNM.Time.Time_Microseconds :=
      (others => 0);
    Last_Event    : array (Button) of Buttton_Event := (others => On_Release);
-   Next_Start    : Time.Time_Microseconds := Time.Time_Microseconds'First;
 
    ------------
    -- Update --
    ------------
 
-   function Update return Time.Time_Microseconds is
+   procedure Update is
       L_Enco : Integer;
       R_Enco : Integer;
 
@@ -633,12 +633,6 @@ package body WNM.UI is
 
       State : WNM_HAL.Buttons_State;
    begin
-      if Now < Next_Start then
-         return Next_Start;
-      end if;
-
-      Next_Start := Next_Start + UI_Task_Period_Microseconds;
-
       State := WNM_HAL.State;
 
       --  Handle buttons
@@ -710,10 +704,14 @@ package body WNM.UI is
                                 Value => R_Enco));
             end if;
       end case;
+   end Update;
 
-      --------------
-      -- Set LEDs --
-      --------------
+   -----------------
+   -- Update_LEDs --
+   -----------------
+
+   procedure Update_LEDs is
+   begin
 
       LEDs.Turn_Off_All;
 
@@ -738,6 +736,7 @@ package body WNM.UI is
             --  The FX LED will be on if there's at least one FX enabled
 
             LEDs.Set_Hue (LEDs.FX);
+            LEDs.Turn_On (Func);
 
             for B in B1 .. B16 loop
                if FX_Is_On (B) then
@@ -800,7 +799,8 @@ package body WNM.UI is
                if WNM.MIDI_Clock.Running then
                   if Project.Step_Sequencer.Playing_Step in 1 | 5 | 9 | 13
                   then
-                     LEDs.Turn_On (To_Button (Pattern_Sequencer.Playing));
+                     LEDs.Turn_On (To_Button (Pattern_Sequencer.Playing),
+                                   LEDs.Play);
                   end if;
                end if;
 
@@ -820,33 +820,34 @@ package body WNM.UI is
                   if Project.Step_Sequencer.Playing_Step in 1 | 5 | 9 | 13
                   then
                      LEDs.Turn_On
-                       (To_Button (Project.Chord_Sequencer.Chain.Playing));
+                       (To_Button (Project.Chord_Sequencer.Chain.Playing),
+                        LEDs.Play);
                   end if;
                end if;
 
-            when Track_Mode | Step_Mode =>
+            when Track_Mode =>
 
-               if Last_Main_Mode = Step_Mode then
-                  LEDs.Set_Hue (LEDs.Step);
-                  LEDs.Turn_On (Step_Button);
-               else
-                  LEDs.Set_Hue (LEDs.Track);
-                  LEDs.Turn_On (Track_Button);
-               end if;
+               LEDs.Set_Hue (LEDs.Track);
+               LEDs.Turn_On (Track_Button);
 
-               if WNM.MIDI_Clock.Running  then
+               --  Playing step
+               if WNM.MIDI_Clock.Running then
                   LEDs.Turn_On
                     (To_Button (Project.Step_Sequencer.Playing_Step),
                      LEDs.Play);
                end if;
 
-               if Last_Main_Mode = Step_Mode or else Recording then
+               if Recording then
+
+                  --  Active steps in edit mode
+                  LEDs.Set_Hue (LEDs.Recording);
                   for B in Keyboard_Button loop
                      if Project.Set (To_Value (B)) then
                         LEDs.Turn_On (B);
                      end if;
                   end loop;
                else
+
                   for B in Keyboard_Button loop
                      if Project.Set (To_Value (B),
                                      Project.Step_Sequencer.Playing_Step)
@@ -856,6 +857,30 @@ package body WNM.UI is
                   end loop;
                end if;
 
+            when Step_Mode =>
+
+               LEDs.Set_Hue (LEDs.Step);
+               LEDs.Turn_On (Step_Button);
+
+               --  Playing step
+               if WNM.MIDI_Clock.Running  then
+                  LEDs.Turn_On
+                    (To_Button (Project.Step_Sequencer.Playing_Step),
+                     LEDs.Play);
+               end if;
+
+               if Recording then
+                  --  Red means editing
+                  LEDs.Set_Hue (LEDs.Recording);
+               end if;
+
+               --  Active steps
+               for B in Keyboard_Button loop
+                  if Project.Set (To_Value (B)) then
+                     LEDs.Turn_On (B);
+                  end if;
+               end loop;
+
             when FX_Mode =>
                LEDs.Set_Hue (LEDs.Violet);
 
@@ -864,8 +889,8 @@ package body WNM.UI is
             end case;
       end case;
 
-      return Next_Start;
-   end Update;
+      WNM.LEDs.Update;
+   end Update_LEDs;
 
    -----------------
    -- Toggle_Mute --

@@ -19,19 +19,17 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Time;
-
 package WNM.LEDs is
 
    type Hue is (Red, Rose, Magenta, Violet, Blue, Azure, Cyan, Spring_Green,
-                Green, Chartreuse, Yellow);
+                Green, Chartreuse, Yellow, Orange);
 
    Play        : constant Hue := Green;
    Recording   : constant Hue := Red;
-   Step        : constant Hue := Rose;
-   Track       : constant Hue := Blue;
-   Pattern     : constant Hue := Green;
-   Chord       : constant Hue := Yellow;
+   Step        : constant Hue := Magenta;
+   Track       : constant Hue := Azure;
+   Pattern     : constant Hue := Blue;
+   Chord       : constant Hue := Orange;
    FX          : constant Hue := Violet;
 
    procedure Set_Hue (H : Hue);
@@ -41,6 +39,6 @@ package WNM.LEDs is
    procedure Turn_Off (B : LED) with Inline_Always;
    procedure Turn_Off_All with Inline_Always;
 
-   function Update return WNM.Time.Time_Microseconds;
+   procedure Update;
 
 end WNM.LEDs;
