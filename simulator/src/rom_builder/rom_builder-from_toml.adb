@@ -117,12 +117,6 @@ package body ROM_Builder.From_TOML is
          Lib.Write_Entry_Info (TB);
          Simple_Logging.Always ("Writting sample entries file");
          FS.Import ("/sample_entries.txt", TB);
-
-         FS.Import ("/05test.wnm_prj", TB);
-         FS.Import ("/02plop.wnm_prj", TB);
-         FS.Import ("/3plop.wnm_prj", TB);
-         FS.Import ("/04plip.wnm_pr", TB);
-         FS.Import ("/.wnm_prj", TB);
       end;
 
       FS.Print_Tree;

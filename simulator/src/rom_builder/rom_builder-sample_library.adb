@@ -26,7 +26,7 @@ package body ROM_Builder.Sample_Library is
          Len := Src.Read (This.Data (Index).Bytes (Byte_Index)'Address,
                           WNM_Configuration.Storage.Sector_Byte_Size);
 
-         Simple_Logging.Always ("Load sample data:" & Len'Img);
+         Simple_Logging.Debug ("Load sample data:" & Len'Img);
          Total_Len := Total_Len + Len;
 
          exit when Len /= WNM_Configuration.Storage.Sector_Byte_Size;
@@ -133,7 +133,6 @@ package body ROM_Builder.Sample_Library is
                     with  "Invalid sample index: '" & Key & "'";
             end;
 
-            Simple_Logging.Always (Index'Img);
             if Val.Kind /= TOML_Table then
                raise Program_Error with
                  "'[" & Key & ".<Index>]' section should be a table (" &
