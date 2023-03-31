@@ -35,6 +35,9 @@ package body WNM.Project.Library is
    G_Has_Prj : array (Valid_Prj_Index) of Boolean
      := (others => False);
 
+   G_Saved_Size : File_System.File_Signed_Size := 0;
+   G_Loaded_Size : File_System.File_Signed_Size := 0;
+
    --------------------
    -- Entry_Filename --
    --------------------
@@ -180,8 +183,9 @@ package body WNM.Project.Library is
       --  Best effort at loading a project that was saved at shutdown
       declare
          Unused : File_System.Storage_Error;
+         Unused_Size : File_System.File_Signed_Size;
       begin
-         Unused := Storage.Load (Shutdown_Save_Filename);
+         Unused := Storage.Load (Shutdown_Save_Filename, Unused_Size);
       end;
    end Load_Library;
 
@@ -198,7 +202,7 @@ package body WNM.Project.Library is
          return File_System.Project_Do_Not_Exist;
       end if;
 
-      Result := Storage.Load (Entry_Filename (Index));
+      Result := Storage.Load (Entry_Filename (Index), G_Loaded_Size);
 
       if Result = Ok then
          Persistent.Data.Last_Project := Index;
@@ -218,7 +222,7 @@ package body WNM.Project.Library is
       Result : File_System.Storage_Error;
    begin
 
-      Result := Storage.Save (Tmp_Filename);
+      Result := Storage.Save (Tmp_Filename, G_Saved_Size);
 
       if Result /= Ok then
          return Result;
@@ -263,7 +267,21 @@ package body WNM.Project.Library is
    procedure Try_Save_For_Shutdown is
       Unused : File_System.Storage_Error;
    begin
-      Unused := Storage.Save (Shutdown_Save_Filename);
+      Unused := Storage.Save (Shutdown_Save_Filename, G_Saved_Size);
    end Try_Save_For_Shutdown;
+
+   ----------------------
+   -- Last_Loaded_Size --
+   ----------------------
+
+   function Last_Loaded_Size return File_System.File_Signed_Size
+   is (G_Loaded_Size);
+
+   ---------------------
+   -- Last_Saved_Size --
+   ---------------------
+
+   function Last_Saved_Size return File_System.File_Signed_Size
+   is (G_Saved_Size);
 
 end WNM.Project.Library;

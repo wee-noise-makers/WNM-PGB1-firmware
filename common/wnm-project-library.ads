@@ -58,4 +58,11 @@ package WNM.Project.Library is
    --  will silently fail as this is "best effort" attempt at preserving the
    --  current state of the project.
 
+   function Last_Loaded_Size return File_System.File_Signed_Size;
+   --  Return the file size of the last loaded project
+
+   function Last_Saved_Size return File_System.File_Signed_Size;
+   --  Return the file size of the last saved project
+
+
 end WNM.Project.Library;

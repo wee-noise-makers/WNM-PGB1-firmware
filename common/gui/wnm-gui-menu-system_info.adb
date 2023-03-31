@@ -21,6 +21,7 @@
 
 with WNM.GUI.Menu.Drawing;
 with WNM.Synth;
+with WNM.Project.Library;
 
 package body WNM.GUI.Menu.System_Info is
 
@@ -47,15 +48,26 @@ package body WNM.GUI.Menu.System_Info is
                              Info_Kind'Pos (This.K));
 
       case This.K is
-         when Synth_CPU_Load =>
+
+      when Synth_CPU_Load =>
             Drawing.Draw_Title ("Synth CPU Load", "");
             Drawing.Draw_Value (Img (Synth.Last_CPU_Load));
+
          when Synth_Max_CPU_Load =>
             Drawing.Draw_Title ("Synth Max CPU Load", "");
             Drawing.Draw_Value (Img (Synth.Max_CPU_Load));
+
          when Synth_Missed_Deadlines =>
             Drawing.Draw_Title ("Synth Miss DL", "");
             Drawing.Draw_Value (Synth.Missed_Deadlines'Img);
+
+         when Prj_Last_Load_Size =>
+            Drawing.Draw_Title ("Size of last loaded", "project");
+            Drawing.Draw_Value (Project.Library.Last_Loaded_Size'Img);
+
+         when Prj_Last_Save_Size =>
+            Drawing.Draw_Title ("Size of last saved", "project");
+            Drawing.Draw_Value (Project.Library.Last_Saved_Size'Img);
       end case;
    end Draw;
 

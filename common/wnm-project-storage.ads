@@ -23,9 +23,13 @@ with WNM.File_System;
 
 package WNM.Project.Storage is
 
-   function Save (Filename : String) return File_System.Storage_Error;
+   function Save (Filename :     String;
+                  Size     : out File_System.File_Signed_Size)
+                  return File_System.Storage_Error;
 
-   function Load (Filename : String) return File_System.Storage_Error;
+   function Load (Filename :     String;
+                  Size     : out File_System.File_Signed_Size)
+                  return File_System.Storage_Error;
 
    End_Of_Section_Value : constant := 255;
 

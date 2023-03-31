@@ -27,7 +27,9 @@ private
 
    type Info_Kind is (Synth_CPU_Load,
                       Synth_Max_CPU_Load,
-                      Synth_Missed_Deadlines);
+                      Synth_Missed_Deadlines,
+                      Prj_Last_Load_Size,
+                      Prj_Last_Save_Size);
 
    package Next_Info_Kind is new Enum_Next (Info_Kind, Wrap => True);
    use Next_Info_Kind;

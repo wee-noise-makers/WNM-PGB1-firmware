@@ -455,10 +455,15 @@ package body WNM.Project.Storage is
    -- Save --
    ----------
 
-   function Save (Filename : String) return File_System.Storage_Error is
+   function Save (Filename :     String;
+                  Size     : out File_System.File_Signed_Size)
+                  return File_System.Storage_Error
+   is
 
       Output : File_Out.Instance := File_Out.Open (Filename);
    begin
+      Size := 0;
+
       if Output.Status = Ok then
          Save_Global (Output);
       end if;
@@ -492,6 +497,11 @@ package body WNM.Project.Storage is
       end if;
 
       Output.End_File;
+
+      if Output.Status = Ok then
+         Size := WNM.File_System.Size;
+      end if;
+
       Output.Close;
       return Output.Status;
    end Save;
@@ -827,11 +837,15 @@ package body WNM.Project.Storage is
    -- Load --
    ----------
 
-   function Load (Filename : String) return File_System.Storage_Error is
+   function Load (Filename :     String;
+                  Size     : out File_System.File_Signed_Size)
+                  return File_System.Storage_Error
+   is
       Input : File_In.Instance := File_In.Open (Filename);
 
       Token : Token_Kind;
    begin
+      Size := 0;
 
       loop
 
@@ -888,6 +902,8 @@ package body WNM.Project.Storage is
          exit when Input.Status /= Ok;
 
       end loop;
+
+      Size := WNM.File_System.Size;
 
       File_System.Close;
 
