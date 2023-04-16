@@ -1215,19 +1215,33 @@ package body WNM.Project is
    function Drive_Amount_Value return MIDI.MIDI_Data
    is (G_Project.FX.Drive_Amt);
 
+   -------------------------
+   -- Reverb_Amount_Value --
+   -------------------------
+
+   function Reverb_Amount_Value return MIDI.MIDI_Data
+   is (G_Project.FX.Reverb_Amount);
+
    ----------------------
-   -- Delay_Time_Value --
+   -- Reverb_Time_Value --
    ----------------------
 
-   function Delay_Time_Value return MIDI.MIDI_Data
-   is (G_Project.FX.Delay_Time);
+   function Reverb_Time_Value return MIDI.MIDI_Data
+   is (G_Project.FX.Reverb_Time);
 
-   --------------------------
-   -- Delay_Feedback_Value --
-   --------------------------
+   ----------------------------
+   -- Reverb_Diffusion_Value --
+   ----------------------------
 
-   function Delay_Feedback_Value return MIDI.MIDI_Data
-   is (G_Project.FX.Delay_Feedback);
+   function Reverb_Diffusion_Value return MIDI.MIDI_Data
+   is (G_Project.FX.Reverb_Diffusion);
+
+   ---------------------------
+   -- Reverb_Low_Pass_Value --
+   ---------------------------
+
+   function Reverb_Low_Pass_Value return MIDI.MIDI_Data
+   is (G_Project.FX.Reverb_Low_Pass);
 
    -------------------------
    -- Filter_Cutoff_Value --
@@ -1257,12 +1271,14 @@ package body WNM.Project is
    procedure Next_Value (S : User_FX_Settings) is
    begin
       case S is
-         when Drive_Amount   => Next (G_Project.FX.Drive_Amt);
-         when Delay_Time     => Next (G_Project.FX.Delay_Time);
-         when Delay_Feedback => Next (G_Project.FX.Delay_Feedback);
-         when Filter_Mode    => Next (G_Project.FX.Filter_Mode);
-         when Filter_Cutoff  => Next (G_Project.FX.Filter_Cutoff);
-         when Filter_Reso    => Next (G_Project.FX.Filter_Reso);
+         when Drive_Amount     => Next (G_Project.FX.Drive_Amt);
+         when Reverb_Amount    => Next (G_Project.FX.Reverb_Amount);
+         when Reverb_Time      => Next (G_Project.FX.Reverb_Time);
+         when Reverb_Diffusion => Next (G_Project.FX.Reverb_Diffusion);
+         when Reverb_Low_Pass  => Next (G_Project.FX.Reverb_Low_Pass);
+         when Filter_Mode      => Next (G_Project.FX.Filter_Mode);
+         when Filter_Cutoff    => Next (G_Project.FX.Filter_Cutoff);
+         when Filter_Reso      => Next (G_Project.FX.Filter_Reso);
       end case;
 
       Synchronize_FX_Setting (S);
@@ -1275,12 +1291,14 @@ package body WNM.Project is
    procedure Prev_Value (S : User_FX_Settings) is
    begin
       case S is
-         when Drive_Amount   => Prev (G_Project.FX.Drive_Amt);
-         when Delay_Time     => Prev (G_Project.FX.Delay_Time);
-         when Delay_Feedback => Prev (G_Project.FX.Delay_Feedback);
-         when Filter_Mode    => Prev (G_Project.FX.Filter_Mode);
-         when Filter_Cutoff  => Prev (G_Project.FX.Filter_Cutoff);
-         when Filter_Reso    => Prev (G_Project.FX.Filter_Reso);
+         when Drive_Amount     => Prev (G_Project.FX.Drive_Amt);
+         when Reverb_Amount    => Prev (G_Project.FX.Reverb_Amount);
+         when Reverb_Time      => Prev (G_Project.FX.Reverb_Time);
+         when Reverb_Diffusion => Prev (G_Project.FX.Reverb_Diffusion);
+         when Reverb_Low_Pass  => Prev (G_Project.FX.Reverb_Low_Pass);
+         when Filter_Mode      => Prev (G_Project.FX.Filter_Mode);
+         when Filter_Cutoff    => Prev (G_Project.FX.Filter_Cutoff);
+         when Filter_Reso      => Prev (G_Project.FX.Filter_Reso);
       end case;
 
       Synchronize_FX_Setting (S);
@@ -1293,12 +1311,14 @@ package body WNM.Project is
    procedure Next_Value_Fast (S : User_FX_Settings) is
    begin
       case S is
-         when Drive_Amount   => Next_Fast (G_Project.FX.Drive_Amt);
-         when Delay_Time     => Next_Fast (G_Project.FX.Delay_Time);
-         when Delay_Feedback => Next_Fast (G_Project.FX.Delay_Feedback);
-         when Filter_Mode    => Next_Fast (G_Project.FX.Filter_Mode);
-         when Filter_Cutoff  => Next_Fast (G_Project.FX.Filter_Cutoff);
-         when Filter_Reso    => Next_Fast (G_Project.FX.Filter_Reso);
+         when Drive_Amount     => Next_Fast (G_Project.FX.Drive_Amt);
+         when Reverb_Amount    => Next_Fast (G_Project.FX.Reverb_Amount);
+         when Reverb_Time      => Next_Fast (G_Project.FX.Reverb_Time);
+         when Reverb_Diffusion => Next_Fast (G_Project.FX.Reverb_Diffusion);
+         when Reverb_Low_Pass  => Next_Fast (G_Project.FX.Reverb_Low_Pass);
+         when Filter_Mode      => Next_Fast (G_Project.FX.Filter_Mode);
+         when Filter_Cutoff    => Next_Fast (G_Project.FX.Filter_Cutoff);
+         when Filter_Reso      => Next_Fast (G_Project.FX.Filter_Reso);
       end case;
 
       Synchronize_FX_Setting (S);
@@ -1311,12 +1331,14 @@ package body WNM.Project is
    procedure Prev_Value_Fast (S : User_FX_Settings) is
    begin
       case S is
-         when Drive_Amount   => Prev_Fast (G_Project.FX.Drive_Amt);
-         when Delay_Time     => Prev_Fast (G_Project.FX.Delay_Time);
-         when Delay_Feedback => Prev_Fast (G_Project.FX.Delay_Feedback);
-         when Filter_Mode    => Prev_Fast (G_Project.FX.Filter_Mode);
-         when Filter_Cutoff  => Prev_Fast (G_Project.FX.Filter_Cutoff);
-         when Filter_Reso    => Prev_Fast (G_Project.FX.Filter_Reso);
+         when Drive_Amount     => Prev_Fast (G_Project.FX.Drive_Amt);
+         when Reverb_Amount    => Prev_Fast (G_Project.FX.Reverb_Amount);
+         when Reverb_Time      => Prev_Fast (G_Project.FX.Reverb_Time);
+         when Reverb_Diffusion => Prev_Fast (G_Project.FX.Reverb_Diffusion);
+         when Reverb_Low_Pass  => Prev_Fast (G_Project.FX.Reverb_Low_Pass);
+         when Filter_Mode      => Prev_Fast (G_Project.FX.Filter_Mode);
+         when Filter_Cutoff    => Prev_Fast (G_Project.FX.Filter_Cutoff);
+         when Filter_Reso      => Prev_Fast (G_Project.FX.Filter_Reso);
       end case;
 
       Synchronize_FX_Setting (S);
@@ -1429,7 +1451,7 @@ package body WNM.Project is
                   (case Master_FX (T) is
                       when Bypass    => Synth.FX_Select_Bypass,
                       when Overdrive => Synth.FX_Select_Overdrive,
-                      when Delayline => Synth.FX_Select_Delayline,
+                      when Reverb    => Synth.FX_Select_Reverb,
                       when Filter    => Synth.FX_Select_Filter));
 
       end if;
@@ -1448,12 +1470,18 @@ package body WNM.Project is
          when Drive_Amount =>
             CC := Synth.FX_Drive_Amount_CC;
             Val := G_Project.FX.Drive_Amt;
-         when Delay_Time =>
-            CC := Synth.FX_Delay_Time_CC;
-            Val := G_Project.FX.Delay_Time;
-         when Delay_Feedback =>
-            CC := Synth.FX_Delay_Feedback_CC;
-            Val := G_Project.FX.Delay_Feedback;
+         when Reverb_Amount =>
+            CC := Synth.FX_Reverb_Amount_CC;
+            Val := G_Project.FX.Reverb_Amount;
+         when Reverb_Time =>
+            CC := Synth.FX_Reverb_Time_CC;
+            Val := G_Project.FX.Reverb_Time;
+         when Reverb_Diffusion =>
+            CC := Synth.FX_Reverb_Diffusion_CC;
+            Val := G_Project.FX.Reverb_Diffusion;
+         when Reverb_Low_Pass =>
+            CC := Synth.FX_Reverb_Low_Pass_CC;
+            Val := G_Project.FX.Reverb_Low_Pass;
          when Filter_Mode =>
             CC := Synth.FX_Filter_Mode_CC;
             Val := Filter_Mode_Kind'Pos (G_Project.FX.Filter_Mode);

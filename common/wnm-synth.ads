@@ -70,16 +70,18 @@ package WNM.Synth is
 
    FX_Select_Bypass    : constant MIDI.MIDI_Data := 0;
    FX_Select_Overdrive : constant MIDI.MIDI_Data := 1;
-   FX_Select_Delayline : constant MIDI.MIDI_Data := 2;
+   FX_Select_Reverb    : constant MIDI.MIDI_Data := 2;
    FX_Select_Filter    : constant MIDI.MIDI_Data := 3;
 
-   FX_Settings_Channel  : constant MIDI.MIDI_Channel := 15;
-   FX_Drive_Amount_CC   : constant MIDI.MIDI_Data := 0;
-   FX_Delay_Time_CC     : constant MIDI.MIDI_Data := 1;
-   FX_Delay_Feedback_CC : constant MIDI.MIDI_Data := 2;
-   FX_Filter_Mode_CC    : constant MIDI.MIDI_Data := 3;
-   FX_Filter_Cutoff_CC  : constant MIDI.MIDI_Data := 4;
-   FX_Filter_Reso_CC    : constant MIDI.MIDI_Data := 5;
+   FX_Settings_Channel    : constant MIDI.MIDI_Channel := 15;
+   FX_Drive_Amount_CC     : constant MIDI.MIDI_Data := 0;
+   FX_Reverb_Amount_CC    : constant MIDI.MIDI_Data := 1;
+   FX_Reverb_Time_CC      : constant MIDI.MIDI_Data := 2;
+   FX_Reverb_Diffusion_CC : constant MIDI.MIDI_Data := 3;
+   FX_Reverb_Low_Pass_CC  : constant MIDI.MIDI_Data := 4;
+   FX_Filter_Mode_CC      : constant MIDI.MIDI_Data := 5;
+   FX_Filter_Cutoff_CC    : constant MIDI.MIDI_Data := 6;
+   FX_Filter_Reso_CC      : constant MIDI.MIDI_Data := 7;
 
    function Last_CPU_Load return CPU_Load;
    function Max_CPU_Load return CPU_Load;

@@ -247,13 +247,13 @@ package WNM.Project is
    is (case N is
           when Chord => "Notes of chord");
 
-   type Master_FX_Kind is (Bypass, Overdrive, Delayline, Filter);
+   type Master_FX_Kind is (Bypass, Overdrive, Reverb, Filter);
 
    function Img (M : Master_FX_Kind) return String
    is (case M is
           when Bypass    => "Bypass",
           when Overdrive => "Overdrive",
-          when Delayline => "Delay",
+          when Reverb    => "Reverb",
           when Filter    => "Filter");
 
    -- Track Getters --
@@ -434,26 +434,32 @@ package WNM.Project is
    --------
 
    type FX_Setting_Kind is (Drive_Amount,
-                            Delay_Time,
-                            Delay_Feedback,
+                            Reverb_Amount,
+                            Reverb_Time,
+                            Reverb_Diffusion,
+                            Reverb_Low_Pass,
                             Filter_Mode,
                             Filter_Cutoff,
                             Filter_Reso);
 
-   for FX_Setting_Kind use (Drive_Amount   => 0,
-                            Delay_Time     => 1,
-                            Delay_Feedback => 2,
-                            Filter_Mode    => 3,
-                            Filter_Cutoff  => 4,
-                            Filter_Reso    => 5);
+   for FX_Setting_Kind use (Drive_Amount     => 0,
+                            Reverb_Amount    => 1,
+                            Reverb_Time      => 2,
+                            Reverb_Diffusion => 3,
+                            Reverb_Low_Pass  => 4,
+                            Filter_Mode      => 5,
+                            Filter_Cutoff    => 6,
+                            Filter_Reso      => 7);
 
    subtype User_FX_Settings is FX_Setting_Kind;
 
    -- FX Getters --
 
    function Drive_Amount_Value return MIDI.MIDI_Data;
-   function Delay_Time_Value return MIDI.MIDI_Data;
-   function Delay_Feedback_Value return MIDI.MIDI_Data;
+   function Reverb_Amount_Value return MIDI.MIDI_Data;
+   function Reverb_Time_Value return MIDI.MIDI_Data;
+   function Reverb_Diffusion_Value return MIDI.MIDI_Data;
+   function Reverb_Low_Pass_Value return MIDI.MIDI_Data;
    function Filter_Cutoff_Value return MIDI.MIDI_Data;
    function Filter_Reso_Value return MIDI.MIDI_Data;
 
@@ -676,17 +682,21 @@ private
                                      ));
 
    Default_Bass_Track : constant Track_Rec :=
-     (Default_Track with delta CC => ((0, 63, "CC0              "),
+     (Default_Track with delta Engine => 7,
+                               FX_Kind => Reverb,
+                               CC => ((0, 63, "CC0              "),
                                       (1, 63, "CC1              "),
-                                      (2, 63, "CC2              "),
+                                      (2,  0, "CC2              "),
                                       (3, 63, "CC3              ")
                                      ));
 
    Default_Lead_Track : constant Track_Rec :=
-     (Default_Track with delta CC => ((0, 63, "CC0              "),
-                                      (1, 63, "CC1              "),
-                                      (2, 63, "CC2              "),
-                                      (3, 63, "CC3              ")
+     (Default_Track with delta Engine => 0,
+                               FX_Kind => Reverb,
+                               CC => ((0, 60, "CC0              "),
+                                      (1, 40, "CC1              "),
+                                      (2,  0, "CC2              "),
+                                      (3, 60, "CC3              ")
                                      ));
 
    Default_Sample1_Track : constant Track_Rec :=
@@ -724,19 +734,16 @@ private
 
    type FX_Rec is record
       Drive_Amt : MIDI.MIDI_Data := 60;
-      Delay_Time : MIDI.MIDI_Data := 60;
-      Delay_Feedback : MIDI.MIDI_Data := 60;
+      Reverb_Amount : MIDI.MIDI_Data := 30;
+      Reverb_Time : MIDI.MIDI_Data := 70;
+      Reverb_Diffusion : MIDI.MIDI_Data := 60;
+      Reverb_Low_Pass : MIDI.MIDI_Data := 40;
       Filter_Mode : Filter_Mode_Kind := Filter_Mode_Kind'First;
       Filter_Cutoff : MIDI.MIDI_Data := 60;
       Filter_Reso : MIDI.MIDI_Data := 60;
    end record;
 
-   Default_FX : constant FX_Rec := (Drive_Amt => 60,
-                                    Delay_Time => 60,
-                                    Delay_Feedback => 60,
-                                    Filter_Mode => Filter_Mode_Kind'First,
-                                    Filter_Cutoff => 60,
-                                    Filter_Reso => 60);
+   Default_FX : constant FX_Rec := (others => <>);
 
    type Project_Rec is record
       BPM : Beat_Per_Minute := 120;

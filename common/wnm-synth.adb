@@ -33,13 +33,13 @@ with Tresses.Drums.Cymbal;
 with Tresses.Voices.Macro;
 with Tresses.Macro;
 with Tresses.Interfaces;
-with Tresses.FX.Delay_Line;
+with Tresses.FX.Reverb;
 with Tresses.FX.Overdrive;
 with Tresses.Filters.SVF;
 
 package body WNM.Synth is
 
-   type FX_Kind is (Bypass, Overdrive, Delayline, Filter);
+   type FX_Kind is (Bypass, Overdrive, Reverb, Filter);
 
    TK   : aliased Tresses.Drums.Kick.Instance;
    TS   : aliased WNM.Synth.Snare_Voice.Instance;
@@ -49,10 +49,9 @@ package body WNM.Synth is
    Sampler1 : aliased WNM.Synth.Sampler_Voice.Instance;
    Sampler2 : aliased WNM.Synth.Sampler_Voice.Instance;
 
-   DLL : Tresses.FX.Delay_Line.Instance
-     (Unsigned_16 (MIDI.MIDI_Data'Last) * 100 + 1);
-   DLR : Tresses.FX.Delay_Line.Instance
-     (Unsigned_16 (MIDI.MIDI_Data'Last) * 100 + 1);
+   package Reverb_Pck is new Tresses.FX.Reverb;
+
+   Rev : Reverb_Pck.Instance;
 
    FL : Tresses.Filters.SVF.Instance;
    FR : Tresses.Filters.SVF.Instance;
@@ -325,15 +324,27 @@ package body WNM.Synth is
                                 To_Param
                                   (Msg.MIDI_Evt.Controller_Value);
 
-                           when FX_Delay_Time_CC =>
-                              Delay_Time :=
-                                To_Param
-                                  (Msg.MIDI_Evt.Controller_Value);
+                           when FX_Reverb_Amount_CC =>
+                              Reverb_Pck.Set_Amount
+                                (Rev,
+                                 To_Param (Msg.MIDI_Evt.Controller_Value));
 
-                           when FX_Delay_Feedback_CC =>
-                              Delay_Feedback :=
-                                To_Param
-                                  (Msg.MIDI_Evt.Controller_Value);
+                           when FX_Reverb_Diffusion_CC =>
+                              Reverb_Pck.Set_Diffusion
+                                (Rev,
+                                 To_Param (Msg.MIDI_Evt.Controller_Value));
+
+                           when FX_Reverb_Time_CC =>
+                              Reverb_Pck.Set_Time
+                                (Rev,
+                                 To_Param (Msg.MIDI_Evt.Controller_Value));
+
+                           when FX_Reverb_Low_Pass_CC =>
+                              Reverb_Pck.Set_Low_Pass
+                                (Rev,
+                                 To_Param (Msg.MIDI_Evt.Controller_Value));
+
+
 
                            when FX_Filter_Mode_CC =>
 
@@ -466,7 +477,7 @@ package body WNM.Synth is
                                 (case Msg.MIDI_Evt.Controller_Value is
                                     when FX_Select_Bypass => Bypass,
                                     when FX_Select_Overdrive => Overdrive,
-                                    when FX_Select_Delayline => Delayline,
+                                    when FX_Select_Reverb => Reverb,
                                     when FX_Select_Filter => Filter,
                                     when others => Bypass);
 
@@ -669,18 +680,10 @@ package body WNM.Synth is
          Tresses.FX.Overdrive.Process (Send_R_Buffers (Overdrive),
                                        Drive_Amount);
 
-         --  Delay
-         Tresses.FX.Delay_Line.Process
-           (DLL,
-            Send_L_Buffers (Delayline),
-            Delay_Time,
-            Delay_Feedback);
-
-         Tresses.FX.Delay_Line.Process
-           (DLR,
-            Send_R_Buffers (Delayline),
-            Delay_Time,
-            Delay_Feedback);
+         --  Reverb
+         Reverb_Pck.Process (Rev,
+                             Send_L_Buffers (Reverb),
+                             Send_R_Buffers (Reverb));
 
          --  Filter
          Tresses.Filters.SVF.Set_Frequency (FL, Filter_Cutoff);

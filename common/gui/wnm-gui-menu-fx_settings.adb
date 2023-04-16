@@ -44,12 +44,14 @@ package body WNM.GUI.Menu.FX_Settings is
 
    function To_Top (S : Sub_Settings) return Top_Settings
    is (case S is
-          when WNM.Project.Drive_Amount   => Overdrive,
-          when WNM.Project.Delay_Time     => Delayline,
-          when WNM.Project.Delay_Feedback => Delayline,
-          when WNM.Project.Filter_Mode    => Filter,
-          when WNM.Project.Filter_Cutoff  => Filter,
-          when WNM.Project.Filter_Reso    => Filter);
+          when WNM.Project.Drive_Amount     => Overdrive,
+          when WNM.Project.Reverb_Amount    => Reverb,
+          when WNM.Project.Reverb_Time      => Reverb,
+          when WNM.Project.Reverb_Diffusion => Reverb,
+          when WNM.Project.Reverb_Low_Pass  => Reverb,
+          when WNM.Project.Filter_Mode      => Filter,
+          when WNM.Project.Filter_Cutoff    => Filter,
+          when WNM.Project.Filter_Reso      => Filter);
 
    ----------
    -- Draw --
@@ -77,18 +79,38 @@ package body WNM.GUI.Menu.FX_Settings is
                            Label => "DRV",
                            Selected => True);
 
-         when Delayline =>
-            Draw_Title ("Delay", "");
-
+         when Reverb =>
+            case Sub_Setting is
+               when Reverb_Amount =>
+                    Draw_Title ("Reverb Amount", "");
+               when Reverb_Time =>
+                    Draw_Title ("Reverb Time", "");
+               when Reverb_Diffusion =>
+                    Draw_Title ("Reverb Diffusion", "");
+               when Reverb_Low_Pass =>
+                    Draw_Title ("Reverb Low Pass", "");
+               when others =>
+                  null;
+            end case;
             Draw_CC_Value (Id => A,
-                           Value => Project.Delay_Time_Value,
-                           Label => "TIM",
-                           Selected => Sub_Setting = Delay_Time);
+                           Value => Project.Reverb_Amount_Value,
+                           Label => "AMT",
+                           Selected => Sub_Setting = Reverb_Amount);
 
             Draw_CC_Value (Id => B,
-                           Value => Project.Delay_Feedback_Value,
-                           Label => "FBK",
-                           Selected => Sub_Setting = Delay_Feedback);
+                           Value => Project.Reverb_Time_Value,
+                           Label => "TIM",
+                           Selected => Sub_Setting = Reverb_Time);
+
+            Draw_CC_Value (Id => C,
+                           Value => Project.Reverb_Diffusion_Value,
+                           Label => "DIF",
+                           Selected => Sub_Setting = Reverb_Diffusion);
+
+            Draw_CC_Value (Id => D,
+                           Value => Project.Reverb_Low_Pass_Value,
+                           Label => "LP ",
+                           Selected => Sub_Setting = Reverb_Low_Pass);
 
          when Filter =>
             Draw_Title ("Filter", "");

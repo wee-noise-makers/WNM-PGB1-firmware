@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=WNM PS1 Simulator
+Exec=wnm_ps1_simulator
+Icon=wnm_ps1_simulator
+Type=Application
+Categories=Audio;Utility;

@@ -27,7 +27,7 @@ package WNM.GUI.Menu.FX_Settings is
 
 private
 
-   type Top_Settings is (Overdrive, Delayline, Filter);
+   type Top_Settings is (Overdrive, Reverb, Filter);
    function Top_Settings_Count is new Enum_Count (Top_Settings);
 
    subtype Sub_Settings is WNM.Project.User_FX_Settings;

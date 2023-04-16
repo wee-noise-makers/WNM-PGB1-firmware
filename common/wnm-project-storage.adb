@@ -414,11 +414,17 @@ package body WNM.Project.Storage is
             when Drive_Amount =>
                Output.Push (G_Project.FX.Drive_Amt);
 
-            when Delay_Time =>
-               Output.Push (G_Project.FX.Delay_Time);
+            when Reverb_Amount =>
+               Output.Push (G_Project.FX.Reverb_Amount);
 
-            when Delay_Feedback =>
-               Output.Push (G_Project.FX.Delay_Feedback);
+            when Reverb_Time =>
+               Output.Push (G_Project.FX.Reverb_Time);
+
+            when Reverb_Diffusion =>
+               Output.Push (G_Project.FX.Reverb_Diffusion);
+
+            when Reverb_Low_Pass =>
+               Output.Push (G_Project.FX.Reverb_Low_Pass);
 
             when Filter_Mode =>
                Output.Push (Out_UInt (G_Project.FX.Filter_Mode'Enum_Rep));
@@ -822,8 +828,10 @@ package body WNM.Project.Storage is
 
          case S is
             when Drive_Amount => Read (Input, G_Project.FX.Drive_Amt);
-            when Delay_Time => Read (Input, G_Project.FX.Delay_Time);
-            when Delay_Feedback => Read (Input, G_Project.FX.Delay_Feedback);
+            when Reverb_Amount => Read (Input, G_Project.FX.Reverb_Amount);
+            when Reverb_Time => Read (Input, G_Project.FX.Reverb_Time);
+            when Reverb_Diffusion => Read (Input, G_Project.FX.Reverb_Diffusion);
+            when Reverb_Low_Pass => Read (Input, G_Project.FX.Reverb_Low_pass);
             when Filter_Mode => Read (Input, G_Project.FX.Filter_Mode);
             when Filter_Cutoff => Read (Input, G_Project.FX.Filter_Cutoff);
             when Filter_Reso => Read (Input, G_Project.FX.Filter_Reso);
