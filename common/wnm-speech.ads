@@ -26,32 +26,10 @@ with LPC_Synth;
 
 package WNM.Speech is
 
-   type Word is range 1 .. 286
+   type Word is range 0 .. 285
      with size => 9;
 
    function Img (W : Word) return String;
-
-   procedure Set_Word (W : Word);
-   procedure Start (K : MIDI.MIDI_Key);
-   procedure Stop;
-
-   procedure Set_Stretch (V : MIDI.MIDI_Data);
-
-   procedure Next_Points (Buffer  : out WNM_HAL.Mono_Buffer;
-                          Success : out Boolean);
-
-   type Speech_Event_Rec is record
-      On       : Boolean;
-      Track    : Tracks;
-      W        : Word;
-      Key      : MIDI.MIDI_Key;
-   end record
-     with Pack, Size => 22;
-
-   type Speech_CC_Event_Rec is record
-      Track   : Tracks;
-      Stretch : MIDI.MIDI_Data;
-   end record;
 
    --  python -c 'print("\n".join(["           \
    --  %d => %f," % (x, (0.5 + (x * (5.5/127.0)))) for x in range(0,128)]))'

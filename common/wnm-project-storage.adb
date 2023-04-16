@@ -915,14 +915,11 @@ package body WNM.Project.Storage is
 
       File_System.Close;
 
-      if Input.Status = Ok then
-         --  Update all the synth settings after loading a project
-         for T in Tracks loop
-            Synchronize_Voice_Settings (T);
+      --  Update all the synth settings after loading a project
+      for T in Tracks loop
+         Synchronize_Voice_Settings (T);
          end loop;
-
-         Synchronize_All_FX_Settings;
-      end if;
+      Synchronize_All_FX_Settings;
 
       return Input.Status;
    end Load;

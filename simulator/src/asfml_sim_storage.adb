@@ -347,8 +347,6 @@ package body ASFML_SIM_Storage is
       Load_Sample_Data (Img);
       Config := RAM_Image_Backend.Create (Img);
 
-      Print_FS_Tree;
-
       return "";
    end Load_ROM;
 
