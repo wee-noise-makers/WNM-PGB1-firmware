@@ -278,50 +278,17 @@ package body WNM.GUI.Menu.Track_Settings is
                Sub = LFO_Target);
 
          when CC_Default =>
-            declare
-               Selected : constant Project.CC_Id := To_CC_Id (Sub);
-               First : Project.CC_Id;
-            begin
-
-               if Mode in Sample1_Mode | Sample2_Mode and then Selected = A
-               then
-                  declare
-                     Id : constant Natural :=
-                       Natural (Project.CC_Default (Editing_Track, A)) + 1;
-                  begin
-                     Draw_Sample_Select
-                       (Sample_Library.Valid_Sample_Index (Id));
-                  end;
-
-               elsif Mode = Speech_Mode and then Selected = A then
-                  declare
-                     Id : constant Natural :=
-                       Natural (Project.CC_Default (Editing_Track, A)) + 1;
-                  begin
-                     Draw_Word_Select (Speech.Word (Id));
-                  end;
-
-               else
-
-                  case Mode is
-                     when Speech_Mode | Sample1_Mode | Sample2_Mode =>
-                        First := B;
-                     when others =>
-                        First := A;
-                  end case;
-
-                  for Id in CC_Id range First .. CC_Id'Last loop
-                     Draw_CC_Value
-                       (Id, Project.CC_Default (Editing_Track, Id),
-                        Project.CC_Controller_Short_Label (Editing_Track, Id),
-                        Id = Selected);
-                  end loop;
-
-                  Draw_Title
-                    (Project.CC_Controller_Label (Editing_Track, Selected),
-                     "");
-               end if;
-            end;
+            Draw_CC_Control_Page
+              (Mode => Project.Mode,
+               Selected => To_CC_Id (Sub),
+               Val_A => Project.CC_Default (Editing_Track, A),
+               Val_B => Project.CC_Default (Editing_Track, B),
+               Val_C => Project.CC_Default (Editing_Track, C),
+               Val_D => Project.CC_Default (Editing_Track, D),
+               Ena_A => True,
+               Ena_B => True,
+               Ena_C => True,
+               Ena_D => True);
 
          when CC_Ctrl_A | CC_Ctrl_B | CC_Ctrl_C | CC_Ctrl_D =>
             declare

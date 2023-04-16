@@ -614,6 +614,70 @@ package body WNM.GUI.Menu.Drawing is
 
    end Draw_LFO_Shape;
 
+   --------------------------
+   -- Draw_CC_Control_Page --
+   --------------------------
+
+   procedure Draw_CC_Control_Page
+     (Mode        : WNM.Project.Track_Mode_Kind;
+      Selected    : WNM.Project.CC_Id;
+      Val_A, Val_B, Val_C, Val_D : MIDI.MIDI_Data;
+      Ena_A, Ena_B, Ena_C, Ena_D : Boolean := True)
+   is
+      use WNM.Project;
+
+      First : Project.CC_Id;
+   begin
+
+      if Mode in Sample1_Mode | Sample2_Mode
+        and then Selected = A
+        and then Ena_A
+      then
+         First := B;
+
+         declare
+            Id : constant Natural := Natural (Val_A) + 1;
+         begin
+            Draw_Sample_Select
+              (Sample_Library.Valid_Sample_Index (Id));
+         end;
+
+      elsif Mode = Speech_Mode
+        and then Selected = A
+        and then Ena_A
+      then
+         First := B;
+
+         declare
+            Id : constant Natural := Natural (Val_A);
+         begin
+            Draw_Word_Select (Speech.Word (Id));
+         end;
+
+      else
+
+         for Id in CC_Id range First .. CC_Id'Last loop
+            Draw_CC_Value
+              (Id, (case Id is
+                      when A => Val_A,
+                      when B => Val_B,
+                      when C => Val_C,
+                      when D => Val_D),
+               Project.CC_Controller_Short_Label (Editing_Track, Id),
+               Id = Selected,
+               Enabled => (case Id is
+                             when A => Ena_A,
+                             when B => Ena_B,
+                             when C => Ena_C,
+                             when D => Ena_D));
+         end loop;
+
+         Draw_Title
+           (Project.CC_Controller_Label (Editing_Track, Selected),
+            "");
+      end if;
+   end Draw_CC_Control_Page;
+
    ----------------------
    -- Draw_Filter_Mode --
    ----------------------

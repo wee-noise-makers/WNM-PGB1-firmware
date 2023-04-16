@@ -124,16 +124,17 @@ package body WNM.GUI.Menu.Step_Settings is
                      when CC_C => Project.C,
                      when others => Project.D);
             begin
-               for Id in CC_Id loop
-                  Draw_CC_Value
-                    (Id, Project.CC_Value (Editing_Step, Id),
-                     CC_Controller_Short_Label (Editing_Track, Id),
-                     Id = Selected,
-                     Enabled => CC_Enabled (Step, Id));
-               end loop;
-
-               Draw_Title
-                 (CC_Controller_Label (Editing_Track, Selected), "");
+               Draw_CC_Control_Page
+                 (Mode => Project.Mode,
+                  Selected => Selected,
+                  Val_A => Project.CC_Value (Id => A),
+                  Val_B => Project.CC_Value (Id => B),
+                  Val_C => Project.CC_Value (Id => C),
+                  Val_D => Project.CC_Value (Id => D),
+                  Ena_A => CC_Enabled (Id => A),
+                  Ena_B => CC_Enabled (Id => B),
+                  Ena_C => CC_Enabled (Id => C),
+                  Ena_D => CC_Enabled (Id => D));
             end;
       end case;
    end Draw;

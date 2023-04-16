@@ -82,6 +82,12 @@ package WNM.GUI.Menu.Drawing is
                              Sync     : WNM.Project.LFO_Sync_Kind;
                              Loo      : WNM.Project.LFO_Loop_Kind);
 
+   procedure Draw_CC_Control_Page
+     (Mode        : WNM.Project.Track_Mode_Kind;
+      Selected    : WNM.Project.CC_Id;
+      Val_A, Val_B, Val_C, Val_D : MIDI.MIDI_Data;
+      Ena_A, Ena_B, Ena_C, Ena_D : Boolean := True);
+
    procedure Draw_Filter_Mode (Id       : WNM.Project.CC_Id;
                                Mode     : Project.Filter_Mode_Kind;
                                Label    : String;
