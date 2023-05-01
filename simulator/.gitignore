@@ -1,4 +1,5 @@
 /obj/
 /bin/
+/bin/*.dll
 /alire/
 /config/
