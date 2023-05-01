@@ -47,8 +47,8 @@ def gather_deps(path):
         if dep_path.lower().startswith("/c/windows/"):
             continue
 
-        if dep_path.startswith("/mingw64/"):
-            dep_path = "/c/msys2" + dep_path
+        #if dep_path.startswith("/mingw64/"):
+        #    dep_path = "/c/msys2" + dep_path
 
         ret.append(dep_path)
 
