@@ -1,0 +1,43 @@
+on:                    # Run the workflow for each of the following event:
+  push:                # - A branch is pushed or updated.
+  pull_request:        # - A pull-request is openned or updated.
+  workflow_dispatch:   # - A manual run of the workflow is requested from the GitHub web interface.
+  release:
+    types: [created]   # - A release is created.
+
+jobs:
+  build_native:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        gnat_version: [^12]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: simulator
+    steps:
+      - uses: actions/checkout@v2
+      - uses: alire-project/setup-alire@v2
+        with:
+          toolchain: gnat_native${{ matrix.gnat_version }} gprbuild --disable-assistant
+
+      - run: alr exec -- pacman -S mingw-w64-x86_64-rtaudio zip
+        if: matrix.os == 'windows-latest'
+
+      - run: alr build
+      - run: alr exec -P -- gprinstall -p --prefix=install_dir
+      
+      - run: alr exec -- python ..\misc\dll_copy.py --copy .\install_dir\bin\wnm_ps1_simulator.exe
+        if: matrix.os == 'windows-latest'
+
+      - run: alr exec -- python ..\misc\dll_copy.py --copy .\install_dir\bin\wnm_ps1_simulator.exe
+        if: matrix.os == 'windows-latest'
+        
+      - run: alr exec -- zip -r wnm_ps1_bundle.zip install_dir
+        if: matrix.os == 'windows-latest'
+
+      - uses: actions/upload-artifact@v3
+        if: matrix.os == 'windows-latest'
+        with:
+          name: windows-release-bundle
+          path: wnm_ps1_simulator.zip
