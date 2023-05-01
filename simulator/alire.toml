@@ -43,3 +43,6 @@ tresses.Sample_Rate = "SR44100"
 BBQUEUE_COMPILE_CHECKS = "disabled"
 BBQUEUE_RUNTIME_CHECKS = "disabled"
 BBQUEUE_CONTRACTS = "disabled"
+
+[environment.'case(distribution)'.msys2.CPLUS_INCLUDE_PATH]
+append = "${DISTRIB_ROOT}/mingw64/include"
