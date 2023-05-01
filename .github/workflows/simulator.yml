@@ -21,7 +21,7 @@ jobs:
         with:
           toolchain: gnat_native${{ matrix.gnat_version }} gprbuild --disable-assistant
 
-      - run: alr exec -- pacman -S mingw-w64-x86_64-rtaudio zip
+      - run: alr exec -- pacman --noconfirm -S mingw-w64-x86_64-rtaudio zip
         if: matrix.os == 'windows-latest'
 
       - run: alr build
