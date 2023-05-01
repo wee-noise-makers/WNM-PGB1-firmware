@@ -1,4 +1,5 @@
 #include "rtaudio/RtAudio.h"
+#include <map>
 
 RtAudio *audio = NULL;
 
@@ -16,11 +17,25 @@ extern void wnm_rtaudio_callback (void *outbuf, unsigned int nFrames);
 }
 #endif
 
-RtAudio::Api APIs_By_Prefered_Order[] =
-{
- RtAudio::LINUX_PULSE, RtAudio::LINUX_ALSA, RtAudio::UNIX_JACK,
- RtAudio::LINUX_OSS,  RtAudio::WINDOWS_WASAPI, RtAudio::WINDOWS_ASIO,
- RtAudio::WINDOWS_DS, RtAudio::MACOSX_CORE, RtAudio::UNSPECIFIED
+#if _WIN32
+const RtAudio::Api api = RtAudio::WINDOWS_WASAPI;
+#elif __MACH__
+const RtAudio::Api api = RtAudio::MACOSX_CORE;
+#else
+const RtAudio::Api api = RtAudio::LINUX_PULSE;
+#endif
+
+static const std::map<RtAudio::Api, std::string> API_NAMES = {
+  { RtAudio::LINUX_ALSA, "ALSA" },
+  { RtAudio::UNIX_JACK, "JACK" },
+  { RtAudio::LINUX_PULSE, "PulseAudio" },
+  { RtAudio::LINUX_OSS, "OSS" },
+  { RtAudio::WINDOWS_WASAPI, "WASAPI" },
+  { RtAudio::WINDOWS_ASIO, "ASIO" },
+  { RtAudio::WINDOWS_DS, "DirectSound" },
+  { RtAudio::MACOSX_CORE, "Core Audio" },
+  { RtAudio::RTAUDIO_DUMMY, "Dummy" },
+  { RtAudio::UNSPECIFIED, "Unspecified" },
 };
 
 static int
@@ -43,25 +58,27 @@ rtaudio_callback(
 int
 wnm_rtaudio_init (unsigned int sample_rate, unsigned int frames)
 {
-  RtAudio *audio = 0;
+  RtAudio *audio = NULL;
 
-  for (int i = 0; APIs_By_Prefered_Order[i] != RtAudio::UNSPECIFIED; i++)
+  try
     {
-      if (APIs_By_Prefered_Order[i] == RtAudio::UNSPECIFIED)
-        {
-          return 1;
-        }
-      try
-      {
-        // std::cout << "Trying to open API:" <<  API_Image.at(api));
-        audio = new RtAudio (APIs_By_Prefered_Order[i]);
-        break;
-      }
-      catch (RtAudioError &error)
-      {
-        // Handle the exception here
-        error.printMessage ();
-      }
+      std::cout << "Trying to open API:" << API_NAMES.at (api);
+      audio = new RtAudio (api);
+    }
+  catch (RtAudioError &error)
+    {
+      // Handle the exception here
+      error.printMessage ();
+      return 1;
+    }
+
+  if (audio == NULL)
+    {
+      return 1;
+    }
+  else
+    {
+      std::cout << "Success open API:" << API_NAMES.at (api);
     }
 
   /* probe audio devices */
@@ -77,10 +94,19 @@ wnm_rtaudio_init (unsigned int sample_rate, unsigned int frames)
   RtAudio::StreamOptions *options = new RtAudio::StreamOptions ();
 
   options->flags |= RTAUDIO_SCHEDULE_REALTIME;
-  audio->openStream (outParam, NULL, RTAUDIO_SINT16, sample_rate, &bufsize,
-                     rtaudio_callback, NULL);
+  try
+    {
+      audio->openStream (outParam, NULL, RTAUDIO_SINT16, sample_rate, &bufsize,
+                         rtaudio_callback, NULL);
 
-  audio->startStream ();
+      audio->startStream ();
+    }
+  catch (RtAudioError &error)
+    {
+      // Handle the exception here
+      error.printMessage ();
+      return 1;
+    }
 
   return 0;
 }
