@@ -17,6 +17,8 @@ jobs:
         working-directory: simulator
     steps:
     
+      - uses: actions/checkout@v2
+
       - name: Get date
         run: echo "BUILD_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
         shell: bash
@@ -36,7 +38,6 @@ jobs:
         run: echo "RELEASE_NAME=wnm-ps1-simulator-${{github.sha}}-${{env.BUILD_DATE}}" >> $GITHUB_ENV
         shell: bash
 
-      - uses: actions/checkout@v2
       - uses: alire-project/setup-alire@v2
         with:
           toolchain: gnat_native${{ matrix.gnat_version }} gprbuild --disable-assistant
