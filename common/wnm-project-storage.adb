@@ -396,55 +396,6 @@ package body WNM.Project.Storage is
 
    end Save_Chords;
 
-   -------------
-   -- Save_FX --
-   -------------
-
-   procedure Save_FX (Output : in out File_Out.Instance) is
-   begin
-      Output.Start_FX;
-      --  Using a loop over all settings and a case statement, we make
-      --  sure all settings are handled. This will hopefully prevent
-      --  mistakes when new settings are introduced.
-      for Set in FX_Setting_Kind loop
-
-         Output.Push (Out_UInt (Set'Enum_Rep));
-
-         case Set is
-            when Drive_Amount =>
-               Output.Push (G_Project.FX.Drive_Amt);
-
-            when Reverb_Amount =>
-               Output.Push (G_Project.FX.Reverb_Amount);
-
-            when Reverb_Time =>
-               Output.Push (G_Project.FX.Reverb_Time);
-
-            when Reverb_Diffusion =>
-               Output.Push (G_Project.FX.Reverb_Diffusion);
-
-            when Reverb_Low_Pass =>
-               Output.Push (G_Project.FX.Reverb_Low_Pass);
-
-            when Filter_Mode =>
-               Output.Push (Out_UInt (G_Project.FX.Filter_Mode'Enum_Rep));
-
-            when Filter_Cutoff =>
-               Output.Push (G_Project.FX.Filter_Cutoff);
-
-            when Filter_Reso =>
-               Output.Push (G_Project.FX.Filter_Reso);
-
-         end case;
-
-         if Output.Status /= Ok then
-            return;
-         end if;
-
-      end loop;
-      Output.End_Section;
-   end Save_FX;
-
    -----------------
    -- Save_Global --
    -----------------
@@ -492,10 +443,6 @@ package body WNM.Project.Storage is
          Output.Start_Pattern_Chain;
          Pattern_Sequencer.Save (Output);
          Output.End_Section;
-      end if;
-
-      if Output.Status = Ok then
-         Save_FX (Output);
       end if;
 
       if Output.Status = Ok then
@@ -802,45 +749,6 @@ package body WNM.Project.Storage is
       end loop;
    end Load_Global;
 
-   -------------
-   -- Load_FX --
-   -------------
-
-   procedure Load_FX (Input : in out File_In.Instance) is
-      procedure To_FX_Settings is new Convert_To_Enum (FX_Setting_Kind);
-
-      procedure Read is new File_In.Read_Gen_Enum (Filter_Mode_Kind);
-      procedure Read is new File_In.Read_Gen_Mod (MIDI.MIDI_Data);
-
-      S : FX_Setting_Kind;
-      Raw : In_UInt := 0;
-      Success : Boolean;
-   begin
-      loop
-         Input.Read (Raw);
-
-         exit when Input.Status /= Ok
-           or else Raw = End_Of_Section_Value;
-
-         To_FX_Settings (Raw, S, Success);
-
-         exit when not Success;
-
-         case S is
-            when Drive_Amount => Read (Input, G_Project.FX.Drive_Amt);
-            when Reverb_Amount => Read (Input, G_Project.FX.Reverb_Amount);
-            when Reverb_Time => Read (Input, G_Project.FX.Reverb_Time);
-            when Reverb_Diffusion => Read (Input, G_Project.FX.Reverb_Diffusion);
-            when Reverb_Low_Pass => Read (Input, G_Project.FX.Reverb_Low_pass);
-            when Filter_Mode => Read (Input, G_Project.FX.Filter_Mode);
-            when Filter_Cutoff => Read (Input, G_Project.FX.Filter_Cutoff);
-            when Filter_Reso => Read (Input, G_Project.FX.Filter_Reso);
-         end case;
-
-         exit when Input.Status /= Ok;
-      end loop;
-   end Load_FX;
-
    ----------
    -- Load --
    ----------
@@ -870,9 +778,6 @@ package body WNM.Project.Storage is
 
             when Chord_Section =>
                Load_Chord (Input);
-
-            when FX_Section =>
-               Load_FX (Input);
 
             when Sequence_Section =>
                Load_Sequences (Input);
@@ -918,8 +823,7 @@ package body WNM.Project.Storage is
       --  Update all the synth settings after loading a project
       for T in Tracks loop
          Synchronize_Voice_Settings (T);
-         end loop;
-      Synchronize_All_FX_Settings;
+      end loop;
 
       return Input.Status;
    end Load;

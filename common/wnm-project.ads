@@ -195,7 +195,8 @@ package WNM.Project is
 
    type Track_Mode_Kind is (MIDI_Mode, Sample1_Mode, Sample2_Mode,
                             Speech_Mode, Kick_Mode, Snare_Mode, Cymbal_Mode,
-                            Bass_Mode, Lead_Mode);
+                            Bass_Mode, Lead_Mode, Reverb_Mode, Filter_Mode,
+                            Drive_Mode);
 
    function Img (M : Track_Mode_Kind) return String
    is (case M is
@@ -207,10 +208,13 @@ package WNM.Project is
           when Snare_Mode  => "Snare",
           when Cymbal_Mode => "Cymbal",
           when Lead_Mode   => "Lead",
-          when Bass_Mode   => "Bass");
+          when Bass_Mode   => "Bass",
+          when Reverb_Mode => "FX Reverb",
+          when Filter_Mode => "FX Filter",
+          when Drive_Mode  => "FX Overdrive");
 
    subtype Synth_Track_Mode_Kind is
-     Track_Mode_Kind range Sample1_Mode .. Lead_Mode;
+     Track_Mode_Kind range Sample1_Mode .. Drive_Mode;
 
    function Voice_MIDI_Chan (Voice : Synth_Track_Mode_Kind)
                              return MIDI.MIDI_Channel
@@ -222,9 +226,10 @@ package WNM.Project is
           when Snare_Mode  => Synth.Snare_Channel,
           when Cymbal_Mode => Synth.Cymbal_Channel,
           when Bass_Mode   => Synth.Bass_Channel,
-          when Lead_Mode   => Synth.Lead_Channel);
-
-   FX_MIDI_Chan : constant MIDI.MIDI_Channel := Synth.FX_Settings_Channel;
+          when Lead_Mode   => Synth.Lead_Channel,
+          when Reverb_Mode => Synth.Reverb_Channel,
+          when Filter_Mode => Synth.Filter_Channel,
+          when Drive_Mode  => Synth.Drive_Channel);
 
    subtype Controller_Label is String (1 .. 17);
    Empty_Controller_Label : constant Controller_Label := (others => ' ');
@@ -433,44 +438,7 @@ package WNM.Project is
    -- FX --
    --------
 
-   type FX_Setting_Kind is (Drive_Amount,
-                            Reverb_Amount,
-                            Reverb_Time,
-                            Reverb_Diffusion,
-                            Reverb_Low_Pass,
-                            Filter_Mode,
-                            Filter_Cutoff,
-                            Filter_Reso);
-
-   for FX_Setting_Kind use (Drive_Amount     => 0,
-                            Reverb_Amount    => 1,
-                            Reverb_Time      => 2,
-                            Reverb_Diffusion => 3,
-                            Reverb_Low_Pass  => 4,
-                            Filter_Mode      => 5,
-                            Filter_Cutoff    => 6,
-                            Filter_Reso      => 7);
-
-   subtype User_FX_Settings is FX_Setting_Kind;
-
-   -- FX Getters --
-
-   function Drive_Amount_Value return MIDI.MIDI_Data;
-   function Reverb_Amount_Value return MIDI.MIDI_Data;
-   function Reverb_Time_Value return MIDI.MIDI_Data;
-   function Reverb_Diffusion_Value return MIDI.MIDI_Data;
-   function Reverb_Low_Pass_Value return MIDI.MIDI_Data;
-   function Filter_Cutoff_Value return MIDI.MIDI_Data;
-   function Filter_Reso_Value return MIDI.MIDI_Data;
-
    type Filter_Mode_Kind is (Low_Pass, Band_Pass, High_Pass);
-   function Filter_Mode_Value return Filter_Mode_Kind;
-
-   procedure Next_Value (S : User_FX_Settings);
-   procedure Prev_Value (S : User_FX_Settings);
-
-   procedure Next_Value_Fast (S : User_FX_Settings);
-   procedure Prev_Value_Fast (S : User_FX_Settings);
 
 private
 
@@ -524,10 +492,6 @@ private
    package Notes_Per_Chord_Next
    is new Enum_Next (Chord_Settings.Chord_Index_Range, Wrap => False);
    use Notes_Per_Chord_Next;
-
-   package Filter_Mode_Next is new Enum_Next (T    => Filter_Mode_Kind,
-                                              Wrap => False);
-   use Filter_Mode_Next;
 
    package LFO_Shape_Next is new Enum_Next (T    => LFO_Shape_Kind,
                                             Wrap => True);
@@ -633,6 +597,9 @@ private
    Sample1_Track : constant Tracks := 6;
    Sample2_Track : constant Tracks := 7;
    Speech_Track  : constant Tracks := 8;
+   Reverb_Track  : constant Tracks := 9;
+   Filter_Track  : constant Tracks := 10;
+   Drive_Track   : constant Tracks := 11;
 
    type Track_Arr is array (Tracks) of Track_Rec;
 
@@ -734,13 +701,6 @@ private
 
    type FX_Rec is record
       Drive_Amt : MIDI.MIDI_Data := 60;
-      Reverb_Amount : MIDI.MIDI_Data := 30;
-      Reverb_Time : MIDI.MIDI_Data := 70;
-      Reverb_Diffusion : MIDI.MIDI_Data := 60;
-      Reverb_Low_Pass : MIDI.MIDI_Data := 40;
-      Filter_Mode : Filter_Mode_Kind := Filter_Mode_Kind'First;
-      Filter_Cutoff : MIDI.MIDI_Data := 60;
-      Filter_Reso : MIDI.MIDI_Data := 60;
    end record;
 
    Default_FX : constant FX_Rec := (others => <>);
@@ -777,11 +737,5 @@ private
    procedure Synchronize_Track_Mix_Settings (T : Tracks);
    --  Send a message to coprocessor with Volume, Pan, and FX values for the
    --  track
-
-   procedure Synchronize_FX_Setting (S : User_FX_Settings);
-   --  Send one of the FX settings to the coprocessor
-
-   procedure Synchronize_All_FX_Settings;
-   --  Send all the FX settings to the coprocessor
 
 end WNM.Project;

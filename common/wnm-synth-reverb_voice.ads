@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                  Copyright (C) 2016-2023 Fabien Chouteau                  --
+--                     Copyright (C) 2023 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,36 +19,53 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Project;
+with Tresses;            use Tresses;
+with Tresses.Interfaces; use Tresses.Interfaces;
 
-package WNM.GUI.Menu.FX_Settings is
+private with Tresses.FX.Reverb;
 
-   procedure Push_Window;
+private package WNM.Synth.Reverb_Voice is
+
+   type Instance
+   is new Four_Params_Voice
+   with private;
+
+   procedure Render (This   : in out Instance;
+                     Left   : in out Tresses.Mono_Buffer;
+                     Right  : in out Tresses.Mono_Buffer);
+
+   P_Amount    : constant Tresses.Param_Id := 1;
+   P_Time      : constant Tresses.Param_Id := 2;
+   P_Diffusion : constant Tresses.Param_Id := 3;
+   P_Cutoff    : constant Tresses.Param_Id := 4;
+
+   --  Interfaces --
+
+   overriding
+   function Param_Label (This : Instance; Id : Param_Id) return String
+   is (case Id is
+          when P_Amount    => "Amount",
+          when P_Time      => "Time",
+          when P_Diffusion => "Diffusion",
+          when P_Cutoff    => "LP Cutoff");
+
+   overriding
+   function Param_Short_Label (This : Instance; Id : Param_Id)
+                               return Short_Label
+   is (case Id is
+          when P_Amount    => "AMT",
+          when P_Time      => "TIM",
+          when P_Diffusion => "DIF",
+          when P_Cutoff    => "CTF");
 
 private
 
-   type Top_Settings is (Overdrive, Reverb, Filter);
-   function Top_Settings_Count is new Enum_Count (Top_Settings);
+   package Reverb_Pck is new Tresses.FX.Reverb;
 
-   subtype Sub_Settings is WNM.Project.User_FX_Settings;
-   function Sub_Settings_Count is new Enum_Count (Sub_Settings);
-
-   type Pattern_Settings_Menu is new Menu_Window with record
-      Current_Setting : Sub_Settings := Sub_Settings'First;
+   type Instance
+   is new Four_Params_Voice
+   with record
+      Rev : Reverb_Pck.Instance;
    end record;
 
-   overriding
-   procedure Draw (This : in out Pattern_Settings_Menu);
-
-   overriding
-   procedure On_Event (This  : in out Pattern_Settings_Menu;
-                       Event : Menu_Event);
-
-   overriding
-   procedure On_Pushed (This  : in out Pattern_Settings_Menu);
-
-   overriding
-   procedure On_Focus (This       : in out Pattern_Settings_Menu;
-                       Exit_Value : Window_Exit_Value);
-
-end WNM.GUI.Menu.FX_Settings;
+end WNM.Synth.Reverb_Voice;

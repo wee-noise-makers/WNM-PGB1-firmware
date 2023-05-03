@@ -73,6 +73,11 @@ private
           when Project.Lead_Mode | Bass_Mode | Project.Snare_Mode =>
              S in Track_Mode | Engine | Volume | Pan | Master_FX | Arp_Mode |
                   Arp_Notes | CC_Default_A .. CC_Default_D |
+                  LFO_Rate | LFO_Amplitude | LFO_Target | LFO_Shape,
+
+          when Project.Reverb_Mode | Project.Filter_Mode |
+               Project.Drive_Mode =>
+             S in Track_Mode | CC_Default_A .. CC_Default_D |
                   LFO_Rate | LFO_Amplitude | LFO_Target | LFO_Shape
       );
    --  Return True if the given setting is available for the given track mode.

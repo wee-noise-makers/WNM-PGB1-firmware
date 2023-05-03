@@ -19,82 +19,45 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Speech_Dictionary;
+with Tresses.Filters.SVF; use Tresses.Filters.SVF;
 
-package body WNM.Synth.Speech_Voice is
-
-   --------------
-   -- Set_Word --
-   --------------
-
-   procedure Set_Word (This : in out Instance; Id : MIDI.MIDI_Data) is
-   begin
-      This.Selected_Word := Speech.Word (Id);
-   end Set_Word;
-
-   ----------
-   -- Init --
-   ----------
-
-   procedure Init (This : in out Instance) is
-   begin
-      null;
-   end Init;
-
-   --------------------
-   -- Set_MIDI_Pitch --
-   --------------------
-
-   procedure Set_MIDI_Pitch (This : in out Instance;
-                             Key  :        MIDI.MIDI_Key)
-   is
-   begin
-      This.Speech_Pitch := MIDI.Key_To_Frequency (Key);
-   end Set_MIDI_Pitch;
+package body WNM.Synth.Filter_Voice is
 
    ------------
    -- Render --
    ------------
 
    procedure Render (This   : in out Instance;
-                     Buffer :    out Tresses.Mono_Buffer)
+                     Left   : in out Tresses.Mono_Buffer;
+                     Right  : in out Tresses.Mono_Buffer)
    is
-      LPC_Out : LPC_Synth.Out_Array (Buffer'Range)
-        with Address => Buffer'Address;
-
-      Stretch : constant LPC_Synth.Time_Stretch_Factor :=
-        Speech.MIDI_To_Stretch (MIDI.MIDI_Data (This.Params (P_Time) / 258));
-
    begin
-      case This.Do_Strike.Event is
-         when On =>
-            This.Do_Strike.Event := None;
+      Set_Frequency (This.Left, This.Params (P_Cutoff));
+      Set_Frequency (This.Right, This.Params (P_Cutoff));
 
-            LPC_Synth.Set_Data
-              (This.LPC,
-               WNM.Speech_Dictionary.Data (This.Selected_Word));
+      Set_Resonance (This.Left, This.Params (P_Resonance));
+      Set_Resonance (This.Right, This.Params (P_Resonance));
 
-            --  On (This.Env, This.Do_Strike.Velocity);
+      declare
+         Third : constant Tresses.Param_Range := Tresses.Param_Range'Last / 3;
+         Filter_Mode : constant Mode_Kind :=
+           (case This.Params (P_Mode) is
+               when 0 .. Third => Low_Pass,
+               when Third + 1 .. 2 * Third => Band_Pass,
+               when others => High_Pass);
+      begin
+         Tresses.Filters.SVF.Set_Mode (This.Left, Filter_Mode);
+         Tresses.Filters.SVF.Set_Mode (This.Right, Filter_Mode);
+      end;
 
-         when Off =>
-            This.Do_Strike.Event := None;
+      for Elt of Left loop
+         Elt := S16 (Tresses.Filters.SVF.Process (This.Left, S32 (Elt)));
+      end loop;
 
-            --  Off (This.Env);
-         when None => null;
-      end case;
-
-      if LPC_Synth.Has_Data (This.LPC) then
-
-         LPC_Synth.Next_Points
-           (This.LPC, LPC_Out,
-            Sample_Rate => WNM_Configuration.Audio.Sample_Frequency,
-            Pitch => This.Speech_Pitch,
-            Time_Stretch => Stretch);
-
-      else
-         Buffer := (others => 0);
-      end if;
+      for Elt of Right loop
+         Elt := S16 (Tresses.Filters.SVF.Process (This.Right, S32 (Elt)));
+      end loop;
 
    end Render;
 
-end WNM.Synth.Speech_Voice;
+end WNM.Synth.Filter_Voice;

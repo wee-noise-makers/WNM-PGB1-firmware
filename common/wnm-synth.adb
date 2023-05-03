@@ -26,7 +26,9 @@ with WNM.Coproc;
 with WNM.Synth.Snare_Voice;
 with WNM.Synth.Sampler_Voice;
 with WNM.Synth.Speech_Voice;
-with WNM.Speech;
+with WNM.Synth.Reverb_Voice;
+with WNM.Synth.Filter_Voice;
+with WNM.Synth.Drive_Voice;
 
 with Tresses; use Tresses;
 with Tresses.Drums.Kick;
@@ -34,9 +36,6 @@ with Tresses.Drums.Cymbal;
 with Tresses.Voices.Macro;
 with Tresses.Macro;
 with Tresses.Interfaces;
-with Tresses.FX.Reverb;
-with Tresses.FX.Overdrive;
-with Tresses.Filters.SVF;
 
 package body WNM.Synth is
 
@@ -50,21 +49,9 @@ package body WNM.Synth is
    Speech : aliased WNM.Synth.Speech_Voice.Instance;
    Sampler1 : aliased WNM.Synth.Sampler_Voice.Instance;
    Sampler2 : aliased WNM.Synth.Sampler_Voice.Instance;
-
-   package Reverb_Pck is new Tresses.FX.Reverb;
-
-   Rev : Reverb_Pck.Instance;
-
-   FL : Tresses.Filters.SVF.Instance;
-   FR : Tresses.Filters.SVF.Instance;
-
-   Drive_Amount : Tresses.Param_Range := 0;
-   Delay_Time : Tresses.Param_Range := 0;
-   Delay_Feedback : Tresses.Param_Range := 0;
-   Filter_Mode : Tresses.Filters.SVF.Mode_Kind :=
-     Tresses.Filters.SVF.Mode_Kind'First;
-   Filter_Cutoff : Tresses.Param_Range := 20_000;
-   Filter_Resonance : Tresses.Param_Range := 0;
+   FX_Reverb : aliased WNM.Synth.Reverb_Voice.Instance;
+   FX_Filter : aliased WNM.Synth.Filter_Voice.Instance;
+   FX_Drive  : aliased WNM.Synth.Drive_Voice.Instance;
 
    subtype Voice_Class is Tresses.Interfaces.Four_Params_Voice'Class;
    type Voice_Access is access all Voice_Class;
@@ -89,21 +76,21 @@ package body WNM.Synth is
           when 1      => Snare_Voice.Analog_Snare,
           when others => Snare_Voice.Clap);
 
-   subtype Synth_Channels
-     is MIDI.MIDI_Channel range Speech_Channel .. Bass_Channel;
-
    subtype Tresses_Channels
-     is MIDI.MIDI_Channel range Speech_Channel .. Bass_Channel;
+     is MIDI.MIDI_Channel range Speech_Channel .. Drive_Channel;
 
    Synth_Oct_Offset : constant array (Tresses_Channels) of Integer :=
-     (Speech_Channel => 0,
+     (Speech_Channel  => 0,
       Sample1_Channel => 0,
       Sample2_Channel => 0,
       Kick_Channel    => -4,
       Snare_Channel   => 0,
       Cymbal_Channel  => 0,
       Lead_Channel    => 0,
-      Bass_Channel    => -3);
+      Bass_Channel    => -3,
+      Reverb_Channel  => 0,
+      Filter_Channel  => 0,
+      Drive_Channel   => 0);
 
    Synth_Voices : constant array (Tresses_Channels) of
      Voice_Access :=
@@ -114,17 +101,20 @@ package body WNM.Synth is
         Snare_Channel   => TS'Access,
         Cymbal_Channel  => TC'Access,
         Lead_Channel    => Lead'Access,
-        Bass_Channel    => Bass'Access);
+        Bass_Channel    => Bass'Access,
+        Reverb_Channel  => FX_Reverb'Access,
+        Filter_Channel  => FX_Filter'Access,
+        Drive_Channel   => FX_Drive'Access);
 
-   LFO_Targets : array (Synth_Channels) of MIDI.MIDI_Data :=
+   LFO_Targets : array (Tresses_Channels) of MIDI.MIDI_Data :=
      (others => Voice_Pan_CC);
      --  (others => MIDI.MIDI_Data'Last);
 
-   LFOs : array (Synth_Channels) of Tresses.LFO.Instance;
-   LFO_Syncs : array (Synth_Channels) of Boolean := (others => False);
-   LFO_Values : array (Synth_Channels) of Tresses.S16;
+   LFOs : array (Tresses_Channels) of Tresses.LFO.Instance;
+   LFO_Syncs : array (Tresses_Channels) of Boolean := (others => False);
+   LFO_Values : array (Tresses_Channels) of Tresses.S16;
 
-   type Voice_Parameters_Array is array (Synth_Channels, LFO_Compatible_CC)
+   type Voice_Parameters_Array is array (Tresses_Channels, LFO_Compatible_CC)
      of Tresses.Param_Range;
    In_Voice_Parameters : Voice_Parameters_Array :=
      (others => (Voice_Volume_CC => Param_Range'Last / 2,
@@ -282,66 +272,7 @@ package body WNM.Synth is
                --    (Clock'Img & " - " &
                --     MIDI.Img (Msg.MIDI_Evt));
 
-               if Msg.MIDI_Evt.Chan = FX_Settings_Channel then
-                  case Msg.MIDI_Evt.Kind is
-                     when MIDI.Continous_Controller =>
-                        case Msg.MIDI_Evt.Controller is
-                           when FX_Drive_Amount_CC =>
-                              Drive_Amount :=
-                                To_Param
-                                  (Msg.MIDI_Evt.Controller_Value);
-
-                           when FX_Reverb_Amount_CC =>
-                              Reverb_Pck.Set_Amount
-                                (Rev,
-                                 To_Param (Msg.MIDI_Evt.Controller_Value));
-
-                           when FX_Reverb_Diffusion_CC =>
-                              Reverb_Pck.Set_Diffusion
-                                (Rev,
-                                 To_Param (Msg.MIDI_Evt.Controller_Value));
-
-                           when FX_Reverb_Time_CC =>
-                              Reverb_Pck.Set_Time
-                                (Rev,
-                                 To_Param (Msg.MIDI_Evt.Controller_Value));
-
-                           when FX_Reverb_Low_Pass_CC =>
-                              Reverb_Pck.Set_Low_Pass
-                                (Rev,
-                                 To_Param (Msg.MIDI_Evt.Controller_Value));
-
-
-
-                           when FX_Filter_Mode_CC =>
-
-                              declare
-                                 use Tresses.Filters.SVF;
-                                 Val : constant MIDI_Data :=
-                                   Msg.MIDI_Evt.Controller_Value;
-                              begin
-                                 if Val <= Mode_Kind'Pos (Mode_Kind'Last)
-                                 then
-                                    Filter_Mode := Mode_Kind'Val (Val);
-                                 end if;
-                              end;
-
-                           when FX_Filter_Cutoff_CC =>
-                              Filter_Cutoff :=
-                                To_Param
-                                  (Msg.MIDI_Evt.Controller_Value);
-
-                           when FX_Filter_Reso_CC =>
-                              Filter_Resonance :=
-                                To_Param
-                                  (Msg.MIDI_Evt.Controller_Value);
-
-                           when others => null;
-                        end case;
-                     when others => null;
-                  end case;
-
-               elsif Msg.MIDI_Evt.Chan in Synth_Voices'Range then
+               if Msg.MIDI_Evt.Chan in Synth_Voices'Range then
                   declare
                      Voice : Voice_Class renames
                        Synth_Voices (Msg.MIDI_Evt.Chan).all;
@@ -668,33 +599,16 @@ package body WNM.Synth is
       begin
 
          --  Overdrive
-         Tresses.FX.Overdrive.Process (Send_L_Buffers (Overdrive),
-                                       Drive_Amount);
-         Tresses.FX.Overdrive.Process (Send_R_Buffers (Overdrive),
-                                       Drive_Amount);
+         FX_Drive.Render (Send_L_Buffers (Overdrive),
+                          Send_R_Buffers (Overdrive));
 
          --  Reverb
-         Reverb_Pck.Process (Rev,
-                             Send_L_Buffers (Reverb),
-                             Send_R_Buffers (Reverb));
+         FX_Reverb.Render (Send_L_Buffers (Reverb),
+                           Send_R_Buffers (Reverb));
 
          --  Filter
-         Tresses.Filters.SVF.Set_Frequency (FL, Filter_Cutoff);
-         Tresses.Filters.SVF.Set_Frequency (FR, Filter_Cutoff);
-
-         Tresses.Filters.SVF.Set_Resonance (FL, Filter_Resonance);
-         Tresses.Filters.SVF.Set_Resonance (FR, Filter_Resonance);
-
-         Tresses.Filters.SVF.Set_Mode (FL, Filter_Mode);
-         Tresses.Filters.SVF.Set_Mode (FR, Filter_Mode);
-
-         for Elt of Send_L_Buffers (Filter) loop
-            Elt := S16 (Tresses.Filters.SVF.Process (FL, S32 (Elt)));
-         end loop;
-
-         for Elt of Send_R_Buffers (Filter) loop
-            Elt := S16 (Tresses.Filters.SVF.Process (FR, S32 (Elt)));
-         end loop;
+         FX_Filter.Render (Send_L_Buffers (Filter),
+                           Send_R_Buffers (Filter));
       end;
 
       --  Final mix
@@ -870,6 +784,70 @@ package body WNM.Synth is
    function Sampler_Param_Short_Label (Id : Tresses.Param_Id)
                                        return Tresses.Short_Label
    is (Sampler1.Param_Short_Label (Id));
+
+   ------------------------
+   -- Reverb_Param_Label --
+   ------------------------
+
+   function Reverb_Param_Label (Id : Tresses.Param_Id)
+                                 return String
+   is (FX_Reverb.Param_Label (Id));
+
+   ------------------------------
+   -- Reverb_Param_Short_Label --
+   ------------------------------
+
+   function Reverb_Param_Short_Label (Id : Tresses.Param_Id)
+                                       return Tresses.Short_Label
+   is (FX_Reverb.Param_Short_Label (Id));
+
+   ------------------------
+   -- Filter_Param_Label --
+   ------------------------
+
+   function Filter_Param_Label (Id : Tresses.Param_Id)
+                                return String
+   is (FX_Filter.Param_Label (Id));
+
+   ------------------------------
+   -- Filter_Param_Short_Label --
+   ------------------------------
+
+   function Filter_Param_Short_Label (Id : Tresses.Param_Id)
+                                      return Tresses.Short_Label
+   is (FX_Filter.Param_Short_Label (Id));
+
+   -----------------------
+   -- Drive_Param_Label --
+   -----------------------
+
+   function Drive_Param_Label (Id : Tresses.Param_Id)
+                               return String
+   is (FX_Drive.Param_Label (Id));
+
+   -----------------------------
+   -- Drive_Param_Short_Label --
+   -----------------------------
+
+   function Drive_Param_Short_Label (Id : Tresses.Param_Id)
+                                     return Tresses.Short_Label
+   is (FX_Drive.Param_Short_Label (Id));
+
+   ------------------------
+   -- Speech_Param_Label --
+   ------------------------
+
+   function Speech_Param_Label (Id : Tresses.Param_Id)
+                                return String
+   is (Speech.Param_Label (Id));
+
+   ------------------------------
+   -- Speech_Param_Short_Label --
+   ------------------------------
+
+   function Speech_Param_Short_Label (Id : Tresses.Param_Id)
+                                      return Tresses.Short_Label
+   is (Speech.Param_Short_Label (Id));
 
    -------------------
    -- Now_Recording --

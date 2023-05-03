@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2022 Fabien Chouteau                    --
+--                     Copyright (C) 2023 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,42 +19,40 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.File_System.LEB128_File_Out;
+with Tresses;            use Tresses;
+with Tresses.Interfaces; use Tresses.Interfaces;
 
-private package WNM.Project.Storage.File_Out is
+private package WNM.Synth.Drive_Voice is
 
-   subtype Parent is File_System.LEB128_File_Out.Instance;
    type Instance
-   is new Parent with
-   private;
+   is new Four_Params_Voice
+   with private;
 
-   procedure Start_Global (This : in out Instance);
+   procedure Render (This   : in out Instance;
+                     Left   : in out Tresses.Mono_Buffer;
+                     Right  : in out Tresses.Mono_Buffer);
 
-   procedure Start_Chord_Chain (This : in out Instance);
-   procedure Start_Pattern_Chain (This : in out Instance);
+   P_Drive : constant Tresses.Param_Id := 1;
 
-   procedure Start_Chord_Settings (This : in out Instance; C : Chords);
-   procedure Start_Track_Settings (This : in out Instance; T : Tracks);
+   --  Interfaces --
 
-   procedure Start_Sequence (This : in out Instance);
-   procedure Start_Step_Settings (This : in out Instance;
-                                  S : Sequencer_Steps);
-   procedure Change_Pattern_In_Seq (This : in out Instance; P : Patterns);
-   procedure Change_Track_In_Seq (This : in out Instance; T : Tracks);
-   procedure End_Section (This : in out Instance);
-   procedure End_File (This : in out Instance);
+   overriding
+   function Param_Label (This : Instance; Id : Param_Id) return String
+   is (case Id is
+          when P_Drive => "Drive",
+          when others  => "N/A");
 
-   procedure Push (This : in out Instance; A : Beat_Per_Minute);
-   procedure Push (This : in out Instance; A : Step_Settings);
-   procedure Push (This : in out Instance; A : Track_Settings);
-   procedure Push (This : in out Instance; A : Chord_Setting_Kind);
-   procedure Push (This : in out Instance; A : MIDI.MIDI_Data);
+   overriding
+   function Param_Short_Label (This : Instance; Id : Param_Id)
+                               return Short_Label
+   is (case Id is
+          when P_Drive => "MOD",
+          when others  => "N/A");
 
 private
 
    type Instance
-   is new Parent with null record;
+   is new Four_Params_Voice
+   with null record;
 
-   procedure Push (This : in out Instance; A : Token_Kind);
-
-end WNM.Project.Storage.File_Out;
+end WNM.Synth.Drive_Voice;

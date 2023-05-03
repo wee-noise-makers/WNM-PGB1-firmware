@@ -64,5 +64,4 @@ package WNM.Project.Library is
    function Last_Saved_Size return File_System.File_Signed_Size;
    --  Return the file size of the last saved project
 
-
 end WNM.Project.Library;

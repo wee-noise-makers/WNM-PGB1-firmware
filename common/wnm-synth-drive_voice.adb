@@ -19,82 +19,20 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Speech_Dictionary;
+with Tresses.FX.Overdrive;
 
-package body WNM.Synth.Speech_Voice is
-
-   --------------
-   -- Set_Word --
-   --------------
-
-   procedure Set_Word (This : in out Instance; Id : MIDI.MIDI_Data) is
-   begin
-      This.Selected_Word := Speech.Word (Id);
-   end Set_Word;
-
-   ----------
-   -- Init --
-   ----------
-
-   procedure Init (This : in out Instance) is
-   begin
-      null;
-   end Init;
-
-   --------------------
-   -- Set_MIDI_Pitch --
-   --------------------
-
-   procedure Set_MIDI_Pitch (This : in out Instance;
-                             Key  :        MIDI.MIDI_Key)
-   is
-   begin
-      This.Speech_Pitch := MIDI.Key_To_Frequency (Key);
-   end Set_MIDI_Pitch;
+package body WNM.Synth.Drive_Voice is
 
    ------------
    -- Render --
    ------------
 
    procedure Render (This   : in out Instance;
-                     Buffer :    out Tresses.Mono_Buffer)
+                     Left   : in out Tresses.Mono_Buffer;
+                     Right  : in out Tresses.Mono_Buffer)
    is
-      LPC_Out : LPC_Synth.Out_Array (Buffer'Range)
-        with Address => Buffer'Address;
-
-      Stretch : constant LPC_Synth.Time_Stretch_Factor :=
-        Speech.MIDI_To_Stretch (MIDI.MIDI_Data (This.Params (P_Time) / 258));
-
    begin
-      case This.Do_Strike.Event is
-         when On =>
-            This.Do_Strike.Event := None;
-
-            LPC_Synth.Set_Data
-              (This.LPC,
-               WNM.Speech_Dictionary.Data (This.Selected_Word));
-
-            --  On (This.Env, This.Do_Strike.Velocity);
-
-         when Off =>
-            This.Do_Strike.Event := None;
-
-            --  Off (This.Env);
-         when None => null;
-      end case;
-
-      if LPC_Synth.Has_Data (This.LPC) then
-
-         LPC_Synth.Next_Points
-           (This.LPC, LPC_Out,
-            Sample_Rate => WNM_Configuration.Audio.Sample_Frequency,
-            Pitch => This.Speech_Pitch,
-            Time_Stretch => Stretch);
-
-      else
-         Buffer := (others => 0);
-      end if;
-
+      Tresses.FX.Overdrive.Process (Left, This.Params (P_Drive));
+      Tresses.FX.Overdrive.Process (Right, This.Params (P_Drive));
    end Render;
-
-end WNM.Synth.Speech_Voice;
+end WNM.Synth.Drive_Voice;

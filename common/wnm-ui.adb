@@ -328,20 +328,8 @@ package body WNM.UI is
                   end case;
                when On_Release =>
                   if B = Func then
-                     if Select_Done then
-                        --  Go back a main mode
-                        Current_Input_Mode := Last_Main_Mode;
-
-                     else
-                        --  Switch to FX mode
-                        Current_Input_Mode := FX_Mode;
-                        GUI.Menu.Open (GUI.Menu.FX_Menu);
-                        Last_Main_Mode := Current_Input_Mode;
-
-                        --  Switching mode disables recording.
-                        --  TODO: Is that a good thing?
-                        Recording_On := False;
-                     end if;
+                     --  Go back a main mode
+                     Current_Input_Mode := Last_Main_Mode;
                   end if;
                when others =>
                   null;

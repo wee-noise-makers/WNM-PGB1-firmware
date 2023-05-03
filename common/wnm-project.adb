@@ -256,7 +256,7 @@ package body WNM.Project is
    begin
       case Mode (Editing_Track) is
          when MIDI_Mode | Kick_Mode | Snare_Mode | Cymbal_Mode | Lead_Mode |
-              Bass_Mode =>
+              Bass_Mode | Reverb_Mode | Filter_Mode | Drive_Mode =>
             return CC_Value (Step, Id)'Img;
 
          when Sample1_Mode | Sample2_Mode =>
@@ -566,6 +566,9 @@ package body WNM.Project is
                     when Sample1_Track => Sample1_Mode,
                     when Sample2_Track => Sample2_Mode,
                     when Speech_Track  => Speech_Mode,
+                    when Reverb_Track  => Reverb_Mode,
+                    when Filter_Track  => Filter_Mode,
+                    when Drive_Track   => Drive_Mode,
                     when others        => MIDI_Mode);
       end if;
    end Mode;
@@ -733,12 +736,21 @@ package body WNM.Project is
             Utils.Copy_Str (Synth.Sampler_Param_Label (Tresses_Id), Result);
             return Result;
 
+         when Reverb_Mode =>
+            Utils.Copy_Str (Synth.Reverb_Param_Label (Tresses_Id), Result);
+            return Result;
+
+         when Filter_Mode =>
+            Utils.Copy_Str (Synth.Filter_Param_Label (Tresses_Id), Result);
+            return Result;
+
+         when Drive_Mode =>
+            Utils.Copy_Str (Synth.Drive_Param_Label (Tresses_Id), Result);
+            return Result;
+
          when Speech_Mode =>
-            case Id is
-               when A => return "Word             ";
-               when B => return "Time Stretch     ";
-               when others => return "Not Applicable   ";
-            end case;
+            Utils.Copy_Str (Synth.Speech_Param_Label (Tresses_Id), Result);
+            return Result;
       end case;
    end CC_Controller_Label;
 
@@ -776,12 +788,17 @@ package body WNM.Project is
          when Sample1_Mode | Sample2_Mode =>
             return Synth.Sampler_Param_Short_Label (Tresses_Id);
 
+         when Reverb_Mode =>
+            return Synth.Reverb_Param_Short_Label (Tresses_Id);
+
+         when Filter_Mode =>
+            return Synth.Filter_Param_Short_Label (Tresses_Id);
+
+         when Drive_Mode =>
+            return Synth.Drive_Param_Short_Label (Tresses_Id);
+
          when Speech_Mode =>
-            case Id is
-               when A => return "WRD";
-               when B => return "TIM";
-               when others => return "N/A";
-            end case;
+            return Synth.Speech_Param_Short_Label (Tresses_Id);
       end case;
    end CC_Controller_Short_Label;
 
@@ -1208,142 +1225,6 @@ package body WNM.Project is
       end case;
    end Prev_Value_Fast;
 
-   ------------------------
-   -- Drive_Amount_Value --
-   ------------------------
-
-   function Drive_Amount_Value return MIDI.MIDI_Data
-   is (G_Project.FX.Drive_Amt);
-
-   -------------------------
-   -- Reverb_Amount_Value --
-   -------------------------
-
-   function Reverb_Amount_Value return MIDI.MIDI_Data
-   is (G_Project.FX.Reverb_Amount);
-
-   ----------------------
-   -- Reverb_Time_Value --
-   ----------------------
-
-   function Reverb_Time_Value return MIDI.MIDI_Data
-   is (G_Project.FX.Reverb_Time);
-
-   ----------------------------
-   -- Reverb_Diffusion_Value --
-   ----------------------------
-
-   function Reverb_Diffusion_Value return MIDI.MIDI_Data
-   is (G_Project.FX.Reverb_Diffusion);
-
-   ---------------------------
-   -- Reverb_Low_Pass_Value --
-   ---------------------------
-
-   function Reverb_Low_Pass_Value return MIDI.MIDI_Data
-   is (G_Project.FX.Reverb_Low_Pass);
-
-   -------------------------
-   -- Filter_Cutoff_Value --
-   -------------------------
-
-   function Filter_Cutoff_Value return MIDI.MIDI_Data
-   is (G_Project.FX.Filter_Cutoff);
-
-   -----------------------
-   -- Filter_Reso_Value --
-   -----------------------
-
-   function Filter_Reso_Value return MIDI.MIDI_Data
-   is (G_Project.FX.Filter_Reso);
-
-   -----------------------
-   -- Filter_Mode_Value --
-   -----------------------
-
-   function Filter_Mode_Value return Filter_Mode_Kind
-   is (G_Project.FX.Filter_Mode);
-
-   ----------------
-   -- Next_Value --
-   ----------------
-
-   procedure Next_Value (S : User_FX_Settings) is
-   begin
-      case S is
-         when Drive_Amount     => Next (G_Project.FX.Drive_Amt);
-         when Reverb_Amount    => Next (G_Project.FX.Reverb_Amount);
-         when Reverb_Time      => Next (G_Project.FX.Reverb_Time);
-         when Reverb_Diffusion => Next (G_Project.FX.Reverb_Diffusion);
-         when Reverb_Low_Pass  => Next (G_Project.FX.Reverb_Low_Pass);
-         when Filter_Mode      => Next (G_Project.FX.Filter_Mode);
-         when Filter_Cutoff    => Next (G_Project.FX.Filter_Cutoff);
-         when Filter_Reso      => Next (G_Project.FX.Filter_Reso);
-      end case;
-
-      Synchronize_FX_Setting (S);
-   end Next_Value;
-
-   ----------------
-   -- Prev_Value --
-   ----------------
-
-   procedure Prev_Value (S : User_FX_Settings) is
-   begin
-      case S is
-         when Drive_Amount     => Prev (G_Project.FX.Drive_Amt);
-         when Reverb_Amount    => Prev (G_Project.FX.Reverb_Amount);
-         when Reverb_Time      => Prev (G_Project.FX.Reverb_Time);
-         when Reverb_Diffusion => Prev (G_Project.FX.Reverb_Diffusion);
-         when Reverb_Low_Pass  => Prev (G_Project.FX.Reverb_Low_Pass);
-         when Filter_Mode      => Prev (G_Project.FX.Filter_Mode);
-         when Filter_Cutoff    => Prev (G_Project.FX.Filter_Cutoff);
-         when Filter_Reso      => Prev (G_Project.FX.Filter_Reso);
-      end case;
-
-      Synchronize_FX_Setting (S);
-   end Prev_Value;
-
-   ---------------------
-   -- Next_Value_Fast --
-   ---------------------
-
-   procedure Next_Value_Fast (S : User_FX_Settings) is
-   begin
-      case S is
-         when Drive_Amount     => Next_Fast (G_Project.FX.Drive_Amt);
-         when Reverb_Amount    => Next_Fast (G_Project.FX.Reverb_Amount);
-         when Reverb_Time      => Next_Fast (G_Project.FX.Reverb_Time);
-         when Reverb_Diffusion => Next_Fast (G_Project.FX.Reverb_Diffusion);
-         when Reverb_Low_Pass  => Next_Fast (G_Project.FX.Reverb_Low_Pass);
-         when Filter_Mode      => Next_Fast (G_Project.FX.Filter_Mode);
-         when Filter_Cutoff    => Next_Fast (G_Project.FX.Filter_Cutoff);
-         when Filter_Reso      => Next_Fast (G_Project.FX.Filter_Reso);
-      end case;
-
-      Synchronize_FX_Setting (S);
-   end Next_Value_Fast;
-
-   ---------------------
-   -- Prev_Value_Fast --
-   ---------------------
-
-   procedure Prev_Value_Fast (S : User_FX_Settings) is
-   begin
-      case S is
-         when Drive_Amount     => Prev_Fast (G_Project.FX.Drive_Amt);
-         when Reverb_Amount    => Prev_Fast (G_Project.FX.Reverb_Amount);
-         when Reverb_Time      => Prev_Fast (G_Project.FX.Reverb_Time);
-         when Reverb_Diffusion => Prev_Fast (G_Project.FX.Reverb_Diffusion);
-         when Reverb_Low_Pass  => Prev_Fast (G_Project.FX.Reverb_Low_Pass);
-         when Filter_Mode      => Prev_Fast (G_Project.FX.Filter_Mode);
-         when Filter_Cutoff    => Prev_Fast (G_Project.FX.Filter_Cutoff);
-         when Filter_Reso      => Prev_Fast (G_Project.FX.Filter_Reso);
-      end case;
-
-      Synchronize_FX_Setting (S);
-   end Prev_Value_Fast;
-
    ---------------------------------
    -- Randomly_Pick_A_Progression --
    ---------------------------------
@@ -1456,60 +1337,5 @@ package body WNM.Project is
 
       end if;
    end Synchronize_Track_Mix_Settings;
-
-   ----------------------------
-   -- Synchronize_FX_Setting --
-   ----------------------------
-
-   procedure Synchronize_FX_Setting (S : User_FX_Settings) is
-      use WNM.Coproc;
-      CC : MIDI.MIDI_Data;
-      Val : MIDI.MIDI_Data;
-   begin
-      case S is
-         when Drive_Amount =>
-            CC := Synth.FX_Drive_Amount_CC;
-            Val := G_Project.FX.Drive_Amt;
-         when Reverb_Amount =>
-            CC := Synth.FX_Reverb_Amount_CC;
-            Val := G_Project.FX.Reverb_Amount;
-         when Reverb_Time =>
-            CC := Synth.FX_Reverb_Time_CC;
-            Val := G_Project.FX.Reverb_Time;
-         when Reverb_Diffusion =>
-            CC := Synth.FX_Reverb_Diffusion_CC;
-            Val := G_Project.FX.Reverb_Diffusion;
-         when Reverb_Low_Pass =>
-            CC := Synth.FX_Reverb_Low_Pass_CC;
-            Val := G_Project.FX.Reverb_Low_Pass;
-         when Filter_Mode =>
-            CC := Synth.FX_Filter_Mode_CC;
-            Val := Filter_Mode_Kind'Pos (G_Project.FX.Filter_Mode);
-         when Filter_Cutoff =>
-            CC := Synth.FX_Filter_Cutoff_CC;
-            Val := G_Project.FX.Filter_Cutoff;
-         when Filter_Reso =>
-            CC := Synth.FX_Filter_Reso_CC;
-            Val := G_Project.FX.Filter_Reso;
-      end case;
-
-      Coproc.Push ((Kind     => MIDI_Event,
-                    MIDI_Evt =>
-                      (Kind => MIDI.Continous_Controller,
-                       Chan => FX_MIDI_Chan,
-                       Controller => CC,
-                       Controller_Value => Val)));
-   end Synchronize_FX_Setting;
-
-   ---------------------------------
-   -- Synchronize_All_FX_Settings --
-   ---------------------------------
-
-   procedure Synchronize_All_FX_Settings is
-   begin
-      for S in User_FX_Settings loop
-         Synchronize_FX_Setting (S);
-      end loop;
-   end Synchronize_All_FX_Settings;
 
 end WNM.Project;

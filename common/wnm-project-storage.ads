@@ -38,7 +38,6 @@ private
    type Token_Kind is (Global_Section,
                        Track_Section,
                        Chord_Section,
-                       FX_Section,
                        Step_Section,
                        Sequence_Section,
 
@@ -54,7 +53,6 @@ private
    for Token_Kind use (Global_Section        => 0,
                        Track_Section         => 1,
                        Chord_Section         => 2,
-                       FX_Section            => 3,
                        Step_Section          => 4,
                        Sequence_Section      => 5,
                        Chord_Chain_Section   => 6,
