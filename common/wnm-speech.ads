@@ -21,7 +21,6 @@
 
 with MIDI;
 
-with WNM_HAL;
 with LPC_Synth;
 
 package WNM.Speech is

@@ -29,6 +29,7 @@ with WNM.Synth.Speech_Voice;
 with WNM.Synth.Reverb_Voice;
 with WNM.Synth.Filter_Voice;
 with WNM.Synth.Drive_Voice;
+with WNM.Synth.Bitcrusher_Voice;
 
 with Tresses; use Tresses;
 with Tresses.Drums.Kick;
@@ -39,19 +40,20 @@ with Tresses.Interfaces;
 
 package body WNM.Synth is
 
-   type FX_Kind is (Bypass, Overdrive, Reverb, Filter);
+   type FX_Kind is (Bypass, Overdrive, Reverb, Filter, Bitcrusher);
 
-   TK   : aliased Tresses.Drums.Kick.Instance;
-   TS   : aliased WNM.Synth.Snare_Voice.Instance;
-   TC   : aliased Tresses.Drums.Cymbal.Instance;
-   Lead : aliased Tresses.Voices.Macro.Instance;
-   Bass : aliased Tresses.Voices.Macro.Instance;
-   Speech : aliased WNM.Synth.Speech_Voice.Instance;
-   Sampler1 : aliased WNM.Synth.Sampler_Voice.Instance;
-   Sampler2 : aliased WNM.Synth.Sampler_Voice.Instance;
-   FX_Reverb : aliased WNM.Synth.Reverb_Voice.Instance;
-   FX_Filter : aliased WNM.Synth.Filter_Voice.Instance;
-   FX_Drive  : aliased WNM.Synth.Drive_Voice.Instance;
+   TK          : aliased Tresses.Drums.Kick.Instance;
+   TS          : aliased WNM.Synth.Snare_Voice.Instance;
+   TC          : aliased Tresses.Drums.Cymbal.Instance;
+   Lead        : aliased Tresses.Voices.Macro.Instance;
+   Bass        : aliased Tresses.Voices.Macro.Instance;
+   Speech      : aliased WNM.Synth.Speech_Voice.Instance;
+   Sampler1    : aliased WNM.Synth.Sampler_Voice.Instance;
+   Sampler2    : aliased WNM.Synth.Sampler_Voice.Instance;
+   FX_Reverb   : aliased WNM.Synth.Reverb_Voice.Instance;
+   FX_Filter   : aliased WNM.Synth.Filter_Voice.Instance;
+   FX_Drive    : aliased WNM.Synth.Drive_Voice.Instance;
+   FX_Bitcrush : aliased WNM.Synth.Bitcrusher_Voice.Instance;
 
    subtype Voice_Class is Tresses.Interfaces.Four_Params_Voice'Class;
    type Voice_Access is access all Voice_Class;
@@ -77,34 +79,36 @@ package body WNM.Synth is
           when others => Snare_Voice.Clap);
 
    subtype Tresses_Channels
-     is MIDI.MIDI_Channel range Speech_Channel .. Drive_Channel;
+     is MIDI.MIDI_Channel range Speech_Channel .. Bitcrusher_Channel;
 
    Synth_Oct_Offset : constant array (Tresses_Channels) of Integer :=
-     (Speech_Channel  => 0,
-      Sample1_Channel => 0,
-      Sample2_Channel => 0,
-      Kick_Channel    => -4,
-      Snare_Channel   => 0,
-      Cymbal_Channel  => 0,
-      Lead_Channel    => 0,
-      Bass_Channel    => -3,
-      Reverb_Channel  => 0,
-      Filter_Channel  => 0,
-      Drive_Channel   => 0);
+     (Speech_Channel     => 0,
+      Sample1_Channel    => 0,
+      Sample2_Channel    => 0,
+      Kick_Channel       => -4,
+      Snare_Channel      => 0,
+      Cymbal_Channel     => 0,
+      Lead_Channel       => 0,
+      Bass_Channel       => -3,
+      Reverb_Channel     => 0,
+      Filter_Channel     => 0,
+      Drive_Channel      => 0,
+      Bitcrusher_Channel => 0);
 
    Synth_Voices : constant array (Tresses_Channels) of
      Voice_Access :=
-       (Speech_Channel  => Speech'Access,
-        Sample1_Channel => Sampler1'Access,
-        Sample2_Channel => Sampler2'Access,
-        Kick_Channel    => TK'Access,
-        Snare_Channel   => TS'Access,
-        Cymbal_Channel  => TC'Access,
-        Lead_Channel    => Lead'Access,
-        Bass_Channel    => Bass'Access,
-        Reverb_Channel  => FX_Reverb'Access,
-        Filter_Channel  => FX_Filter'Access,
-        Drive_Channel   => FX_Drive'Access);
+       (Speech_Channel     => Speech'Access,
+        Sample1_Channel    => Sampler1'Access,
+        Sample2_Channel    => Sampler2'Access,
+        Kick_Channel       => TK'Access,
+        Snare_Channel      => TS'Access,
+        Cymbal_Channel     => TC'Access,
+        Lead_Channel       => Lead'Access,
+        Bass_Channel       => Bass'Access,
+        Reverb_Channel     => FX_Reverb'Access,
+        Filter_Channel     => FX_Filter'Access,
+        Drive_Channel      => FX_Drive'Access,
+        Bitcrusher_Channel => FX_Bitcrush'Access);
 
    LFO_Targets : array (Tresses_Channels) of MIDI.MIDI_Data :=
      (others => Voice_Pan_CC);
@@ -382,10 +386,11 @@ package body WNM.Synth is
                            when Voice_FX_CC =>
                               FX_Send (Msg.MIDI_Evt.Chan) :=
                                 (case Msg.MIDI_Evt.Controller_Value is
-                                    when FX_Select_Bypass => Bypass,
-                                    when FX_Select_Overdrive => Overdrive,
-                                    when FX_Select_Reverb => Reverb,
-                                    when FX_Select_Filter => Filter,
+                                    when FX_Select_Bypass     => Bypass,
+                                    when FX_Select_Overdrive  => Overdrive,
+                                    when FX_Select_Reverb     => Reverb,
+                                    when FX_Select_Filter     => Filter,
+                                    when FX_Select_Bitcrusher => Bitcrusher,
                                     when others => Bypass);
 
                            when Voice_LFO_Rate_CC =>
@@ -609,6 +614,10 @@ package body WNM.Synth is
          --  Filter
          FX_Filter.Render (Send_L_Buffers (Filter),
                            Send_R_Buffers (Filter));
+
+         --  Bitcrush
+         FX_Bitcrush.Render (Send_L_Buffers (Bitcrusher),
+                             Send_R_Buffers (Bitcrusher));
       end;
 
       --  Final mix
@@ -832,6 +841,22 @@ package body WNM.Synth is
    function Drive_Param_Short_Label (Id : Tresses.Param_Id)
                                      return Tresses.Short_Label
    is (FX_Drive.Param_Short_Label (Id));
+
+   --------------------------
+   -- Bitcrush_Param_Label --
+   --------------------------
+
+   function Bitcrush_Param_Label (Id : Tresses.Param_Id)
+                               return String
+   is (FX_Bitcrush.Param_Label (Id));
+
+   --------------------------------
+   -- Bitcrush_Param_Short_Label --
+   --------------------------------
+
+   function Bitcrush_Param_Short_Label (Id : Tresses.Param_Id)
+                                        return Tresses.Short_Label
+   is (FX_Bitcrush.Param_Short_Label (Id));
 
    ------------------------
    -- Speech_Param_Label --

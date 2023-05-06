@@ -196,40 +196,42 @@ package WNM.Project is
    type Track_Mode_Kind is (MIDI_Mode, Sample1_Mode, Sample2_Mode,
                             Speech_Mode, Kick_Mode, Snare_Mode, Cymbal_Mode,
                             Bass_Mode, Lead_Mode, Reverb_Mode, Filter_Mode,
-                            Drive_Mode);
+                            Drive_Mode, Bitcrush_Mode);
 
    function Img (M : Track_Mode_Kind) return String
    is (case M is
-          when Sample1_Mode => "Sample 1",
-          when Sample2_Mode => "Sample 2",
-          when MIDI_Mode   => "MIDI",
-          when Speech_Mode => "Speech",
-          when Kick_Mode   => "Kick",
-          when Snare_Mode  => "Snare",
-          when Cymbal_Mode => "Cymbal",
-          when Lead_Mode   => "Lead",
-          when Bass_Mode   => "Bass",
-          when Reverb_Mode => "FX Reverb",
-          when Filter_Mode => "FX Filter",
-          when Drive_Mode  => "FX Overdrive");
+          when Sample1_Mode  => "Sample 1",
+          when Sample2_Mode  => "Sample 2",
+          when MIDI_Mode     => "MIDI",
+          when Speech_Mode   => "Speech",
+          when Kick_Mode     => "Kick",
+          when Snare_Mode    => "Snare",
+          when Cymbal_Mode   => "Cymbal",
+          when Lead_Mode     => "Lead",
+          when Bass_Mode     => "Bass",
+          when Reverb_Mode   => "FX Reverb",
+          when Filter_Mode   => "FX Filter",
+          when Drive_Mode    => "FX Overdrive",
+          when Bitcrush_Mode => "FX Bitcrusher");
 
    subtype Synth_Track_Mode_Kind is
-     Track_Mode_Kind range Sample1_Mode .. Drive_Mode;
+     Track_Mode_Kind range Sample1_Mode .. Bitcrush_Mode;
 
    function Voice_MIDI_Chan (Voice : Synth_Track_Mode_Kind)
                              return MIDI.MIDI_Channel
    is (case Voice is
-          when Sample1_Mode => Synth.Sample1_Channel,
-          when Sample2_Mode => Synth.Sample2_Channel,
-          when Speech_Mode => Synth.Speech_Channel,
-          when Kick_Mode   => Synth.Kick_Channel,
-          when Snare_Mode  => Synth.Snare_Channel,
-          when Cymbal_Mode => Synth.Cymbal_Channel,
-          when Bass_Mode   => Synth.Bass_Channel,
-          when Lead_Mode   => Synth.Lead_Channel,
-          when Reverb_Mode => Synth.Reverb_Channel,
-          when Filter_Mode => Synth.Filter_Channel,
-          when Drive_Mode  => Synth.Drive_Channel);
+          when Sample1_Mode  => Synth.Sample1_Channel,
+          when Sample2_Mode  => Synth.Sample2_Channel,
+          when Speech_Mode   => Synth.Speech_Channel,
+          when Kick_Mode     => Synth.Kick_Channel,
+          when Snare_Mode    => Synth.Snare_Channel,
+          when Cymbal_Mode   => Synth.Cymbal_Channel,
+          when Bass_Mode     => Synth.Bass_Channel,
+          when Lead_Mode     => Synth.Lead_Channel,
+          when Reverb_Mode   => Synth.Reverb_Channel,
+          when Filter_Mode   => Synth.Filter_Channel,
+          when Drive_Mode    => Synth.Drive_Channel,
+          when Bitcrush_Mode => Synth.Bitcrusher_Channel);
 
    subtype Controller_Label is String (1 .. 17);
    Empty_Controller_Label : constant Controller_Label := (others => ' ');
@@ -252,14 +254,15 @@ package WNM.Project is
    is (case N is
           when Chord => "Notes of chord");
 
-   type Master_FX_Kind is (Bypass, Overdrive, Reverb, Filter);
+   type Master_FX_Kind is (Bypass, Overdrive, Bitcrusher, Reverb, Filter);
 
    function Img (M : Master_FX_Kind) return String
    is (case M is
-          when Bypass    => "Bypass",
-          when Overdrive => "Overdrive",
-          when Reverb    => "Reverb",
-          when Filter    => "Filter");
+          when Bypass     => "Bypass",
+          when Overdrive  => "Overdrive",
+          when Bitcrusher => "Bitcrusher",
+          when Reverb     => "Reverb",
+          when Filter     => "Filter");
 
    -- Track Getters --
    function Mode (T : Tracks := Editing_Track) return Track_Mode_Kind;
@@ -589,17 +592,18 @@ private
         Chord_Settings.Chord_Index_Range'Last;
    end record;
 
-   Kick_Track    : constant Tracks := 1;
-   Snare_Track   : constant Tracks := 2;
-   Cymbal_Track  : constant Tracks := 3;
-   Bass_Track    : constant Tracks := 4;
-   Lead_Track    : constant Tracks := 5;
-   Sample1_Track : constant Tracks := 6;
-   Sample2_Track : constant Tracks := 7;
-   Speech_Track  : constant Tracks := 8;
-   Reverb_Track  : constant Tracks := 9;
-   Filter_Track  : constant Tracks := 10;
-   Drive_Track   : constant Tracks := 11;
+   Kick_Track     : constant Tracks := 1;
+   Snare_Track    : constant Tracks := 2;
+   Cymbal_Track   : constant Tracks := 3;
+   Bass_Track     : constant Tracks := 4;
+   Lead_Track     : constant Tracks := 5;
+   Sample1_Track  : constant Tracks := 6;
+   Sample2_Track  : constant Tracks := 7;
+   Speech_Track   : constant Tracks := 8;
+   Reverb_Track   : constant Tracks := 9;
+   Filter_Track   : constant Tracks := 10;
+   Drive_Track    : constant Tracks := 11;
+   Bitcrush_Track : constant Tracks := 12;
 
    type Track_Arr is array (Tracks) of Track_Rec;
 

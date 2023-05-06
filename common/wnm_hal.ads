@@ -85,7 +85,7 @@ package WNM_HAL is
    procedure Select_Audio_Input (Kind : Audio_Input_Kind);
 
    type Audio_Volume is range 0 .. 100;
-   Init_Volume : constant Audio_Volume := 50;
+   Init_Volume : constant Audio_Volume := 100;
 
    type Audio_Pan is range 0 .. 100;
    Init_Pan : constant Audio_Pan := 50;

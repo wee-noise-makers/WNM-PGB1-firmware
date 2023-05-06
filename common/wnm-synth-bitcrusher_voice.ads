@@ -19,57 +19,52 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Interfaces; use Interfaces;
+with Tresses;            use Tresses;
+with Tresses.Interfaces; use Tresses.Interfaces;
 
-with Tresses.FX.Overdrive;
-with Tresses.DSP;
+with Tresses.FX.Bitcrusher;
 
-package body WNM.Synth.Drive_Voice is
+private package WNM.Synth.Bitcrusher_Voice is
 
-   ------------
-   -- Render --
-   ------------
+   type Instance
+   is new Four_Params_Voice
+   with private;
 
    procedure Render (This   : in out Instance;
                      Left   : in out Tresses.Mono_Buffer;
-                     Right  : in out Tresses.Mono_Buffer)
-   is
-      Drive : constant Param_Range := This.Params (P_Drive);
-      Pan   : constant Param_Range := This.Params (P_Pan);
+                     Right  : in out Tresses.Mono_Buffer);
 
-      --  Drive ratio depending on the pan setting
+   P_Depth  : constant Tresses.Param_Id := 1;
+   P_Down   : constant Tresses.Param_Id := 2;
+   P_Cutoff : constant Tresses.Param_Id := 3;
+   P_Mix    : constant Tresses.Param_Id := 4;
 
-      L_Ratio : constant Param_Range :=
-        (if Pan < (Param_Range'Last / 2)
-         then Pan * 2
-         else Param_Range'Last);
+   --  Interfaces --
 
-      R_Ratio : constant Param_Range :=
-        (if Pan > (Param_Range'Last / 2)
-         then (Param_Range'Last - Pan) * 2
-         else Param_Range'Last);
+   overriding
+   function Param_Label (This : Instance; Id : Param_Id) return String
+   is (case Id is
+          when P_Depth  => "Depth",
+          when P_Down   => "Downsampling",
+          when P_Cutoff => "Cutoff",
+          when P_Mix    => "Mix");
 
-      L_Drive : constant Param_Range :=
-        Param_Range ((S32 (Drive) * S32 (L_Ratio)) / 2**15);
+   overriding
+   function Param_Short_Label (This : Instance; Id : Param_Id)
+                               return Short_Label
+   is (case Id is
+          when P_Depth  => "DPT",
+          when P_Down   => "DSP",
+          when P_Cutoff => "CTF",
+          when P_Mix    => "MIX");
 
-      R_Drive : constant Param_Range :=
-        Param_Range ((S32 (Drive) * S32 (R_Ratio)) / 2**15);
+private
 
-      Level   : constant Param_Range := This.Params (4);
+   type Instance
+   is new Four_Params_Voice
+   with record
+      BTL : Tresses.FX.Bitcrusher.Instance;
+      BTR : Tresses.FX.Bitcrusher.Instance;
+   end record;
 
-      --  Level is inversely proportional to drive, this is to compensate the
-      --  gain introduced by the overdrive.
-
-      L_Level : constant Param_Range :=
-        Param_Range
-          (DSP.Clip_S16 ((S32 (Level) + S32 (Param_Range'Last - L_Ratio))));
-
-      R_Level : constant Param_Range :=
-        Param_Range
-          (DSP.Clip_S16 ((S32 (Level) + S32 (Param_Range'Last - R_Ratio))));
-
-   begin
-      Tresses.FX.Overdrive.Process (Left, L_Drive, L_Level);
-      Tresses.FX.Overdrive.Process (Right, R_Drive, R_Level);
-   end Render;
-end WNM.Synth.Drive_Voice;
+end WNM.Synth.Bitcrusher_Voice;

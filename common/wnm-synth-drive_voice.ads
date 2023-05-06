@@ -33,6 +33,8 @@ private package WNM.Synth.Drive_Voice is
                      Right  : in out Tresses.Mono_Buffer);
 
    P_Drive : constant Tresses.Param_Id := 1;
+   P_Pan   : constant Tresses.Param_Id := 2;
+   P_Level : constant Tresses.Param_Id := 4;
 
    --  Interfaces --
 
@@ -40,6 +42,8 @@ private package WNM.Synth.Drive_Voice is
    function Param_Label (This : Instance; Id : Param_Id) return String
    is (case Id is
           when P_Drive => "Drive",
+          when P_Pan   => "Pan",
+          when P_Level => "Output Level",
           when others  => "N/A");
 
    overriding
@@ -47,6 +51,8 @@ private package WNM.Synth.Drive_Voice is
                                return Short_Label
    is (case Id is
           when P_Drive => "MOD",
+          when P_Pan   => "PAN",
+          when P_Level => "LVL",
           when others  => "N/A");
 
 private

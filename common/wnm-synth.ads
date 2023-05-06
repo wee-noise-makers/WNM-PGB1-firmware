@@ -32,17 +32,18 @@ with Tresses.LFO;
 
 package WNM.Synth is
 
-   Speech_Channel  : constant MIDI.MIDI_Channel := 1;
-   Sample1_Channel : constant MIDI.MIDI_Channel := 2;
-   Sample2_Channel : constant MIDI.MIDI_Channel := 3;
-   Kick_Channel    : constant MIDI.MIDI_Channel := 4;
-   Snare_Channel   : constant MIDI.MIDI_Channel := 5;
-   Cymbal_Channel  : constant MIDI.MIDI_Channel := 6;
-   Lead_Channel    : constant MIDI.MIDI_Channel := 7;
-   Bass_Channel    : constant MIDI.MIDI_Channel := 8;
-   Reverb_Channel  : constant MIDI.MIDI_Channel := 9;
-   Filter_Channel  : constant MIDI.MIDI_Channel := 10;
-   Drive_Channel   : constant MIDI.MIDI_Channel := 11;
+   Speech_Channel     : constant MIDI.MIDI_Channel := 1;
+   Sample1_Channel    : constant MIDI.MIDI_Channel := 2;
+   Sample2_Channel    : constant MIDI.MIDI_Channel := 3;
+   Kick_Channel       : constant MIDI.MIDI_Channel := 4;
+   Snare_Channel      : constant MIDI.MIDI_Channel := 5;
+   Cymbal_Channel     : constant MIDI.MIDI_Channel := 6;
+   Lead_Channel       : constant MIDI.MIDI_Channel := 7;
+   Bass_Channel       : constant MIDI.MIDI_Channel := 8;
+   Reverb_Channel     : constant MIDI.MIDI_Channel := 9;
+   Filter_Channel     : constant MIDI.MIDI_Channel := 10;
+   Drive_Channel      : constant MIDI.MIDI_Channel := 11;
+   Bitcrusher_Channel : constant MIDI.MIDI_Channel := 12;
 
    Voice_Param_1_CC      : constant MIDI.MIDI_Data := 0;
    Voice_Param_2_CC      : constant MIDI.MIDI_Data := 1;
@@ -70,10 +71,11 @@ package WNM.Synth is
    subtype LFO_Compatible_CC
      is MIDI.MIDI_Data range Voice_Param_1_CC .. Voice_Pan_CC;
 
-   FX_Select_Bypass    : constant MIDI.MIDI_Data := 0;
-   FX_Select_Overdrive : constant MIDI.MIDI_Data := 1;
-   FX_Select_Reverb    : constant MIDI.MIDI_Data := 2;
-   FX_Select_Filter    : constant MIDI.MIDI_Data := 3;
+   FX_Select_Bypass     : constant MIDI.MIDI_Data := 0;
+   FX_Select_Overdrive  : constant MIDI.MIDI_Data := 1;
+   FX_Select_Reverb     : constant MIDI.MIDI_Data := 2;
+   FX_Select_Filter     : constant MIDI.MIDI_Data := 3;
+   FX_Select_Bitcrusher : constant MIDI.MIDI_Data := 4;
 
    function Last_CPU_Load return CPU_Load;
    function Max_CPU_Load return CPU_Load;
@@ -141,6 +143,11 @@ package WNM.Synth is
                                return String;
    function Drive_Param_Short_Label (Id : Tresses.Param_Id)
                                      return Tresses.Short_Label;
+
+   function Bitcrush_Param_Label (Id : Tresses.Param_Id)
+                                  return String;
+   function Bitcrush_Param_Short_Label (Id : Tresses.Param_Id)
+                                        return Tresses.Short_Label;
 
    function Speech_Param_Label (Id : Tresses.Param_Id)
                                 return String;

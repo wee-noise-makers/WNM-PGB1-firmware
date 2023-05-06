@@ -23,8 +23,6 @@ with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
 with WNM.GUI.Popup;
 with WNM.GUI.Menu.Text_Dialog;
 
-with WNM.Sample_Library;
-with WNM.Speech;
 with WNM.Utils;
 
 package body WNM.GUI.Menu.Track_Settings is

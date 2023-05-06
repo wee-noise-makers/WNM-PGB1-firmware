@@ -256,7 +256,8 @@ package body WNM.Project is
    begin
       case Mode (Editing_Track) is
          when MIDI_Mode | Kick_Mode | Snare_Mode | Cymbal_Mode | Lead_Mode |
-              Bass_Mode | Reverb_Mode | Filter_Mode | Drive_Mode =>
+              Bass_Mode | Reverb_Mode | Filter_Mode | Drive_Mode |
+              Bitcrush_Mode =>
             return CC_Value (Step, Id)'Img;
 
          when Sample1_Mode | Sample2_Mode =>
@@ -558,18 +559,19 @@ package body WNM.Project is
          return MIDI_Mode;
       else
          return (case T is
-                    when Kick_Track    => Kick_Mode,
-                    when Snare_Track   => Snare_Mode,
-                    when Cymbal_Track  => Cymbal_Mode,
-                    when Bass_Track    => Bass_Mode,
-                    when Lead_Track    => Lead_Mode,
-                    when Sample1_Track => Sample1_Mode,
-                    when Sample2_Track => Sample2_Mode,
-                    when Speech_Track  => Speech_Mode,
-                    when Reverb_Track  => Reverb_Mode,
-                    when Filter_Track  => Filter_Mode,
-                    when Drive_Track   => Drive_Mode,
-                    when others        => MIDI_Mode);
+                    when Kick_Track     => Kick_Mode,
+                    when Snare_Track    => Snare_Mode,
+                    when Cymbal_Track   => Cymbal_Mode,
+                    when Bass_Track     => Bass_Mode,
+                    when Lead_Track     => Lead_Mode,
+                    when Sample1_Track  => Sample1_Mode,
+                    when Sample2_Track  => Sample2_Mode,
+                    when Speech_Track   => Speech_Mode,
+                    when Reverb_Track   => Reverb_Mode,
+                    when Filter_Track   => Filter_Mode,
+                    when Drive_Track    => Drive_Mode,
+                    when Bitcrush_Track => Bitcrush_Mode,
+                    when others         => MIDI_Mode);
       end if;
    end Mode;
 
@@ -748,6 +750,10 @@ package body WNM.Project is
             Utils.Copy_Str (Synth.Drive_Param_Label (Tresses_Id), Result);
             return Result;
 
+         when Bitcrush_Mode =>
+            Utils.Copy_Str (Synth.Bitcrush_Param_Label (Tresses_Id), Result);
+            return Result;
+
          when Speech_Mode =>
             Utils.Copy_Str (Synth.Speech_Param_Label (Tresses_Id), Result);
             return Result;
@@ -796,6 +802,9 @@ package body WNM.Project is
 
          when Drive_Mode =>
             return Synth.Drive_Param_Short_Label (Tresses_Id);
+
+         when Bitcrush_Mode =>
+            return Synth.Bitcrush_Param_Short_Label (Tresses_Id);
 
          when Speech_Mode =>
             return Synth.Speech_Param_Short_Label (Tresses_Id);
@@ -1330,10 +1339,11 @@ package body WNM.Project is
          Send_CC (Chan,
                   Synth.Voice_FX_CC,
                   (case Master_FX (T) is
-                      when Bypass    => Synth.FX_Select_Bypass,
-                      when Overdrive => Synth.FX_Select_Overdrive,
-                      when Reverb    => Synth.FX_Select_Reverb,
-                      when Filter    => Synth.FX_Select_Filter));
+                      when Bypass     => Synth.FX_Select_Bypass,
+                      when Overdrive  => Synth.FX_Select_Overdrive,
+                      when Bitcrusher => Synth.FX_Select_Bitcrusher,
+                      when Reverb     => Synth.FX_Select_Reverb,
+                      when Filter     => Synth.FX_Select_Filter));
 
       end if;
    end Synchronize_Track_Mix_Settings;
