@@ -100,7 +100,7 @@ package body WNM.GUI.Update is
                when WNM.UI.Volume_BPM_Solo =>
                   WNM.GUI.Menu.Drawing.Draw_Value ("Solo");
                when others =>
-                  raise Program_Error;
+                  null;
             end case;
 
          --  when WNM.UI.Pattern_Mode =>
