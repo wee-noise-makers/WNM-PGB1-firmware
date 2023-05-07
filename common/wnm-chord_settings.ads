@@ -156,18 +156,18 @@ package WNM.Chord_Settings is
 
    function Img (N : Chord_Name) return String
    is (case N is
-          when Maj_Triad => "M",
-          when Min_Triad => "m",
-          when Dim_Triad => "*",
-          when Maj_7th   => "M7",
-          when Min_7th   => "m7",
-          when Dim_7th   => "*7",
-          when Sus2      => "sus2",
-          when Sus4      => "sus4",
-          when Maj_Inv1  => "M/1",
-          when Maj_Inv2  => "M/2",
-          when Min_Inv1  => "m/1",
-          when Min_Inv2  => "m/2");
+          when Maj_Triad => "Major",
+          when Min_Triad => "Minor",
+          when Dim_Triad => "Dim",
+          when Maj_7th   => "Major7",
+          when Min_7th   => "Minor7",
+          when Dim_7th   => "Dim7",
+          when Sus2      => "Sus2",
+          when Sus4      => "Sus4",
+          when Maj_Inv1  => "Maj/inv1",
+          when Maj_Inv2  => "Maj/inv2",
+          when Min_Inv1  => "Min/inv1",
+          when Min_Inv2  => "Min/inv2");
 
    --  type Chord_Duration is (Whole_Bar, Half_Bar);
    --
