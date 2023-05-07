@@ -1,3 +1,5 @@
+with Tresses.Resources;
+
 package WNM_Configuration is
 
    Screen_Width  : constant := 128;
@@ -42,7 +44,7 @@ package WNM_Configuration is
       Chord_Button   => 2);
 
    package Audio is
-      Sample_Frequency            : constant := 44_100;
+      Sample_Frequency            : constant := Tresses.Resources.SAMPLE_RATE;
       Samples_Per_Buffer          : constant := 32;
       Mono_Buffer_Size_In_Bytes   : constant := Samples_Per_Buffer * 2;
       Stereo_Buffer_Size_In_Bytes : constant := Samples_Per_Buffer * 4;
