@@ -10,6 +10,18 @@ package body ROM_Builder.File_System is
       This.Target.Mount (This.BD'Unchecked_Access);
    end Initialize;
 
+   ---------------------
+   -- Initialize_From --
+   ---------------------
+
+   procedure Initialize_From (This : in out Instance;
+                              Img  : in out FSmaker.Source.Class)
+   is
+   begin
+      This.Read_Data (Img);
+      This.Target.Mount (This.BD'Unchecked_Access);
+   end Initialize_From;
+
    ------------
    -- Import --
    ------------
@@ -33,6 +45,17 @@ package body ROM_Builder.File_System is
    begin
       This.BD.Write_Data (File);
    end Write_Data;
+
+   ---------------
+   -- Read_Data --
+   ---------------
+
+   procedure Read_Data (This :        Instance;
+                        File : in out FSmaker.Source.Class)
+   is
+   begin
+      This.BD.Read_Data (File);
+   end Read_Data;
 
    ----------------
    -- Print_Tree --

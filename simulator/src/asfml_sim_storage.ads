@@ -5,9 +5,14 @@ with GNAT.Strings;
 
 package ASFML_SIM_Storage is
 
-   function Load_ROM (Path : String) return String;
+   function Load_ROM (Path              : String;
+                      Samples_From_TOML : Boolean)
+                      return String;
    --  Load ROM from a binary file.
    --  Return empty string on success, an error message otherwise
+   --
+   --  If Sample_From_TOML is True, the sample memory is cleared and re-built
+   --  from the TOML description.
 
    function Create_ROM return String;
    --  Create a ROM from TOML description file

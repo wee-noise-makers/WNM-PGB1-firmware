@@ -13,12 +13,18 @@ package ROM_Builder.File_System is
 
    procedure Initialize (This : in out Instance);
 
+   procedure Initialize_From (This : in out Instance;
+                              Img  : in out FSmaker.Source.Class);
+
    procedure Import (This : in out Instance;
                      Dst  :        String;
                      Src  : in out FSmaker.Source.Class);
 
    procedure Write_Data (This :        Instance;
                          File : in out FSmaker.Sink.Class);
+
+   procedure Read_Data (This :        Instance;
+                        File : in out FSmaker.Source.Class);
 
    procedure Print_Tree (This : in out Instance);
 

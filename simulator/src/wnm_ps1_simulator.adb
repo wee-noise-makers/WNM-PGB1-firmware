@@ -46,7 +46,8 @@ begin
 
    declare
       Result : constant String :=
-        ASFML_SIM_Storage.Load_ROM (ASFML_SIM_Storage.ROM_Path);
+        ASFML_SIM_Storage.Load_ROM (ASFML_SIM_Storage.ROM_Path,
+                                   Samples_From_TOML => True);
    begin
       if Result /= "" or else ASFML_SIM_Storage.Switch_Reset_ROM then
          declare

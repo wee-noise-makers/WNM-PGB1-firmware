@@ -308,7 +308,10 @@ package body ASFML_SIM_Storage is
    -- Load_ROM --
    --------------
 
-   function Load_ROM (Path : String) return String is
+   function Load_ROM (Path              : String;
+                      Samples_From_TOML : Boolean)
+                      return String
+   is
       FD : aliased GNAT.OS_Lib.File_Descriptor;
    begin
       --  The image file should exists and be writable
@@ -344,6 +347,12 @@ package body ASFML_SIM_Storage is
 
       Img.Load_From_File (FD);
       GNAT.OS_Lib.Close (FD);
+
+      if Samples_From_TOML then
+         ROM_Builder.From_TOML.Build_From_TOML (Img, TOML_Path,
+                                                Format_FS => False);
+      end if;
+
       Load_Sample_Data (Img);
       Config := RAM_Image_Backend.Create (Img);
 
@@ -357,7 +366,8 @@ package body ASFML_SIM_Storage is
    function Create_ROM return String is
    begin
       Ada.Text_IO.Put_Line ("Create ROM from '" & TOML_Path & "'...");
-      ROM_Builder.From_TOML.Build_From_TOML (Img, TOML_Path);
+      ROM_Builder.From_TOML.Build_From_TOML (Img, TOML_Path,
+                                             Format_FS => True);
       Load_Sample_Data (Img);
       Config := RAM_Image_Backend.Create (Img);
       return "";

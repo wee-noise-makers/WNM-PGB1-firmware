@@ -95,9 +95,10 @@ package body ROM_Builder.From_TOML is
    -- Process_TOML --
    ------------------
 
-   procedure Process_TOML (Root     :        TOML_Value;
-                           TOML_Dir :        String;
-                           Img      : in out RAM_Image)
+   procedure Process_TOML (Root      :        TOML_Value;
+                           TOML_Dir  :        String;
+                           Img       : in out RAM_Image;
+                           Format_FS :        Boolean)
    is
       Lib : constant Sample_Library.Acc_All := new Sample_Library.Instance;
       FS  : constant File_System.Acc_All := new File_System.Instance;
@@ -106,7 +107,11 @@ package body ROM_Builder.From_TOML is
          raise Program_Error with "Invalid TOML file. Table expected";
       end if;
 
-      FS.Initialize;
+      if Format_FS then
+         FS.Initialize;
+      else
+         FS.Initialize_From (Img);
+      end if;
 
       Lib.Load_From_TOML (Root, TOML_Dir);
 
@@ -125,15 +130,15 @@ package body ROM_Builder.From_TOML is
       Lib.Write_Data (Img);
 
       Img.Close;
-
    end Process_TOML;
 
    ---------------------
    -- Build_From_TOML --
    ---------------------
 
-   procedure Build_From_TOML (Img : in out RAM_Image;
-                              Path_To_TOML : String)
+   procedure Build_From_TOML (Img          : in out RAM_Image;
+                              Path_To_TOML :        String;
+                              Format_FS    :        Boolean)
    is
       Result : constant Read_Result := File_IO.Load_File (Path_To_TOML);
 
@@ -141,7 +146,7 @@ package body ROM_Builder.From_TOML is
         Ada.Directories.Containing_Directory (Path_To_TOML);
    begin
       if Result.Success then
-         Process_TOML (Result.Value, TOML_Dir, Img);
+         Process_TOML (Result.Value, TOML_Dir, Img, Format_FS);
       else
          raise Program_Error with Path_To_TOML & ":" & Format_Error (Result);
       end if;
@@ -183,5 +188,24 @@ package body ROM_Builder.From_TOML is
       This.Next_In := This.Next_In + Storage_Count (Len);
       return Len;
    end Write;
+
+   ----------
+   -- Read --
+   ----------
+
+   overriding
+   function Read (This : in out RAM_Image;
+                  Addr :        System.Address;
+                  Len  :        Natural)
+                  return Natural
+   is
+      Dst : Storage_Array (1 .. Storage_Offset (Len))
+        with Address => Addr;
+   begin
+      Dst := This.Data
+        (This.Next_Out .. This.Next_Out + Storage_Count (Len - 1));
+      This.Next_Out := This.Next_Out + Storage_Count (Len);
+      return Len;
+   end Read;
 
 end ROM_Builder.From_TOML;
