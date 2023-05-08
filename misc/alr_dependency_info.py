@@ -52,9 +52,9 @@ def gather_info(packages):
             if output[0].startswith("Not found:"):
                 output = alr_show("%s=%s" % (name, version), external=True)
                 
-            output.insert(0, "-" * 80)
-            output.insert(0, "-- %s=%s" % (name, version))
-            output.insert(0, "-" * 80)
+            output.insert(0, "-" * 80 + "\n")
+            output.insert(0, "-- %s=%s\n" % (name, version))
+            output.insert(0, "-" * 80 + "\n")
             ret += output
 
     return ret
