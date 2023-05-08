@@ -64,8 +64,8 @@ def main():
     all_deps = gather_deps()
 
     output = gather_info(all_deps)
-    output.insert(0, "Dependencies from the Alire package manager:")
-    output.insert(0, "(https://alire.ada.dev)")
+    output.insert(0, "(https://alire.ada.dev)\n")
+    output.insert(0, "Dependencies from the Alire package manager:\n")
     
     if sys.argv[1]:
         f = open(sys.argv[1], "w")
