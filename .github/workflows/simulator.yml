@@ -52,6 +52,7 @@ jobs:
         if: startsWith(matrix.os, 'windows')
 
       - run: alr exec -- python3 ..\misc\alr_dependency_info.py ${{env.RELEASE_NAME}}\alire_dependencies_info.txt
+        if: startsWith(matrix.os, 'windows')
 
       - run: alr exec -- zip -r ${{env.RELEASE_NAME}}.zip ${{env.RELEASE_NAME}}
         if: startsWith(matrix.os, 'windows')
