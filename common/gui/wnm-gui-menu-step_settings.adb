@@ -152,16 +152,18 @@ package body WNM.GUI.Menu.Step_Settings is
    begin
       case Event.Kind is
          when Left_Press =>
-            null;
+            case This.Current_Setting is
+               when Note => Note_Mode_Next;
+
+               when others => null;
+            end case;
+
          when Right_Press =>
             case This.Current_Setting is
                when CC_A => Project.CC_Toggle (Step, A);
                when CC_B => Project.CC_Toggle (Step, B);
                when CC_C => Project.CC_Toggle (Step, C);
                when CC_D => Project.CC_Toggle (Step, D);
-
-               when Note => Note_Mode_Next;
-
                when others => null;
             end case;
 
