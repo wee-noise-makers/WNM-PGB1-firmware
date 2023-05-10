@@ -68,10 +68,9 @@ def main():
     output.insert(0, "(https://alire.ada.dev)")
     
     if sys.argv[1]:
-        f = open(sys.argv[1], "w")
-        for line in output:
-            f.write(line)
-        f.close()
+        with open(sys.argv[1], 'a') as f:
+            for line in output:
+                f.write(line)
     else:
         for line in output:
             print(line)
