@@ -45,6 +45,9 @@ package WNM.Project is
    function Samples_Per_Beat return Synth.Sample_Time;
    function Microseconds_Per_Beat return Time.Time_Microseconds;
 
+   procedure Change_Main_Volume (Volume_Delta : Integer);
+   function Get_Main_Volume return Audio_Volume;
+
    ----------
    -- Step --
    ----------

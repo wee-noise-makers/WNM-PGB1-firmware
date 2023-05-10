@@ -23,7 +23,6 @@ with WNM.Project;
 with WNM.Project.Step_Sequencer;
 with WNM.Project.Chord_Sequencer;
 with WNM.Pattern_Sequencer;
-with WNM.Master_Volume;
 with WNM.MIDI_Clock; use WNM.MIDI_Clock;
 with WNM.GUI.Menu;
 with WNM.GUI.Menu.Root;
@@ -681,7 +680,7 @@ package body WNM.UI is
       case Current_Input_Mode is
          when Volume_BPM_Mute | Volume_BPM_Solo =>
             WNM.Project.Change_BPM (R_Enco);
-            WNM.Master_Volume.Change (L_Enco);
+            WNM.Project.Change_Main_Volume (L_Enco);
          when others =>
             if L_Enco /= 0 then
                GUI.Menu.On_Event ((Kind  => GUI.Menu.Encoder_Left,

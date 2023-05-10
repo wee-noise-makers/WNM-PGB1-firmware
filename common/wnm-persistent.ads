@@ -25,10 +25,12 @@ package WNM.Persistent is
 
    type Persistent_Data is record
       Last_Project : WNM.Project.Library.Prj_Index;
+      Main_Volume : Audio_Volume := Init_Volume;
    end record;
 
    Default : Persistent_Data :=
-     (Last_Project => WNM.Project.Library.Invalid_Prj_Entry);
+     (Last_Project => WNM.Project.Library.Invalid_Prj_Entry,
+      Main_Volume  => Init_Volume);
 
    Data : Persistent_Data := Default;
 

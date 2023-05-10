@@ -154,10 +154,13 @@ package body WNM_HAL is
    -- Set_Master_Volume --
    -----------------------
 
-   procedure Set_Master_Volume (Volume : Audio_Volume) is
+   procedure Set_Main_Volume (Volume : Audio_Volume) is
+      use Interfaces;
+
+      Step : constant Integer_16 := Integer_16'Last / 100;
    begin
-      null;
-   end Set_Master_Volume;
+      ASFML_Sim.Main_Volume := Step * Integer_16 (Volume);
+   end Set_Main_Volume;
 
    ---------
    -- Mix --

@@ -27,9 +27,10 @@ package body WNM.Persistent is
 
    Filename : constant String := "persistent.leb128";
 
-   type Persistent_Token is (P_Last_Project);
+   type Persistent_Token is (P_Last_Project, P_Main_Volume);
 
-   for Persistent_Token use (P_Last_Project => 0);
+   for Persistent_Token use (P_Last_Project => 0,
+                             P_Main_Volume  => 1);
 
    ----------
    -- Save --
@@ -44,6 +45,11 @@ package body WNM.Persistent is
          Output.Push (Out_UInt (Data.Last_Project));
       end if;
 
+      if Output.Status = Ok then
+         Output.Push (Out_UInt (P_Main_Volume'Enum_Rep));
+         Output.Push (Out_UInt (Data.Main_Volume));
+      end if;
+
       Output.Close;
    end Save;
 
@@ -54,6 +60,7 @@ package body WNM.Persistent is
    procedure Load is
       procedure To_P_Token is new Convert_To_Enum (Persistent_Token);
       procedure Read_Prj is new Read_Gen_Int (Project.Library.Prj_Index);
+      procedure Read_Volume is new Read_Gen_Int (Audio_Volume);
 
       Input : LEB128_File_In.Instance := LEB128_File_In.Open (Filename);
       Set : Persistent_Token;
@@ -78,10 +85,13 @@ package body WNM.Persistent is
 
          case Set is
             when P_Last_Project => Read_Prj (Input, Data.Last_Project);
+            when P_Main_Volume => Read_Volume (Input, Data.Main_Volume);
          end case;
 
          exit when Input.Status /= Ok;
       end loop;
+
+      WNM_HAL.Set_Main_Volume (Data.Main_Volume);
 
       Input.Close;
    end Load;

@@ -24,6 +24,7 @@ with HAL; use HAL;
 with WNM.Coproc;
 with WNM.Utils;
 with WNM.Speech;
+with WNM.Persistent;
 
 package body WNM.Project is
 
@@ -108,6 +109,30 @@ package body WNM.Project is
    begin
       return (60 * 1_000 * 1_000) / Time.Time_Microseconds (Get_BPM);
    end Microseconds_Per_Beat;
+
+   ------------------------
+   -- Change_Main_Volume --
+   ------------------------
+
+   procedure Change_Main_Volume (Volume_Delta : Integer) is
+      Res : Integer;
+   begin
+      Res := Integer (WNM.Persistent.Data.Main_Volume) + Volume_Delta;
+      if Res in Integer (Audio_Volume'First) .. Integer (Audio_Volume'Last)
+      then
+         WNM.Persistent.Data.Main_Volume := Audio_Volume (Res);
+         WNM_HAL.Set_Main_Volume (Audio_Volume (Res));
+      end if;
+   end Change_Main_Volume;
+
+   ---------------------
+   -- Get_Main_Volume --
+   ---------------------
+
+   function Get_Main_Volume return Audio_Volume is
+   begin
+      return WNM.Persistent.Data.Main_Volume;
+   end Get_Main_Volume;
 
    ---------
    -- Set --

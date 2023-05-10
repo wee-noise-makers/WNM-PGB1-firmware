@@ -26,7 +26,6 @@ with WNM.Screen;
 with WNM.UI;
 with WNM.Project.Step_Sequencer;
 with WNM.Sequence_Copy;     use WNM.Sequence_Copy;
-with WNM.Master_Volume;
 with WNM.GUI.Menu;
 with WNM.GUI.Menu.Drawing;  use WNM.GUI.Menu.Drawing;
 with WNM.GUI.Logo;
@@ -81,7 +80,7 @@ package body WNM.GUI.Update is
       case WNM.UI.Input_GUI_Mode is
          when WNM.UI.Volume_BPM_Mute | WNM.UI.Volume_BPM_Solo =>
             BPM := Integer (WNM.Project.Get_BPM);
-            Volume := Integer (WNM.Master_Volume.Value);
+            Volume := Integer (WNM.Project.Get_Main_Volume);
 
             WNM.GUI.Parameters.Print_Percentage
               (Slot  => WNM.GUI.Parameters.Up,

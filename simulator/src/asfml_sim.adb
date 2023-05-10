@@ -91,6 +91,16 @@ package body ASFML_Sim is
 
       WNM.Synth.Next_Points (Out_Buffer, In_Buffer);
 
+      declare
+         subtype S16 is Integer_16;
+         subtype S32 is Integer_32;
+      begin
+         for Elt of Out_Buffer loop
+            Elt.L := S16 ((S32 (Elt.L) * S32 (Main_Volume)) / 2**15);
+            Elt.R := S16 ((S32 (Elt.R) * S32 (Main_Volume)) / 2**15);
+         end loop;
+      end;
+
    exception
       when E : others =>
          Ada.Text_IO.Put_Line (Ada.Exceptions.Exception_Information (E));

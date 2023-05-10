@@ -6,6 +6,8 @@ with Sf.Graphics.Color;
 
 with WNM_Configuration; use WNM_Configuration;
 
+with Interfaces; use Interfaces;
+
 with Stopwatch;
 
 package ASFML_Sim is
@@ -62,6 +64,8 @@ package ASFML_Sim is
 
    Encoder_Right : Integer := 0;
    Encoder_Left  : Integer := 0;
+
+   Main_Volume : Interfaces.Integer_16 := Interfaces.Integer_16'Last / 2;
 
    type SFML_LED_Strip is array (WNM_Configuration.LED) of
      Sf.Graphics.Color.sfColor;
