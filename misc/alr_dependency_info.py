@@ -52,9 +52,9 @@ def gather_info(packages):
             if output[0].startswith("Not found:"):
                 output = alr_show("%s=%s" % (name, version), external=True)
                 
-            output.insert(0, "-" * 80)
-            output.insert(0, "-- %s=%s" % (name, version))
-            output.insert(0, "-" * 80)
+            output.insert(0, "-" * 80 + "\n")
+            output.insert(0, "-- %s=%s\n" % (name, version))
+            output.insert(0, "-" * 80 + "\n")
             ret += output
 
     return ret
@@ -64,8 +64,8 @@ def main():
     all_deps = gather_deps()
 
     output = gather_info(all_deps)
-    output.insert(0, "Dependencies from the Alire package manager:")
-    output.insert(0, "(https://alire.ada.dev)")
+    output.insert(0, "(https://alire.ada.dev)\n")
+    output.insert(0, "Dependencies from the Alire package manager:\n")
     
     if sys.argv[1]:
         with open(sys.argv[1], 'a') as f:
