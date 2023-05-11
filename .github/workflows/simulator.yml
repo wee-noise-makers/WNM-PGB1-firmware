@@ -67,5 +67,5 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: simulator/${{env.RELEASE_NAME}}.zip
-          asset_name: ${{env.RELEASE_NAME}}
+          asset_name: ${{env.RELEASE_NAME}}.zip
           tag: ${{ github.ref }}    
