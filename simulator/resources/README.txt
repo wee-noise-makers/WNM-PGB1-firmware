@@ -7,11 +7,9 @@ accurate simulation of a digital hardware sequencer/synthesizer we are currently
 designing. The goal of this simulator is to show the capabilities of the device
 and get feedback on the user interface and sound synthesis.
 
-
 The project is still in the development phase, so changes are to be expected in
 future versions of the simulator and final device. In particular, new synthesis
 engines will be added, but we may also remove some features or effects.
-
 
 Any feedback (good or bad) is helpful for us. Sharing this project with your
 friends is also a good way to help. Please contact us on various platforms to
@@ -19,41 +17,35 @@ share your opinion:
 * https://github.com/wee-noise-maker/WNM-PS1-firmware
 * https://twitter.com/weenoisemaker
 * https://mamot.fr/@DesChips
+* https://weenoisemaker.com
 
 
 -- Getting started --
 
-
 To start the simulator, go to the "bin/" folder and run the "wnm_ps1_simulator"
 executable.
-
 
 To exit the simulator, press [Esc] and use the [Up] and [Down] arrow keys to
 navigate to the "exit" option and then press [Enter]. Note that this
 menu also allows you to save your project before exiting.
-
 
 The simulator is controlled with your PC keyboard. A keyboard key is assigned
 for each button of the device, the mapping is shown in square brackets [] inside
 the black rectangle corresponding to each button. For example, [Q] for the track
 button, or [Y] for 5th step.
 
-
 As of today, only a QWERTY keyboard layout is available. We plan to support more
 layouts in the future, but in the meantime temporarily switching to a QWERTY
 layout in your operating system settings is the only option.
-
 
 The device has two encoders to navigate in the menus. On the simulator the
 encoders are mapped to arrow keys. [Left] and [Right] to select a different
 setting, [Up] and [Down] to change the selected setting. Holding the shift
 key will change the setting value faster.
 
-
 The encoders also have push buttons, mapped [1] and [2] on the keyboard. [1]
 corresponds to positive/continue actions such as entering a sub-menu or changing
 a value. [2] corresponds to negative/back actions such as leaving a menu.
-
 
 Some buttons can be hold to open an alternative function:
 
@@ -89,7 +81,6 @@ Some buttons can be hold to open an alternative function:
 
 -- Basic workflow --
 
-
 Enter a pattern:
 
 * Press the Track button [Q] to enter track mode
@@ -99,7 +90,6 @@ Enter a pattern:
   corresponding steps
 * Press Rec [Enter] to leave edit mode
 * Press Play [\] to play your pattern
-
 
 Sound design:
 * Press the Track button [Q] to enter track mode
@@ -113,7 +103,6 @@ Sound design:
    * All synthesizers have an LFO (Low Frequency Oscillator) page 
      (3rd or 4th page) to automatically change one of the sound parameter 
      over time
-
 
 Step settings:
 * Press the Step button [Q] to enter step mode
@@ -140,7 +129,6 @@ Step settings:
    * The last page lets you control the synthesizer settings for this step
       * Use the [Up] and [Down] keys to change the value
       * Use the [2] key to disable synth setting for this step
-
 
 Chord sequencing:
 
