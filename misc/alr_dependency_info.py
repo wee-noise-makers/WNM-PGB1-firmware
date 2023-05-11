@@ -42,7 +42,7 @@ def alr_show(crate, external=False):
 
 
 def gather_info(packages):
-    ret = []
+    ret = ""
     for dep in packages:
         if not dep['pinned']:
             name = dep['name']
@@ -52,10 +52,10 @@ def gather_info(packages):
             if output[0].startswith("Not found:"):
                 output = alr_show("%s=%s" % (name, version), external=True)
                 
-            output.insert(0, "-" * 80 + "\n")
-            output.insert(0, "-- %s=%s\n" % (name, version))
-            output.insert(0, "-" * 80 + "\n")
-            ret += output
+            ret += "-" * 80 + "\n"
+            ret += "-- %s=%s\n" % (name, version)
+            ret += "-" * 80 + "\n"
+            ret += "\n".join(output)
 
     return ret
 
@@ -63,17 +63,22 @@ def gather_info(packages):
 def main():
     all_deps = gather_deps()
 
-    output = gather_info(all_deps)
-    output.insert(0, "(https://alire.ada.dev)\n")
-    output.insert(0, "Dependencies from the Alire package manager:\n")
+    output = ""
+    output += "\n"
+    output += "\n"
+    output += "-" * 80 + "\n"
+    output += "\n"
+    output += "This project is using various software libraries from the Alire package manager\n"
+    output += "(https://alire.ada.dev):\n"
+    output += "\n"
     
-    if sys.argv[1]:
+    output += gather_info(all_deps)
+
+    if len (sys.argv)> 1:
         with open(sys.argv[1], 'a') as f:
-            for line in output:
-                f.write(line)
+            f.write(output)
     else:
-        for line in output:
-            print(line)
+        print(output)
     
 if __name__ == "__main__":
     main()
