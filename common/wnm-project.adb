@@ -1207,6 +1207,14 @@ package body WNM.Project is
                            return WNM.Chord_Settings.Chord_Name
    is (G_Project.Chords (C).Name);
 
+   -----------------------
+   -- Selected_Duration --
+   -----------------------
+
+   function Selected_Duration (C : WNM.Chords :=  Editing_Chord)
+                               return Chord_Bar_Duration
+   is (G_Project.Chords (C).Duration);
+
    ----------------
    -- Next_Value --
    ----------------
@@ -1215,8 +1223,9 @@ package body WNM.Project is
       Chord : Chord_Rec renames G_Project.Chords (Editing_Chord);
    begin
       case S is
-         when Tonic => Next (Chord.Tonic);
-         when Name => Next (Chord.Name);
+         when Tonic    => Next (Chord.Tonic);
+         when Name     => Next (Chord.Name);
+         when Duration => Next (Chord.Duration);
       end case;
    end Next_Value;
 
@@ -1228,8 +1237,9 @@ package body WNM.Project is
       Chord : Chord_Rec renames G_Project.Chords (Editing_Chord);
    begin
       case S is
-         when Tonic => Prev (Chord.Tonic);
-         when Name  => Prev (Chord.Name);
+         when Tonic    => Prev (Chord.Tonic);
+         when Name     => Prev (Chord.Name);
+         when Duration => Prev (Chord.Duration);
       end case;
    end Prev_Value;
 
@@ -1241,8 +1251,9 @@ package body WNM.Project is
       Chord : Chord_Rec renames G_Project.Chords (Editing_Chord);
    begin
       case S is
-         when Tonic => Next_Fast (Chord.Tonic);
-         when Name  => Next_Fast (Chord.Name);
+         when Tonic    => Next_Fast (Chord.Tonic);
+         when Name     => Next_Fast (Chord.Name);
+         when Duration => Next_Fast (Chord.Duration);
       end case;
    end Next_Value_Fast;
 
@@ -1254,8 +1265,9 @@ package body WNM.Project is
       Chord : Chord_Rec renames G_Project.Chords (Editing_Chord);
    begin
       case S is
-         when Tonic => Prev_Fast (Chord.Tonic);
-         when Name  => Prev_Fast (Chord.Name);
+         when Tonic =>    Prev_Fast (Chord.Tonic);
+         when Name  =>    Prev_Fast (Chord.Name);
+         when Duration => Prev_Fast (Chord.Duration);
       end case;
    end Prev_Value_Fast;
 

@@ -416,13 +416,17 @@ package WNM.Project is
    -----------
 
    type Chord_Setting_Kind is (Tonic,
-                               Name);
+                               Name,
+                               Duration);
 
    for Chord_Setting_Kind'Size use 8;
-   for Chord_Setting_Kind use (Tonic => 0,
-                               Name  => 1);
+   for Chord_Setting_Kind use (Tonic    => 0,
+                               Name     => 1,
+                               Duration => 2);
 
-   subtype User_Chord_Settings is Chord_Setting_Kind range Tonic .. Name;
+   subtype User_Chord_Settings is Chord_Setting_Kind range Tonic .. Duration;
+
+   type Chord_Bar_Duration is range 1 .. 8;
 
    -- Chord Getters --
 
@@ -430,6 +434,8 @@ package WNM.Project is
                             return MIDI.MIDI_Key;
    function Selected_Name (C : WNM.Chords :=  Editing_Chord)
                            return WNM.Chord_Settings.Chord_Name;
+   function Selected_Duration (C : WNM.Chords :=  Editing_Chord)
+                               return Chord_Bar_Duration;
 
    procedure Next_Value (S : User_Chord_Settings);
    procedure Prev_Value (S : User_Chord_Settings);
@@ -494,6 +500,9 @@ private
 
    package Chord_Name_Next is new Enum_Next (WNM.Chord_Settings.Chord_Name);
    use Chord_Name_Next;
+
+   package Chord_Duration_Next is new Enum_Next (Chord_Bar_Duration);
+   use Chord_Duration_Next;
 
    package Notes_Per_Chord_Next
    is new Enum_Next (Chord_Settings.Chord_Index_Range, Wrap => False);
@@ -698,13 +707,15 @@ private
       Tonic : MIDI.MIDI_Key := MIDI.C4;
       Name  : WNM.Chord_Settings.Chord_Name :=
         WNM.Chord_Settings.Chord_Name'First;
+      Duration : Chord_Bar_Duration := 4;
    end record;
 
    type Chord_Arr is array (WNM.Chords) of Chord_Rec;
 
    Default_Chord : constant Chord_Rec :=
-     (Tonic => MIDI.C4,
-      Name => WNM.Chord_Settings.Chord_Name'First);
+     (Tonic    => MIDI.C4,
+      Name     => WNM.Chord_Settings.Chord_Name'First,
+      Duration => 4);
 
    type FX_Rec is record
       Drive_Amt : MIDI.MIDI_Data := 60;

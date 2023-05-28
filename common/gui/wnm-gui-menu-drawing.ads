@@ -96,6 +96,10 @@ package WNM.GUI.Menu.Drawing is
    procedure Draw_Value_Left (Val      : String;
                               Selected : Boolean := False);
 
+   procedure Draw_Value_Pos (Val      : String;
+                             Pos      : Natural;
+                             Selected : Boolean := False);
+
    procedure Draw_Knob (Title : String;
                         Value : Natural);
 

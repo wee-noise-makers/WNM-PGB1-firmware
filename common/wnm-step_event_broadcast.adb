@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2022 Fabien Chouteau                    --
+--                     Copyright (C) 2023 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,24 +19,42 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Gen_Chain_Sequencer;
-with WNM.Chord_Settings; use WNM.Chord_Settings;
+package body WNM.Step_Event_Broadcast is
 
-package WNM.Project.Chord_Sequencer is
+   --------------
+   -- Register --
+   --------------
 
-   package Chain is new WNM.Gen_Chain_Sequencer;
+   procedure Register (Acc : not null Listener_Acess) is
+      Ptr : Listener_Acess := Head;
+   begin
 
-   procedure Start;
-   procedure Stop;
+      --  Check if node is already in the list
+      while Ptr /= null loop
+         if Ptr = Acc then
+            raise Program_Error;
+         end if;
 
-   function Current_Tonic return MIDI.MIDI_Key;
-   function Current_Chord_Name return Chord_Name;
-   function Current_Chord_Intervals return Chord_Intervals;
-   function Current_Chord return Chord_Notes;
+         Ptr := Ptr.Next;
+      end loop;
 
-   pragma Inline (Current_Tonic);
-   pragma Inline (Current_Chord_Name);
-   pragma Inline (Current_Chord_Intervals);
-   pragma Inline (Current_Chord);
+      Acc.Next := Head;
+      Head := Acc;
+   end Register;
 
-end WNM.Project.Chord_Sequencer;
+   ---------------
+   -- Broadcast --
+   ---------------
+
+   procedure Broadcast (Step : Sequencer_Steps) is
+      Ptr : Listener_Acess := Head;
+   begin
+
+      --  Check if node is already in the list
+      while Ptr /= null loop
+         Ptr.CB (Step);
+         Ptr := Ptr.Next;
+      end loop;
+   end Broadcast;
+
+end WNM.Step_Event_Broadcast;

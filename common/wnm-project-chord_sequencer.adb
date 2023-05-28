@@ -20,8 +20,14 @@
 -------------------------------------------------------------------------------
 
 with MIDI; use MIDI;
+with WNM.Step_Event_Broadcast;
 
 package body WNM.Project.Chord_Sequencer is
+
+   procedure Step_Callback (Step : Sequencer_Steps);
+
+   Step_Listener : aliased Step_Event_Broadcast.Listener
+     (Step_Callback'Access);
 
    procedure Update_Current;
    --  Update the current tonic, name, and chord notes
@@ -30,56 +36,74 @@ package body WNM.Project.Chord_Sequencer is
    C_Chord_Name : Chord_Name := Chord_Name'First;
    C_Chord : Chord_Notes := (others => MIDI.C4);
 
+   G_Bars_Count : Natural := 0;
+
    Init_Scale_Root : constant MIDI.MIDI_Key := MIDI.C4;
    Init_Scale      : constant Scale_Name := Minor_Scale;
    Init_Chords     : constant Chord_Arr :=
      (1 => (Init_Scale_Root + Scales (Init_Scale)(0),
-            Substitutions (Scale_Chords (Init_Scale)(0)).Sub (1)),
+            Substitutions (Scale_Chords (Init_Scale)(0)).Sub (1),
+            4),
 
       2 => (Init_Scale_Root + Scales (Init_Scale)(1),
-            Substitutions (Scale_Chords (Init_Scale)(1)).Sub (1)),
+            Substitutions (Scale_Chords (Init_Scale)(1)).Sub (1),
+            4),
 
       3 => (Init_Scale_Root + Scales (Init_Scale)(2),
-            Substitutions (Scale_Chords (Init_Scale)(2)).Sub (1)),
+            Substitutions (Scale_Chords (Init_Scale)(2)).Sub (1),
+            4),
 
       4 => (Init_Scale_Root + Scales (Init_Scale)(3),
-            Substitutions (Scale_Chords (Init_Scale)(3)).Sub (1)),
+            Substitutions (Scale_Chords (Init_Scale)(3)).Sub (1),
+            4),
 
       5 => (Init_Scale_Root + Scales (Init_Scale)(4),
-            Substitutions (Scale_Chords (Init_Scale)(4)).Sub (1)),
+            Substitutions (Scale_Chords (Init_Scale)(4)).Sub (1),
+            4),
 
       6 => (Init_Scale_Root + Scales (Init_Scale)(5),
-            Substitutions (Scale_Chords (Init_Scale)(5)).Sub (1)),
+            Substitutions (Scale_Chords (Init_Scale)(5)).Sub (1),
+            4),
 
       7 => (Init_Scale_Root + Scales (Init_Scale)(6),
-            Substitutions (Scale_Chords (Init_Scale)(6)).Sub (1)),
+            Substitutions (Scale_Chords (Init_Scale)(6)).Sub (1),
+            4),
 
       8 => (Init_Scale_Root + Scales (Init_Scale)(0),
-            Substitutions (Scale_Chords (Init_Scale)(0)).Sub (3)),
+            Substitutions (Scale_Chords (Init_Scale)(0)).Sub (3),
+            4),
 
       9 => (Init_Scale_Root + Scales (Init_Scale)(0),
-            Substitutions (Scale_Chords (Init_Scale)(0)).Sub (2)),
+            Substitutions (Scale_Chords (Init_Scale)(0)).Sub (2),
+            4),
 
       10 => (Init_Scale_Root + Scales (Init_Scale)(1),
-            Substitutions (Scale_Chords (Init_Scale)(1)).Sub (2)),
+             Substitutions (Scale_Chords (Init_Scale)(1)).Sub (2),
+             4),
 
       11 => (Init_Scale_Root + Scales (Init_Scale)(2),
-            Substitutions (Scale_Chords (Init_Scale)(2)).Sub (2)),
+             Substitutions (Scale_Chords (Init_Scale)(2)).Sub (2),
+             4),
 
       12 => (Init_Scale_Root + Scales (Init_Scale)(3),
-            Substitutions (Scale_Chords (Init_Scale)(3)).Sub (2)),
+             Substitutions (Scale_Chords (Init_Scale)(3)).Sub (2),
+             4),
 
       13 => (Init_Scale_Root + Scales (Init_Scale)(4),
-            Substitutions (Scale_Chords (Init_Scale)(4)).Sub (2)),
+             Substitutions (Scale_Chords (Init_Scale)(4)).Sub (2),
+             4),
 
       14 => (Init_Scale_Root + Scales (Init_Scale)(5),
-            Substitutions (Scale_Chords (Init_Scale)(5)).Sub (2)),
+             Substitutions (Scale_Chords (Init_Scale)(5)).Sub (2),
+             4),
 
       15 => (Init_Scale_Root + Scales (Init_Scale)(6),
-            Substitutions (Scale_Chords (Init_Scale)(6)).Sub (2)),
+             Substitutions (Scale_Chords (Init_Scale)(6)).Sub (2),
+             4),
 
       16 => (Init_Scale_Root + Scales (Init_Scale)(0),
-            Substitutions (Scale_Chords (Init_Scale)(0)).Sub (4))
+             Substitutions (Scale_Chords (Init_Scale)(0)).Sub (4),
+             4)
      );
 
    -----------
@@ -101,25 +125,35 @@ package body WNM.Project.Chord_Sequencer is
       Chain.Stop;
    end Stop;
 
-   ---------------------------
-   -- Signal_End_Of_Pattern --
-   ---------------------------
+   -------------------------
+   -- Signal_End_Of_Chord --
+   -------------------------
 
-   procedure Signal_End_Of_Pattern is
+   procedure Signal_End_Of_Chord is
    begin
-      Chain.Signal_End_Of_Pattern;
+      Chain.Goto_Next;
       Update_Current;
-   end Signal_End_Of_Pattern;
+   end Signal_End_Of_Chord;
 
-   ------------------------
-   -- Signal_Mid_Pattern --
-   ------------------------
+   -------------------
+   -- Step_Callback --
+   -------------------
 
-   procedure Signal_Mid_Pattern is
+   procedure Step_Callback (Step : Sequencer_Steps) is
    begin
-      Chain.Signal_Mid_Pattern;
-      Update_Current;
-   end Signal_Mid_Pattern;
+      if Step in 4 | 8 | 12 | 16 then
+         declare
+            C : constant WNM.Chords := Chain.Playing;
+         begin
+
+            G_Bars_Count := G_Bars_Count + 1;
+
+            if G_Bars_Count >= Natural (G_Project.Chords (C).Duration) then
+               Signal_End_Of_Chord;
+            end if;
+         end;
+      end if;
+   end Step_Callback;
 
    -------------------
    -- Current_Tonic --
@@ -158,6 +192,7 @@ package body WNM.Project.Chord_Sequencer is
    procedure Update_Current is
       C : constant WNM.Chords := Chain.Playing;
    begin
+      G_Bars_Count := 0;
       C_Tonic := G_Project.Chords (C).Tonic;
       C_Chord_Name := G_Project.Chords (C).Name;
       C_Chord := C_Tonic + WNM.Chord_Settings.Chords (C_Chord_Name);
@@ -166,4 +201,6 @@ package body WNM.Project.Chord_Sequencer is
 begin
    --  Set default values for chords
    G_Project.Chords := Init_Chords;
+
+   Step_Event_Broadcast.Register (Step_Listener'Access);
 end WNM.Project.Chord_Sequencer;

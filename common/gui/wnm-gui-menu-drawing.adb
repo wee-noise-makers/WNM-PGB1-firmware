@@ -422,6 +422,26 @@ package body WNM.GUI.Menu.Drawing is
              Str         => Val);
    end Draw_Value_Left;
 
+   --------------------
+   -- Draw_Value_Pos --
+   --------------------
+
+   procedure Draw_Value_Pos (Val      : String;
+                             Pos      : Natural;
+                             Selected : Boolean := False)
+   is
+      X : Integer := Pos;
+   begin
+      if Selected then
+         Screen.Draw_Line ((X - 1, Select_Line_Y),
+                           (X + Val'Length * 6, Select_Line_Y));
+      end if;
+
+      Print (X_Offset    => X,
+             Y_Offset    => Value_Text_Y,
+             Str         => Val);
+   end Draw_Value_Pos;
+
    -------------------
    -- Draw_CC_Value --
    -------------------

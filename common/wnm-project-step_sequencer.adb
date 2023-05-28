@@ -30,6 +30,7 @@ with WNM.UI; use WNM.UI;
 with WNM.MIDI_Queues;
 with WNM.Coproc;
 with WNM.Project.Chord_Sequencer;
+with WNM.Step_Event_Broadcast;
 with WNM.MIDI_Clock;
 with HAL;                   use HAL;
 
@@ -548,17 +549,10 @@ package body WNM.Project.Step_Sequencer is
 
          Process_Step (Pattern_Sequencer.Playing, Playing_Step);
 
-         if Current_Playing_Step = 8 then
-            Pattern_Sequencer.Signal_Mid_Pattern;
-            Chord_Sequencer.Signal_Mid_Pattern;
-            WNM.Project.Chord_Sequencer.Signal_Mid_Pattern;
-            Arpeggiator.Signal_Mid_Pattern;
+         WNM.Step_Event_Broadcast.Broadcast (Current_Playing_Step);
 
-         elsif Current_Playing_Step = Sequencer_Steps'Last then
-
-            Pattern_Sequencer.Signal_End_Of_Pattern;
-            Chord_Sequencer.Signal_End_Of_Pattern;
-            Arpeggiator.Signal_End_Of_Pattern;
+         if Current_Playing_Step = Sequencer_Steps'Last then
+            Pattern_Sequencer.Goto_Next;
          end if;
 
          if (WNM.UI.FX_On (B2) or else WNM.UI.FX_On (B3))

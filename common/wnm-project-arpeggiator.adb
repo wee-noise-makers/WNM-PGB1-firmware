@@ -21,8 +21,14 @@
 
 with WNM.Chord_Settings;
 with WNM.Project.Chord_Sequencer;
+with WNM.Step_Event_Broadcast;
 
 package body WNM.Project.Arpeggiator is
+
+   procedure Step_Callback (Step : Sequencer_Steps);
+
+   Step_Listener : aliased Step_Event_Broadcast.Listener
+     (Step_Callback'Access);
 
    type Arp_Pattern is array (Natural range <>) of
      WNM.Chord_Settings.Chord_Index_Range;
@@ -113,10 +119,17 @@ package body WNM.Project.Arpeggiator is
       end loop;
    end Signal_End_Of_Pattern;
 
-   ------------------------
-   -- Signal_Mid_Pattern --
-   ------------------------
+   -------------------
+   -- Step_Callback --
+   -------------------
 
-   procedure Signal_Mid_Pattern is null;
+   procedure Step_Callback (Step : Sequencer_Steps) is
+   begin
+      if Step = 16 then
+         Signal_End_Of_Pattern;
+      end if;
+   end Step_Callback;
 
+begin
+   Step_Event_Broadcast.Register (Step_Listener'Access);
 end WNM.Project.Arpeggiator;

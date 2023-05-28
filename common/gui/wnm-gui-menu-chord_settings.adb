@@ -48,8 +48,9 @@ package body WNM.GUI.Menu.Chord_Settings is
 
    function To_Top (S : Sub_Settings) return Top_Settings
    is (case S is
-          when WNM.Project.Tonic => Chord_Type,
-          when WNM.Project.Name => Chord_Type);
+          when WNM.Project.Tonic    => Chord_Type,
+          when WNM.Project.Name     => Chord_Type,
+          when WNM.Project.Duration => Chord_Type);
 
    ----------
    -- Draw --
@@ -66,6 +67,8 @@ package body WNM.GUI.Menu.Chord_Settings is
       Tonic : constant MIDI.MIDI_Key := WNM.Project.Selected_Tonic;
       Name : constant WNM.Chord_Settings.Chord_Name :=
         WNM.Project.Selected_Name;
+      Duration : constant WNM.Project.Chord_Bar_Duration :=
+        WNM.Project.Selected_Duration;
 
       Notes : constant WNM.Chord_Settings.Chord_Notes :=
         Tonic + WNM.Chord_Settings.Chords (Name);
@@ -80,8 +83,13 @@ package body WNM.GUI.Menu.Chord_Settings is
             Draw_MIDI_Note (Tonic,
                             This.Current_Setting = WNM.Project.Tonic);
 
-            Draw_Value_Left (WNM.Chord_Settings.Img (Name),
-                             This.Current_Setting = WNM.Project.Name);
+            Draw_Value_Pos (WNM.Chord_Settings.Img (Name),
+                            WNM.GUI.Menu.Drawing.Box_Center.X - 30,
+                            This.Current_Setting = WNM.Project.Name);
+
+            Draw_Value_Pos (Duration'Img & "Bars",
+                            WNM.GUI.Menu.Drawing.Box_Center.X + 18,
+                            This.Current_Setting = WNM.Project.Duration);
 
             declare
                X : Natural := Menu.Drawing.Box_Left + 5;

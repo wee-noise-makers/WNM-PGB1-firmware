@@ -44,8 +44,10 @@ package WNM.Gen_Chain_Sequencer is
    function Playing return Keyboard_Value;
    function Is_In_Sequence (K : Keyboard_Value) return Boolean;
 
-   procedure Signal_End_Of_Pattern;
-   procedure Signal_Mid_Pattern;
+   procedure Goto_Next;
+   --  Call this procedure to request a change to the next element of the
+   --  chain. If a new chain is cued, the new chain will start playing. If
+   --  there is only one element in the chain, this has no effect.
 
    procedure Save
      (Output : in out File_System.LEB128_File_Out.Instance'Class);

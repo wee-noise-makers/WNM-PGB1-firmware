@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2022 Fabien Chouteau                    --
+--                     Copyright (C) 2023 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,24 +19,23 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Gen_Chain_Sequencer;
-with WNM.Chord_Settings; use WNM.Chord_Settings;
+package WNM.Step_Event_Broadcast is
 
-package WNM.Project.Chord_Sequencer is
+   type Callback is access procedure (Step : Sequencer_Steps);
 
-   package Chain is new WNM.Gen_Chain_Sequencer;
+   type Listener (CB : not null Callback) is private;
+   type Listener_Acess is access all Listener;
 
-   procedure Start;
-   procedure Stop;
+   procedure Register (Acc : not null Listener_Acess);
 
-   function Current_Tonic return MIDI.MIDI_Key;
-   function Current_Chord_Name return Chord_Name;
-   function Current_Chord_Intervals return Chord_Intervals;
-   function Current_Chord return Chord_Notes;
+   procedure Broadcast (Step : Sequencer_Steps);
 
-   pragma Inline (Current_Tonic);
-   pragma Inline (Current_Chord_Name);
-   pragma Inline (Current_Chord_Intervals);
-   pragma Inline (Current_Chord);
+private
 
-end WNM.Project.Chord_Sequencer;
+   type Listener (CB : not null Callback) is record
+      Next : Listener_Acess := null;
+   end record;
+
+   Head : Listener_Acess := null;
+
+end WNM.Step_Event_Broadcast;

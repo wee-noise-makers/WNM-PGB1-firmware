@@ -64,18 +64,18 @@ package body WNM.Gen_Chain_Sequencer is
       S.Sequence_Of_Pattern (S.Sequence_Of_Pattern'First) := K;
    end Start;
 
-   ---------------------------
-   -- Signal_End_Of_Pattern --
-   ---------------------------
+   ---------------
+   -- Goto_Next --
+   ---------------
 
-   procedure Signal_End_Of_Pattern (S : in out Pattern_Seq) is
+   procedure Goto_Next (S : in out Pattern_Seq) is
    begin
       if S.Playing >= S.Last_In then
          S.Playing := S.Sequence_Of_Pattern'First;
       else
          S.Playing := S.Playing + 1;
       end if;
-   end Signal_End_Of_Pattern;
+   end Goto_Next;
 
    ----------
    -- Play --
@@ -236,11 +236,11 @@ package body WNM.Gen_Chain_Sequencer is
    function Is_In_Sequence (K : Keyboard_Value) return Boolean
    is (Sequences (Seq_Flip). Is_In_Sequence (K));
 
-   ---------------------------
-   -- Signal_End_Of_Pattern --
-   ---------------------------
+   ---------------
+   -- Goto_Next --
+   ---------------
 
-   procedure Signal_End_Of_Pattern is
+   procedure Goto_Next is
    begin
       if Cue_Next then
 
@@ -254,20 +254,11 @@ package body WNM.Gen_Chain_Sequencer is
          when Stop =>
             null;
          when Play_Loop =>
-            Signal_End_Of_Pattern (Sequences (Seq_Flip));
+            Goto_Next (Sequences (Seq_Flip));
          end case;
       end if;
 
-   end Signal_End_Of_Pattern;
-
-   ------------------------
-   -- Signal_Mid_Pattern --
-   ------------------------
-
-   procedure Signal_Mid_Pattern is
-   begin
-      null;
-   end Signal_Mid_Pattern;
+   end Goto_Next;
 
    ----------
    -- Save --

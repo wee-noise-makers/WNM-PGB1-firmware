@@ -379,6 +379,9 @@ package body WNM.Project.Storage is
                   when Name =>
                      Output.Push (Out_UInt (Chord.Name'Enum_Rep));
 
+                  when Duration =>
+                     Output.Push (Out_UInt (Chord.Duration));
+
                end case;
 
                if Output.Status /= Ok then
@@ -556,6 +559,7 @@ package body WNM.Project.Storage is
       procedure Read is new File_In.Read_Gen_Mod (MIDI.MIDI_Key);
       procedure Read is new File_In.Read_Gen_Enum
         (WNM.Chord_Settings.Chord_Name);
+      procedure Read is new File_In.Read_Gen_Int (Chord_Bar_Duration);
 
       C_Id : Chords;
       S : Chord_Setting_Kind;
@@ -584,8 +588,9 @@ package body WNM.Project.Storage is
             exit when not Success;
 
             case S is
-               when Tonic  => Read (Input, Chord.Tonic);
-               when Name      => Read (Input, Chord.Name);
+               when Tonic    => Read (Input, Chord.Tonic);
+               when Name     => Read (Input, Chord.Name);
+               when Duration => Read (Input, Chord.Duration);
             end case;
 
             exit when Input.Status /= Ok;

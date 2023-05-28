@@ -105,7 +105,7 @@ package body WNM.GUI.Menu.Step_Settings is
                when Project.Repeat_Rate =>
                   Draw_Title ("Repeat Rate", "");
                when others =>
-                  raise Program_Error;
+                  null;
             end case;
 
             Draw_Value (Repeat (Step)'Img,
