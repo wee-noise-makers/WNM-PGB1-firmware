@@ -34,6 +34,7 @@ package body WNM.Synth.Drive_Voice is
                      Left   : in out Tresses.Mono_Buffer;
                      Right  : in out Tresses.Mono_Buffer)
    is
+      Gain  : constant Param_Range := This.Params (P_Gain);
       Drive : constant Param_Range := This.Params (P_Drive);
       Pan   : constant Param_Range := This.Params (P_Pan);
 
@@ -69,7 +70,7 @@ package body WNM.Synth.Drive_Voice is
           (DSP.Clip_S16 ((S32 (Level) + S32 (Param_Range'Last - R_Ratio))));
 
    begin
-      Tresses.FX.Overdrive.Process (Left, L_Drive, L_Level);
-      Tresses.FX.Overdrive.Process (Right, R_Drive, R_Level);
+      Tresses.FX.Overdrive.Process (Left, Gain, L_Drive, L_Level);
+      Tresses.FX.Overdrive.Process (Right, Gain, R_Drive, R_Level);
    end Render;
 end WNM.Synth.Drive_Voice;
