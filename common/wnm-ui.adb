@@ -28,6 +28,8 @@ with WNM.GUI.Menu;
 with WNM.GUI.Menu.Root;
 with WNM.LEDs;
 with WNM.Time;
+with WNM.UI.Logs;
+
 with HAL; use HAL;
 
 with WNM.GUI.Popup;
@@ -89,6 +91,8 @@ package body WNM.UI is
 
    procedure Signal_Event (B : Button; Evt : Buttton_Event) is
    begin
+      WNM.UI.Logs.Log_Button_Event (B, Evt);
+
       if GUI.Menu.In_Menu and then Evt = On_Press then
          if B = Encoder_L then
             GUI.Menu.On_Event ((Kind => GUI.Menu.Left_Press));
@@ -675,7 +679,14 @@ package body WNM.UI is
       --------------
 
       L_Enco := WNM_HAL.Left_Encoder;
+      if L_Enco /= 0 then
+         WNM.UI.Logs.Log_Left_Encoder (L_Enco);
+      end if;
+
       R_Enco := WNM_HAL.Right_Encoder;
+      if R_Enco /= 0 then
+         WNM.UI.Logs.Log_Right_Encoder (R_Enco);
+      end if;
 
       case Current_Input_Mode is
          when Volume_BPM_Mute | Volume_BPM_Solo =>

@@ -1,10 +1,13 @@
 with Ada.Synchronous_Task_Control;
+with GNAT.Bounded_Buffers;
+with System;
 
 with Sf;
 with Sf.Window.Keyboard; use Sf.Window.Keyboard;
 with Sf.Graphics.Color;
 
 with WNM_Configuration; use WNM_Configuration;
+with WNM.UI;
 
 with Interfaces; use Interfaces;
 
@@ -74,5 +77,24 @@ package ASFML_Sim is
      (others => Sf.Graphics.Color.sfTransparent);
 
    procedure Take_Screenshot (Path : String);
+
+   -- User input logs --
+   type Input_Event_Kind is (Button, Left_Encoder, Right_Encoder);
+
+   type Input_Event (Kind : Input_Event_Kind := Button) is record
+      case Kind is
+         when Button =>
+            B : WNM_Configuration.Button;
+            Evt : WNM.UI.Buttton_Event;
+         when Left_Encoder | Right_Encoder =>
+            Delt : Integer;
+      end case;
+   end record;
+
+   package Input_Event_Buffers
+   is new GNAT.Bounded_Buffers (Input_Event);
+
+   User_Input_Event_Logs : Input_Event_Buffers.Bounded_Buffer
+     (2048, System.Priority'Last);
 
 end ASFML_Sim;

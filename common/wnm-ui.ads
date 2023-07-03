@@ -23,6 +23,11 @@ with WNM.Sequence_Copy;
 
 package WNM.UI is
 
+   type Buttton_Event is (On_Press,
+                          On_Long_Press,
+                          On_Release,
+                          Waiting_For_Long_Press);
+
    procedure Update;
 
    procedure Update_LEDs;
@@ -57,11 +62,6 @@ package WNM.UI is
    Copy_T : WNM.Sequence_Copy.Copy_Transaction;
 
 private
-
-   type Buttton_Event is (On_Press,
-                          On_Long_Press,
-                          On_Release,
-                          Waiting_For_Long_Press);
 
    function Has_Long_Press (B : Button) return Boolean;
    --  Can this button trigger a On_Long_Press event?

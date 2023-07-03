@@ -21,20 +21,6 @@
 
 package body WNM.LEDs is
 
-   Hue_To_RGB : constant array (Hue) of RGB_Rec :=
-     (Red          => (255, 000, 000),
-      Rose         => (255, 000, 128),
-      Magenta      => (255, 000, 255),
-      Violet       => (128, 000, 255),
-      Blue         => (000, 000, 255),
-      Azure        => (000, 128, 255),
-      Cyan         => (000, 255, 255),
-      Spring_Green => (000, 255, 128),
-      Green        => (000, 255, 000),
-      Chartreuse   => (128, 255, 000),
-      Yellow       => (255, 255, 000),
-      Orange       => (255, 128, 000));
-
    G_Color : RGB_Rec := (255, 255, 255);
 
    -------------

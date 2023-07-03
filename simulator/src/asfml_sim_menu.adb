@@ -2,10 +2,10 @@ with Sf.Graphics; use Sf.Graphics;
 
 with Sf.Graphics.Text;
 with Sf.Graphics.Color;
-
+with Sf.System.Vector2;
 with Sf.Window.Event; use Sf.Window.Event;
 with Sf.Window.Keyboard; use Sf.Window.Keyboard;
-with Sf.Graphics.RenderWindow; use Sf.Graphics.RenderWindow;
+with Sf.Graphics.RenderTexture; use Sf.Graphics.RenderTexture;
 with Sf.Graphics.RectangleShape; use Sf.Graphics.RectangleShape;
 
 with ASFML_Util; use ASFML_Util;
@@ -86,17 +86,26 @@ package body ASFML_SIM_Menu is
    -- Render --
    ------------
 
-   procedure Render (Window : Sf.Graphics.sfRenderWindow_Ptr;
+   procedure Render (Window : Sf.Graphics.sfRenderTexture_Ptr;
                      Font : Sf.Graphics.sfFont_Ptr)
    is
       use Sf.Graphics.Text;
+
+      Menu_Pos : constant Sf.System.Vector2.sfVector2f := (0.0, 0.0);
+
+      Menu_Size : constant Sf.System.Vector2.sfVector2u := getSize (Window);
+      Width : constant Float := Float (Menu_Size.x);
+      Height : constant Float := Float (Menu_Size.y);
+
    begin
+      clear (Window, Sf.Graphics.Color.sfBlack);
+
       --  Background
       setOutlineColor (Rect, Sf.Graphics.Color.sfWhite);
       setFillColor (Rect, Sf.Graphics.Color.sfBlack);
-      setOutlineThickness (Rect, 4.0);
-      setSize (Rect, Menu_Size);
-      setPosition (Rect, Menu_Pos);
+      setOutlineThickness (Rect, 2.0);
+      setSize (Rect, (Width - 4.0, Height - 4.0));
+      setPosition (Rect, (Menu_Pos.x + 2.0, Menu_Pos.y + 2.0));
       drawRectangleShape (Window, Rect);
 
       --  Title
@@ -109,7 +118,7 @@ package body ASFML_SIM_Menu is
 
       --  Error Message
       if Ada.Strings.Unbounded.Length (Error_Message) /= 0 then
-         setPosition (Text, Menu_Pos + (10.0, Menu_Size.y - 100.0));
+         setPosition (Text, Menu_Pos + (10.0, Width - 100.0));
          setCharacterSize (Text, 12);
          setFont (Text, Font);
          setString (Text, "Error: " &
@@ -119,7 +128,7 @@ package body ASFML_SIM_Menu is
       end if;
 
       --  Help
-      setPosition (Text, Menu_Pos + (10.0, Menu_Size.y - 15.0));
+      setPosition (Text, Menu_Pos + (10.0, Width - 15.0));
       setCharacterSize (Text, 12);
       setFont (Text, Font);
       setString (Text, "(Keyboard arrows to navigate, Enter to select)");
