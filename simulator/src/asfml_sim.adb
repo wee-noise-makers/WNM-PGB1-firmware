@@ -120,6 +120,9 @@ package body ASFML_Sim is
                   elsif Event.key.code = sfKeyF1 then
                      Sim_Window.Toggle_Side_Panel;
 
+                  elsif Event.key.code = Change_Keyboard_Layout_Key then
+                     Next (Current_Layout);
+
                   elsif Event.key.code = sfKeyRight then
                      Encoder_Left := (if Event.key.shift then 2 else 1);
                   elsif Event.key.code = sfKeyLeft then

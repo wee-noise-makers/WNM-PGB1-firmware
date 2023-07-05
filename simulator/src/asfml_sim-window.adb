@@ -173,32 +173,93 @@ package body ASFML_Sim.Window is
 
    function Key_Image (K : Sf.Window.Keyboard.sfKeyCode) return String
    is ("[" & (case K is
-          when sfKeyW => "W",
-          when sfKeyE => "E",
-          when sfKeyR => "R",
-          when sfKeyT => "T",
-          when sfKeyY => "Y",
-          when sfKeyU => "U",
-          when sfKeyI => "I",
-          when sfKeyO => "O",
-          when sfKeyS => "S",
+          when sfKeyA => "A",
+          when sfKeyB => "B",
+          when sfKeyC => "C",
           when sfKeyD => "D",
+          when sfKeyE => "E",
           when sfKeyF => "F",
           when sfKeyG => "G",
           when sfKeyH => "H",
+          when sfKeyI => "I",
           when sfKeyJ => "J",
           when sfKeyK => "K",
           when sfKeyL => "L",
-          when sfKeyEnter => "Enter",
-          when sfKeyBackslash => "\",
-          when sfKeyNum9 => "9",
-          when sfKeyEqual => "=",
-          when sfKeyA => "A",
+          when sfKeyM => "M",
+          when sfKeyN => "N",
+          when sfKeyO => "O",
+          when sfKeyP => "P",
           when sfKeyQ => "Q",
-          when sfKeyDash => "-",
+          when sfKeyR => "R",
+          when sfKeyS => "S",
+          when sfKeyT => "T",
+          when sfKeyU => "U",
+          when sfKeyV => "V",
+          when sfKeyW => "W",
+          when sfKeyX => "X",
+          when sfKeyY => "Y",
+          when sfKeyZ => "Z",
+          when sfKeyEscape    => "Esc",
+          when sfKeyLControl  => "L-Ctrl",
+          when sfKeyLShift    => "L-Shift",
+          when sfKeyLAlt      => "L-Alt",
+          when sfKeyLSystem   => "L-Mod",
+          when sfKeyRControl  => "R-Ctrl",
+          when sfKeyRShift    => "R-Shift",
+          when sfKeyRAlt      => "R-Alt",
+          when sfKeyRSystem   => "R-Mod",
+          when sfKeyMenu      => "Menu",
+          when sfKeyLBracket  => "[",
+          when sfKeyRBracket  => "]",
+          when sfKeySemicolon => ";",
+          when sfKeyComma     => ",",
+          when sfKeyPeriod    => ".",
+          when sfKeyQuote     => """",
+          when sfKeySlash     => "/",
+          when sfKeyBackslash => "\",
+          when sfKeyTilde     => "~",
+          when sfKeyEqual     => "=",
+          when sfKeyHyphen    => "-",
+          when sfKeySpace     => "Space",
+          when sfKeyEnter     => "Enter",
+          when sfKeyBack      => "<-",
+          when sfKeyTab       => "Tab",
+          when sfKeyPageUp    => "Page-Up",
+          when sfKeyPageDown  => "Page-Down",
+          when sfKeyEnd       => "End",
+          when sfKeyHome      => "Home",
+          when sfKeyInsert    => "Ins",
+          when sfKeyDelete    => "Del",
+          when sfKeyAdd       => "+",
+          when sfKeySubtract  => "-",
+          when sfKeyMultiply  => "*",
+          when sfKeyDivide    => "/",
+          when sfKeyLeft      => "Left",
+          when sfKeyRight     => "Right",
+          when sfKeyUp        => "Up",
+          when sfKeyDown      => "Down",
           when sfKeyNum0 => "0",
           when sfKeyNum1 => "1",
           when sfKeyNum2 => "2",
+          when sfKeyNum3 => "3",
+          when sfKeyNum4 => "4",
+          when sfKeyNum5 => "5",
+          when sfKeyNum6 => "6",
+          when sfKeyNum7 => "7",
+          when sfKeyNum8 => "8",
+          when sfKeyNum9 => "9",
+          when sfKeyF1   => "F1",
+          when sfKeyF2   => "F2",
+          when sfKeyF3   => "F3",
+          when sfKeyF4   => "F4",
+          when sfKeyF5   => "F5",
+          when sfKeyF6   => "F6",
+          when sfKeyF7   => "F7",
+          when sfKeyF8   => "F8",
+          when sfKeyF9   => "F9",
+          when sfKeyF10  => "F10",
+          when sfKeyF11  => "F11",
+          when sfKeyF12  => "F12",
           when others => "UNKNOWN KEY EVT"
       ) & "]");
 
@@ -437,10 +498,11 @@ package body ASFML_Sim.Window is
              when Left_Encoder  => "L" & Evt.Delt'Img,
              when Right_Encoder => "R" & Evt.Delt'Img);
 
-      Line_Height : constant := 25.0;
+      Line_Height : constant := 30.0;
       Max_Line_Length : constant := 25;
-      Max_Nbr_Lines : constant := 15;
+      Max_Nbr_Lines : constant := 11;
       Botton : constant Float := Float (getSize (W).y) - Line_Height;
+      Top : constant Float := Botton - Float (Max_Nbr_Lines * Line_Height);
       Left : constant Float := 10.0;
 
       Y : Float := Botton;
@@ -454,6 +516,11 @@ package body ASFML_Sim.Window is
          User_Input_Event_Logs.Remove (Evt);
          Log_Button_Event (Evt);
       end loop;
+
+      --  Keyboard Layout
+      Draw_Text (This, W, (Left, Top - Float (Line_Height)),
+                 "Keyboard Layout [F2]: " & Img (Current_Layout),
+                 Centered => False);
 
       for Elt of reverse User_Input_List loop
          if not Elt.Is_Empty then
@@ -594,24 +661,18 @@ package body ASFML_Sim.Window is
    ------------
 
    procedure Resize (This : in out Instance) is
+      Data_Target_W : constant Float := Float (This.Data_Panel.Size.x);
+      Data_Target_H : constant Float := Float (This.Data_Panel.Size.y);
 
-      --  Size of the rendering area
-      Width  : constant Float := Float (BG_Width);
-      Height : constant Float := Float (BG_Height);
-
-      Data_Target_W : constant Float := Width / 3.0;
-      Data_Target_H : constant Float := Height;
-
-      Sim_Target_W : constant Float := Width;
-      Sim_Target_H : constant Float := Height;
+      Sim_Target_W : constant Float := Float (This.Sim_Panel.Size.x);
+      Sim_Target_H : constant Float := Float (This.Sim_Panel.Size.y);
    begin
-
       This.Data_Panel.Resize (X          => Sim_Target_W,
                               Y          => 0.0,
                               Width      => Data_Target_W,
                               Height     => Data_Target_H,
                               Keep_Ratio => True,
-                              Center     => False);
+                              Center     => True);
 
       This.Sim_Panel.Resize (X      => 0.0,
                              Y      => 0.0,

@@ -12,6 +12,7 @@ with WNM.UI;
 with Interfaces; use Interfaces;
 
 with Stopwatch;
+with Enum_Next;
 
 package ASFML_Sim is
 
@@ -26,34 +27,114 @@ package ASFML_Sim is
      aliased Sf.sfUint8
        := (others => 0);
 
-   To_SFML_Evt : array (WNM_Configuration.Button) of
-     Sf.Window.Keyboard.sfKeyCode
-     := (B1 => sfKeyW,
-         B2 => sfKeyE,
-         B3 => sfKeyR,
-         B4 => sfKeyT,
-         B5 => sfKeyY,
-         B6 => sfKeyU,
-         B7 => sfKeyI,
-         B8 => sfKeyO,
-         B9 => sfKeyS,
-         B10 => sfKeyD,
-         B11 => sfKeyF,
-         B12 => sfKeyG,
-         B13 => sfKeyH,
-         B14 => sfKeyJ,
-         B15 => sfKeyK,
-         B16 => sfKeyL,
-         Rec => sfKeyEnter,
-         Play => sfKeyBackslash,
-         Menu => sfKeyNum9,
-         Func => sfKeyEqual,
-         Step_Button => sfKeyA,
-         Track_Button => sfKeyQ,
-         Pattern_Button => sfKeyDash,
-         Chord_Button => sfKeyNum0,
-         Encoder_L => sfKeyNum1,
-         Encoder_R => sfKeyNum2);
+   type Keyboard_Layout is array (WNM_Configuration.Button) of
+     Sf.Window.Keyboard.sfKeyCode;
+
+   type Sim_Keyboard_Layout_Kind is (Qwerty_Layout,
+                                     Azerty_Layout,
+                                     Qwertz_Layout
+                                    );
+
+   function Img (L : Sim_Keyboard_Layout_Kind) return String
+   is (case L is
+          when Qwerty_Layout => "Qwerty",
+          when Azerty_Layout => "Azerty",
+          when Qwertz_Layout => "Qwertz");
+
+   package Sim_Keyboard_Layout_Kind_Next
+   is new Enum_Next (Sim_Keyboard_Layout_Kind, Wrap => True);
+   use Sim_Keyboard_Layout_Kind_Next;
+
+   Current_Layout : Sim_Keyboard_Layout_Kind := Qwerty_Layout;
+
+   Layout_Maps : constant
+     array (Sim_Keyboard_Layout_Kind) of Keyboard_Layout :=
+     (Qwerty_Layout => (B1             => sfKeyW,
+                        B2             => sfKeyE,
+                        B3             => sfKeyR,
+                        B4             => sfKeyT,
+                        B5             => sfKeyY,
+                        B6             => sfKeyU,
+                        B7             => sfKeyI,
+                        B8             => sfKeyO,
+                        B9             => sfKeyS,
+                        B10            => sfKeyD,
+                        B11            => sfKeyF,
+                        B12            => sfKeyG,
+                        B13            => sfKeyH,
+                        B14            => sfKeyJ,
+                        B15            => sfKeyK,
+                        B16            => sfKeyL,
+                        Rec            => sfKeyRShift,
+                        Play           => sfKeyEnter,
+                        Menu           => sfKeyNum9,
+                        Func           => sfKeyEqual,
+                        Step_Button    => sfKeyA,
+                        Track_Button   => sfKeyQ,
+                        Pattern_Button => sfKeyDash,
+                        Chord_Button   => sfKeyNum0,
+                        Encoder_L      => sfKeyNum1,
+                        Encoder_R      => sfKeyNum2),
+      Azerty_Layout => (B1             => sfKeyZ,
+                        B2             => sfKeyE,
+                        B3             => sfKeyR,
+                        B4             => sfKeyT,
+                        B5             => sfKeyY,
+                        B6             => sfKeyU,
+                        B7             => sfKeyI,
+                        B8             => sfKeyO,
+                        B9             => sfKeyS,
+                        B10            => sfKeyD,
+                        B11            => sfKeyF,
+                        B12            => sfKeyG,
+                        B13            => sfKeyH,
+                        B14            => sfKeyJ,
+                        B15            => sfKeyK,
+                        B16            => sfKeyL,
+                        Rec            => sfKeyRShift,
+                        Play           => sfKeyEnter,
+                        Menu           => sfKeyNum9,
+                        Func           => sfKeyEqual,
+                        Step_Button    => sfKeyQ,
+                        Track_Button   => sfKeyA,
+                        Pattern_Button => sfKeyLBracket,
+                        Chord_Button   => sfKeyNum0,
+                        Encoder_L      => sfKeyNum1,
+                        Encoder_R      => sfKeyNum2),
+      Qwertz_Layout => (B1             => sfKeyW,
+                        B2             => sfKeyE,
+                        B3             => sfKeyR,
+                        B4             => sfKeyT,
+                        B5             => sfKeyZ,
+                        B6             => sfKeyU,
+                        B7             => sfKeyI,
+                        B8             => sfKeyO,
+                        B9             => sfKeyS,
+                        B10            => sfKeyD,
+                        B11            => sfKeyF,
+                        B12            => sfKeyG,
+                        B13            => sfKeyH,
+                        B14            => sfKeyJ,
+                        B15            => sfKeyK,
+                        B16            => sfKeyL,
+                        Rec            => sfKeyRShift,
+                        Play           => sfKeyEnter,
+                        Menu           => sfKeyNum9,
+                        Func           => sfKeyRBracket,
+                        Step_Button    => sfKeyA,
+                        Track_Button   => sfKeyQ,
+                        Pattern_Button => sfKeyDash,
+                        Chord_Button   => sfKeyNum0,
+                        Encoder_L      => sfKeyNum1,
+                        Encoder_R      => sfKeyNum2)
+     );
+
+   function To_SFML_Evt (B : WNM_Configuration.Button)
+                         return Sf.Window.Keyboard.sfKeyCode
+   is (Layout_Maps (Current_Layout) (B));
+
+   Change_Keyboard_Layout_Key : constant Sf.Window.Keyboard.sfKeyCode :=
+     sfKeyF2;
 
    SFML_Pressed : array (WNM_Configuration.Button) of Boolean :=
      (others => False);
