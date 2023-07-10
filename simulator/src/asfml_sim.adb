@@ -12,7 +12,6 @@ with ASFML_Sim.Window;
 
 with ASFML_SIM_Menu;
 with Ada.Real_Time; use Ada.Real_Time;
-with WNM_HAL;
 
 with Tresses.Resources;
 
@@ -52,6 +51,10 @@ package body ASFML_Sim is
             Elt.R := S16 ((S32 (Elt.R) * S32 (Main_Volume)) / 2**15);
          end loop;
       end;
+
+      if not Audio_Block_Queue.Full then
+         Audio_Block_Queue.Insert (Out_Buffer);
+      end if;
 
    exception
       when E : others =>

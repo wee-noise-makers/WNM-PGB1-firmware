@@ -8,6 +8,7 @@ with Sf.Graphics.Color;
 
 with WNM_Configuration; use WNM_Configuration;
 with WNM.UI;
+with WNM_HAL;
 
 with Interfaces; use Interfaces;
 
@@ -172,10 +173,16 @@ package ASFML_Sim is
       end case;
    end record;
 
-   package Input_Event_Buffers
+   package Input_Event_Queues
    is new GNAT.Bounded_Buffers (Input_Event);
 
-   User_Input_Event_Logs : Input_Event_Buffers.Bounded_Buffer
+   User_Input_Event_Logs : Input_Event_Queues.Bounded_Buffer
      (2048, System.Priority'Last);
+
+   package Audio_Block_Queues
+   is new GNAT.Bounded_Buffers (WNM_HAL.Stereo_Buffer);
+
+   Audio_Block_Queue : Audio_Block_Queues.Bounded_Buffer
+     (1024, System.Priority'Last);
 
 end ASFML_Sim;

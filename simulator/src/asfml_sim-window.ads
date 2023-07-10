@@ -3,11 +3,13 @@ with Sf.Window.Event;
 with Sf.Graphics;
 with Sf.System.Vector2;
 
+private with ASFML_Sim.FFT;
+
 private package ASFML_Sim.Window is
 
    type Instance is tagged private;
 
-   procedure Init (This : in out Instance);
+   procedure Init (This   : in out Instance);
 
    procedure Update (This : in out Instance);
 
@@ -30,11 +32,14 @@ private
 
    type Panel is tagged record
       Enabled : Boolean := True;
-      Render_Texture : Sf.Graphics.sfRenderTexture_Ptr;
-      Sprite : Sf.Graphics.sfSprite_Ptr;
+      Render_Texture : Sf.Graphics.sfRenderTexture_Ptr := null;
+      Sprite : Sf.Graphics.sfSprite_Ptr := null;
+      Shader : Sf.Graphics.sfShader_Ptr := null;
    end record;
 
-   procedure Init (This : in out Panel; Width, Height : sfUint32);
+   procedure Init (This          : in out Panel;
+                   Width, Height :        sfUint32;
+                   Shader        :        Sf.Graphics.sfShader_Ptr := null);
 
    procedure Set_Enable (This : in out Panel; Enable : Boolean := True);
 
@@ -47,6 +52,10 @@ private
                      Keep_Ratio : Boolean := False);
 
    function Size (This : Panel) return Sf.System.Vector2.sfVector2u;
+
+   Analyzer_FFT_Size : constant := 4096;
+   subtype Bin_Range is Natural range 1 .. Analyzer_FFT_Size / 2;
+   type Bin_Array is array (Bin_Range) of Float;
 
    type Instance
    is tagged
@@ -61,14 +70,26 @@ private
               Letter_Box_View : Sf.Graphics.sfView_Ptr;
 
               Sim_Panel : Panel;
-              Data_Panel : Panel;
               Menu_Panel : Panel;
+              Data_Panel : Panel;
+              Keylog_Panel : Panel;
 
               BG_Texture : Sf.Graphics.sfTexture_Ptr;
               BG_Sprite : Sf.Graphics.sfSprite_Ptr;
 
               OLED_Texture : Sf.Graphics.sfTexture_Ptr;
               OLED_Sprite : Sf.Graphics.sfSprite_Ptr;
+
+              Wave_Left, Wave_Right : Sf.Graphics.sfVertexArray_Ptr;
+
+              Glow_Shader : Sf.Graphics.sfShader_Ptr;
+
+              FFT : ASFML_Sim.FFT.Instance (Analyzer_FFT_Size,
+                                            Analyzer_FFT_Size / 3);
+              Wave_FFT, Wave_FFT_Peak : Sf.Graphics.sfVertexArray_Ptr;
+              Energy        : Bin_Array := (others => 0.0);
+              Peak_Energy   : Bin_Array := (others => 0.0);
+              Bin_Frequency : Bin_Array := (others => 0.0);
            end record;
 
    procedure Draw_Text

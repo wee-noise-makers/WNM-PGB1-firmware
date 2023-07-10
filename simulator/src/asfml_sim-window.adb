@@ -1,11 +1,15 @@
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Containers.Doubly_Linked_Lists;
+with Ada.Numerics.Elementary_Functions;
 with GNAT.OS_Lib;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with ASFML_Sim_Resources;
 with AAA.Strings;
 
+with Interfaces.C.Strings;
+
 with Sf.Graphics; use Sf.Graphics;
+with Sf.Graphics.BlendMode;
 with Sf.Window.VideoMode; use Sf.Window.VideoMode;
 with Sf.Graphics.Sprite; use Sf.Graphics.Sprite;
 with Sf.Graphics.Color; use Sf.Graphics.Color;
@@ -14,6 +18,10 @@ with Sf.Graphics.RenderTexture; use Sf.Graphics.RenderTexture;
 with Sf.Graphics.View; use Sf.Graphics.View;
 with Sf.Graphics.RenderWindow; use Sf.Graphics.RenderWindow;
 with Sf.Graphics.RectangleShape; use Sf.Graphics.RectangleShape;
+with Sf.Graphics.Vertex;
+with Sf.Graphics.RenderStates;
+with Sf.Graphics.VertexArray; use Sf.Graphics.VertexArray;
+with Sf.Graphics.PrimitiveType;
 with Sf.Graphics.Font;
 with Sf.Graphics.Text;
 with Sf.Graphics.Image;
@@ -21,11 +29,15 @@ with Sf.Window.Window; use Sf.Window.Window;
 with Sf.Window.Event; use Sf.Window.Event;
 with Sf.System.Vector2; use Sf.System.Vector2;
 with Sf.Graphics.Rect; use Sf.Graphics.Rect;
+with Sf.Graphics.Transform; use Sf.Graphics.Transform;
 
 with ASFML_Util; use ASFML_Util;
 with ASFML_SIM_Menu;
+with ASFML_Sim.Window.Shaders;
+
 with WNM_HAL;
 with WNM.LEDs;
+
 package body ASFML_Sim.Window is
 
    BG_Width : constant := 1236;
@@ -333,10 +345,103 @@ package body ASFML_Sim.Window is
       end if;
       --------
 
+      --  Waveform
+      This.Wave_Left := create;
+      This.Wave_Right := create;
+      resize (This.Wave_Left, 1024);
+      resize (This.Wave_Right, getVertexCount (This.Wave_Left));
+      setPrimitiveType (This.Wave_Left,
+                        Sf.Graphics.PrimitiveType.sfLinesStrip);
+      setPrimitiveType (This.Wave_Right,
+                        Sf.Graphics.PrimitiveType.sfLinesStrip);
+      for Index in 0 .. getVertexCount (This.Wave_Left) - 1 loop
+         declare
+            L : Sf.Graphics.Vertex.sfVertex
+              renames getVertex (This.Wave_Left, Index).all;
+            R : Sf.Graphics.Vertex.sfVertex
+              renames getVertex (This.Wave_Right, Index).all;
+         begin
+            L.color := sfMagenta;
+            L.position := (Float (Index), 50.0);
+            R.color := sfWhite;
+            R.position := (Float (Index), 50.0);
+         end;
+      end loop;
+      ------------
+
+      --  FFT
+
+      --  Pre-compute bin frequencies
+      for N in Bin_Range loop
+         This.Bin_Frequency (N) :=
+           (Float (N) - 1.0) *
+             Float (WNM_Configuration.Audio.Sample_Frequency) /
+           Float (Analyzer_FFT_Size);
+      end loop;
+
+      This.Wave_FFT := create;
+      resize (This.Wave_FFT, sfSize_t (This.FFT.Window_Size / 2));
+      setPrimitiveType (This.Wave_FFT,
+                        Sf.Graphics.PrimitiveType.sfLinesStrip);
+
+      This.Wave_FFT_Peak := create;
+      resize (This.Wave_FFT_Peak, sfSize_t (This.FFT.Window_Size / 2));
+      setPrimitiveType (This.Wave_FFT_Peak,
+                        Sf.Graphics.PrimitiveType.sfLinesStrip);
+
+      for Index in 0 .. getVertexCount (This.Wave_FFT) - 1 loop
+         declare
+            F : Sf.Graphics.Vertex.sfVertex
+              renames getVertex (This.Wave_FFT, Index).all;
+            P : Sf.Graphics.Vertex.sfVertex
+              renames getVertex (This.Wave_FFT_Peak, Index).all;
+         begin
+            F.color := sfBlue;
+            P.color := sfYellow;
+         end;
+      end loop;
+      -------
+
+      --  Shaders
+      declare
+         use Interfaces.C.Strings;
+         function createFromMemory_chars_ptr
+           (vertexShaderFilename : chars_ptr;
+            geometryShaderFilename : chars_ptr;
+            fragmentShaderFilename : chars_ptr) return sfShader_Ptr;
+         pragma Import
+           (C, createFromMemory_chars_ptr, "sfShader_createFromMemory");
+
+         procedure setCurrentTextureUniform_chars_ptr
+           (shader : sfShader_Ptr;
+                                             name : chars_ptr);
+         pragma Import
+           (C, setCurrentTextureUniform_chars_ptr,
+               "sfShader_setCurrentTextureUniform");
+      begin
+         This.Glow_Shader := createFromMemory_chars_ptr
+           (Null_Ptr,
+            Null_Ptr,
+            New_String (ASFML_Sim.Window.Shaders.Glow));
+
+         if This.Glow_Shader = null then
+            Put_Line ("Could not create shader");
+            GNAT.OS_Lib.OS_Exit (1);
+         end if;
+
+         setCurrentTextureUniform_chars_ptr
+           (This.Glow_Shader, New_String ("source"));
+      end;
+
+      -----------
+
       This.Rect := create;
 
       This.Sim_Panel.Init (BG_Width, BG_Height);
-      This.Data_Panel.Init ((BG_Width / 10) * 4, BG_Height);
+      This.Data_Panel.Init ((BG_Width / 10) * 4, BG_Height / 2,
+                            This.Glow_Shader);
+
+      This.Keylog_Panel.Init ((BG_Width / 10) * 4, BG_Height / 2);
 
       This.Menu_Panel.Init (sfUint32 (Menu_Size.x), sfUint32 (Menu_Size.y));
       This.Menu_Panel.Set_Enable (False);
@@ -501,7 +606,7 @@ package body ASFML_Sim.Window is
       Line_Height : constant := 30.0;
       Max_Line_Length : constant := 25;
       Max_Nbr_Lines : constant := 11;
-      Botton : constant Float := Float (getSize (W).y) - Line_Height;
+      Botton : constant Float := Float (getSize (W).y) - Line_Height - 10.0;
       Top : constant Float := Botton - Float (Max_Nbr_Lines * Line_Height);
       Left : constant Float := 10.0;
 
@@ -569,6 +674,153 @@ package body ASFML_Sim.Window is
       end loop;
    end Draw_User_Input_Logs;
 
+   ----------------
+   -- Update_FFT --
+   ----------------
+
+   procedure Update_FFT (This                         : in out Instance;
+                         FFT_Y, FFT_Height, FFT_Width :        Float)
+   is
+      use Ada.Numerics.Elementary_Functions;
+   begin
+      --  Compute and current energy
+      for Index in Bin_Range loop
+         declare
+            Amp : constant Float := This.FFT.Amp (Index);
+         begin
+            This.Energy (Index) := Float'Max (Amp, 0.01);
+         end;
+      end loop;
+
+      --  Compute decaying peak energy
+      for Index in Bin_Range loop
+         declare
+            Local_Average : Float := 0.0;
+            Num_Points : Natural := 0;
+         begin
+            --  Compute local average
+            for K in Integer'Max (Bin_Range'First, Index - 3) ..
+              Integer'Min (Bin_Range'Last, Index + 3)
+            loop
+               Local_Average := Local_Average + This.Energy (K);
+               Num_Points := Num_Points + 1;
+            end loop;
+            Local_Average := Local_Average / Float (Num_Points);
+
+            --  Decay
+            This.Peak_Energy (Index) :=
+              This.Peak_Energy (Index) * 0.95;
+
+            --  Check for new peak
+            if Local_Average > This.Peak_Energy (Index) then
+               This.Peak_Energy (Index) := Local_Average;
+            end if;
+
+         end;
+      end loop;
+
+      for Index in 0 .. getVertexCount (This.Wave_FFT) - 1 loop
+         declare
+            ---------------
+            -- Db_Offset --
+            ---------------
+
+            function Db_Offset (Amp : Float) return Float is
+               Max_Db : constant Float := 50.0;
+               Min_Db : constant Float := -40.0;
+
+               Range_Db : constant Float := Max_Db - Min_Db;
+            begin
+               return
+                 (((20.0 * Log (Amp, 10.0)) - Min_Db) / Range_Db) * FFT_Height;
+            end Db_Offset;
+
+            -----------------
+            -- Freq_Offset --
+            -----------------
+
+            function Freq_Offset (F : Float) return Float is
+               Max_Freq : constant Float :=
+                 This.Bin_Frequency (Bin_Range'Last);
+               Min_Freq : constant Float := 20.0;
+
+               Range_Freq : constant Float := abs (Max_Freq - Min_Freq);
+            begin
+               if F <= Min_Freq then
+                  return 0.0;
+               end if;
+               return (Log (F - Min_Freq, 2.0) / Log (Range_Freq, 2.0)) *
+                 FFT_Width;
+            end Freq_Offset;
+         begin
+            getVertex (This.Wave_FFT, Index).position.y :=
+              FFT_Y - Db_Offset (This.Energy (Natural (Index) + 1));
+            getVertex (This.Wave_FFT, Index).position.x :=
+              Freq_Offset (This.Bin_Frequency (Natural (Index) + 1));
+
+            getVertex (This.Wave_FFT_Peak, Index).position.y :=
+              FFT_Y - Db_Offset (This.Peak_Energy (Natural (Index) + 1));
+            getVertex (This.Wave_FFT_Peak, Index).position.x :=
+              Freq_Offset (This.Bin_Frequency (Natural (Index) + 1));
+         end;
+      end loop;
+   end Update_FFT;
+
+   -------------------
+   -- Draw_Waveform --
+   -------------------
+
+   procedure Draw_Waveform (This : in out Instance;
+                            W : Sf.Graphics.sfRenderTexture_Ptr)
+   is
+      Block : WNM_HAL.Stereo_Buffer;
+
+      Frame_L, Frame_R : Float;
+
+      Index : sfSize_t := 0;
+      Vert_Count : constant sfSize_t := getVertexCount (This.Wave_Left);
+
+      Wave_Height : constant Float := (Float (BG_Height) / 4.0) / 2.0;
+      Wave_Amplitude : constant Float := Wave_Height / 1.0;
+      L_Y : constant Float := Wave_Height / 2.0;
+      R_Y : constant Float := Wave_Height + Wave_Height / 2.0;
+
+      FFT_Width : constant Float := Float (getSize (W).x);
+      FFT_Height : constant Float := Float (BG_Height) / 4.0;
+      FFT_Y : constant Float := Wave_Height * 2.0 + FFT_Height;
+   begin
+
+      while not  Audio_Block_Queue.Empty and then Index < Vert_Count loop
+         Audio_Block_Queue.Remove (Block);
+
+         for S16_Frame of Block loop
+
+            Frame_L := Float (S16_Frame.L) / Float (WNM_HAL.Mono_Point'Last);
+            Frame_R := Float (S16_Frame.R) / Float (WNM_HAL.Mono_Point'Last);
+
+            This.FFT.Push_Frame ((Frame_L + Frame_R) / 2.0);
+
+            if Index < Vert_Count then
+
+               getVertex (This.Wave_Left, Index).position.y :=
+                 L_Y + Wave_Amplitude * Frame_L;
+
+               getVertex (This.Wave_Right, Index).position.y :=
+                 R_Y + Wave_Amplitude * Frame_R;
+
+               Index := Index + 1;
+            end if;
+         end loop;
+      end loop;
+
+      Update_FFT (This, FFT_Y, FFT_Height, FFT_Width);
+
+      drawVertexArray (W, This.Wave_Right);
+      drawVertexArray (W, This.Wave_Left);
+      drawVertexArray (W, This.Wave_FFT);
+      drawVertexArray (W, This.Wave_FFT_Peak);
+   end Draw_Waveform;
+
    ------------
    -- Update --
    ------------
@@ -579,10 +831,15 @@ package body ASFML_Sim.Window is
 
       --  Draw Data
       clear (This.Data_Panel.Render_Texture, sfBlack);
-      Draw_User_Input_Logs (This, This.Data_Panel.Render_Texture);
-
+      Draw_Waveform (This, This.Data_Panel.Render_Texture);
       This.Data_Panel.Draw (This.Window);
       ------------
+
+      --  Keylog
+      clear (This.Keylog_Panel.Render_Texture, sfBlack);
+      Draw_User_Input_Logs (This, This.Keylog_Panel.Render_Texture);
+      This.Keylog_Panel.Draw (This.Window);
+      ----------
 
       --  Draw Sim
       clear (This.Sim_Panel.Render_Texture, sfBlack);
@@ -664,6 +921,9 @@ package body ASFML_Sim.Window is
       Data_Target_W : constant Float := Float (This.Data_Panel.Size.x);
       Data_Target_H : constant Float := Float (This.Data_Panel.Size.y);
 
+      Keylog_Target_W : constant Float := Float (This.Keylog_Panel.Size.x);
+      Keylog_Target_H : constant Float := Float (This.Keylog_Panel.Size.y);
+
       Sim_Target_W : constant Float := Float (This.Sim_Panel.Size.x);
       Sim_Target_H : constant Float := Float (This.Sim_Panel.Size.y);
    begin
@@ -673,6 +933,13 @@ package body ASFML_Sim.Window is
                               Height     => Data_Target_H,
                               Keep_Ratio => True,
                               Center     => True);
+
+      This.Keylog_Panel.Resize (X          => Sim_Target_W,
+                                Y          => Data_Target_H,
+                                Width      => Keylog_Target_W,
+                                Height     => Keylog_Target_H,
+                                Keep_Ratio => True,
+                                Center     => True);
 
       This.Sim_Panel.Resize (X      => 0.0,
                              Y      => 0.0,
@@ -777,8 +1044,16 @@ package body ASFML_Sim.Window is
    is
    begin
       if This.Enabled then
-         display (This.Render_Texture);
-         drawSprite (Window, This.Sprite);
+         declare
+            RS : aliased Sf.Graphics.RenderStates.sfRenderStates
+              := (texture   => null,
+                  shader    => This.Shader,
+                  blendMode => Sf.Graphics.BlendMode.sfBlendAlpha,
+                  transform => Identity);
+         begin
+            display (This.Render_Texture);
+            drawSprite (Window, This.Sprite, RS'Unrestricted_Access);
+         end;
       end if;
    end Draw;
 
@@ -786,8 +1061,13 @@ package body ASFML_Sim.Window is
    -- Init --
    ----------
 
-   procedure Init (This : in out Panel; Width, Height : sfUint32) is
+   procedure Init (This          : in out Panel;
+                   Width, Height :        sfUint32;
+                   Shader        :        Sf.Graphics.sfShader_Ptr := null)
+   is
    begin
+      This.Shader := Shader;
+
       This.Render_Texture := create (Width, Height, False);
       if This.Render_Texture = null then
          Put_Line ("Could not create render texture");
