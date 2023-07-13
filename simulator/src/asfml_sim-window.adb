@@ -40,6 +40,8 @@ with WNM.LEDs;
 
 package body ASFML_Sim.Window is
 
+   FFT_Skip_Bins : constant := 2;
+
    BG_Width : constant := 1236;
    BG_Height : constant := 804;
 
@@ -371,21 +373,17 @@ package body ASFML_Sim.Window is
 
       --  FFT
 
-      --  Pre-compute bin frequencies
-      for N in Bin_Range loop
-         This.Bin_Frequency (N) :=
-           (Float (N) - 1.0) *
-             Float (WNM_Configuration.Audio.Sample_Frequency) /
-           Float (Analyzer_FFT_Size);
-      end loop;
+      This.FFT.Init (WNM_Configuration.Audio.Sample_Frequency);
 
       This.Wave_FFT := create;
-      resize (This.Wave_FFT, sfSize_t (This.FFT.Window_Size / 2));
+      resize (This.Wave_FFT,
+              sfSize_t (This.FFT.Window_Size / 2) - FFT_Skip_Bins);
       setPrimitiveType (This.Wave_FFT,
                         Sf.Graphics.PrimitiveType.sfLinesStrip);
 
       This.Wave_FFT_Peak := create;
-      resize (This.Wave_FFT_Peak, sfSize_t (This.FFT.Window_Size / 2));
+      resize (This.Wave_FFT_Peak,
+              sfSize_t (This.FFT.Window_Size / 2) - FFT_Skip_Bins);
       setPrimitiveType (This.Wave_FFT_Peak,
                         Sf.Graphics.PrimitiveType.sfLinesStrip);
 
@@ -682,25 +680,28 @@ package body ASFML_Sim.Window is
                          FFT_Y, FFT_Height, FFT_Width :        Float)
    is
       use Ada.Numerics.Elementary_Functions;
+
+      subtype Display_Bins
+        is Bin_Range range Bin_Range'First + FFT_Skip_Bins .. Bin_Range'Last;
    begin
       --  Compute and current energy
       for Index in Bin_Range loop
          declare
             Amp : constant Float := This.FFT.Amp (Index);
          begin
-            This.Energy (Index) := Float'Max (Amp, 0.01);
+            This.Energy (Index) := Float'Max (Amp, 0.000001);
          end;
       end loop;
 
       --  Compute decaying peak energy
-      for Index in Bin_Range loop
+      for Index in Display_Bins loop
          declare
             Local_Average : Float := 0.0;
             Num_Points : Natural := 0;
          begin
             --  Compute local average
-            for K in Integer'Max (Bin_Range'First, Index - 3) ..
-              Integer'Min (Bin_Range'Last, Index + 3)
+            for K in Integer'Max (Display_Bins'First, Index - 5) ..
+              Integer'Min (Display_Bins'Last, Index + 5)
             loop
                Local_Average := Local_Average + This.Energy (K);
                Num_Points := Num_Points + 1;
@@ -719,51 +720,74 @@ package body ASFML_Sim.Window is
          end;
       end loop;
 
-      for Index in 0 .. getVertexCount (This.Wave_FFT) - 1 loop
-         declare
-            ---------------
-            -- Db_Offset --
-            ---------------
+      declare
+         Max_Freq : constant Float :=
+           This.FFT.Center_Frequency (Display_Bins'Last);
+         Min_Freq : constant Float :=
+           This.FFT.Center_Frequency (Display_Bins'First);
 
-            function Db_Offset (Amp : Float) return Float is
-               Max_Db : constant Float := 50.0;
-               Min_Db : constant Float := -40.0;
+         ---------------
+         -- Db_Offset --
+         ---------------
 
-               Range_Db : constant Float := Max_Db - Min_Db;
-            begin
-               return
-                 (((20.0 * Log (Amp, 10.0)) - Min_Db) / Range_Db) * FFT_Height;
-            end Db_Offset;
+         function Db_Offset (Amp : Float) return Float is
+            Max_Db : constant Float := 50.0;
+            Min_Db : constant Float := -40.0;
 
-            -----------------
-            -- Freq_Offset --
-            -----------------
-
-            function Freq_Offset (F : Float) return Float is
-               Max_Freq : constant Float :=
-                 This.Bin_Frequency (Bin_Range'Last);
-               Min_Freq : constant Float := 20.0;
-
-               Range_Freq : constant Float := abs (Max_Freq - Min_Freq);
-            begin
-               if F <= Min_Freq then
-                  return 0.0;
-               end if;
-               return (Log (F - Min_Freq, 2.0) / Log (Range_Freq, 2.0)) *
-                 FFT_Width;
-            end Freq_Offset;
+            Range_Db : constant Float := Max_Db - Min_Db;
          begin
-            getVertex (This.Wave_FFT, Index).position.y :=
-              FFT_Y - Db_Offset (This.Energy (Natural (Index) + 1));
-            getVertex (This.Wave_FFT, Index).position.x :=
-              Freq_Offset (This.Bin_Frequency (Natural (Index) + 1));
+            return
+              (((20.0 * Log (Amp, 10.0)) - Min_Db) / Range_Db) * FFT_Height;
+         end Db_Offset;
 
-            getVertex (This.Wave_FFT_Peak, Index).position.y :=
-              FFT_Y - Db_Offset (This.Peak_Energy (Natural (Index) + 1));
-            getVertex (This.Wave_FFT_Peak, Index).position.x :=
-              Freq_Offset (This.Bin_Frequency (Natural (Index) + 1));
-         end;
-      end loop;
+         -----------------
+         -- Freq_Offset --
+         -----------------
+
+         function Freq_Offset (F : Float) return Float is
+            Range_Freq : constant Float := abs (Max_Freq - Min_Freq);
+         begin
+            if F <= Min_Freq then
+               return 0.0;
+            end if;
+
+            return (Log (F - Min_Freq, 2.0) / Log (Range_Freq, 2.0)) *
+              (FFT_Width - 5.0);
+         end Freq_Offset;
+
+         function Offset_To_Alpha (Offset : Float) return sfUint8
+         is (sfUint8 (Float'Max (0.0,
+             Float'Min (255.0,
+               255.0 * Offset / FFT_Height / 1.5))));
+
+      begin
+
+         for Index in 0 .. getVertexCount (This.Wave_FFT) - 1 loop
+            declare
+               Bin : constant Natural := Natural (Index) + 1 + FFT_Skip_Bins;
+
+               Energy_Vert : Vertex.sfVertex
+               renames getVertex (This.Wave_FFT, Index).all;
+
+               Energy_Offset : constant Float := Db_Offset (This.Energy (Bin));
+
+               Peak_Vert : Vertex.sfVertex
+               renames getVertex (This.Wave_FFT_Peak, Index).all;
+               Peak_Offset : constant Float := Db_Offset (This.Peak_Energy (Bin));
+
+            begin
+               Energy_Vert.position.y := FFT_Y - Energy_Offset;
+               Energy_Vert.position.x :=
+                 Freq_Offset (This.FFT.Center_Frequency (Bin));
+               Energy_Vert.color.a := Offset_To_Alpha (Energy_Offset);
+
+               Peak_Vert.position.y := FFT_Y - Peak_Offset;
+               Peak_Vert.position.x :=
+                 Freq_Offset (This.FFT.Center_Frequency (Bin));
+               Peak_Vert.color.a := Offset_To_Alpha (Peak_Offset);
+            end;
+         end loop;
+      end;
    end Update_FFT;
 
    -------------------
@@ -829,17 +853,19 @@ package body ASFML_Sim.Window is
    begin
       clear (This.Window, sfBlack);
 
-      --  Draw Data
-      clear (This.Data_Panel.Render_Texture, sfBlack);
-      Draw_Waveform (This, This.Data_Panel.Render_Texture);
-      This.Data_Panel.Draw (This.Window);
-      ------------
+      if This.Show_Data_Panel then
+         --  Draw Data
+         clear (This.Data_Panel.Render_Texture, sfBlack);
+         Draw_Waveform (This, This.Data_Panel.Render_Texture);
+         This.Data_Panel.Draw (This.Window);
+         ------------
 
-      --  Keylog
-      clear (This.Keylog_Panel.Render_Texture, sfBlack);
-      Draw_User_Input_Logs (This, This.Keylog_Panel.Render_Texture);
-      This.Keylog_Panel.Draw (This.Window);
-      ----------
+         --  Keylog
+         clear (This.Keylog_Panel.Render_Texture, sfBlack);
+         Draw_User_Input_Logs (This, This.Keylog_Panel.Render_Texture);
+         This.Keylog_Panel.Draw (This.Window);
+         ----------
+      end if;
 
       --  Draw Sim
       clear (This.Sim_Panel.Render_Texture, sfBlack);

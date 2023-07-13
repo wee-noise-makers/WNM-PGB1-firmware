@@ -6,7 +6,7 @@ private package ASFML_Sim.Window.Shaders is
    Glow : constant String :=
      "#version 120" & ASCII.LF &
      "uniform sampler2D currentTexture;" & ASCII.LF &
-     "uniform float sigma = 3.0;" & ASCII.LF &
+     "uniform float sigma = 2.5;" & ASCII.LF &
      "uniform float glowMultiplier = 0.7;" & ASCII.LF &
      "uniform float width = 1.0015;" & ASCII.LF &
      "const int KERNEL_SIZE = 5;" & ASCII.LF &

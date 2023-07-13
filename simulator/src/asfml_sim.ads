@@ -183,6 +183,6 @@ package ASFML_Sim is
    is new GNAT.Bounded_Buffers (WNM_HAL.Stereo_Buffer);
 
    Audio_Block_Queue : Audio_Block_Queues.Bounded_Buffer
-     (1024, System.Priority'Last);
+     (128, System.Priority'Last);
 
 end ASFML_Sim;

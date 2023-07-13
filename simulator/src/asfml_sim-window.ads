@@ -85,11 +85,10 @@ private
               Glow_Shader : Sf.Graphics.sfShader_Ptr;
 
               FFT : ASFML_Sim.FFT.Instance (Analyzer_FFT_Size,
-                                            Analyzer_FFT_Size / 3);
+                                            Analyzer_FFT_Size / 4);
               Wave_FFT, Wave_FFT_Peak : Sf.Graphics.sfVertexArray_Ptr;
               Energy        : Bin_Array := (others => 0.0);
               Peak_Energy   : Bin_Array := (others => 0.0);
-              Bin_Frequency : Bin_Array := (others => 0.0);
            end record;
 
    procedure Draw_Text
