@@ -53,14 +53,14 @@ package body WNM.GUI.Menu.Pattern_Settings is
    overriding
    procedure Draw (This : in out Pattern_Settings_Menu)
    is
-      Top_Setting : constant Top_Settings := To_Top (This.Current_Setting);
+      Sub : constant Sub_Settings := This.Current_Setting;
+      Top : constant Top_Settings := To_Top (Sub);
    begin
       Draw_Menu_Box ("Pattern settings",
                      Count => Top_Settings_Count,
-                     Index => Top_Settings'Pos
-                       (To_Top (This.Current_Setting)));
+                     Index => Top_Settings'Pos (Top));
 
-      case Top_Setting is
+      case Top is
          when Top_Nothing =>
             Draw_Title ("Nothing here...", "");
       end case;

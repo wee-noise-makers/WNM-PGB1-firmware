@@ -60,7 +60,7 @@ package WNM.Project is
 
    function Img (T : Trigger_Kind) return String
    is (case T is
-          when None         => "None",
+          when None         => "Never",
           when Always       => "Always",
           when Fill         => "Fill",
           when Not_Fill     => "Not Fill",

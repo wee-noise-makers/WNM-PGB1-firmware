@@ -63,7 +63,8 @@ package body WNM.GUI.Menu.Chord_Settings is
       use WNM.Chord_Settings;
       use WNM.Project;
 
-      Top_Setting : constant Top_Settings := To_Top (This.Current_Setting);
+      Sub : constant Sub_Settings := This.Current_Setting;
+      Top : constant Top_Settings := To_Top (Sub);
 
       Tonic : constant MIDI.MIDI_Key := WNM.Project.Selected_Tonic;
       Name : constant WNM.Chord_Settings.Chord_Name :=
@@ -76,21 +77,20 @@ package body WNM.GUI.Menu.Chord_Settings is
    begin
       Draw_Menu_Box ("Chord settings",
                      Count => Top_Settings_Count,
-                     Index => Top_Settings'Pos
-                       (To_Top (This.Current_Setting)));
+                     Index => Top_Settings'Pos (Top));
 
-      case Top_Setting is
+      case Top is
          when Chord_Type =>
             Draw_MIDI_Note (Tonic,
-                            This.Current_Setting = WNM.Project.Tonic);
+                            Sub = WNM.Project.Tonic);
 
             Draw_Value_Pos (WNM.Chord_Settings.Img (Name),
                             WNM.GUI.Menu.Drawing.Box_Center.X - 32,
-                            This.Current_Setting = WNM.Project.Name);
+                            Sub = WNM.Project.Name);
 
             Draw_Value_Pos (Utils.Trim (Duration'Img) & "Stps",
                             WNM.GUI.Menu.Drawing.Box_Center.X + 21,
-                            This.Current_Setting = WNM.Project.Duration);
+                            Sub = WNM.Project.Duration);
 
             declare
                X : Natural := Menu.Drawing.Box_Left + 5;

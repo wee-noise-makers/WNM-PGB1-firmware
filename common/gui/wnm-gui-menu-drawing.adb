@@ -226,7 +226,7 @@ package body WNM.GUI.Menu.Drawing is
    is
       use WNM.Project;
 
-      DX : constant Integer := Box_Center.X - 3;
+      DX : constant Integer := Box_Center.X + 10;
       DY : constant := Box_Top + 22;
    begin
       if Selected then

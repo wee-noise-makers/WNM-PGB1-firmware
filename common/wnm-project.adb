@@ -175,7 +175,7 @@ package body WNM.Project is
         MIDI.MIDI_Key (Chord_Settings.Chord_Index_Range'Last) + 1;
 
       function Oct_Offset return String
-      is (case S.Oct is
+      is ((case S.Oct is
              when -8 => "-8",
              when -7 => "-7",
              when -6 => "-6",
@@ -184,7 +184,7 @@ package body WNM.Project is
              when -3 => "-3",
              when -2 => "-2",
              when -1 => "-1",
-             when  0 => " 0",
+             when  0 => "+0",
              when  1 => "+1",
              when  2 => "+2",
              when  3 => "+3",
@@ -192,14 +192,14 @@ package body WNM.Project is
              when  5 => "+5",
              when  6 => "+6",
              when  7 => "+7",
-             when  8 => "+8");
+             when  8 => "+8") & "oct");
 
    begin
       case S.Note_Mode is
          when Note =>
             return Key_Img (S.Note);
          when Chord =>
-            return Oct_Offset & " oct";
+            return Oct_Offset;
          when Note_In_Chord =>
             return
               (case S.Note is
@@ -210,7 +210,7 @@ package body WNM.Project is
                   when Chord_Len .. MIDI.MIDI_Key'Last =>
                     raise Program_Error) & Oct_Offset;
          when Arp =>
-            return "Arp" & Oct_Offset;
+            return Oct_Offset;
       end case;
    end Note_Img;
 

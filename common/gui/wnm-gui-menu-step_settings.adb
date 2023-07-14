@@ -65,12 +65,13 @@ package body WNM.GUI.Menu.Step_Settings is
      (This : in out Step_Settings_Menu)
    is
       Step : constant Sequencer_Steps := Editing_Step;
-      Top_Setting : constant Top_Settings := To_Top (This.Current_Setting);
+      Sub  : constant Sub_Settings := This.Current_Setting;
+      Top_Setting : constant Top_Settings := To_Top (Sub);
    begin
       Draw_Menu_Box
         ("Step settings",
          Count => Top_Settings_Count,
-         Index => Top_Settings'Pos (To_Top (This.Current_Setting)));
+         Index => Top_Settings'Pos (Top_Setting));
 
       case Top_Setting is
          when Condition =>
@@ -78,7 +79,7 @@ package body WNM.GUI.Menu.Step_Settings is
             Draw_Value (Project.Img (Project.Trigger));
 
          when Note =>
-            case This.Current_Setting is
+            case Sub is
                when Project.Note =>
                   Draw_Title (Project.Img (Project.Note_Mode), "(A)");
                when Project.Duration =>
@@ -91,16 +92,18 @@ package body WNM.GUI.Menu.Step_Settings is
             end case;
 
             Draw_Value (Project.Note_Img (Step),
-                        Selected => This.Current_Setting = Project.Note);
+                        Selected => Sub = Project.Note);
 
             Draw_Duration (Project.Duration (Step),
-                           This.Current_Setting = Project.Duration);
+                           Sub = Project.Duration);
 
-            Draw_MIDI_Val (Project.Velocity (Step),
-                           This.Current_Setting = Velo);
+            Draw_CC_Value (Id => D,
+                           Value => Project.Velocity (Step),
+                           Label =>  "VEL",
+                           Selected => Sub = Velo);
 
          when Repeat =>
-            case This.Current_Setting is
+            case Sub is
                when Repeat =>
                   Draw_Title ("Repeat Count", "");
                when Project.Repeat_Rate =>
@@ -110,16 +113,16 @@ package body WNM.GUI.Menu.Step_Settings is
             end case;
 
             Draw_Value (Repeat (Step)'Img,
-                        Selected => This.Current_Setting = Repeat);
+                        Selected => Sub = Repeat);
 
             Draw_Value_Left
               (Project.Img (Repeat_Rate (Step)),
-               Selected => This.Current_Setting = Project.Repeat_Rate);
+               Selected => Sub = Project.Repeat_Rate);
 
          when CC_Value =>
             declare
                Selected : constant Project.CC_Id :=
-                 (case This.Current_Setting is
+                 (case Sub is
                      when CC_A => Project.A,
                      when CC_B => Project.B,
                      when CC_C => Project.C,

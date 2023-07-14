@@ -61,8 +61,6 @@ package body WNM.GUI.Menu is
    begin
       if Stack_Cnt /= 0 then
          Stack (Stack_Cnt).Draw;
-      else
-         raise Program_Error with "We are not in the menu...";
       end if;
    end Draw;
 
