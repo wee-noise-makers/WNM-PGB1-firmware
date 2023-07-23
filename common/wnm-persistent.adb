@@ -37,9 +37,10 @@ package body WNM.Persistent is
    ----------
 
    procedure Save is
-      Output : File_System.LEB128_File_Out.Instance :=
-        File_System.LEB128_File_Out.Open (Filename);
+      Output : File_System.LEB128_File_Out.Instance;
    begin
+      Output.Open (Filename);
+
       if Output.Status = Ok then
          Output.Push (Out_UInt (P_Last_Project'Enum_Rep));
          Output.Push (Out_UInt (Data.Last_Project));
@@ -62,11 +63,12 @@ package body WNM.Persistent is
       procedure Read_Prj is new Read_Gen_Int (Project.Library.Prj_Index);
       procedure Read_Volume is new Read_Gen_Int (Audio_Volume);
 
-      Input : LEB128_File_In.Instance := LEB128_File_In.Open (Filename);
+      Input : LEB128_File_In.Instance;
       Set : Persistent_Token;
       Raw : In_UInt;
       Success : Boolean;
    begin
+      Input.Open (Filename);
 
       Data := Default;
 

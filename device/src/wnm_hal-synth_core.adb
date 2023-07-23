@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2022 Fabien Chouteau                    --
+--                     Copyright (C) 2023 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,36 +19,57 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with HAL;
+with Noise_Nugget_SDK.Audio;
+with WNM.Tasks;
 
-package WNM.File_System.LEB128_File_Out is
+package body WNM_HAL.Synth_Core is
 
-   type Out_UInt is new HAL.UInt32;
-   Max_Str_Len_In_Storage : constant := 253;
+   Scartch_X_Size  : constant := 4 * 1024;
+   Scartch_X_Start : constant := 16#20040000#;
+   Scartch_X_End   : constant := Scartch_X_Start + Scartch_X_Size;
 
-   type Instance
-   is tagged limited
-   private;
+   procedure Main;
 
-   procedure Open (This : in out Instance; Filename : String);
+   Vector : Integer;
+   pragma Import (C, Vector, "__vectors");
 
-   procedure Close (This : in out Instance);
+   -----------------
+   -- Trap_Vector --
+   -----------------
 
-   function Status (This : Instance) return Storage_Error;
+   function Trap_Vector return HAL.UInt32
+   is (HAL.UInt32 (System.Storage_Elements.To_Integer (Vector'Address)));
 
-   generic
-      type T is (<>);
-   procedure Push_Gen (This : in out Instance; A : T);
+   -------------------
+   -- Stack_Pointer --
+   -------------------
 
-   procedure Push (This : in out Instance; A : Out_UInt);
-   procedure Push (This : in out Instance; A : String);
+   function Stack_Pointer return HAL.UInt32
+   is (Scartch_X_End);
 
-private
+   -----------------
+   -- Entry_Point --
+   -----------------
 
-   type Instance
-   is tagged limited
-           record
-              Error : Storage_Error := Ok;
-           end record;
+   function Entry_Point return HAL.UInt32
+   is (HAL.UInt32 (System.Storage_Elements.To_Integer (Main'Address)));
 
-end WNM.File_System.LEB128_File_Out;
+   ----------
+   -- Main --
+   ----------
+
+   procedure Main is
+   begin
+      if not Noise_Nugget_SDK.Audio.Start
+        (WNM_Configuration.Audio.Sample_Frequency / 2,
+         WNM.Tasks.Synth_Next_Buffer'Access)
+      then
+         raise Program_Error with "MDM";
+      end if;
+
+      Noise_Nugget_SDK.Audio.Set_HP_Volume (0.7, 0.7);
+
+      WNM.Tasks.Synth_Core;
+   end Main;
+
+end WNM_HAL.Synth_Core;

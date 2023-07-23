@@ -420,8 +420,10 @@ package body WNM.Project.Storage is
                   return File_System.Storage_Error
    is
 
-      Output : File_Out.Instance := File_Out.Open (Filename);
+      Output : File_Out.Instance;
    begin
+      Output.Open (Filename);
+
       Size := 0;
 
       if Output.Status = Ok then
@@ -762,10 +764,10 @@ package body WNM.Project.Storage is
                   Size     : out File_System.File_Signed_Size)
                   return File_System.Storage_Error
    is
-      Input : File_In.Instance := File_In.Open (Filename);
-
+      Input : File_In.Instance;
       Token : Token_Kind;
    begin
+      Input.Open (Filename);
       Size := 0;
 
       loop

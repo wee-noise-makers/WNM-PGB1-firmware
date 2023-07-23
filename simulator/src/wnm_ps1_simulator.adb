@@ -1,5 +1,5 @@
 with GNAT.OS_Lib;
-with WNM_PS1_Main;
+with Ada.Real_Time;
 with GNAT.Command_Line; use GNAT.Command_Line;
 with ASFML_Sim;
 with ASFML_SIM_Storage;
@@ -62,6 +62,6 @@ begin
 
    ASFML_Sim.Start;
    ASFML_Sim.Sim_Clock.Release;
-   WNM_PS1_Main;
+   delay until Ada.Real_Time.Time_Last;
 
 end WNM_PS1_Simulator;

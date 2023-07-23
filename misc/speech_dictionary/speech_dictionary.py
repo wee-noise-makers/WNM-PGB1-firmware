@@ -294,14 +294,14 @@ words = [
     'yes',
     'your',
     'zone',
-    
+
     'black',
     'white',
     'green',
     'blue',
     'red',
     'yellow',
-    
+
     'first',
     'last',
     'zero',
@@ -319,7 +319,7 @@ words = [
 
 
 def is_ada_keyword(word):
-    return word in ["abort", "else", "new", "return", "abs", "elsif", "not", 
+    return word in ["abort", "else", "new", "return", "abs", "elsif", "not",
                     "reverse", "abstract", "end", "null", "accept", "entry",
                     "select", "access", "exception", "of", "separate",
                     "aliased", "exit", "or", "some", "all", "others",
@@ -372,10 +372,16 @@ for word in words:
     print(f"           Vocab.{package}.{word.capitalize()}{keyword}'Access", end)
 print("          );")
 
-print("   Image : constant array (WNM.Speech.Word) of not null access String")
+for word in words:
+    id = word.capitalize() + "_Str"
+    print(f"   {id} : aliased constant String := \"{word.capitalize()}\";")
+
+print("   Image : constant array (WNM.Speech.Word)")
+print("     of not null access constant String")
 print("     := (")
 for word in words:
     end = "" if word == last_word else ","
-    print(f"         new String'(\"{word.capitalize()}\")", end)
+    id = word.capitalize() + "_Str"
+    print(f"         {id}'Access{end}")
 print("        );")
 print("end WNM.Speech_Dictionary;")

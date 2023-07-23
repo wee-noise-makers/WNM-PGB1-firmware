@@ -4,10 +4,10 @@ with Ada.Exceptions;
 with GNAT.OS_Lib;
 with Ada.Text_IO; use Ada.Text_IO;
 with Sf.Window.Event; use Sf.Window.Event;
+with HAL;
 
-with WNM.Synth;
 with WNM.GUI.Update;
-
+with WNM.Tasks;
 with ASFML_Sim.Window;
 
 with ASFML_SIM_Menu;
@@ -16,6 +16,8 @@ with Ada.Real_Time; use Ada.Real_Time;
 with Tresses.Resources;
 
 package body ASFML_Sim is
+
+   Last_Buffer : System.Address := System.Null_Address;
 
    ------------- Audio
 
@@ -30,31 +32,50 @@ package body ASFML_Sim is
    procedure RTaudio_Callback (Buf : System.Address;
                                Frames : Interfaces.C.unsigned)
    is
-      In_Buffer : constant WNM_HAL.Stereo_Buffer := (others => (0, 0));
+      use HAL;
+      use System;
 
-      Out_Buffer : WNM_HAL.Stereo_Buffer
-        with Address => Buf;
+      Buffer : System.Address;
+      Len    : UInt32;
+
    begin
       if Frames /= WNM_Configuration.Audio.Samples_Per_Buffer then
          raise Program_Error with "Invalid buffer size from RTAudio: " &
            Frames'Img;
       end if;
 
-      WNM.Synth.Next_Points (Out_Buffer, In_Buffer);
+      loop
+         WNM.Tasks.Synth_Next_Buffer (Buffer, Len);
+         exit when Buffer /= Last_Buffer;
+      end loop;
+
+      Last_Buffer := Buffer;
+
+      if Len /= WNM_HAL.Stereo_Buffer'Length then
+         raise Program_Error with "Invalid buffer size from synth task";
+      end if;
 
       declare
+         Synth_Buffer : WNM_HAL.Stereo_Buffer
+           with Address => Buffer;
+         Out_Buffer : WNM_HAL.Stereo_Buffer
+           with Address => Buf;
+
          subtype S16 is Integer_16;
          subtype S32 is Integer_32;
       begin
-         for Elt of Out_Buffer loop
-            Elt.L := S16 ((S32 (Elt.L) * S32 (Main_Volume)) / 2**15);
-            Elt.R := S16 ((S32 (Elt.R) * S32 (Main_Volume)) / 2**15);
-         end loop;
-      end;
+         for Idx in Out_Buffer'Range loop
+            Out_Buffer (Idx).L :=
+              S16 ((S32 (Synth_Buffer (Idx).L) * S32 (Main_Volume)) / 2**15);
 
-      if not Audio_Block_Queue.Full then
-         Audio_Block_Queue.Insert (Out_Buffer);
-      end if;
+            Out_Buffer (Idx).R :=
+              S16 ((S32 (Synth_Buffer (Idx).R) * S32 (Main_Volume)) / 2**15);
+         end loop;
+
+         if not Audio_Block_Queue.Full then
+            Audio_Block_Queue.Insert (Out_Buffer);
+         end if;
+      end;
 
    exception
       when E : others =>
@@ -66,6 +87,57 @@ package body ASFML_Sim is
       entry Start;
       entry Take_Screenshot (Path : String);
    end Periodic_Update;
+
+   task Seq_1kHz_Task is
+      entry Start;
+   end Seq_1kHz_Task;
+
+   task Core0_Task is
+      entry Start;
+   end Core0_Task;
+
+   task Core1_Task is
+      entry Start;
+   end Core1_Task;
+
+   -------------------
+   -- Seq_1kHz_Task --
+   -------------------
+
+   task body Seq_1kHz_Task is
+      Period : constant Time_Span := Milliseconds (1);
+
+      Next_Release : Time;
+   begin
+      accept Start;
+
+      loop
+         Next_Release := Clock + Period;
+         delay until Next_Release;
+
+         WNM.Tasks.Sequencer_1khz_Tick;
+      end loop;
+   end Seq_1kHz_Task;
+
+   ----------------
+   -- Core0_Task --
+   ----------------
+
+   task body Core0_Task is
+   begin
+      accept Start;
+      WNM.Tasks.Sequencer_Core;
+   end Core0_Task;
+
+   ----------------
+   -- Core1_Task --
+   ----------------
+
+   task body Core1_Task is
+   begin
+      accept Start;
+      WNM.Tasks.Synth_Core;
+   end Core1_Task;
 
    ---------------------
    -- Periodic_Update --
@@ -211,6 +283,9 @@ package body ASFML_Sim is
       Init_Audio;
 
       Periodic_Update.Start;
+      Seq_1kHz_Task.Start;
+      Core0_Task.Start;
+      Core1_Task.Start;
    end Start;
 
    ---------------------

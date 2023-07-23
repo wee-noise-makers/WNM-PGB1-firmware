@@ -29,7 +29,7 @@ package WNM.File_System.LEB128_File_In is
    is tagged limited
    private;
 
-   function Open (Filename : String) return Instance;
+   procedure Open (This : in out Instance; Filename : String);
 
    procedure Close (This : in out Instance);
 

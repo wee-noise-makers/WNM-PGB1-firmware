@@ -8,4 +8,35 @@ maintainers-logins = ["Fabien-Chouteau"]
 
 executables = ["wnm_ps1_device"]
 [[depends-on]]
-rp2040_hal = "^1.6.0"
+rp2040_hal = "^2.0.1"
+tresses = "*"
+lpc_synth = "~0.1.0-dev"
+littlefs = "~0.1.0"
+flux = "~0.1.0-dev"
+noise_nugget_sdk = "*"
+[[pins]]
+flux = { url="https://github.com/Fabien-Chouteau/flux" }
+lpc_synth = { url="https://github.com/Fabien-Chouteau/lpc_synth" }
+littlefs = { url = "https://github.com/Fabien-Chouteau/littlefs-ada", branch="release/0.3" }
+tresses = { path = "../../tresses" }
+midi = { path = "../../midi" }
+noise_nugget_sdk = { path = "../../noise-nugget-ada-sdk" }
+
+[build-switches]
+"*".ada_version = "ada2022"
+
+[gpr-set-externals]
+BBQUEUE_COMPILE_CHECKS = "disabled"
+BBQUEUE_RUNTIME_CHECKS = "disabled"
+BBQUEUE_CONTRACTS = "disabled"
+
+[configuration.values]
+littlefs.Assert = false
+littlefs.Debug = false
+littlefs.Warn = true
+littlefs.Error = true
+littlefs.Trace = false
+# littlefs.No_Malloc = true # Triggers a bug in alr 1.2.1, var set in fsmaker anyway
+tresses.Sample_Rate = "SR44100"
+tresses.Resources_Linker_Section = ".time_critical.tresses_resources"
+flux.Enable_File_IO = false

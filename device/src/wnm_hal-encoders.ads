@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2022 Fabien Chouteau                    --
+--                     Copyright (C) 2023 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,36 +19,12 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with HAL;
+private package WNM_HAL.Encoders is
 
-package WNM.File_System.LEB128_File_Out is
+   function Left return Integer;
+   --  Number of increments since last call
 
-   type Out_UInt is new HAL.UInt32;
-   Max_Str_Len_In_Storage : constant := 253;
+   function Right return Integer;
+   --  Number of increments since last call
 
-   type Instance
-   is tagged limited
-   private;
-
-   procedure Open (This : in out Instance; Filename : String);
-
-   procedure Close (This : in out Instance);
-
-   function Status (This : Instance) return Storage_Error;
-
-   generic
-      type T is (<>);
-   procedure Push_Gen (This : in out Instance; A : T);
-
-   procedure Push (This : in out Instance; A : Out_UInt);
-   procedure Push (This : in out Instance; A : String);
-
-private
-
-   type Instance
-   is tagged limited
-           record
-              Error : Storage_Error := Ok;
-           end record;
-
-end WNM.File_System.LEB128_File_Out;
+end WNM_HAL.Encoders;

@@ -90,7 +90,7 @@ package body WNM is
    ---------
 
    function Img (L : CPU_Load) return String is
-      type Load_Img is delta 0.001 range 0.0 .. 1000.0;
+      type Load_Img is delta 0.001 range 0.0 .. 10000.0;
       --  Use a fixed point type to get a 'Img without
       --  scientific notation...
 

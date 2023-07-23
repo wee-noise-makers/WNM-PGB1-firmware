@@ -81,16 +81,14 @@ package body WNM.File_System.LEB128_File_Out is
    -- Open --
    ----------
 
-   function Open (Filename : String) return Instance is
+   procedure Open (This : in out Instance; Filename : String) is
    begin
-      return Result : Instance do
-         case File_System.Open_Write (Filename) is
-            when File_System.Ok =>
-               Result.Error := Ok;
-            when others =>
-               Result.Error := Unknown_Error;
-         end case;
-      end return;
+      case File_System.Open_Write (Filename) is
+      when File_System.Ok =>
+         This.Error := Ok;
+      when others =>
+         This.Error := Unknown_Error;
+      end case;
    end Open;
 
    -----------

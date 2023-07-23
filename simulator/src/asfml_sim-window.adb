@@ -773,7 +773,8 @@ package body ASFML_Sim.Window is
 
                Peak_Vert : Vertex.sfVertex
                renames getVertex (This.Wave_FFT_Peak, Index).all;
-               Peak_Offset : constant Float := Db_Offset (This.Peak_Energy (Bin));
+               Peak_Offset : constant Float :=
+                 Db_Offset (This.Peak_Energy (Bin));
 
             begin
                Energy_Vert.position.y := FFT_Y - Energy_Offset;
