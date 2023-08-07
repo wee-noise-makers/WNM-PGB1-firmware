@@ -21,6 +21,7 @@ littlefs = { url = "https://github.com/Fabien-Chouteau/littlefs-ada", branch="re
 tresses = { path = "../../tresses" }
 midi = { path = "../../midi" }
 noise_nugget_sdk = { path = "../../noise-nugget-ada-sdk" }
+rp2040_hal = { url="https://github.com/JeremyGrosser/rp2040_hal" }
 
 [build-switches]
 "*".ada_version = "ada2022"

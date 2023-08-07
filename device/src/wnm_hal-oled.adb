@@ -19,8 +19,6 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM_HAL_Settings; use WNM_HAL_Settings;
-
 with HAL;     use HAL;
 with HAL.SPI; use HAL.SPI;
 
@@ -36,6 +34,7 @@ package body WNM_HAL.OLED is
 
    SPI         : RP.SPI.SPI_Port renames RP.Device.SPI_1;
    DMA_Trigger : constant RP.DMA.DMA_Request_Trigger := RP.DMA.SPI1_TX;
+   Screen_SPI_DMA : constant RP.DMA.DMA_Channel_Id := 4;
 
    N_Reset : RP.GPIO.GPIO_Point := (Pin => 8);
    DC      : RP.GPIO.GPIO_Point := (Pin => 9);

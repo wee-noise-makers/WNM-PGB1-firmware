@@ -29,16 +29,15 @@ with HAL; use HAL;
 with RP.GPIO;
 with RP.Timer;
 with RP.Device;
-with RP.PIO; use RP.PIO;
 with RP.Multicore;
 with RP.Multicore.FIFO;
-with RP.PIO.WS2812;
+
+with Noise_Nugget_SDK.WS2812;
+with Noise_Nugget_SDK.Encoders;
+with Noise_Nugget_SDK.Audio;
 
 with WNM_HAL.OLED;
-with WNM_HAL.Encoders;
 with WNM_HAL.Synth_Core;
-
-with WNM_HAL_Settings; use WNM_HAL_Settings;
 
 with Cortex_M.Systick;
 
@@ -73,15 +72,9 @@ package body WNM_HAL is
    -- LEDs --
    ----------
 
-   LED_Pin : aliased RP.GPIO.GPIO_Point := (Pin => 5);
-
-   Number_Of_LEDs : constant := LED_Position'Length;
-   --  subtype LED_ID is Natural range 1 .. Number_Of_LEDs;
-
-   LED_Strip : aliased RP.PIO.WS2812.Strip (LED_Pin'Access,
-                                            WS2812_PIO'Access,
-                                            WS2812_SM,
-                                            Number_Of_LEDs);
+   package LED_Strip is new Noise_Nugget_SDK.WS2812
+     (Pin => 5,
+      Number_Of_LEDs => LED_Position'Length);
 
    procedure Systick;
    pragma Export (ASM, Systick, "isr_systick");
@@ -174,15 +167,19 @@ package body WNM_HAL is
    -- Left_Encoder --
    ------------------
 
-   function Left_Encoder return Integer
-     renames WNM_HAL.Encoders.Left;
+   function Left_Encoder return Integer is
+   begin
+      return Noise_Nugget_SDK.Encoders.Delta_Value (1);
+   end Left_Encoder;
 
    -------------------
    -- Right_Encoder --
    -------------------
 
-   function Right_Encoder return Integer
-     renames WNM_HAL.Encoders.Right;
+   function Right_Encoder return Integer is
+   begin
+      return Noise_Nugget_SDK.Encoders.Delta_Value (2);
+   end Right_Encoder;
 
    ---------
    -- Set --
@@ -190,7 +187,8 @@ package body WNM_HAL is
 
    procedure Set (L : LED; RGB : RGB_Rec) is
    begin
-      LED_Strip.Set_RGB (LED_Position (L), RGB.R, RGB.G, RGB.B);
+      LED_Strip.Set_RGB (LED_Strip.LED_Id (LED_Position (L)),
+                         RGB.R, RGB.G, RGB.B);
    end Set;
 
    ----------------
@@ -243,8 +241,16 @@ package body WNM_HAL is
    -- Set_Main_Volume --
    ---------------------
 
-   procedure Set_Main_Volume (Volume : Audio_Volume)
-   is null;
+   procedure Set_Main_Volume (Volume : Audio_Volume) is
+      Value : constant Float :=
+        Float (Volume) / Float (Audio_Volume'Last);
+
+      SDK_Value : constant Noise_Nugget_SDK.Audio.Audio_Volume :=
+        Noise_Nugget_SDK.Audio.Audio_Volume (Value);
+
+   begin
+      Noise_Nugget_SDK.Audio.Set_HP_Volume (SDK_Value, SDK_Value);
+   end Set_Main_Volume;
 
    ---------
    -- Mix --
@@ -294,28 +300,6 @@ package body WNM_HAL is
          Point := S32 (Out_R (Index)) + S32 (Input (Index));
          Tresses.DSP.Clip_S16 (Point);
          Out_R (Index) := S16 (Point);
-      end loop;
-   end Mix;
-
-   ---------
-   -- Mix --
-   ---------
-
-   procedure Mix (Output      : in out Stereo_Buffer;
-                  In_L, In_R  :        Mono_Buffer)
-   is
-      use Interfaces;
-      use Tresses;
-      Point : S32;
-   begin
-      for Index in Output'Range loop
-         Point := S32 (Output (Index).L) + S32 (In_L (Index));
-         Tresses.DSP.Clip_S16 (Point);
-         Output (Index).L := S16 (Point);
-
-         Point := S32 (Output (Index).R) + S32 (In_R (Index));
-         Tresses.DSP.Clip_S16 (Point);
-         Output (Index).R := S16 (Point);
       end loop;
    end Mix;
 
@@ -408,7 +392,8 @@ package body WNM_HAL is
    is null;
 
 begin
-   LED_Strip.Initialize (ASM_Offset => WS2812_Offset);
+   Noise_Nugget_SDK.Encoders.Initialize (1, 28);
+   Noise_Nugget_SDK.Encoders.Initialize (2, 26);
 
    for IO of B_Cols loop
       IO.Configure (RP.GPIO.Output);
@@ -425,8 +410,7 @@ begin
    Cortex_M.Systick.Configure
      (Cortex_M.Systick.CPU_Clock,
       Generate_Interrupt => True,
-      Reload_Value       =>
-        (UInt24 (WNM_HAL_Settings.XOSC_Frequency) / 1_000) - 1);
+      Reload_Value       => (UInt24 (12_000_000) / 1_000) - 1);
 
    Cortex_M.Systick.Enable;
 

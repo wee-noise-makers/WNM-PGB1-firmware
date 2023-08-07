@@ -62,7 +62,8 @@ package body WNM_HAL.Synth_Core is
    begin
       if not Noise_Nugget_SDK.Audio.Start
         (WNM_Configuration.Audio.Sample_Frequency / 2,
-         WNM.Tasks.Synth_Next_Buffer'Access)
+         Output_Callback => WNM.Tasks.Synth_Next_Buffer'Access,
+         Input_Callback  => null)
       then
          raise Program_Error with "MDM";
       end if;
