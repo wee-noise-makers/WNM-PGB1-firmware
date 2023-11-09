@@ -1,7 +1,10 @@
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
+with HAL;
+
 with FSmaker.Source.File;
 with Simple_Logging;
+with WNM.Sample_Library; use WNM.Sample_Library;
 
 package body ROM_Builder.Sample_Library is
 
@@ -16,26 +19,19 @@ package body ROM_Builder.Sample_Library is
       Src : FSmaker.Source.File.Instance :=
         FSmaker.Source.File.Create (Filename);
 
-      Byte_Index : Natural := Sample_Bytes_Data'First;
+      Points_As_Bytes :
+        array (1 .. Single_Sample_Audio_Byte_Size) of HAL.UInt8
+        with Address => This.Data (Index).Audio'Address;
+
       Len        : Natural;
-      Total_Len  : Natural := 0;
    begin
 
-      for Sector in 1 .. Sectors_Per_Sample loop
+      Len := Src.Read (Points_As_Bytes'Address,
+                       Single_Sample_Audio_Byte_Size);
 
-         Len := Src.Read (This.Data (Index).Bytes (Byte_Index)'Address,
-                          WNM_Configuration.Storage.Sector_Byte_Size);
+      Simple_Logging.Debug ("Load sample data:" & Len'Img);
 
-         Simple_Logging.Debug ("Load sample data:" & Len'Img);
-         Total_Len := Total_Len + Len;
-
-         exit when Len /= WNM_Configuration.Storage.Sector_Byte_Size;
-
-         Byte_Index := Byte_Index +
-           WNM_Configuration.Storage.Sector_Byte_Size;
-      end loop;
-
-      This.Info (Index).Len := Sample_Point_Count (Total_Len / 2);
+      This.Data (Index).Len := HAL.UInt32 (Len / 2);
 
    end Load_From_File;
 
@@ -53,10 +49,10 @@ package body ROM_Builder.Sample_Library is
          Simple_Logging.Warning ("Sample name too long: '" & Name  & "'");
       end if;
 
-      This.Info (Index).Name (1 .. Len) :=
+      This.Data (Index).Name (1 .. Len) :=
         Name (Name'First .. Name'First + Len - 1);
 
-      This.Info (Index).Name (Len + 1 .. Sample_Name_Lenght) :=
+      This.Data (Index).Name (Len + 1 .. Sample_Name_Lenght) :=
         (others => ' ');
    end Set_Name;
 
@@ -69,7 +65,7 @@ package body ROM_Builder.Sample_Library is
                          Len   :        Sample_Point_Count)
    is
    begin
-      This.Info (Index).Len := Len;
+      This.Data (Index).Len := HAL.UInt32 (Len);
    end Set_Length;
 
    --------------------
@@ -111,6 +107,10 @@ package body ROM_Builder.Sample_Library is
 
       Index : Valid_Sample_Index;
    begin
+      for Elt of This.Data loop
+         Elt.Len := 0;
+      end loop;
+
       if Samples.Is_Null then
          Simple_Logging.Always ("No Samples");
          return;
@@ -155,8 +155,8 @@ package body ROM_Builder.Sample_Library is
    begin
       for X in Valid_Sample_Index loop
          File.Put (X'Img & ":" &
-                     This.Info (X).Name & ":" &
-                     This.Info (X).Len'Img &
+                     This.Data (X).Name & ":" &
+                     This.Data (X).Len'Img &
                      ASCII.LF);
       end loop;
    end Write_Entry_Info;

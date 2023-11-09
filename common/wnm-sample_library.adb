@@ -19,9 +19,6 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Ada.Text_IO;
-
-with WNM.File_System;
 with System.Address_To_Access_Conversions;
 
 package body WNM.Sample_Library is
@@ -39,6 +36,19 @@ package body WNM.Sample_Library is
         (Global_Address_To_Access.To_Pointer (Sample_Data_Base));
    end Sample_Data;
 
+   -----------------
+   -- Load_Points --
+   -----------------
+
+   procedure Load_Points (Sample_Id   : Valid_Sample_Index;
+                          Point_Index : Sample_Point_Index;
+                          A, B        : out Mono_Point)
+   is
+   begin
+      A := Sample_Data.all (Sample_Id).Audio (Point_Index);
+      B := Sample_Data.all (Sample_Id).Audio (Point_Index + 1);
+   end Load_Points;
+
    ----------------
    -- Entry_Name --
    ----------------
@@ -46,11 +56,11 @@ package body WNM.Sample_Library is
    function Entry_Name (Index : Sample_Index) return Sample_Entry_Name is
    begin
       if Index = Invalid_Sample_Entry then
-         return "--  Invalid  --";
+         return "-- Invalid -- ";
       elsif Entries (Index).Used then
          return Entries (Index).Name;
       else
-         return "-- No Sample --";
+         return "- No Sample - ";
       end if;
    end Entry_Name;
 
@@ -67,97 +77,33 @@ package body WNM.Sample_Library is
       end if;
    end Entry_Len;
 
-   ---------------------
-   -- Parse_Info_Line --
-   ---------------------
-
-   procedure Parse_Info_Line (Line : String) is
-      Delim_Char : constant Character := ':';
-
-      Delim1, Delim2 : Natural := Line'Last;
-
-      Sample_Id : Valid_Sample_Index;
-   begin
-      for Index in Line'First .. Line'Last loop
-         if Line (Index) = Delim_Char then
-            Delim1 := Index;
-            exit;
-         end if;
-      end loop;
-
-      for Index in Delim1 + 1 .. Line'Last loop
-         if Line (Index) = Delim_Char then
-            Delim2 := Index;
-            exit;
-         end if;
-      end loop;
-
-      declare
-         ID : constant Natural :=
-           Natural'Value (Line (Line'First .. Delim1 - 1));
-      begin
-         if ID in
-           Natural (Valid_Sample_Index'First) ..
-           Natural (Valid_Sample_Index'Last)
-         then
-            Sample_Id := Valid_Sample_Index (ID);
-         else
-            raise Program_Error;
-         end if;
-      end;
-
-      declare
-         Name : constant String := Line (Delim1 + 1 .. Delim2 - 1);
-      begin
-         if Name'Length = Sample_Entry_Name'Length then
-            Entries (Sample_Id).Name := Name;
-         end if;
-      end;
-
-      declare
-         Len : constant Natural :=
-           Natural'Value (Line (Delim2 + 1 .. Line'Last));
-      begin
-         if Len <= Natural (Sample_Point_Count'Last) then
-            Entries (Sample_Id).Length := Sample_Point_Count (Len);
-            Entries (Sample_Id).Used := Len > 0;
-         else
-            raise Program_Error;
-         end if;
-      end;
-
-   end Parse_Info_Line;
-
    ----------
    -- Load --
    ----------
 
    procedure Load is
-      use WNM.File_System;
-
-      Line : String (1 .. 64);
-      Last : Natural;
+      use HAL;
+      Len : UInt32;
    begin
-      if File_System.Open_Read (Sample_Entries_Filename) /= File_System.Ok
-      then
-         Ada.Text_IO.Put_Line ("Cannot open Sample Entries file...");
-         return;
-      end if;
 
-      loop
-         Read_Line (Line, Last);
-         exit when Last < Line'First;
+      for Sample_Id in Valid_Sample_Index loop
 
-         if Line (Last) = ASCII.LF then
-            Last := Last - 1;
-         end if;
+         Len := Sample_Data.all (Sample_Id).Len;
 
-         if Last >= Line'First then
-            Parse_Info_Line (Line (1 .. Last));
+         if Len = 0 then
+            Entries (Sample_Id) :=
+              (Used => False,
+               Name => (others => ' '),
+               Length => 0);
+         else
+            Entries (Sample_Id).Name := Sample_Data.all (Sample_Id).Name;
+
+            Len := UInt32'Min (Len, UInt32 (Sample_Point_Count'Last));
+
+            Entries (Sample_Id).Length := Sample_Point_Count (Len);
+            Entries (Sample_Id).Used := True;
          end if;
       end loop;
-
-      File_System.Close;
    end Load;
 
    ----------------------------

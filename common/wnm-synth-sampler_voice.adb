@@ -214,17 +214,23 @@ package body WNM.Synth.Sampler_Voice is
                      Buffer :    out Tresses.Mono_Buffer)
    is
 
-      Sample : Single_Sample_Data renames Sample_Data.all (This.Sample_Id);
-
       function Interpolate (Phase : U32) return S32 is
          P : constant U32 := Shift_Right (Phase, Phase_Frac_Bits);
-         A : constant S32 := S32 (Sample (Sample_Point_Index (P)));
-         B : constant S32 := S32 (Sample (Sample_Point_Index (P + 1)));
-
          V : constant S32 :=
            S32 (Shift_Right (Phase, Phase_Frac_Bits - 15) and 16#7FFF#);
+
+         A_16, B_16 : WNM_HAL.Mono_Point;
+
       begin
-         return A + ((B - A) * V) / 2**15;
+         WNM.Sample_Library.Load_Points (This.Sample_Id,
+                                         Sample_Point_Index (P),
+                                         A_16, B_16);
+         declare
+            A : constant S32 := S32 (A_16);
+            B : constant S32 := S32 (B_16);
+         begin
+            return A + ((B - A) * V) / 2**15;
+         end;
       end Interpolate;
 
    begin
@@ -232,7 +238,7 @@ package body WNM.Synth.Sampler_Voice is
          This.Do_Init := False;
 
          Init (This.Env, Do_Hold => True);
-         Set_Attack (This.Env, U7 (0));
+         Set_Attack (This.Env, 0);
 
          This.Phase := 0;
       end if;

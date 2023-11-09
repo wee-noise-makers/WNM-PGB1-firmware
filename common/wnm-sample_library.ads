@@ -23,6 +23,8 @@ with WNM_HAL;
 
 with WNM_Configuration;
 
+with HAL;
+
 package WNM.Sample_Library
 with Elaborate_Body
 is
@@ -36,15 +38,11 @@ is
    --
    --  We allocate 5632 sectors (22.0 MB) for all the sample data. At 44100Hz
    --  that's (5632 * 4096) / (44100 * 2) = 261.5, so a little over 261
-   --  seconds of audio data. We can either use this space for 100 samples of
-   --  ~1 seconds or 50 samples of ~2 seconds.
+   --  seconds of audio data. That means 128 samples of ~2 seconds.
    --
-   --  We decided to go for 50 samples of ~2 seconds.
    --
-   --  The meta-data associated with each sample (length, name, entry point,
-   --  exit point, repeat point, etc.) will be located in a file on the
-   --  filesystem because it is edited more frequenly by users and having it
-   --  in fixed flash sector(s) would result in bad wear level of the flash.
+   --  The meta-data associated with each sample (name and length) is located
+   --  at the end of the sample memory.
    --
    --  Sample Edit Mode --
    --
@@ -64,13 +62,22 @@ is
    --
    --  The sample is then written back into flash.
 
+   subtype Sample_Storage_Len is HAL.UInt32;
+
    Samples                 : constant :=
      WNM_Configuration.Storage.Nbr_Samples;
 
-   Single_Sample_Byte_Size : constant :=
+   Single_Sample_Byte_Area : constant :=
      WNM_Configuration.Storage.Sample_Library_Byte_Size / Samples;
 
-   Single_Sample_Point_Cnt : constant := Single_Sample_Byte_Size / 2;
+   Sample_Metadata_Byte_Size : constant :=
+     WNM_Configuration.Storage.Sample_Name_Lenght
+       + Sample_Storage_Len'Size / 8;
+
+   Single_Sample_Audio_Byte_Size : constant :=
+     Single_Sample_Byte_Area - Sample_Metadata_Byte_Size;
+
+   Single_Sample_Point_Cnt : constant := Single_Sample_Audio_Byte_Size / 2;
 
    subtype Sample_Index is Natural range 0 .. Samples;
    subtype Valid_Sample_Index is Sample_Index range 1 .. Sample_Index'Last;
@@ -81,8 +88,19 @@ is
    subtype Sample_Point_Index
      is Sample_Point_Count range 0 .. Sample_Point_Count'Last - 1;
 
-   type Single_Sample_Data is array (Sample_Point_Index) of WNM_HAL.Mono_Point
-     with Size => Single_Sample_Byte_Size * 8;
+   type Single_Sample_Audio_Data
+   is array (Sample_Point_Index) of WNM_HAL.Mono_Point
+     with Size => Single_Sample_Audio_Byte_Size * 8;
+
+   subtype Sample_Entry_Name
+     is String (1 .. WNM_Configuration.Storage.Sample_Name_Lenght);
+
+   type Single_Sample_Data is record
+      Audio : Single_Sample_Audio_Data;
+      Name  : Sample_Entry_Name;
+      Len   : HAL.UInt32;
+   end record
+     with Pack, Size => Single_Sample_Byte_Area * 8;
 
    type Single_Sample_Data_Access is access all Single_Sample_Data;
 
@@ -92,9 +110,12 @@ is
 
    type Global_Sample_Array_Access is access all Global_Sample_Array;
 
-   function Sample_Data return not null Global_Sample_Array_Access;
+   --  function Sample_Data return not null Global_Sample_Array_Access;
 
-   subtype Sample_Entry_Name is String (1 .. 15);
+   procedure Load_Points (Sample_Id   : Valid_Sample_Index;
+                          Point_Index : Sample_Point_Index;
+                          A, B        : out Mono_Point);
+   --  Load two consecutive sample points from the given sample
 
    function Entry_Name (Index : Sample_Index) return Sample_Entry_Name;
 
@@ -106,8 +127,6 @@ is
 
    function Point_Index_To_Seconds (Index : Sample_Point_Index)
                                     return Sample_Time;
-
-   Sample_Entries_Filename : constant String := "/sample_entries.txt";
 
 private
 

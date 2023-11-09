@@ -21,7 +21,7 @@
 
 package body WNM.Sample_Edit is
 
-   Work_RAM : Sample_Library.Single_Sample_Data;
+   Work_RAM : Sample_Library.Single_Sample_Audio_Data;
    Work_Start : Sample_Point_Index := Sample_Point_Index'First;
    Work_Stop : Sample_Point_Index := Sample_Point_Index'Last;
 
@@ -32,10 +32,14 @@ package body WNM.Sample_Edit is
    procedure Load (Index : Sample_Library.Valid_Sample_Index;
                    Start, Stop : Sample_Point_Index)
    is
+      pragma Unreferenced (Index);
    begin
       Work_Start := Start;
       Work_Stop := Stop;
-      Work_RAM := Sample_Library.Sample_Data (Index);
+
+      Work_RAM := (others => 0);
+      raise Program_Error with "TODO: Load sample data from storage";
+      --  Work_RAM := Sample_Library.Sample_Data (Index);
    end Load;
 
    -----------

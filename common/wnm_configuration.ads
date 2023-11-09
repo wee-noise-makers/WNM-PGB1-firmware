@@ -77,7 +77,7 @@ package WNM_Configuration is
       Sectors_Per_Sample      : constant := Sample_Library_Sectors / Nbr_Samples;
       Single_Sample_Byte_Size : constant := Global_Sample_Byte_Size / Nbr_Samples;
       Single_Sample_Point_Cnt : constant := Single_Sample_Byte_Size / 2;
-      Sample_Name_Lenght      : constant := 15;
+      Sample_Name_Lenght      : constant := 14;
 
    end Storage;
 end WNM_Configuration;
