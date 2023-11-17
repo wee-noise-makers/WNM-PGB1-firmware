@@ -31,8 +31,10 @@ package body WNM.Power_Control is
 
    procedure Power_Down is
    begin
-      Persistent.Save;
-      WNM.Project.Library.Try_Save_For_Shutdown;
+      if WNM_HAL.Get_LFS_Config /= null then
+         Persistent.Save;
+         WNM.Project.Library.Try_Save_For_Shutdown;
+      end if;
       WNM_HAL.Power_Down;
    end Power_Down;
 

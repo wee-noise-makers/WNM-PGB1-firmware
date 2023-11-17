@@ -348,9 +348,8 @@ package body WNM_HAL is
    -- Storage --
    -------------
 
-   Plop : aliased Littlefs.LFS_Config;
-   function Get_LFS_Config return not null access Littlefs.LFS_Config
-   is (Plop'Access);
+   function Get_LFS_Config return access Littlefs.LFS_Config
+   is (null);
 
    ----------------------
    -- Sample_Data_Base --

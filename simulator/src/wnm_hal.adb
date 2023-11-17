@@ -307,7 +307,7 @@ package body WNM_HAL is
    -- Get_LFS_Config --
    --------------------
 
-   function Get_LFS_Config return not null access Littlefs.LFS_Config
+   function Get_LFS_Config return access Littlefs.LFS_Config
    is (ASFML_SIM_Storage.Get_LFS_Config);
 
    ----------------------

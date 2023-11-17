@@ -75,10 +75,13 @@ package body WNM.Tasks is
 
    procedure Sequencer_Core is
    begin
-      WNM.File_System.Mount;
-      WNM.Persistent.Load;
+      if WNM_HAL.Get_LFS_Config /= null then
+         WNM.File_System.Mount;
+         WNM.Persistent.Load;
+         WNM.Project.Library.Load_Library;
+      end if;
+
       WNM.Sample_Library.Load;
-      WNM.Project.Library.Load_Library;
 
       WNM.GUI.Menu.Track_Settings.Push_Window;
 
