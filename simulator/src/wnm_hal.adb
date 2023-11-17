@@ -386,6 +386,18 @@ package body WNM_HAL is
       GNAT.OS_Lib.OS_Exit (0);
    end Power_Down;
 
+   ----------------------
+   -- Set_Indicator_IO --
+   ----------------------
+
+   procedure Set_Indicator_IO is null;
+
+   ------------------------
+   -- Clear_Indicator_IO --
+   ------------------------
+
+   procedure Clear_Indicator_IO is null;
+
 begin
    if not RtMIDI.Valid (MIDI_Out) then
       raise Program_Error with "Cannot create MIDI device";

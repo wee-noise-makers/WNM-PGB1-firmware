@@ -59,6 +59,8 @@ package body WNM_HAL is
       5 => (Pin => 21),
       6 => (Pin => 22));
 
+   Enable_Indicator_IO : constant Boolean := True;
+   Indicator_IO : RP.GPIO.GPIO_Point := (Pin => 19);
    B_Cols : array (Col_Id) of RP.GPIO.GPIO_Point :=
      (1 => (Pin => 14),
       2 => (Pin => 15),
@@ -390,19 +392,30 @@ package body WNM_HAL is
    procedure Power_Down
    is null;
 
+   ----------------------
+   -- Set_Indicator_IO --
+   ----------------------
+
+   procedure Set_Indicator_IO is
+   begin
+      if Enable_Indicator_IO then
+         Indicator_IO.Set;
+      end if;
+   end Set_Indicator_IO;
+
+   ------------------------
+   -- Clear_Indicator_IO --
+   ------------------------
+
+   procedure Clear_Indicator_IO is
+   begin
+      if Enable_Indicator_IO then
+         Indicator_IO.Clear;
+      end if;
+   end Clear_Indicator_IO;
+
+
 begin
-   Noise_Nugget_SDK.Encoders.Initialize (1, 28);
-   Noise_Nugget_SDK.Encoders.Initialize (2, 26);
-
-   for IO of B_Cols loop
-      IO.Configure (RP.GPIO.Output);
-      IO.Clear;
-   end loop;
-
-   for IO of B_Rows loop
-      IO.Configure (RP.GPIO.Input, RP.GPIO.Pull_Down);
-   end loop;
-
    B_Play_Power.Configure (RP.GPIO.Input, RP.GPIO.Pull_Up);
 
    --  1kHz tick
@@ -413,6 +426,10 @@ begin
 
    Cortex_M.Systick.Enable;
 
+   if Enable_Indicator_IO then
+      Indicator_IO.Configure (RP.GPIO.Output);
+      Indicator_IO.Clear;
+   end if;
    --  Start the second CPU core that will run the synth
    RP.Multicore.Launch_Core1
      (Trap_Vector   => WNM_HAL.Synth_Core.Trap_Vector,

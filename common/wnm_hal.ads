@@ -146,4 +146,11 @@ package WNM_HAL is
 
    procedure Power_Down;
 
+   -----------
+   -- Debug --
+   -----------
+
+   procedure Set_Indicator_IO;
+   procedure Clear_Indicator_IO;
+
 end WNM_HAL;
