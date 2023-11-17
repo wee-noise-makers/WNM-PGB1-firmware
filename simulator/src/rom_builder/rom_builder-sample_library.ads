@@ -1,11 +1,10 @@
 with TOML;
 
 with FSmaker.Sink;
-with FSmaker.Source.Text_Buffer;
 
 with WNM_Configuration;
 
-private with WNM.Sample_Library;
+with WNM.Sample_Library;
 
 package ROM_Builder.Sample_Library is
 
@@ -39,12 +38,12 @@ package ROM_Builder.Sample_Library is
                              Root     :        TOML.TOML_Value;
                              TOML_Dir :        String);
 
-   procedure Write_Entry_Info
-     (This :        Instance;
-      File : in out FSmaker.Source.Text_Buffer.Instance);
-
    procedure Write_Data (This :        Instance;
                          File : in out FSmaker.Sink.Class);
+
+   procedure Write_UF2_File (Id     : WNM.Sample_Library.Valid_Sample_Index;
+                             Sample : WNM.Sample_Library.Single_Sample_Data;
+                             Root_Dir : String);
 
 private
 

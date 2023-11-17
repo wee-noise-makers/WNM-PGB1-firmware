@@ -21,6 +21,7 @@
 
 with Tresses;            use Tresses;
 with Tresses.Interfaces; use Tresses.Interfaces;
+with WNM.QOA;
 
 private with Tresses.Envelopes.AR;
 private with WNM.Sample_Library;
@@ -72,7 +73,7 @@ private
    Phase_Frac_Bits : constant := Sample_Phase'Size - Phase_Integer_Bits;
 
    pragma Compile_Time_Error
-     (2**Phase_Integer_Bits < Sample_Library.Single_Sample_Point_Cnt,
+     (2**Phase_Integer_Bits < QOA.Points_Per_Sample,
       "Interger part too small for sample point count");
 
    type Instance

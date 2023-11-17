@@ -32,6 +32,9 @@ package ASFML_SIM_Storage is
    --  Return path to either the default ROM in user config dir or ROM path
    --  provided on the command line.
 
+   function ROM_Dir return String;
+   --  Return the folder where the ROM is located
+
    function TOML_Path return String;
    --  Return path to either the default TOML description in resources dir or
    --  a TOML file path provided on the command line.

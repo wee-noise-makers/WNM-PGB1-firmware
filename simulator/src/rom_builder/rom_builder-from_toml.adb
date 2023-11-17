@@ -5,14 +5,10 @@ with Ada.Directories;
 with ROM_Builder.Sample_Library;
 with ROM_Builder.File_System;
 
-with FSmaker.Source.Text_Buffer;
-
 with TOML; use TOML;
 with TOML.File_IO;
 
 with GNAT.OS_Lib; use GNAT.OS_Lib;
-
-with Simple_Logging;
 
 package body ROM_Builder.From_TOML is
 
@@ -114,15 +110,6 @@ package body ROM_Builder.From_TOML is
       end if;
 
       Lib.Load_From_TOML (Root, TOML_Dir);
-
-      declare
-         TB : FSmaker.Source.Text_Buffer.Instance;
-      begin
-         Simple_Logging.Always ("Building sample entries file");
-         Lib.Write_Entry_Info (TB);
-         Simple_Logging.Always ("Writting sample entries file");
-         FS.Import ("/sample_entries.txt", TB);
-      end;
 
       FS.Print_Tree;
 

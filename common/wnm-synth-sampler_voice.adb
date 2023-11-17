@@ -26,6 +26,7 @@ with Tresses.DSP;
 with Tresses.Resources;
 
 with WNM.Sample_Library; use WNM.Sample_Library;
+with WNM.QOA; use WNM.QOA;
 
 package body WNM.Synth.Sampler_Voice is
 
@@ -249,7 +250,7 @@ package body WNM.Synth.Sampler_Voice is
 
             declare
                Start_Point : constant U32 :=
-                 U32 (Single_Sample_Point_Cnt * U32 (This.Params (P_Start)) /
+                 U32 (Points_Per_Sample * U32 (This.Params (P_Start)) /
                           U32 (Param_Range'Last));
             begin
                This.Phase := Start_Point * U32 (C4_Phase_Incr);

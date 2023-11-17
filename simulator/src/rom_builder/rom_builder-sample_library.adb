@@ -1,10 +1,18 @@
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-
+with System.Storage_Elements;
+with Interfaces; use Interfaces;
 with HAL;
 
 with FSmaker.Source.File;
 with Simple_Logging;
 with WNM.Sample_Library; use WNM.Sample_Library;
+with WNM.QOA;
+
+with Ada.Text_IO;
+with GNAT.OS_Lib;
+
+with Ada.Strings.Fixed;
+with UF2_Utils.File_IO;
 
 package body ROM_Builder.Sample_Library is
 
@@ -19,17 +27,15 @@ package body ROM_Builder.Sample_Library is
       Src : FSmaker.Source.File.Instance :=
         FSmaker.Source.File.Create (Filename);
 
-      Points_As_Bytes :
-        array (1 .. Single_Sample_Audio_Byte_Size) of HAL.UInt8
-        with Address => This.Data (Index).Audio'Address;
-
-      Len        : Natural;
+      Points : WNM.QOA.Sample_Audio_Data;
+      Len    : Natural;
    begin
 
-      Len := Src.Read (Points_As_Bytes'Address,
-                       Single_Sample_Audio_Byte_Size);
+      Len := Src.Read (Points'Address, Points'Size / 8);
 
       Simple_Logging.Debug ("Load sample data:" & Len'Img);
+
+      WNM.QOA.Encode (Points, This.Data (Index).Audio);
 
       This.Data (Index).Len := HAL.UInt32 (Len / 2);
 
@@ -144,23 +150,6 @@ package body ROM_Builder.Sample_Library is
       end loop;
    end Load_From_TOML;
 
-   ----------------------
-   -- Write_Entry_Info --
-   ----------------------
-
-   procedure Write_Entry_Info
-     (This :        Instance;
-      File : in out FSmaker.Source.Text_Buffer.Instance)
-   is
-   begin
-      for X in Valid_Sample_Index loop
-         File.Put (X'Img & ":" &
-                     This.Data (X).Name & ":" &
-                     This.Data (X).Len'Img &
-                     ASCII.LF);
-      end loop;
-   end Write_Entry_Info;
-
    ----------------
    -- Write_Data --
    ----------------
@@ -174,5 +163,62 @@ package body ROM_Builder.Sample_Library is
          raise Program_Error;
       end if;
    end Write_Data;
+
+   --------------------
+   -- Write_UF2_File --
+   --------------------
+
+   procedure Write_UF2_File (Id     : WNM.Sample_Library.Valid_Sample_Index;
+                             Sample : WNM.Sample_Library.Single_Sample_Data;
+                             Root_Dir : String)
+   is
+      use HAL;
+
+      use UF2_Utils.File_IO;
+      use Ada.Strings.Fixed;
+      use System.Storage_Elements;
+
+      Filename : constant String :=
+        Root_Dir & "/" &
+        Trim (Id'Img & "-" & Sample.Name, Ada.Strings.Both) &
+        ".uf2_wnm_sample";
+
+      Filename_Bin : constant String :=
+        Root_Dir & "/" &
+        Trim (Id'Img & "-" & Sample.Name, Ada.Strings.Both) &
+        ".bin_wnm_sample";
+
+      File : UF2_Sequential_IO.File_Type;
+      Data : Storage_Array (1 .. Single_Sample_Data'Size / 8)
+        with Address => Sample'Address;
+
+   begin
+      if Sample.Len /= 0 then
+
+         declare
+            use GNAT.OS_Lib;
+            FD : constant File_Descriptor :=
+              Create_File (Filename_Bin, Binary);
+            Len : Integer;
+         begin
+            Ada.Text_IO.Put_Line (Filename_Bin);
+            Len := Write (FD, Data'Address, Data'Size / 8);
+            if Len /= Data'Size / 8 then
+               Ada.Text_IO.Put_Line ("Cannot write '" & Filename_Bin & "'");
+            end if;
+            Close (FD);
+         end;
+
+         Ada.Text_IO.Put_Line (Filename);
+
+         UF2_Sequential_IO.Create (File, Name => Filename);
+
+         Write_UF2
+           (Data => Data,
+            Start_Address => Unsigned_32 (Entry_Device_Address (Id)),
+            File => File,
+            Max_Block_Size => 256);
+      end if;
+   end Write_UF2_File;
 
 end ROM_Builder.Sample_Library;

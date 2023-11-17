@@ -19,11 +19,11 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM_HAL;
-
 with WNM_Configuration;
 
 with HAL;
+
+with WNM.QOA;
 
 package WNM.Sample_Library
 with Elaborate_Body
@@ -31,15 +31,11 @@ is
 
    --  Audio samples are located in a dedicated part of the Flash. All the
    --  sample have the same amout of memory available which means that getting
-   --  sample data is just an access to an array based on the sample index.
+   --  the address of sample data is just an access to an array based on the
+   --  sample index.
    --
-   --  The minimum erasable flash size a 4096 byte sector, so this is the base
-   --  unit.
-   --
-   --  We allocate 5632 sectors (22.0 MB) for all the sample data. At 44100Hz
-   --  that's (5632 * 4096) / (44100 * 2) = 261.5, so a little over 261
-   --  seconds of audio data. That means 128 samples of ~2 seconds.
-   --
+   --  The samples are encoded in a modified QOA format to achieve good
+   --  compression with acceptable quality loss.
    --
    --  The meta-data associated with each sample (name and length) is located
    --  at the end of the sample memory.
@@ -67,40 +63,41 @@ is
    Samples                 : constant :=
      WNM_Configuration.Storage.Nbr_Samples;
 
-   Single_Sample_Byte_Area : constant :=
+   Single_Sample_Data_Byte_Size : constant :=
      WNM_Configuration.Storage.Sample_Library_Byte_Size / Samples;
 
    Sample_Metadata_Byte_Size : constant :=
      WNM_Configuration.Storage.Sample_Name_Lenght
        + Sample_Storage_Len'Size / 8;
 
-   Single_Sample_Audio_Byte_Size : constant :=
-     Single_Sample_Byte_Area - Sample_Metadata_Byte_Size;
-
-   Single_Sample_Point_Cnt : constant := Single_Sample_Audio_Byte_Size / 2;
-
    subtype Sample_Index is Natural range 0 .. Samples;
    subtype Valid_Sample_Index is Sample_Index range 1 .. Sample_Index'Last;
 
    Invalid_Sample_Entry : constant Sample_Index := Sample_Index'First;
 
-   type Sample_Point_Count is range 0 .. Single_Sample_Point_Cnt;
-   subtype Sample_Point_Index
-     is Sample_Point_Count range 0 .. Sample_Point_Count'Last - 1;
-
-   type Single_Sample_Audio_Data
-   is array (Sample_Point_Index) of WNM_HAL.Mono_Point
-     with Size => Single_Sample_Audio_Byte_Size * 8;
-
    subtype Sample_Entry_Name
      is String (1 .. WNM_Configuration.Storage.Sample_Name_Lenght);
 
+   Padding_Byte_Size : constant :=
+     Single_Sample_Data_Byte_Size -
+       Sample_Metadata_Byte_Size -
+         (WNM.QOA.Sample_Bit_Size / 8);
+
+   pragma Compile_Time_Error (Padding_Byte_Size < 0, "Negative padding");
+   pragma Compile_Time_Error
+     (Padding_Byte_Size >= WNM_Configuration.Storage.Sector_Byte_Size,
+      "Padding bigger than a page..");
+
+   type Sample_Data_Padding is array (1 .. Padding_Byte_Size) of HAL.UInt8
+     with Size => Padding_Byte_Size * 8;
+
    type Single_Sample_Data is record
-      Audio : Single_Sample_Audio_Data;
-      Name  : Sample_Entry_Name;
-      Len   : HAL.UInt32;
+      Audio    : WNM.QOA.QOA_Sample;
+      Reserved : Sample_Data_Padding;
+      Name     : Sample_Entry_Name;
+      Len      : Sample_Storage_Len;
    end record
-     with Pack, Size => Single_Sample_Byte_Area * 8;
+     with Pack, Size => Single_Sample_Data_Byte_Size * 8;
 
    type Single_Sample_Data_Access is access all Single_Sample_Data;
 
@@ -110,22 +107,26 @@ is
 
    type Global_Sample_Array_Access is access all Global_Sample_Array;
 
-   --  function Sample_Data return not null Global_Sample_Array_Access;
+   function Sample_Data return not null Global_Sample_Array_Access;
 
    procedure Load_Points (Sample_Id   : Valid_Sample_Index;
-                          Point_Index : Sample_Point_Index;
+                          Point_Index : QOA.Sample_Point_Index;
                           A, B        : out Mono_Point);
    --  Load two consecutive sample points from the given sample
 
    function Entry_Name (Index : Sample_Index) return Sample_Entry_Name;
 
-   function Entry_Len (Index : Sample_Index) return Sample_Point_Count;
+   function Entry_Len (Index : Sample_Index) return QOA.Sample_Point_Count;
+
+   function Entry_Device_Address (Index : Valid_Sample_Index)
+                                  return HAL.UInt32;
+   --  Return the base address of an sample entry in the device memory space
 
    procedure Load;
 
    type Sample_Time is delta 0.001 range 0.0 .. 3.0;
 
-   function Point_Index_To_Seconds (Index : Sample_Point_Index)
+   function Point_Index_To_Seconds (Index : QOA.Sample_Point_Index)
                                     return Sample_Time;
 
 private
@@ -133,7 +134,7 @@ private
    type Sample_Entry is record
       Used   : Boolean := False;
       Name   : Sample_Entry_Name := (others => ASCII.NUL);
-      Length : Sample_Point_Count := 0;
+      Length : QOA.Sample_Point_Count := 0;
    end record with Pack;
 
    Entries : array (Valid_Sample_Index) of Sample_Entry;

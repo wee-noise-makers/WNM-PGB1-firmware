@@ -19,18 +19,20 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with WNM.QOA; use WNM.QOA;
+
 package body WNM.Sample_Edit is
 
-   Work_RAM : Sample_Library.Single_Sample_Audio_Data;
+   Work_RAM   : Sample_Audio_Data;
    Work_Start : Sample_Point_Index := Sample_Point_Index'First;
-   Work_Stop : Sample_Point_Index := Sample_Point_Index'Last;
+   Work_Stop  : Sample_Point_Index := Sample_Point_Index'Last;
 
    ----------
    -- Load --
    ----------
 
    procedure Load (Index : Sample_Library.Valid_Sample_Index;
-                   Start, Stop : Sample_Point_Index)
+                   Start, Stop : QOA.Sample_Point_Index)
    is
       pragma Unreferenced (Index);
    begin

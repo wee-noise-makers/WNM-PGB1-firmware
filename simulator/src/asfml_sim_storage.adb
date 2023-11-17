@@ -14,6 +14,7 @@ with WNM_Configuration;
 
 with ASFML_Sim_Resources;
 with ROM_Builder.From_TOML;
+with ROM_Builder.Sample_Library;
 with Wnm_Ps1_Simulator_Config;
 
 package body ASFML_SIM_Storage is
@@ -381,6 +382,14 @@ package body ASFML_SIM_Storage is
    begin
       Save_Sample_Data (Img);
       Img.Write_To_File (Path);
+
+      for Id in WNM.Sample_Library.Valid_Sample_Index loop
+         ROM_Builder.Sample_Library.Write_UF2_File
+           (Id,
+            WNM.Sample_Library.Sample_Data.all (Id),
+            ROM_Dir);
+      end loop;
+
       return "";
    end Save_ROM;
 
@@ -413,6 +422,15 @@ package body ASFML_SIM_Storage is
          end;
       end if;
    end ROM_Path;
+
+   -------------
+   -- ROM_Dir --
+   -------------
+
+   function ROM_Dir return String is
+   begin
+      return Ada.Directories.Containing_Directory (ROM_Path);
+   end ROM_Dir;
 
    ---------------
    -- TOML_Path --
