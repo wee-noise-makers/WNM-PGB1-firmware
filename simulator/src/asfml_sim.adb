@@ -198,14 +198,6 @@ package body ASFML_Sim is
                   elsif Event.key.code = Change_Keyboard_Layout_Key then
                      Next (Current_Layout);
 
-                  elsif Event.key.code = sfKeyRight then
-                     Encoder_Left := (if Event.key.shift then 2 else 1);
-                  elsif Event.key.code = sfKeyLeft then
-                     Encoder_Left := (if Event.key.shift then -2 else -1);
-                  elsif Event.key.code = sfKeyDown then
-                     Encoder_Right := (if Event.key.shift then -2 else -1);
-                  elsif Event.key.code = sfKeyUp then
-                     Encoder_Right := (if Event.key.shift then 2 else 1);
                   elsif Event.key.code = sfKeyF12 then
                      Sim_Window.Screenshot ("WNM-screenshot.png");
                   end if;

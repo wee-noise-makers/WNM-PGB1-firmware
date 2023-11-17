@@ -80,7 +80,7 @@ package body ASFML_Sim.Window is
       case Kind is
          when Button =>
             B : WNM_Configuration.Button;
-         when Left_Encoder | Right_Encoder =>
+         when Up_Down | Left_Right =>
             Delt : Integer;
       end case;
    end record;
@@ -111,7 +111,7 @@ package body ASFML_Sim.Window is
       end if;
 
       case Evt.Kind is
-         when Left_Encoder | Right_Encoder =>
+         when Up_Down | Left_Right =>
 
             if not B_List.Is_Empty
               and then
@@ -131,13 +131,18 @@ package body ASFML_Sim.Window is
                --  Modify the current encoder event
                B_List.Reference (B_List.Last).Delt :=
                  B_List.Reference (B_List.Last).Delt + Evt.Delt;
+
+               if B_List.Reference (B_List.Last).Delt = 0 then
+                  B_List.Delete_Last;
+               end if;
+
             else
 
                --  Add new encoder event
-               if Evt.Kind = Left_Encoder then
-                  B_List.Append ((Left_Encoder, Evt.Delt));
+               if Evt.Kind = Up_Down then
+                  B_List.Append ((Up_Down, Evt.Delt));
                else
-                  B_List.Append ((Right_Encoder, Evt.Delt));
+                  B_List.Append ((Left_Right, Evt.Delt));
                end if;
             end if;
 
@@ -521,10 +526,18 @@ package body ASFML_Sim.Window is
          case B is
             when LED_Offset'Range =>
                Pos := LED_Offset (B);
-            when Encoder_L =>
+            when PAD_Up =>
                Pos := (77.0, 241.5);
-            when Encoder_R =>
-               Pos := (271.0, 241.5);
+            when PAD_Down =>
+               Pos := (271.0, 251.5);
+            when PAD_Left =>
+               Pos := (77.0, 261.5);
+            when PAD_Right =>
+               Pos := (271.0, 271.5);
+            when PAD_A =>
+               Pos := (77.0, 281.5);
+            when PAD_B =>
+               Pos := (271.0, 291.5);
          end case;
 
          Pos := Pos + (-3.0, 39.0);
@@ -591,15 +604,27 @@ package body ASFML_Sim.Window is
              when Pattern_Button => "Pattern",
              when Chord_Button   => "Chord",
              when Func           => "FX/Copy",
-             when Encoder_L      => "Left Encoder",
-             when Encoder_R      => "Right Encoder",
+             when PAD_Up         => "Up",
+             when PAD_Down       => "Down",
+             when PAD_Left       => "Left",
+             when PAD_Right      => "Right",
+             when PAD_A          => "A",
+             when PAD_B          => "B",
              when others => B'Img);
 
       function Event_Img (Evt : User_Input_Event) return String
       is (case Evt.Kind is
              when Button        => Button_Img (Evt.B),
-             when Left_Encoder  => "L" & Evt.Delt'Img,
-             when Right_Encoder => "R" & Evt.Delt'Img);
+
+             when Up_Down       =>
+               (if Evt.Delt > 0
+                then "Up" & Evt.Delt'Img
+                else "Down" & Integer'Image (abs Evt.Delt)),
+
+             when Left_Right    =>
+               (if Evt.Delt > 0
+                then "Right" & Evt.Delt'Img
+                else "Left" & Integer'Image (abs Evt.Delt)));
 
       Line_Height : constant := 30.0;
       Max_Line_Length : constant := 25;

@@ -19,16 +19,6 @@ package WNM_HAL is
    function State return Buttons_State;
    --  Scan buttons and return current state
 
-   --------------
-   -- Encoders --
-   --------------
-
-   function Left_Encoder return Integer;
-   --  Number of increments since last call
-
-   function Right_Encoder return Integer;
-   --  Number of increments since last call
-
    ----------
    -- LEDs --
    ----------

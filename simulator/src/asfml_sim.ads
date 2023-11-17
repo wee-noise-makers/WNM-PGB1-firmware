@@ -74,8 +74,13 @@ package ASFML_Sim is
                         Track_Button   => sfKeyQ,
                         Pattern_Button => sfKeyDash,
                         Chord_Button   => sfKeyNum0,
-                        Encoder_L      => sfKeyNum1,
-                        Encoder_R      => sfKeyNum2),
+                        PAD_Up         => sfKeyUp,
+                        PAD_Down       => sfKeyDown,
+                        PAD_Left       => sfKeyLeft,
+                        PAD_Right      => sfKeyRight,
+                        PAD_A          => sfKeyNum2,
+                        PAD_B          => sfKeyNum1),
+
       Azerty_Layout => (B1             => sfKeyZ,
                         B2             => sfKeyE,
                         B3             => sfKeyR,
@@ -100,8 +105,13 @@ package ASFML_Sim is
                         Track_Button   => sfKeyA,
                         Pattern_Button => sfKeyLBracket,
                         Chord_Button   => sfKeyNum0,
-                        Encoder_L      => sfKeyNum1,
-                        Encoder_R      => sfKeyNum2),
+                        PAD_Up         => sfKeyUp,
+                        PAD_Down       => sfKeyDown,
+                        PAD_Left       => sfKeyLeft,
+                        PAD_Right      => sfKeyRight,
+                        PAD_A          => sfKeyNum2,
+                        PAD_B          => sfKeyNum1),
+
       Qwertz_Layout => (B1             => sfKeyW,
                         B2             => sfKeyE,
                         B3             => sfKeyR,
@@ -126,8 +136,12 @@ package ASFML_Sim is
                         Track_Button   => sfKeyQ,
                         Pattern_Button => sfKeyDash,
                         Chord_Button   => sfKeyNum0,
-                        Encoder_L      => sfKeyNum1,
-                        Encoder_R      => sfKeyNum2)
+                        PAD_Up         => sfKeyUp,
+                        PAD_Down       => sfKeyDown,
+                        PAD_Left       => sfKeyLeft,
+                        PAD_Right      => sfKeyRight,
+                        PAD_A          => sfKeyNum2,
+                        PAD_B          => sfKeyNum1)
      );
 
    function To_SFML_Evt (B : WNM_Configuration.Button)
@@ -147,9 +161,6 @@ package ASFML_Sim is
 
    Button_Scan_Signal : Ada.Synchronous_Task_Control.Suspension_Object;
 
-   Encoder_Right : Integer := 0;
-   Encoder_Left  : Integer := 0;
-
    Main_Volume : Interfaces.Integer_16 := Interfaces.Integer_16'Last / 2;
 
    type SFML_LED_Strip is array (WNM_Configuration.LED) of
@@ -161,14 +172,14 @@ package ASFML_Sim is
    procedure Take_Screenshot (Path : String);
 
    -- User input logs --
-   type Input_Event_Kind is (Button, Left_Encoder, Right_Encoder);
+   type Input_Event_Kind is (Button, Up_Down, Left_Right);
 
    type Input_Event (Kind : Input_Event_Kind := Button) is record
       case Kind is
          when Button =>
             B : WNM_Configuration.Button;
             Evt : WNM.UI.Buttton_Event;
-         when Left_Encoder | Right_Encoder =>
+         when Up_Down | Left_Right =>
             Delt : Integer;
       end case;
    end record;

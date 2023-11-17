@@ -81,7 +81,7 @@ package body WNM.GUI.Menu.System_Info is
    is
    begin
       case Event.Kind is
-         when Left_Press =>
+         when A_Press =>
             case This.K is
                when Synth_Max_CPU_Load =>
                   Synth.Clear_Max_CPU_Load;
@@ -91,16 +91,13 @@ package body WNM.GUI.Menu.System_Info is
                   null;
             end case;
 
-         when Right_Press =>
+         when B_Press =>
             Menu.Pop (Exit_Value => Failure);
 
-         when Encoder_Left =>
-
-            if Event.Value > 0 then
-               Next (This.K);
-            elsif Event.Value < 0 then
-               Prev (This.K);
-            end if;
+         when Right_Press =>
+            Next (This.K);
+         when Left_Press =>
+            Prev (This.K);
 
          when others =>
             null;

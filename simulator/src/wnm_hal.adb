@@ -47,28 +47,6 @@ package body WNM_HAL is
       return Buttons_Internal;
    end State;
 
-   ------------------
-   -- Left_Encoder --
-   ------------------
-
-   function Left_Encoder return Integer is
-      Res : constant Integer := ASFML_Sim.Encoder_Left;
-   begin
-      ASFML_Sim.Encoder_Left := 0;
-      return Res;
-   end Left_Encoder;
-
-   -------------------
-   -- Right_Encoder --
-   -------------------
-
-   function Right_Encoder return Integer is
-      Res : constant Integer := ASFML_Sim.Encoder_Right;
-   begin
-      ASFML_Sim.Encoder_Right := 0;
-      return Res;
-   end Right_Encoder;
-
    ---------
    -- Set --
    ---------

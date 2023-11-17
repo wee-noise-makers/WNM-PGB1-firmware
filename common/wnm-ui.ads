@@ -66,4 +66,7 @@ private
    function Has_Long_Press (B : Button) return Boolean;
    --  Can this button trigger a On_Long_Press event?
 
+   function Has_Repeat_Press (B : Button) return Boolean;
+   --  Can this button re-trigger a On_Press event when held down?
+
 end WNM.UI;

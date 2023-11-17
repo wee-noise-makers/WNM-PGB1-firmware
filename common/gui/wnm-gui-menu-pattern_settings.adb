@@ -78,18 +78,19 @@ package body WNM.GUI.Menu.Pattern_Settings is
    begin
       case Event.Kind is
          when Left_Press =>
-            null;
+            Prev (This.Current_Setting);
          when Right_Press =>
+            Next (This.Current_Setting);
+         when Up_Press =>
             null;
-         when Encoder_Right =>
+         when Down_Press =>
             null;
-         when Encoder_Left =>
-            if Event.Value > 0 then
-               Next (This.Current_Setting);
-            elsif Event.Value < 0 then
-               Prev (This.Current_Setting);
-            end if;
+         when A_Press =>
+            null;
+         when B_Press =>
+            null;
       end case;
+
    end On_Event;
 
    ---------------

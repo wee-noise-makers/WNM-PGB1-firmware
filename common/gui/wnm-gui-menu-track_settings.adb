@@ -325,6 +325,41 @@ package body WNM.GUI.Menu.Track_Settings is
 
       case Event.Kind is
          when Left_Press =>
+            Prev_Valid_Setting (Mode (Editing_Track),
+                                This.Current_Setting);
+         when Right_Press =>
+            Next_Valid_Setting (Mode (Editing_Track),
+                                This.Current_Setting);
+
+         when Up_Press =>
+            case This.Current_Setting is
+               when MIDI_Instrument =>
+                     if This.Instrument < Builtin_Instruments'Last then
+                        This.Instrument := This.Instrument + 1;
+                     end if;
+               when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D =>
+                  GUI.Popup.Display ("L press to edit ", 500_000);
+
+               when others =>
+                  Project.Next_Value (This.Current_Setting);
+                  --  Project.Next_Value_Fast (This.Current_Setting);
+            end case;
+         when Down_Press =>
+            case This.Current_Setting is
+               when MIDI_Instrument =>
+                  if This.Instrument > Builtin_Instruments'First then
+                     This.Instrument := This.Instrument - 1;
+                  end if;
+
+               when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D =>
+                  GUI.Popup.Display ("L press to edit ", 500_000);
+
+               when others =>
+                  Project.Prev_Value (This.Current_Setting);
+                  --  Project.Prev_Value_Fast (This.Current_Setting);
+            end case;
+
+         when A_Press =>
             case This.Current_Setting is
                when MIDI_Instrument =>
 
@@ -361,49 +396,8 @@ package body WNM.GUI.Menu.Track_Settings is
                when others =>
                   null;
             end case;
-
-         when Right_Press =>
-            --  Never exit the step settings
+         when B_Press =>
             null;
-         when Encoder_Right =>
-
-            case This.Current_Setting is
-               when MIDI_Instrument =>
-                  if Event.Value > 0 then
-                     if This.Instrument < Builtin_Instruments'Last then
-                        This.Instrument := This.Instrument + 1;
-                     end if;
-                  else
-                     if This.Instrument > Builtin_Instruments'First then
-                        This.Instrument := This.Instrument - 1;
-                     end if;
-                  end if;
-
-               when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D =>
-                  GUI.Popup.Display ("L press to edit ", 500_000);
-
-               when others =>
-                  case Event.Value is
-                     when 0 =>
-                        null;
-                     when 1 =>
-                        Project.Next_Value (This.Current_Setting);
-                     when 2 .. Integer'Last =>
-                        Project.Next_Value_Fast (This.Current_Setting);
-                     when -1 =>
-                        Project.Prev_Value (This.Current_Setting);
-                     when Integer'First .. -2 =>
-                        Project.Prev_Value_Fast (This.Current_Setting);
-                  end case;
-            end case;
-         when Encoder_Left =>
-            if Event.Value > 0 then
-               Next_Valid_Setting (Mode (Editing_Track),
-                                   This.Current_Setting);
-            elsif Event.Value < 0 then
-               Prev_Valid_Setting (Mode (Editing_Track),
-                                   This.Current_Setting);
-            end if;
       end case;
    end On_Event;
 

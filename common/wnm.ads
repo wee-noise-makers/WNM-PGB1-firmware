@@ -51,8 +51,12 @@ package WNM is
    LED_Task_Period_Microseconds : constant := 50 * 1_000;
 
    Long_Press_Time_Span_Microseconds : constant := 300 * 1_000;
-   --  How much time (in miliseconds) users have to press a button to get the
+   --  How much time (in microseconds) users have to press a button to get the
    --  alternative function.
+
+   Repeat_Press_Time_Span_Microseconds : constant := 30 * 1_000;
+   --  How much time (in microseconds) a button press event will be repeated
+   --  when the button is held down.
 
    Audio_Queue_Size : constant := 3;
 

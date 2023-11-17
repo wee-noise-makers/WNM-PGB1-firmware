@@ -86,7 +86,8 @@ package body WNM.GUI.Menu.Step_Settings is
                when Project.Velo =>
                   Draw_Title ("Velocity", "");
                when others =>
-                  raise Program_Error;
+                  null;
+                  --  raise Program_Error;
             end case;
 
             Draw_Value (Project.Note_Img (Step),
@@ -152,13 +153,25 @@ package body WNM.GUI.Menu.Step_Settings is
    begin
       case Event.Kind is
          when Left_Press =>
+            Prev (This.Current_Setting);
+         when Right_Press =>
+            Next (This.Current_Setting);
+
+         when Up_Press =>
+            Next_Value (This.Current_Setting);
+            --  Next_Value_Fast (This.Current_Setting);
+         when Down_Press =>
+            Prev_Value (This.Current_Setting);
+            --  Prev_Value_Fast (This.Current_Setting);
+
+         when A_Press =>
             case This.Current_Setting is
                when Note => Note_Mode_Next;
 
                when others => null;
             end case;
 
-         when Right_Press =>
+         when B_Press =>
             case This.Current_Setting is
                when CC_A => Project.CC_Toggle (Step, A);
                when CC_B => Project.CC_Toggle (Step, B);
@@ -166,31 +179,11 @@ package body WNM.GUI.Menu.Step_Settings is
                when CC_D => Project.CC_Toggle (Step, D);
                when others => null;
             end case;
-
-         when Encoder_Right =>
-            case Event.Value is
-               when 0 =>
-                  null;
-               when 1 =>
-                  Next_Value (This.Current_Setting);
-               when 2 .. Integer'Last =>
-                  Next_Value_Fast (This.Current_Setting);
-               when -1 =>
-                  Prev_Value (This.Current_Setting);
-               when Integer'First .. -2 =>
-                  Prev_Value_Fast (This.Current_Setting);
-            end case;
-
-         when Encoder_Left =>
-            if Event.Value > 0 then
-               Next (This.Current_Setting);
-            elsif Event.Value < 0 then
-               Prev (This.Current_Setting);
-            end if;
       end case;
+
    end On_Event;
 
-      ---------------
+   ---------------
    -- On_Pushed --
    ---------------
 

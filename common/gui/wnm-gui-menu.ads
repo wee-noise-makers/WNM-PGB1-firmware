@@ -29,18 +29,16 @@ package WNM.GUI.Menu is
    function In_Menu return Boolean;
    procedure Draw;
 
-   type Menu_Event_Kind is (Left_Press,
+   type Menu_Event_Kind is (Up_Press,
+                            Down_Press,
+                            Left_Press,
                             Right_Press,
-                            Encoder_Left,
-                            Encoder_Right);
+                            A_Press,
+                            B_Press);
 
-   type Menu_Event (Kind : Menu_Event_Kind := Left_Press) is record
-      case Kind is
-         when Encoder_Left | Encoder_Right =>
-            Value : Integer;
-         when others =>
-            null;
-      end case;
+   type Menu_Event is record
+      Kind : Menu_Event_Kind;
+      A_Is_Pressed, B_Is_Pressed : Boolean;
    end record;
 
    procedure On_Event (Event : Menu_Event);

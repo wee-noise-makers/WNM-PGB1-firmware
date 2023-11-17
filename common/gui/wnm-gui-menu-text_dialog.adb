@@ -125,9 +125,9 @@ package body WNM.GUI.Menu.Text_Dialog is
    is
    begin
       case Event.Kind is
-         when Left_Press =>
+         when A_Press =>
             Menu.Pop (Exit_Value => Success);
-         when Right_Press =>
+         when B_Press =>
 
             if This.Len > 1 then
                if This.Index = This.Text'First + This.Len - 1 then
@@ -140,41 +140,41 @@ package body WNM.GUI.Menu.Text_Dialog is
                Menu.Pop (Exit_Value => Failure);
             end if;
 
-         when Encoder_Right =>
-
+         when Right_Press =>
             --  Move cursor and increase length if necessary
-
-            if Event.Value > 0 then
-               if This.Index < This.Text'First + This.Len - 1 then
-                  This.Index := This.Index + 1;
-               elsif This.Index /= This.Text'Last then
-                  This.Index := This.Index + 1;
-                  This.Len   := This.Len + 1;
-                  This.Text (This.Index) := 'A';
-               end if;
-            elsif Event.Value < 0 then
-               if This.Index > This.Text'First then
-                  This.Index := This.Index - 1;
-               end if;
+            if This.Index < This.Text'First + This.Len - 1 then
+               This.Index := This.Index + 1;
+            elsif This.Index /= This.Text'Last then
+               This.Index := This.Index + 1;
+               This.Len   := This.Len + 1;
+               This.Text (This.Index) := 'A';
             end if;
 
-         when Encoder_Left =>
+         when Left_Press =>
+
+            if This.Index > This.Text'First then
+               This.Index := This.Index - 1;
+            end if;
+
+         when Up_Press =>
             declare
                C : Character renames This.Text (This.Index);
             begin
-               if Event.Value > 0 then
-                  if C > Valid_Character'First then
-                     C := Character'Pred (C);
-                  else
-                     C := Valid_Character'Last;
-                  end if;
+               if C > Valid_Character'First then
+                  C := Character'Pred (C);
+               else
+                  C := Valid_Character'Last;
+               end if;
+            end;
 
-               elsif Event.Value < 0 then
-                  if C < Valid_Character'Last then
-                     C := Character'Succ (C);
-                  else
-                     C := Valid_Character'First;
-                  end if;
+         when Down_Press =>
+            declare
+               C : Character renames This.Text (This.Index);
+            begin
+               if C < Valid_Character'Last then
+                  C := Character'Succ (C);
+               else
+                  C := Valid_Character'First;
                end if;
             end;
       end case;

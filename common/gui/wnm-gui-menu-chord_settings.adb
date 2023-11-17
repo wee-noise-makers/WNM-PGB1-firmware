@@ -118,23 +118,17 @@ package body WNM.GUI.Menu.Chord_Settings is
    begin
       case Event.Kind is
          when Left_Press =>
-            null;
+            Prev (This.Current_Setting);
          when Right_Press =>
+            Next (This.Current_Setting);
+         when Up_Press =>
+            WNM.Project.Next_Value (This.Current_Setting);
+         when Down_Press =>
+            WNM.Project.Prev_Value (This.Current_Setting);
+         when A_Press =>
             null;
-
-         when Encoder_Right =>
-            if Event.Value > 0 then
-               WNM.Project.Next_Value (This.Current_Setting);
-            else
-               WNM.Project.Prev_Value (This.Current_Setting);
-            end if;
-
-         when Encoder_Left =>
-            if Event.Value > 0 then
-               Next (This.Current_Setting);
-            elsif Event.Value < 0 then
-               Prev (This.Current_Setting);
-            end if;
+         when B_Press =>
+            null;
       end case;
    end On_Event;
 

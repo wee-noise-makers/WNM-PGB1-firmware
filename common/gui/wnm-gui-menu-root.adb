@@ -94,7 +94,7 @@ package body WNM.GUI.Menu.Root is
    is
    begin
       case Event.Kind is
-         when Left_Press =>
+         when A_Press =>
             case This.Item is
                when Save_Project =>
                   Menu.Save_Project.Push_Window;
@@ -129,25 +129,26 @@ package body WNM.GUI.Menu.Root is
                --     null;
             end case;
 
-         when Right_Press =>
+         when B_Press =>
             Menu.Pop (Exit_Value => None);
 
-         when Encoder_Right =>
+         when Up_Press =>
+            null;
+         when Down_Press =>
             null;
 
-         when Encoder_Left =>
-            if Event.Value > 0 then
-               if This.Item /= Menu_Items'Last then
-                  This.Item := Menu_Items'Succ (This.Item);
-               else
-                  This.Item := Menu_Items'First;
-               end if;
-            elsif Event.Value < 0 then
-               if This.Item /= Menu_Items'First then
-                  This.Item := Menu_Items'Pred (This.Item);
-               else
-                  This.Item := Menu_Items'Last;
-               end if;
+         when Right_Press =>
+            if This.Item /= Menu_Items'Last then
+               This.Item := Menu_Items'Succ (This.Item);
+            else
+               This.Item := Menu_Items'First;
+            end if;
+
+         when Left_Press =>
+            if This.Item /= Menu_Items'First then
+               This.Item := Menu_Items'Pred (This.Item);
+            else
+               This.Item := Menu_Items'Last;
             end if;
       end case;
    end On_Event;

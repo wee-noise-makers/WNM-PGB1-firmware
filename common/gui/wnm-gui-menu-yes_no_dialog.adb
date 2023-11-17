@@ -68,15 +68,15 @@ package body WNM.GUI.Menu.Yes_No_Dialog is
    is
    begin
       case Event.Kind is
-         when Left_Press =>
+         when A_Press =>
             if This.Yes then
                Menu.Pop (Exit_Value => Success);
             else
                Menu.Pop (Exit_Value => Failure);
             end if;
-         when Right_Press =>
+         when B_Press =>
             Menu.Pop (Exit_Value => Failure);
-         when Encoder_Left =>
+         when Right_Press | Left_Press =>
             This.Yes := not This.Yes;
          when others =>
             null;

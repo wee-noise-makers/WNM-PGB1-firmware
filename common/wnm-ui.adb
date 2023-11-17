@@ -93,16 +93,45 @@ package body WNM.UI is
    begin
       WNM.UI.Logs.Log_Button_Event (B, Evt);
 
-      if GUI.Menu.In_Menu and then Evt = On_Press then
-         if B = Encoder_L then
-            GUI.Menu.On_Event ((Kind => GUI.Menu.Left_Press));
-            return;
-         end if;
+      if B in PAD_Up | PAD_Down | PAD_Left | PAD_Right | PAD_A | PAD_B
+        and then
+          Evt = On_Press
+      then
+            case Current_Input_Mode is
+            when Volume_BPM_Mute | Volume_BPM_Solo =>
+               case B is
+                  when PAD_Up =>
+                     WNM.Project.Change_Main_Volume (1);
+                  when PAD_Down =>
+                     WNM.Project.Change_Main_Volume (-1);
+                  when PAD_Left =>
+                     WNM.Project.Change_BPM (-1);
+                  when PAD_Right =>
+                     WNM.Project.Change_BPM (1);
+                  when others =>
+                     null;
+               end case;
+            when others =>
+               declare
+                  Menu_Evt : GUI.Menu.Menu_Event;
+               begin
+                  --  TODO...
+                  Menu_Evt.A_Is_Pressed := False;
+                  Menu_Evt.B_Is_Pressed := False;
 
-         if B = Encoder_R then
-            GUI.Menu.On_Event ((Kind => GUI.Menu.Right_Press));
-            return;
-         end if;
+                  Menu_Evt.Kind := (case B is
+                                       when PAD_Up => GUI.Menu.Up_Press,
+                                       when PAD_Down => GUI.Menu.Down_Press,
+                                       when PAD_Left => GUI.Menu.Left_Press,
+                                       when PAD_Right => GUI.Menu.Right_Press,
+                                       when PAD_A => GUI.Menu.A_Press,
+                                       when PAD_B => GUI.Menu.B_Press,
+                                       when others => raise Program_Error);
+
+                  GUI.Menu.On_Event (Menu_Evt);
+               end;
+            end case;
+         return;
       end if;
 
       case Current_Input_Mode is
@@ -383,167 +412,6 @@ package body WNM.UI is
             end if;
       end case;
 
-      --  case Current_Input_Mode is
-      --
-      --     when Pattern_Mode =>
-      --        if B in B1 .. B16 and then Evt = On_Press then
-      --           --  Play the pattern coresponding to the button
-      --           Pattern_Sequencer.Add_To_Sequence (To_Value (B));
-      --           Pattern_Sequencer.End_Sequence_Edit;
-      --        elsif B = Rec and then Evt = On_Press then
-      --           Current_Input_Mode := Pattern_Chaining;
-      --        end if;
-      --
-      --     when Track_Mode =>
-      --        null;
-      --
-      --     when Step_Mode =>
-      --        null;
-      --
-      --  when Note =>
-      --     case Evt is
-      --        when On_Press =>
-      --           case B is
-      --              when Func =>
-      --                 --  Switch to Func mode
-      --                    Current_Input_Mode := FX_Alt;
-      --              when Play =>
-      --                 Sequencer.Play_Pause;
-      --              when Rec =>
-      --                 Sequencer.Rec_Pressed;
-      --              when Keyboard_Button =>
-      --                 if Sequencer.State
-      --                   in Sequencer.Edit | Sequencer.Play_And_Edit
-      --                 then
-      --                    Editing_Step := To_Value (B);
-      --                 end if;
-      --
-      --                 Sequencer.On_Press (B);
-      --              when Step_Button =>
-      --                 GUI.Menu.Open (GUI.Menu.Step_Menu);
-      --                 Current_Input_Mode := Step_Select;
-      --              when Track_Button =>
-      --                 GUI.Menu.Open (GUI.Menu.Track_Menu);
-      --                 Current_Input_Mode := Track_Select;
-      --              when Pattern_Button =>
-      --                 GUI.Menu.Open (GUI.Menu.Pattern_Menu);
-      --                 Current_Input_Mode := Pattern_Mode;
-      --              when Menu =>
-      --                 GUI.Menu.Root.Push_Root_Window;
-      --              when others => null;
-      --           end case;
-      --        when On_Long_Press =>
-      --           case B is
-      --              when Play =>
-      --                 --  Switch to volume/BPM config mode
-      --                 Current_Input_Mode := Volume_BPM;
-      --              when Rec =>
-      --                 --  Switch to squence edition mode
-      --                 Sequencer.Rec_Long;
-      --              when B1 .. B16 =>
-      --
-      --                 GUI.Menu.Open (GUI.Menu.Step_Menu);
-      --                 Editing_Step := To_Value (B);
-      --
-      --              when Pattern_Button =>
-      --                 GUI.Menu.Open (GUI.Menu.Pattern_Menu);
-      --                 Current_Input_Mode := Pattern_Select;
-      --              when others => null;
-      --           end case;
-      --        when On_Release =>
-      --           case B is
-      --              when Keyboard_Button =>
-      --                 --  Release note or octave Up/Down
-      --                 Sequencer.On_Release (B);
-      --              when Rec =>
-      --                 Sequencer.Rec_Release;
-      --              when others => null;
-      --           end case;
-      --        when others => null;
-      --     end case;
-      --
-      --     when Volume_BPM =>
-      --        if B = Play and Evt = On_Release then
-      --           Current_Input_Mode := Last_Main_Mode;
-      --           WNM.Pattern_Sequencer.End_Sequence_Edit;
-      --        end if;
-      --
-      --        if B in B1 .. B16 and Evt = On_Press then
-      --           WNM.Synth.Toggle_Mute (To_Value (B));
-      --        end if;
-      --
-      --     when FX_Alt =>
-      --        case Evt is
-      --           when On_Press =>
-      --              case B is
-      --                 when Keyboard_Button =>
-      --                    Toggle_FX (B);
-      --                 when Pattern_Button =>
-      --                    Copy_T := WNM.Sequence_Copy.Start_Copy_Pattern;
-      --                    Current_Input_Mode := Copy;
-      --                 when Track_Button =>
-      --                    Copy_T := WNM.Sequence_Copy.Start_Copy_Track
-      --                      (WNM.Pattern_Sequencer.Current_Pattern);
-      --
-      --                    Current_Input_Mode := Copy;
-      --                 when Step_Button =>
-      --                    Copy_T := WNM.Sequence_Copy.Start_Copy_Step
-      --                      (WNM.Pattern_Sequencer.Current_Pattern, Track);
-      --
-      --                    Current_Input_Mode := Copy;
-      --                 when others =>
-      --                    null;
-      --              end case;
-      --           when On_Release =>
-      --              if B = Func then
-      --                 Current_Input_Mode := Last_Main_Mode;
-      --              end if;
-      --           when others =>
-      --              null;
-      --        end case;
-      --
-      --     when Copy =>
-      --        if Evt = On_Release and then B = Func then
-      --           Current_Input_Mode := Last_Main_Mode;
-      --        elsif Evt = On_Press then
-      --           WNM.Sequence_Copy.Apply (Copy_T, B);
-      --           if WNM.Sequence_Copy.Is_Complete (Copy_T) then
-      --              WNM.GUI.Popup.Display ("  copied  ", 500);
-      --              WNM.Sequencer.Do_Copy (Copy_T);
-      --           end if;
-      --        end if;
-      --
-      --     when Step_Select =>
-      --        if B in B1 .. B16 and then Evt = On_Press then
-      --           Editing_Step := To_Value (B);
-      --        elsif B = Step_Button and then Evt = On_Release then
-      --           Current_Input_Mode := Last_Main_Mode;
-      --        end if;
-      --
-      --     when Track_Select =>
-      --        if B in B1 .. B16 and then Evt = On_Press then
-      --           Sequencer.Select_Track (To_Value (B));
-      --        elsif B = Track_Button and then Evt = On_Release then
-      --           Current_Input_Mode := Last_Main_Mode;
-      --        end if;
-      --
-      --     when Pattern_Select =>
-      --        if B in B1 .. B16 and then Evt = On_Press then
-      --           Editing_Pattern := To_Value (B);
-      --        elsif B = Rec and then Evt = On_Press then
-      --           Current_Input_Mode := Pattern_Chaining;
-      --        elsif B = Pattern_Button and then Evt = On_Release then
-      --           Current_Input_Mode := Last_Main_Mode;
-      --        end if;
-      --
-      --     when Pattern_Chaining =>
-      --        if B in B1 .. B16 and then Evt = On_Press then
-      --           Pattern_Sequencer.Add_To_Sequence (To_Value (B));
-      --        elsif B = Pattern_Button and then Evt = On_Release then
-      --           Pattern_Sequencer.End_Sequence_Edit;
-      --           Current_Input_Mode := Last_Main_Mode;
-      --        end if;
-      --  end case;
    end Signal_Event;
 
    ---------------
@@ -576,40 +444,47 @@ package body WNM.UI is
    -- Has_Long_Press --
    --------------------
 
-   function Has_Long_Press (B : Button) return Boolean is
-   begin
-      return (case B is
-              when B1             => False,
-              when B2             => False,
-              when B3             => False,
-              when B4             => False,
-              when B5             => False,
-              when B6             => False,
-              when B7             => False,
-              when B8             => False,
-              when B9             => False,
-              when B10            => False,
-              when B11            => False,
-              when B12            => False,
-              when B13            => False,
-              when B14            => False,
-              when B15            => False,
-              when B16            => False,
-              when Rec            => False,
-              when Play           => True,
-              when Func           => False,
-              when Step_Button    => False,
-              when Track_Button   => False,
-              when Pattern_Button => False,
-              when Chord_Button   => False,
-              when Menu           => False,
-              when Encoder_L      => True,
-              when Encoder_R      => True);
-   end Has_Long_Press;
+   function Has_Long_Press (B : Button) return Boolean
+   is (case B is
+          when B1             => False,
+          when B2             => False,
+          when B3             => False,
+          when B4             => False,
+          when B5             => False,
+          when B6             => False,
+          when B7             => False,
+          when B8             => False,
+          when B9             => False,
+          when B10            => False,
+          when B11            => False,
+          when B12            => False,
+          when B13            => False,
+          when B14            => False,
+          when B15            => False,
+          when B16            => False,
+          when Rec            => False,
+          when Play           => True,
+          when Func           => False,
+          when Step_Button    => False,
+          when Track_Button   => False,
+          when Pattern_Button => False,
+          when Chord_Button   => False,
+          when Menu           => False,
+          when PAD_Up         => True,
+          when PAD_Down       => True,
+          when PAD_Left       => True,
+          when PAD_Right      => True,
+          when PAD_A          => False,
+          when PAD_B          => False);
+
+   function Has_Repeat_Press (B : Button) return Boolean
+   is (case B is
+          when PAD_Up .. PAD_Right => True,
+          when others => False);
 
    Last_State    : WNM_HAL.Buttons_State := (others => Up);
-   Pressed_Since : array (Button) of WNM.Time.Time_Microseconds :=
-     (others => 0);
+   Long_Press_Deadline : array (Button) of WNM.Time.Time_Microseconds :=
+     (others => WNM.Time.Time_Microseconds'Last);
    Last_Event    : array (Button) of Buttton_Event := (others => On_Release);
 
    ------------
@@ -617,9 +492,6 @@ package body WNM.UI is
    ------------
 
    procedure Update is
-      L_Enco : Integer;
-      R_Enco : Integer;
-
       Now : constant Time.Time_Microseconds := Time.Clock;
 
       State : WNM_HAL.Buttons_State;
@@ -637,10 +509,16 @@ package body WNM.UI is
               and then
                 Last_Event (B) = Waiting_For_Long_Press
               and then
-                Pressed_Since (B) + Long_Press_Time_Span_Microseconds < Now
+                Long_Press_Deadline (B) < Now
             then
-               Last_Event (B) := On_Long_Press;
-               Signal_Event (B, Last_Event (B));
+               if Has_Repeat_Press (B) then
+                  Signal_Event (B, On_Press);
+                  Long_Press_Deadline (B) :=
+                    Now + Repeat_Press_Time_Span_Microseconds;
+               else
+                  Last_Event (B) := On_Long_Press;
+                  Signal_Event (B, Last_Event (B));
+               end if;
             end if;
 
          elsif State (B) = Down then
@@ -652,7 +530,8 @@ package body WNM.UI is
                --  pressed.
 
                Last_Event (B) := Waiting_For_Long_Press;
-               Pressed_Since (B) := Now;
+               Long_Press_Deadline (B) :=
+                 Now + Long_Press_Time_Span_Microseconds;
             else
                Last_Event (B) := On_Press;
                Signal_Event (B, Last_Event (B));
@@ -673,35 +552,6 @@ package body WNM.UI is
 
          Last_State (B) := State (B);
       end loop;
-
-      --------------
-      -- Encoders --
-      --------------
-
-      L_Enco := WNM_HAL.Left_Encoder;
-      if L_Enco /= 0 then
-         WNM.UI.Logs.Log_Left_Encoder (L_Enco);
-      end if;
-
-      R_Enco := WNM_HAL.Right_Encoder;
-      if R_Enco /= 0 then
-         WNM.UI.Logs.Log_Right_Encoder (R_Enco);
-      end if;
-
-      case Current_Input_Mode is
-         when Volume_BPM_Mute | Volume_BPM_Solo =>
-            WNM.Project.Change_BPM (R_Enco);
-            WNM.Project.Change_Main_Volume (L_Enco);
-         when others =>
-            if L_Enco /= 0 then
-               GUI.Menu.On_Event ((Kind  => GUI.Menu.Encoder_Left,
-                                   Value => L_Enco));
-            end if;
-            if R_Enco /= 0 then
-               GUI.Menu.On_Event ((Kind  => GUI.Menu.Encoder_Right,
-                                Value => R_Enco));
-            end if;
-      end case;
    end Update;
 
    -----------------

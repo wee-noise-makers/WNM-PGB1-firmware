@@ -66,21 +66,22 @@ package body WNM.GUI.Menu.Project_Select is
    is
    begin
       case Event.Kind is
-         when Left_Press =>
+         when A_Press =>
             Menu.Pop (Exit_Value => Success);
-         when Right_Press =>
+         when B_Press =>
             Menu.Pop (Exit_Value => Failure);
-         when Encoder_Right =>
-            if Event.Value > 0 then
-               if This.Index /= Valid_Prj_Index'Last then
-                  This.Index := This.Index + 1;
-               end if;
-            elsif Event.Value < 0 then
-               if This.Index /= Valid_Prj_Index'First then
-                  This.Index := This.Index - 1;
-               end if;
+         when Down_Press =>
+            if This.Index /= Valid_Prj_Index'Last then
+               This.Index := This.Index + 1;
             end if;
-         when Encoder_Left =>
+         when Up_Press =>
+            if This.Index /= Valid_Prj_Index'First then
+               This.Index := This.Index - 1;
+            end if;
+
+         when Right_Press =>
+            null;
+         when Left_Press =>
             null;
       end case;
    end On_Event;

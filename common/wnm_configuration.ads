@@ -13,7 +13,7 @@ package WNM_Configuration is
                    Rec, Play,
                    Menu, Func, Step_Button, Track_Button, Pattern_Button,
                    Chord_Button,
-                   Encoder_L, Encoder_R);
+                   PAD_Up, PAD_Down, PAD_Left, PAD_Right, PAD_A, PAD_B);
 
    subtype LED is Button range B1 .. Chord_Button;
 
