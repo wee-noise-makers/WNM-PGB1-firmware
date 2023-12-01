@@ -33,6 +33,8 @@ with WNM.File_System;
 with WNM.Persistent;
 with WNM.Sample_Library;
 with WNM.Project.Library;
+with WNM.Synth.Mixer;
+with WNM.Coproc;
 
 package body WNM.Tasks is
 
@@ -40,20 +42,13 @@ package body WNM.Tasks is
    UI_Period_Miliseconds : constant := 20;
    LED_Period_Miliseconds : constant := 100;
 
-   type Buffer_Id is mod 2;
-   Flip_Buffers : array (Buffer_Id) of Stereo_Buffer :=
-     (others => (others => (0, 0)));
-   Ready_To_Play : Buffer_Id := Buffer_Id'First
-     with Volatile;
-   New_Buffer_Needed : Boolean := True
-     with Volatile;
-
    -------------------------
    -- Sequencer_1khz_Tick --
    -------------------------
 
    procedure Sequencer_1khz_Tick is
    begin
+      WNM_HAL.Set_Indicator_IO (WNM_HAL.GP17);
       WNM.MIDI_Clock.Update;
       WNM.Short_Term_Sequencer.Update (Clock);
       WNM.Note_Off_Sequencer.Update (Clock);
@@ -67,7 +62,32 @@ package body WNM.Tasks is
       end if;
 
       Systick_Count := Systick_Count + 1;
+      WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP17);
    end Sequencer_1khz_Tick;
+
+   ------------------------------
+   -- Sequencer_Coproc_Receive --
+   ------------------------------
+
+   procedure Sequencer_Coproc_Receive is
+      use WNM.Coproc;
+
+      Msg     : WNM.Coproc.Message;
+      Success : Boolean;
+   begin
+
+      loop
+         WNM.Coproc.Pop_For_Main (Msg, Success);
+
+         exit when not Success;
+
+         if Msg.Kind = Coproc.Buffer_Available then
+            WNM_HAL.Set_Indicator_IO (WNM_HAL.GP16);
+            WNM.Synth.Mixer.Push_To_Mix (Msg.Buffer_Id);
+            WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP16);
+         end if;
+      end loop;
+   end Sequencer_Coproc_Receive;
 
    --------------------
    -- Sequencer_Core --
@@ -85,6 +105,8 @@ package body WNM.Tasks is
 
       WNM.GUI.Menu.Track_Settings.Push_Window;
 
+      WNM.Synth.Mixer.Start_Mixer;
+
       loop
          WNM.GUI.Update.Update;
          WNM.Time.Delay_Milliseconds (1000 / 30);
@@ -98,11 +120,10 @@ package body WNM.Tasks is
    procedure Synth_Next_Buffer (Buffer             : out System.Address;
                                 Stereo_Point_Count : out HAL.UInt32)
    is
-      Selected_Buffer : constant Buffer_Id := Ready_To_Play;
    begin
-      Buffer := Flip_Buffers (Selected_Buffer)'Address;
-      Stereo_Point_Count := Flip_Buffers (Selected_Buffer)'Length;
-      New_Buffer_Needed := True;
+      WNM_HAL.Set_Indicator_IO (WNM_HAL.GP18);
+      WNM.Synth.Mixer.Synth_Out_Buffer (Buffer, Stereo_Point_Count);
+      WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP18);
    end Synth_Next_Buffer;
 
    ----------------
@@ -110,17 +131,9 @@ package body WNM.Tasks is
    ----------------
 
    procedure Synth_Core is
-      Input : constant WNM_HAL.Stereo_Buffer := (others => (0, 0));
-      Buffer_To_Write : Buffer_Id;
    begin
       loop
-         if New_Buffer_Needed then
-            Buffer_To_Write := Ready_To_Play + 1;
-
-            WNM.Synth.Next_Points (Flip_Buffers (Buffer_To_Write), Input);
-            Ready_To_Play := Buffer_To_Write;
-            New_Buffer_Needed := False;
-         end if;
+         WNM.Synth.Process_Coproc_Events;
       end loop;
    end Synth_Core;
 

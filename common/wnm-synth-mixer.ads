@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2023 Fabien Chouteau                    --
+--                  Copyright (C) 2016-2017 Fabien Chouteau                  --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,52 +19,46 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Tresses;            use Tresses;
-with Tresses.Interfaces; use Tresses.Interfaces;
+with System;
+with HAL;
 
-with Tresses.FX.Bitcrusher;
+with WNM.Voices.Reverb_Voice;
+with WNM.Voices.Filter_Voice;
+with WNM.Voices.Drive_Voice;
+with WNM.Voices.Bitcrusher_Voice;
 
-private package WNM.Synth.Bitcrusher_Voice is
+package WNM.Synth.Mixer is
 
-   type Instance
-   is new Four_Params_Voice
-   with private;
+   type FX_Buffers
+   is array (WNM.Synth.FX_Kind) of WNM_HAL.Mono_Buffer;
 
-   procedure Render (This   : in out Instance;
-                     Left   : in out Tresses.Mono_Buffer;
-                     Right  : in out Tresses.Mono_Buffer);
+   type FX_Parameters
+   is array (WNM.Synth.FX_Kind) of WNM.Synth.Voice_Parameters;
 
-   P_Depth  : constant Tresses.Param_Id := 1;
-   P_Down   : constant Tresses.Param_Id := 2;
-   P_Cutoff : constant Tresses.Param_Id := 3;
-   P_Mix    : constant Tresses.Param_Id := 4;
+   type FX_Send_Buffers is record
+      L, R : FX_Buffers;
 
-   --  Interfaces --
-
-   overriding
-   function Param_Label (This : Instance; Id : Param_Id) return String
-   is (case Id is
-          when P_Depth  => "Depth",
-          when P_Down   => "Downsampling",
-          when P_Cutoff => "Cutoff",
-          when P_Mix    => "Mix");
-
-   overriding
-   function Param_Short_Label (This : Instance; Id : Param_Id)
-                               return Short_Label
-   is (case Id is
-          when P_Depth  => "DPT",
-          when P_Down   => "DSP",
-          when P_Cutoff => "CTF",
-          when P_Mix    => "MIX");
-
-private
-
-   type Instance
-   is new Four_Params_Voice
-   with record
-      BTL : Tresses.FX.Bitcrusher.Instance;
-      BTR : Tresses.FX.Bitcrusher.Instance;
+      Parameters : FX_Parameters;
    end record;
 
-end WNM.Synth.Bitcrusher_Voice;
+   type Mixer_Buffer_Index is range 0 .. 20
+     with Size => 8;
+
+   Mixer_Buffers : array (Mixer_Buffer_Index) of aliased FX_Send_Buffers;
+
+   procedure Start_Mixer;
+
+   procedure Push_To_Mix (Id : Mixer_Buffer_Index);
+
+   procedure Synth_Out_Buffer (Buffer             : out System.Address;
+                               Stereo_Point_Count : out HAL.UInt32);
+
+   function Missed_DAC_Deadlines return HAL.UInt32;
+   procedure Clear_Missed_DAC_Deadlines;
+
+   FX_Reverb   : aliased WNM.Voices.Reverb_Voice.Instance;
+   FX_Filter   : aliased WNM.Voices.Filter_Voice.Instance;
+   FX_Drive    : aliased WNM.Voices.Drive_Voice.Instance;
+   FX_Bitcrush : aliased WNM.Voices.Bitcrusher_Voice.Instance;
+
+end WNM.Synth.Mixer;

@@ -32,6 +32,8 @@ with Tresses.LFO;
 
 package WNM.Synth is
 
+   type FX_Kind is (Bypass, Overdrive, Reverb, Filter, Bitcrusher);
+
    Speech_Channel     : constant MIDI.MIDI_Channel := 1;
    Sample1_Channel    : constant MIDI.MIDI_Channel := 2;
    Sample2_Channel    : constant MIDI.MIDI_Channel := 3;
@@ -71,6 +73,8 @@ package WNM.Synth is
    subtype LFO_Compatible_CC
      is MIDI.MIDI_Data range Voice_Param_1_CC .. Voice_Pan_CC;
 
+   type Voice_Parameters is array (LFO_Compatible_CC) of Tresses.Param_Range;
+
    FX_Select_Bypass     : constant MIDI.MIDI_Data := 0;
    FX_Select_Overdrive  : constant MIDI.MIDI_Data := 1;
    FX_Select_Reverb     : constant MIDI.MIDI_Data := 2;
@@ -90,8 +94,7 @@ package WNM.Synth is
    --  How many audio samples have been sent to the DAC so far.
    --  This number can be used to count time between two events.
 
-   procedure Next_Points (Output : out WNM_HAL.Stereo_Buffer;
-                          Input  :     WNM_HAL.Stereo_Buffer);
+   procedure Process_Coproc_Events;
 
    procedure Set_Passthrough (Kind : Audio_Input_Kind);
    function Get_Passthrough return Audio_Input_Kind;

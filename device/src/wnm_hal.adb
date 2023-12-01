@@ -33,43 +33,45 @@ with RP.Multicore;
 with RP.Multicore.FIFO;
 
 with Noise_Nugget_SDK.WS2812;
-with Noise_Nugget_SDK.Encoders;
 with Noise_Nugget_SDK.Audio;
-
-with WNM_HAL.OLED;
-with WNM_HAL.Synth_Core;
+with Noise_Nugget_SDK.Button_Matrix_Definition;
+with Noise_Nugget_SDK.Button_Matrix;
+with Noise_Nugget_SDK.Screen.SSD1306;
 
 with Cortex_M.Systick;
 
 package body WNM_HAL is
 
-   -------------
-   -- Buttons --
-   -------------
+   package BM_Definition is new Noise_Nugget_SDK.Button_Matrix_Definition
+     (Row_Count    => 6,
+      Column_Count => 5);
 
-   type Row_Id is range 1 .. 6;
-   type Col_Id is range 1 .. 5;
-   type IO_State is array (Col_Id, Row_Id) of Boolean;
+   package BM is new Noise_Nugget_SDK.Button_Matrix
+     (Definition => BM_Definition,
+      Column_Pins => (1 => 15,
+                      2 => 20,
+                      3 => 26,
+                      4 => 28,
+                      5 => 29),
+      Row_Pins    => (1 => 21,
+                      2 => 22,
+                      3 => 23,
+                      4 => 24,
+                      5 => 25,
+                      6 => 27)
+     );
 
-   B_Rows : array (Row_Id) of RP.GPIO.GPIO_Point :=
-     (1 => (Pin => 25),
-      2 => (Pin => 24),
-      3 => (Pin => 23),
-      4 => (Pin => 20),
-      5 => (Pin => 21),
-      6 => (Pin => 22));
+   B_Play_Power : RP.GPIO.GPIO_Point := (Pin => 14);
 
    Enable_Indicator_IO : constant Boolean := True;
-   Indicator_IO : RP.GPIO.GPIO_Point := (Pin => 19);
-   B_Cols : array (Col_Id) of RP.GPIO.GPIO_Point :=
-     (1 => (Pin => 14),
-      2 => (Pin => 15),
-      3 => (Pin => 16),
-      4 => (Pin => 17),
-      5 => (Pin => 18));
+   Indicator_IO : array (Indicator_IO_Line) of
+     RP.GPIO.GPIO_Point := (GP16 => (Pin => 16),
+                            GP17 => (Pin => 17),
+                            GP18 => (Pin => 18),
+                            GP19 => (Pin => 19));
 
-   B_Play_Power : RP.GPIO.GPIO_Point := (Pin => 19);
 
+   package Screen renames Noise_Nugget_SDK.Screen.SSD1306;
    ----------
    -- LEDs --
    ----------
@@ -95,42 +97,43 @@ package body WNM_HAL is
    -----------
 
    function State return Buttons_State is
-      IO : IO_State;
    begin
-      for Col in Col_Id loop
-         B_Cols (Col).Set;
-         for Row in Row_Id loop
-            IO (Col, Row) := B_Rows (Row).Set;
-         end loop;
-         B_Cols (Col).Clear;
-      end loop;
-
+      BM.Update;
       declare
+         IO : constant BM_Definition.Button_Pressed_Array := BM.State;
+         S_PAD_Left       : constant Boolean := IO (1, 1);
+         S_Track_Button   : constant Boolean := IO (1, 2);
+         S_Step_Button    : constant Boolean := IO (1, 3);
+         S_Rec            : constant Boolean := IO (1, 4);
+         S_PAD_A          : constant Boolean := IO (1, 5);
+         S_Func           : constant Boolean := IO (1, 6);
+
+         S_PAD_Down       : constant Boolean := IO (2, 1);
          S_B1             : constant Boolean := IO (2, 2);
-         S_B2             : constant Boolean := IO (3, 2);
-         S_B3             : constant Boolean := IO (4, 2);
-         S_B4             : constant Boolean := IO (5, 2);
-         S_B5             : constant Boolean := IO (5, 5);
-         S_B6             : constant Boolean := IO (4, 5);
-         S_B7             : constant Boolean := IO (3, 5);
-         S_B8             : constant Boolean := IO (2, 5);
          S_B9             : constant Boolean := IO (2, 3);
+         S_B16            : constant Boolean := IO (2, 4);
+         S_B8             : constant Boolean := IO (2, 5);
+         S_Pattern_Button : constant Boolean := IO (2, 6);
+
+         S_PAD_Up         : constant Boolean := IO (3, 1);
+         S_B2             : constant Boolean := IO (3, 2);
          S_B10            : constant Boolean := IO (3, 3);
+         S_B15            : constant Boolean := IO (3, 4);
+         S_B7             : constant Boolean := IO (3, 5);
+         S_Chord_Button   : constant Boolean := IO (3, 6);
+
+         S_PAD_Right      : constant Boolean := IO (4, 1);
+         S_B3             : constant Boolean := IO (4, 2);
          S_B11            : constant Boolean := IO (4, 3);
+         S_B14            : constant Boolean := IO (4, 4);
+         S_B6             : constant Boolean := IO (4, 5);
+         S_Menu           : constant Boolean := IO (4, 6);
+
+         S_B4             : constant Boolean := IO (5, 2);
          S_B12            : constant Boolean := IO (5, 3);
          S_B13            : constant Boolean := IO (5, 4);
-         S_B14            : constant Boolean := IO (4, 4);
-         S_B15            : constant Boolean := IO (3, 4);
-         S_B16            : constant Boolean := IO (2, 4);
-         S_Rec            : constant Boolean := IO (1, 4);
-         S_Menu           : constant Boolean := IO (4, 6);
-         S_Func           : constant Boolean := IO (1, 6);
-         S_Step_Button    : constant Boolean := IO (1, 3);
-         S_Track_Button   : constant Boolean := IO (1, 2);
-         S_Pattern_Button : constant Boolean := IO (2, 6);
-         S_Chord_Button   : constant Boolean := IO (3, 6);
-         S_Encoder_L      : constant Boolean := IO (1, 1);
-         S_Encoder_R      : constant Boolean := IO (2, 1);
+         S_B5             : constant Boolean := IO (5, 5);
+         S_PAD_B          : constant Boolean := IO (5, 6);
 
          S_Play           : constant Boolean := not B_Play_Power.Set;
       begin
@@ -160,8 +163,12 @@ package body WNM_HAL is
             Track_Button   => (if S_Track_Button then Down else Up),
             Pattern_Button => (if S_Pattern_Button then Down else Up),
             Chord_Button   => (if S_Chord_Button then Down else Up),
-            Encoder_L      => (if S_Encoder_L then Down else Up),
-            Encoder_R      => (if S_Encoder_R then Down else Up));
+            PAD_Up         => (if S_PAD_Up then Down else Up),
+            PAD_Down       => (if S_PAD_Down then Down else Up),
+            PAD_Left       => (if S_PAD_Left then Down else Up),
+            PAD_Right      => (if S_PAD_Right then Down else Up),
+            PAD_A          => (if S_PAD_A then Down else Up),
+            PAD_B          => (if S_PAD_B then Down else Up));
       end;
    end State;
 
@@ -171,7 +178,7 @@ package body WNM_HAL is
 
    function Left_Encoder return Integer is
    begin
-      return Noise_Nugget_SDK.Encoders.Delta_Value (1);
+      return 0;
    end Left_Encoder;
 
    -------------------
@@ -180,7 +187,7 @@ package body WNM_HAL is
 
    function Right_Encoder return Integer is
    begin
-      return Noise_Nugget_SDK.Encoders.Delta_Value (2);
+      return 0;
    end Right_Encoder;
 
    ---------
@@ -190,7 +197,7 @@ package body WNM_HAL is
    procedure Set (L : LED; RGB : RGB_Rec) is
    begin
       LED_Strip.Set_RGB (LED_Strip.LED_Id (LED_Position (L)),
-                         RGB.R, RGB.G, RGB.B);
+                         RGB.R / 6, RGB.G / 6, RGB.B / 6);
    end Set;
 
    ----------------
@@ -216,21 +223,23 @@ package body WNM_HAL is
    ------------------
 
    procedure Clear_Pixels
-     renames WNM_HAL.OLED.Clear;
+     renames Screen.Clear;
 
    ---------------
    -- Set_Pixel --
    ---------------
 
-   procedure Set_Pixel (X : Pix_X; Y : Pix_Y; On : Boolean := True)
-     renames WNM_HAL.OLED.Set_Pixel;
+   procedure Set_Pixel (X : Pix_X; Y : Pix_Y; On : Boolean := True) is
+   begin
+      Screen.Set_Pixel (Screen.Pix_X (X), Screen.Pix_Y (Y), On => On);
+   end Set_Pixel;
 
    -------------------
    -- Update_Screen --
    -------------------
 
    procedure Update_Screen
-     renames WNM_HAL.OLED.Update;
+     renames Screen.Update;
 
    ------------------------
    -- Select_Audio_Input --
@@ -289,19 +298,30 @@ package body WNM_HAL is
                   Volume       :        Audio_Volume;
                   Pan          :        Audio_Pan)
    is
-      pragma Unreferenced (Volume, Pan);
-      use Interfaces;
-      use Tresses;
-      Point : S32;
-   begin
-      for Index in Input'Range loop
-         Point := S32 (Out_L (Index)) + S32 (Input (Index));
-         Tresses.DSP.Clip_S16 (Point);
-         Out_L (Index) := S16 (Point);
+      Volume_F : constant Float := Float (Volume) / Float (Audio_Volume'Last);
 
-         Point := S32 (Out_R (Index)) + S32 (Input (Index));
-         Tresses.DSP.Clip_S16 (Point);
-         Out_R (Index) := S16 (Point);
+      procedure Point_Mix (P_Out : in out Mono_Point;
+                           P_In  :        Mono_Point)
+      is
+         use Interfaces;
+
+         Res : constant Integer_32 :=
+           Integer_32 (P_Out) + Integer_32 (P_In) / 2;
+      begin
+
+         if Res > Integer_32 (Mono_Point'Last) then
+            P_Out := Mono_Point'Last;
+         elsif Res < Integer_32 (Mono_Point'First) then
+            P_Out := Mono_Point'First;
+         else
+            P_Out := Mono_Point (Res);
+         end if;
+      end Point_Mix;
+   begin
+
+      for Idx in Out_L'Range loop
+         Point_Mix (Out_L (Idx), Input (Idx));
+         Point_Mix (Out_R (Idx), Input (Idx));
       end loop;
    end Mix;
 
@@ -357,15 +377,27 @@ package body WNM_HAL is
    -- Sample_Data_Base --
    ----------------------
 
+   Plop_Sample : Integer;
+   pragma Import (C, Plop_Sample, "test_sample_1");
+
    function Sample_Data_Base return System.Address
-   is (System.Null_Address);
+   is (Plop_Sample'Address);
+   --  is (System.Storage_Elements.To_Address
+   --      (WNM_Configuration.Storage.Sample_Library_Base_Addr));
 
    ----------
    -- Push --
    ----------
 
-   procedure Push (D : Coproc_Data) is
+   procedure Push (Target : Coproc_Target;
+                   D      : Coproc_Data)
+   is
+      pragma Unreferenced (Target);
+      --  Target is meaningless in the device code since a CPU can only push
+      --  to the FIFO of the other CPU.
    begin
+
+
       RP.Multicore.FIFO.Push_Blocking (UInt32 (D));
    end Push;
 
@@ -373,7 +405,13 @@ package body WNM_HAL is
    -- Pop --
    ---------
 
-   procedure Pop (D : out Coproc_Data; Success : out Boolean) is
+   procedure Pop (Target  : Coproc_Target;
+                  D       : out Coproc_Data;
+                  Success : out Boolean)
+   is
+      pragma Unreferenced (Target);
+      --  Target is meaningless in the device code since a CPU can only pop
+      --  from its own FIFO.
    begin
       Success := RP.Multicore.FIFO.Try_Pop (UInt32 (D));
    end Pop;
@@ -389,17 +427,20 @@ package body WNM_HAL is
    -- Power --
    -----------
 
-   procedure Power_Down
-   is null;
+   procedure Power_Down is
+   begin
+      B_Play_Power.Configure (RP.GPIO.Output, RP.GPIO.Pull_Down);
+      B_Play_Power.Clear;
+   end Power_Down;
 
    ----------------------
    -- Set_Indicator_IO --
    ----------------------
 
-   procedure Set_Indicator_IO is
+   procedure Set_Indicator_IO (Id : Indicator_IO_Line) is
    begin
       if Enable_Indicator_IO then
-         Indicator_IO.Set;
+         Indicator_IO (Id).Set;
       end if;
    end Set_Indicator_IO;
 
@@ -407,10 +448,10 @@ package body WNM_HAL is
    -- Clear_Indicator_IO --
    ------------------------
 
-   procedure Clear_Indicator_IO is
+   procedure Clear_Indicator_IO (Id : Indicator_IO_Line) is
    begin
       if Enable_Indicator_IO then
-         Indicator_IO.Clear;
+         Indicator_IO (Id).Clear;
       end if;
    end Clear_Indicator_IO;
 
@@ -422,17 +463,14 @@ begin
    Cortex_M.Systick.Configure
      (Cortex_M.Systick.CPU_Clock,
       Generate_Interrupt => True,
-      Reload_Value       => (UInt24 (12_000_000) / 1_000) - 1);
+      Reload_Value       => UInt24 ((133_000_000 / 1_000) - 1));
 
    Cortex_M.Systick.Enable;
 
    if Enable_Indicator_IO then
-      Indicator_IO.Configure (RP.GPIO.Output);
-      Indicator_IO.Clear;
+      for Id in Indicator_IO_Line loop
+         Indicator_IO (Id).Configure (RP.GPIO.Output);
+         Indicator_IO (Id).Clear;
+      end loop;
    end if;
-   --  Start the second CPU core that will run the synth
-   RP.Multicore.Launch_Core1
-     (Trap_Vector   => WNM_HAL.Synth_Core.Trap_Vector,
-      Stack_Pointer => WNM_HAL.Synth_Core.Stack_Pointer,
-      Entry_Point   => WNM_HAL.Synth_Core.Entry_Point);
 end WNM_HAL;

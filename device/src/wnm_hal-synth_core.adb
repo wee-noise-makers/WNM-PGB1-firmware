@@ -19,8 +19,8 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Noise_Nugget_SDK.Audio;
 with WNM.Tasks;
+with RP.Multicore.FIFO;
 
 package body WNM_HAL.Synth_Core is
 
@@ -60,15 +60,8 @@ package body WNM_HAL.Synth_Core is
 
    procedure Main is
    begin
-      if not Noise_Nugget_SDK.Audio.Start
-        (WNM_Configuration.Audio.Sample_Frequency / 2,
-         Output_Callback => WNM.Tasks.Synth_Next_Buffer'Access,
-         Input_Callback  => null)
-      then
-         raise Program_Error with "MDM";
-      end if;
-
-      Noise_Nugget_SDK.Audio.Set_HP_Volume (0.7, 0.7);
+      --  Make sure we don't have data left in the FIFO after reset
+      RP.Multicore.FIFO.Drain;
 
       WNM.Tasks.Synth_Core;
    end Main;

@@ -19,10 +19,18 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-private package WNM_HAL.OLED is
+package body WNM.Voices.Reverb_Voice is
 
-   procedure Set_Pixel (PX : Pix_X; PY : Pix_Y; On : Boolean := True);
-   procedure Update;
-   procedure Clear;
+   procedure Render (This   : in out Instance;
+                     Left   : in out Tresses.Mono_Buffer;
+                     Right  : in out Tresses.Mono_Buffer)
+   is
+   begin
+      Reverb_Pck.Set_Amount (This.Rev, This.Params (P_Amount));
+      Reverb_Pck.Set_Time (This.Rev, This.Params (P_Time));
+      Reverb_Pck.Set_Diffusion (This.Rev, This.Params (P_Diffusion));
+      Reverb_Pck.Set_Low_Pass (This.Rev, This.Params (P_Cutoff));
+      Reverb_Pck.Process (This.Rev, Left, Right);
+   end Render;
 
-end WNM_HAL.OLED;
+end WNM.Voices.Reverb_Voice;

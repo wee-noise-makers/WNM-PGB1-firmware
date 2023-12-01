@@ -41,7 +41,7 @@ package body WNM.Note_Off_Sequencer is
               ((MIDI.Note_Off, Chan, Key, 0));
 
          when Internal =>
-            WNM.Coproc.Push
+            WNM.Coproc.Push_To_Synth
               ((WNM.Coproc.MIDI_Event,
                (MIDI.Note_Off, Chan, Key, 0)));
       end case;
@@ -96,6 +96,7 @@ package body WNM.Note_Off_Sequencer is
       for Target in MIDI_Target loop
          for Chan in MIDI.MIDI_Channel loop
             for Index in Event_Index loop
+
                if Events (Target, Chan, Index).Expiration /= 0
                  and then
                    Events (Target, Chan, Index).Expiration <= Now

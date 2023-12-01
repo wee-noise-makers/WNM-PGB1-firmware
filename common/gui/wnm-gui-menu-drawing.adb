@@ -792,11 +792,11 @@ package body WNM.GUI.Menu.Drawing is
 
    begin
 
-      if Val /= Valid_Sample_Index'First then
+      if Val /= Valid_Sample_Index'Last then
          X := Box_Left + 2;
          Print (X_Offset => X,
                 Y_Offset => Value_Text_Y - 23,
-                Str      => Display_Text (Val - 1));
+                Str      => Display_Text (Val + 1));
       end if;
 
       X := Box_Left + 2;
@@ -806,11 +806,11 @@ package body WNM.GUI.Menu.Drawing is
              Invert_From => Box_Left,
              Invert_To   => Box_Right);
 
-      if Val /= Valid_Sample_Index'Last then
+      if Val /= Valid_Sample_Index'First then
          X := Box_Left + 2;
          Print (X_Offset => X,
                 Y_Offset => Value_Text_Y + 1,
-                Str      => Display_Text (Val + 1));
+                Str      => Display_Text (Val - 1));
       end if;
    end Draw_Sample_Select;
 

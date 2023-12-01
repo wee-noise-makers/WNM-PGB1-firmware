@@ -127,6 +127,11 @@ package body ASFML_Sim is
    begin
       accept Start;
       WNM.Tasks.Sequencer_Core;
+   exception
+      when E : others =>
+         Ada.Text_IO.Put_Line ("=== Core0 Task exception ===");
+         AAA.Debug.Put_Exception (E);
+         GNAT.OS_Lib.OS_Exit (1);
    end Core0_Task;
 
    ----------------
@@ -137,6 +142,11 @@ package body ASFML_Sim is
    begin
       accept Start;
       WNM.Tasks.Synth_Core;
+   exception
+      when E : others =>
+         Ada.Text_IO.Put_Line ("=== Core1 Task exception ===");
+         AAA.Debug.Put_Exception (E);
+         GNAT.OS_Lib.OS_Exit (1);
    end Core1_Task;
 
    ---------------------

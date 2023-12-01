@@ -26,6 +26,8 @@ package WNM.Tasks is
 
    procedure Sequencer_1khz_Tick;
 
+   procedure Sequencer_Coproc_Receive;
+
    procedure Sequencer_Core
      with No_Return;
 

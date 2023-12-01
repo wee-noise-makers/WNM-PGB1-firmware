@@ -23,13 +23,10 @@ with HAL; use HAL;
 with Interfaces; use Interfaces;
 with WNM.Coproc;
 
-with WNM.Synth.Snare_Voice;
-with WNM.Synth.Sampler_Voice;
-with WNM.Synth.Speech_Voice;
-with WNM.Synth.Reverb_Voice;
-with WNM.Synth.Filter_Voice;
-with WNM.Synth.Drive_Voice;
-with WNM.Synth.Bitcrusher_Voice;
+with WNM.Voices.Snare_Voice;
+with WNM.Voices.Sampler_Voice;
+with WNM.Voices.Speech_Voice;
+with WNM.Synth.Mixer;
 
 with Tresses; use Tresses;
 with Tresses.Drums.Kick;
@@ -40,43 +37,39 @@ with Tresses.Interfaces;
 
 package body WNM.Synth is
 
-   type FX_Kind is (Bypass, Overdrive, Reverb, Filter, Bitcrusher);
-
    TK          : aliased Tresses.Drums.Kick.Instance;
-   TS          : aliased WNM.Synth.Snare_Voice.Instance;
+   TS          : aliased WNM.Voices.Snare_Voice.Instance;
    TC          : aliased Tresses.Drums.Cymbal.Instance;
    Lead        : aliased Tresses.Voices.Macro.Instance;
    Bass        : aliased Tresses.Voices.Macro.Instance;
-   Speech      : aliased WNM.Synth.Speech_Voice.Instance;
-   Sampler1    : aliased WNM.Synth.Sampler_Voice.Instance;
-   Sampler2    : aliased WNM.Synth.Sampler_Voice.Instance;
-   FX_Reverb   : aliased WNM.Synth.Reverb_Voice.Instance;
-   FX_Filter   : aliased WNM.Synth.Filter_Voice.Instance;
-   FX_Drive    : aliased WNM.Synth.Drive_Voice.Instance;
-   FX_Bitcrush : aliased WNM.Synth.Bitcrusher_Voice.Instance;
+   Speech      : aliased WNM.Voices.Speech_Voice.Instance;
+   Sampler1    : aliased WNM.Voices.Sampler_Voice.Instance;
+   Sampler2    : aliased WNM.Voices.Sampler_Voice.Instance;
 
    subtype Voice_Class is Tresses.Interfaces.Four_Params_Voice'Class;
    type Voice_Access is access all Voice_Class;
 
-   function Lead_Engines (V : MIDI.MIDI_Data) return Tresses.Synth_Engines
+   function Lead_Engines (V : MIDI.MIDI_Data) return Tresses.Engines
    is (case V is
-          when 0 => Tresses.Voice_Saw_Swarm,
-          when 1 => Tresses.Voice_Acid,
-          when 2 => Tresses.Voice_Analog_Buzz,
-          when 3 => Tresses.Voice_Analog_Morph,
-          when 4 => Tresses.Voice_FM2OP,
-          when 5 => Tresses.Voice_Sand,
-          when 6 => Tresses.Voice_Bass_808,
-          when 7 => Tresses.Voice_House_Bass,
-          when 8 => Tresses.Voice_Pluck_Bass,
-          when 9 => Tresses.Voice_Reese,
+          when 0  => Tresses.Voice_Saw_Swarm,
+          when 1  => Tresses.Voice_Acid,
+          when 2  => Tresses.Voice_Analog_Buzz,
+          when 3  => Tresses.Voice_Analog_Morph,
+          when 4  => Tresses.Voice_FM2OP,
+          when 5  => Tresses.Voice_Sand,
+          when 6  => Tresses.Voice_Bass_808,
+          when 7  => Tresses.Voice_House_Bass,
+          when 8  => Tresses.Voice_Pluck_Bass,
+          when 9  => Tresses.Voice_Reese,
+          when 10 => Tresses.Voice_Screech,
           when others => Tresses.Voice_Plucked);
 
-   function Snare_Engines (V : MIDI.MIDI_Data) return Snare_Voice.Snare_Engine
+   function Snare_Engines (V : MIDI.MIDI_Data)
+                           return Voices.Snare_Voice.Snare_Engine
    is (case V is
-          when 0      => Snare_Voice.Snare,
-          when 1      => Snare_Voice.Analog_Snare,
-          when others => Snare_Voice.Clap);
+          when 0      => Voices.Snare_Voice.Snare,
+          when 1      => Voices.Snare_Voice.Analog_Snare,
+          when others => Voices.Snare_Voice.Clap);
 
    subtype Tresses_Channels
      is MIDI.MIDI_Channel range Speech_Channel .. Bitcrusher_Channel;
@@ -105,10 +98,10 @@ package body WNM.Synth is
         Cymbal_Channel     => TC'Access,
         Lead_Channel       => Lead'Access,
         Bass_Channel       => Bass'Access,
-        Reverb_Channel     => FX_Reverb'Access,
-        Filter_Channel     => FX_Filter'Access,
-        Drive_Channel      => FX_Drive'Access,
-        Bitcrusher_Channel => FX_Bitcrush'Access);
+        Reverb_Channel     => Mixer.FX_Reverb'Access,
+        Filter_Channel     => Mixer.FX_Filter'Access,
+        Drive_Channel      => Mixer.FX_Drive'Access,
+        Bitcrusher_Channel => Mixer.FX_Bitcrush'Access);
 
    LFO_Targets : array (Tresses_Channels) of MIDI.MIDI_Data :=
      (others => Voice_Pan_CC);
@@ -118,11 +111,13 @@ package body WNM.Synth is
    LFO_Syncs : array (Tresses_Channels) of Boolean := (others => False);
    LFO_Values : array (Tresses_Channels) of Tresses.S16;
 
-   type Voice_Parameters_Array is array (Tresses_Channels, LFO_Compatible_CC)
-     of Tresses.Param_Range;
+   type Voice_Parameters_Array is array (Tresses_Channels) of
+     Voice_Parameters;
+
    In_Voice_Parameters : Voice_Parameters_Array :=
      (others => (Voice_Volume_CC => Param_Range'Last / 2,
                  Voice_Pan_CC    => Param_Range'Last / 2,
+                 Voice_Param_4_CC => Param_Range'Last,
                  others          => 0));
    Out_Voice_Parameters : Voice_Parameters_Array := (others => (others => 0));
 
@@ -142,11 +137,30 @@ package body WNM.Synth is
 
    Glob_Sample_Clock : Sample_Time := 0 with Volatile;
 
-   G_CPU_Load : CPU_Load := 0.0 with Volatile;
-   G_Max_CPU_Load : CPU_Load := 0.0 with Volatile;
-   G_Count_Missed_Deadlines : HAL.UInt32 := 0 with Volatile;
+   G_CPU_Load : CPU_Load := 0.0 with Volatile, Atomic;
+   G_Max_CPU_Load : CPU_Load := 0.0 with Volatile, Atomic;
+   G_Count_Missed_Deadlines : HAL.UInt32 := 0 with Volatile, Atomic;
 
-   procedure Process_Coproc_Events;
+   procedure Next_Points (Output : out WNM.Synth.Mixer.FX_Send_Buffers);
+
+   function To_Param (V : MIDI.MIDI_Data)
+                      return Tresses.Param_Range
+     with Inline_Always;
+
+   function To_Volume (V : Tresses.Param_Range)
+                       return WNM_HAL.Audio_Volume
+     with Inline_Always;
+
+   function To_Pan (V : Tresses.Param_Range)
+                    return WNM_HAL.Audio_Pan
+     with Inline_Always;
+
+   function Add_Sat (K : MIDI.MIDI_Key; O : Integer) return MIDI.MIDI_Key
+     with Inline_Always;
+
+   function To_Shape (V : MIDI.MIDI_Data)
+                      return Tresses.LFO.Shape_Kind
+     with Inline_Always;
 
    --------------
    -- To_Param --
@@ -259,19 +273,30 @@ package body WNM.Synth is
 
    procedure Process_Coproc_Events is
       use MIDI;
+      use WNM.Coproc;
 
       Msg : WNM.Coproc.Message;
       Success : Boolean;
    begin
       loop
-         WNM.Coproc.Pop (Msg, Success);
+         WNM.Coproc.Pop_For_Synth (Msg, Success);
 
          exit when not Success;
 
          case Msg.Kind is
 
+            when WNM.Coproc.Buffer_Available =>
+
+               --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
+               Next_Points (WNM.Synth.Mixer.Mixer_Buffers (Msg.Buffer_Id));
+               --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
+
+               --  Send the buffers back to main CPU
+               WNM.Coproc.Push_To_Main (Msg);
+
             when WNM.Coproc.MIDI_Event =>
 
+               --  Ada.Text_IO.Put_Line ("Synth message is MIDI");
                --  Ada.Text_IO.Put_Line
                --    (Clock'Img & " - " &
                --     MIDI.Img (Msg.MIDI_Evt));
@@ -358,8 +383,8 @@ package body WNM.Synth is
 
                               else
                                  In_Voice_Parameters
-                                   (Msg.MIDI_Evt.Chan,
-                                    Msg.MIDI_Evt.Controller)
+                                   (Msg.MIDI_Evt.Chan)
+                                   (Msg.MIDI_Evt.Controller)
                                    := To_Param
                                      (Msg.MIDI_Evt.Controller_Value);
                               end if;
@@ -441,16 +466,8 @@ package body WNM.Synth is
    -- Next_Points --
    -----------------
 
-   procedure Next_Points (Output : out WNM_HAL.Stereo_Buffer;
-                          Input  :     WNM_HAL.Stereo_Buffer)
+   procedure Next_Points (Output : out WNM.Synth.Mixer.FX_Send_Buffers)
    is
-      Send_L_Buffers : array (FX_Kind) of WNM_HAL.Mono_Buffer :=
-        (others => (others => 0));
-      Send_R_Buffers : array (FX_Kind) of WNM_HAL.Mono_Buffer :=
-        (others => (others => 0));
-      --  Why allocated on the stack? RP2040 has faster "scratch mem" for
-      --  stacks.
-
       Buffer, Aux_Buffer : WNM_HAL.Mono_Buffer;
 
       --------------
@@ -472,9 +489,7 @@ package body WNM.Synth is
       Synthesis_Start : constant WNM_HAL.Time_Microseconds := WNM_HAL.Clock;
    begin
 
-      --  Get and process MIDI messages from sequencer
-      Process_Coproc_Events;
-
+      WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
       --  Take input params
       Out_Voice_Parameters := In_Voice_Parameters;
 
@@ -486,8 +501,8 @@ package body WNM.Synth is
       --  Apply LFOs
       for Chan in Tresses_Channels loop
          if LFO_Targets (Chan) in LFO_Compatible_CC then
-            Out_Voice_Parameters (Chan, LFO_Targets (Chan)) :=
-              Add_Clip (Out_Voice_Parameters (Chan, LFO_Targets (Chan)),
+            Out_Voice_Parameters (Chan)(LFO_Targets (Chan)) :=
+              Add_Clip (Out_Voice_Parameters (Chan)(LFO_Targets (Chan)),
                         LFO_Values (Chan));
          end if;
       end loop;
@@ -495,155 +510,120 @@ package body WNM.Synth is
       --  Set params
       for Chan in Tresses_Channels loop
          Synth_Voices (Chan).Set_Param
-           (1, Out_Voice_Parameters (Chan, Voice_Param_1_CC));
+           (1, Out_Voice_Parameters (Chan)(Voice_Param_1_CC));
          Synth_Voices (Chan).Set_Param
-           (2, Out_Voice_Parameters (Chan, Voice_Param_2_CC));
+           (2, Out_Voice_Parameters (Chan)(Voice_Param_2_CC));
          Synth_Voices (Chan).Set_Param
-           (3, Out_Voice_Parameters (Chan, Voice_Param_3_CC));
+           (3, Out_Voice_Parameters (Chan)(Voice_Param_3_CC));
          Synth_Voices (Chan).Set_Param
-           (4, Out_Voice_Parameters (Chan, Voice_Param_4_CC));
+           (4, Out_Voice_Parameters (Chan)(Voice_Param_4_CC));
 
          Pan_For_Chan (Chan) := To_Pan
-           (Out_Voice_Parameters (Chan, Voice_Pan_CC));
+           (Out_Voice_Parameters (Chan)(Voice_Pan_CC));
 
          Volume_For_Chan (Chan) := To_Volume
-           (Out_Voice_Parameters (Chan, Voice_Volume_CC));
+           (Out_Voice_Parameters (Chan)(Voice_Volume_CC));
 
-         --  --  Pan low-pass filter
-         --  declare
-         --     Prev, Next : S32;
-         --  begin
-         --     Prev := S32 (Pan_For_Chan (Chan));
-         --  Next := S32 (To_Pan (Out_Voice_Parameters (Chan, Voice_Pan_CC)));
-         --
-         --     Next := Prev + ((Next - Prev) / 2**1);
-         --
-         --     Pan_For_Chan (Chan) := Audio_Pan (Next);
-         --  end;
-         --
-         --  --  Volume low-pass filter
-         --  declare
-         --     Prev, Next : S32;
-         --  begin
-         --     Prev := S32 (Volume_For_Chan (Chan));
-         --     Next := S32 (To_Volume (Out_Voice_Parameters
-         --                              (Chan, Voice_Volume_CC)));
-         --
-         --     Next := Prev + ((Next - Prev) / 2**1);
-         --
-         --     Volume_For_Chan (Chan) := Audio_Volume (Next);
-         --  end;
       end loop;
 
-      if Passthrough /= None then
-         Output := Input;
-      else
-         Output := (others => (0, 0));
-      end if;
+      --  Send the FX parameters in FX buffer
+      Output.Parameters (Overdrive) := Out_Voice_Parameters (Drive_Channel);
+      Output.Parameters (Bitcrusher) :=
+        Out_Voice_Parameters (Bitcrusher_Channel);
+      Output.Parameters (Filter) := Out_Voice_Parameters (Filter_Channel);
+      Output.Parameters (Reverb) := Out_Voice_Parameters (Reverb_Channel);
+      WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
 
       declare
       begin
+         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
          TK.Render (Buffer);
-         WNM_HAL.Mix (Send_L_Buffers (FX_Send (Kick_Channel)),
-                      Send_R_Buffers (FX_Send (Kick_Channel)),
+         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
+         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
+         WNM_HAL.Mix (Output.L (FX_Send (Kick_Channel)),
+                      Output.R (FX_Send (Kick_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Kick_Channel),
                       Pan => Pan_For_Chan (Kick_Channel));
+         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
 
+         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
          TS.Render (Buffer);
-         WNM_HAL.Mix (Send_L_Buffers (FX_Send (Snare_Channel)),
-                      Send_R_Buffers (FX_Send (Snare_Channel)),
+         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
+         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
+         WNM_HAL.Mix (Output.L (FX_Send (Snare_Channel)),
+                      Output.R (FX_Send (Snare_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Snare_Channel),
                       Pan => Pan_For_Chan (Snare_Channel));
+         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
 
+         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
          TC.Render (Buffer);
-         WNM_HAL.Mix (Send_L_Buffers (FX_Send (Cymbal_Channel)),
-                      Send_R_Buffers (FX_Send (Cymbal_Channel)),
+         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
+         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
+         WNM_HAL.Mix (Output.L (FX_Send (Cymbal_Channel)),
+                      Output.R (FX_Send (Cymbal_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Cymbal_Channel),
                       Pan => Pan_For_Chan (Cymbal_Channel));
+         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
 
+         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
          Lead.Render (Buffer, Aux_Buffer);
-         WNM_HAL.Mix (Send_L_Buffers (FX_Send (Lead_Channel)),
-                      Send_R_Buffers (FX_Send (Lead_Channel)),
+         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
+         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
+         WNM_HAL.Mix (Output.L (FX_Send (Lead_Channel)),
+                      Output.R (FX_Send (Lead_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Lead_Channel),
                       Pan => Pan_For_Chan (Lead_Channel));
+         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
 
+         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
          Bass.Render (Buffer, Aux_Buffer);
-         WNM_HAL.Mix (Send_L_Buffers (FX_Send (Bass_Channel)),
-                      Send_R_Buffers (FX_Send (Bass_Channel)),
+         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
+         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
+         WNM_HAL.Mix (Output.L (FX_Send (Bass_Channel)),
+                      Output.R (FX_Send (Bass_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Bass_Channel),
                       Pan => Pan_For_Chan (Bass_Channel));
+         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
 
+         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
          Sampler1.Render (Buffer);
-         WNM_HAL.Mix (Send_L_Buffers (FX_Send (Sample1_Channel)),
-                      Send_R_Buffers (FX_Send (Sample1_Channel)),
+         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
+         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
+         WNM_HAL.Mix (Output.L (FX_Send (Sample1_Channel)),
+                      Output.R (FX_Send (Sample1_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Sample1_Channel),
                       Pan => Pan_For_Chan (Sample1_Channel));
+         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
 
+         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
          Sampler2.Render (Buffer);
-         WNM_HAL.Mix (Send_L_Buffers (FX_Send (Sample2_Channel)),
-                      Send_R_Buffers (FX_Send (Sample2_Channel)),
+         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
+         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
+         WNM_HAL.Mix (Output.L (FX_Send (Sample2_Channel)),
+                      Output.R (FX_Send (Sample2_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Sample2_Channel),
                       Pan => Pan_For_Chan (Sample2_Channel));
+         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
 
+         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
          Speech.Render (Buffer);
-         WNM_HAL.Mix (Send_L_Buffers (FX_Send (Speech_Channel)),
-                      Send_R_Buffers (FX_Send (Speech_Channel)),
+         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
+         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
+         WNM_HAL.Mix (Output.L (FX_Send (Speech_Channel)),
+                      Output.R (FX_Send (Speech_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Speech_Channel),
                       Pan => Pan_For_Chan (Speech_Channel));
+         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
       end;
-
-      declare
-      begin
-
-         --  Overdrive
-         FX_Drive.Render (Send_L_Buffers (Overdrive),
-                          Send_R_Buffers (Overdrive));
-
-         --  Reverb
-         FX_Reverb.Render (Send_L_Buffers (Reverb),
-                           Send_R_Buffers (Reverb));
-
-         --  Filter
-         FX_Filter.Render (Send_L_Buffers (Filter),
-                           Send_R_Buffers (Filter));
-
-         --  Bitcrush
-         FX_Bitcrush.Render (Send_L_Buffers (Bitcrusher),
-                             Send_R_Buffers (Bitcrusher));
-      end;
-
-      --  Final mix
-      for Fx in FX_Kind loop
-         WNM_HAL.Mix (Output, Send_L_Buffers (Fx), Send_R_Buffers (Fx));
-      end loop;
-
-      -- Recording --
-      --  if Recording_Source /= None then
-      --     declare
-      --        Sample_Buf : Mono_Buffer;
-      --     begin
-      --        case Recording_Source is
-      --           when None =>
-      --              null;
-      --           when Line_In =>
-      --              Copy_Stereo_To_Mono (In_L, In_R, Sample_Buf);
-      --           when Master_Output =>
-      --              Copy_Stereo_To_Mono (Out_L, Out_R, Sample_Buf);
-      --        end case;
-      --
-      --        Len := Write (Recording_File, Sample_Buf'Address,
-      --                      Sample_Buf'Length * 2);
-      --        Recording_Size := Recording_Size + Len;
-      --     end;
-      --  end if;
 
       Glob_Sample_Clock :=
         Glob_Sample_Clock + WNM_Configuration.Audio.Samples_Per_Buffer;
@@ -667,7 +647,7 @@ package body WNM.Synth is
             G_Count_Missed_Deadlines := G_Count_Missed_Deadlines + 1;
          end if;
 
-         if G_CPU_Load < 500.0 and then G_CPU_Load > G_Max_CPU_Load then
+         if G_CPU_Load > G_Max_CPU_Load then
             G_Max_CPU_Load := G_CPU_Load;
          end if;
       end;
@@ -708,7 +688,7 @@ package body WNM.Synth is
                               Id : Tresses.Param_Id)
                               return String
    is
-      E : constant Tresses.Synth_Engines := Lead_Engines (Engine);
+      E : constant Tresses.Engines := Lead_Engines (Engine);
    begin
       return Tresses.Macro.Param_Label (E, Id);
    end Lead_Param_Label;
@@ -721,7 +701,7 @@ package body WNM.Synth is
                                     Id : Tresses.Param_Id)
                                     return Tresses.Short_Label
    is
-      E : constant Tresses.Synth_Engines := Lead_Engines (Engine);
+      E : constant Tresses.Engines := Lead_Engines (Engine);
    begin
       return Tresses.Macro.Param_Short_Label (E, Id);
    end Lead_Param_Short_Label;
@@ -746,7 +726,7 @@ package body WNM.Synth is
    ----------------------
 
    function Snare_Engine_Img (Engine : MIDI.MIDI_Data) return String
-   is (WNM.Synth.Snare_Voice.Img (Snare_Engines (Engine)));
+   is (WNM.Voices.Snare_Voice.Img (Snare_Engines (Engine)));
 
    -----------------------
    -- Snare_Param_Label --
@@ -800,7 +780,7 @@ package body WNM.Synth is
 
    function Reverb_Param_Label (Id : Tresses.Param_Id)
                                  return String
-   is (FX_Reverb.Param_Label (Id));
+   is (Mixer.FX_Reverb.Param_Label (Id));
 
    ------------------------------
    -- Reverb_Param_Short_Label --
@@ -808,7 +788,7 @@ package body WNM.Synth is
 
    function Reverb_Param_Short_Label (Id : Tresses.Param_Id)
                                        return Tresses.Short_Label
-   is (FX_Reverb.Param_Short_Label (Id));
+   is (Mixer.FX_Reverb.Param_Short_Label (Id));
 
    ------------------------
    -- Filter_Param_Label --
@@ -816,7 +796,7 @@ package body WNM.Synth is
 
    function Filter_Param_Label (Id : Tresses.Param_Id)
                                 return String
-   is (FX_Filter.Param_Label (Id));
+   is (Mixer.FX_Filter.Param_Label (Id));
 
    ------------------------------
    -- Filter_Param_Short_Label --
@@ -824,7 +804,7 @@ package body WNM.Synth is
 
    function Filter_Param_Short_Label (Id : Tresses.Param_Id)
                                       return Tresses.Short_Label
-   is (FX_Filter.Param_Short_Label (Id));
+   is (Mixer.FX_Filter.Param_Short_Label (Id));
 
    -----------------------
    -- Drive_Param_Label --
@@ -832,7 +812,7 @@ package body WNM.Synth is
 
    function Drive_Param_Label (Id : Tresses.Param_Id)
                                return String
-   is (FX_Drive.Param_Label (Id));
+   is (Mixer.FX_Drive.Param_Label (Id));
 
    -----------------------------
    -- Drive_Param_Short_Label --
@@ -840,7 +820,7 @@ package body WNM.Synth is
 
    function Drive_Param_Short_Label (Id : Tresses.Param_Id)
                                      return Tresses.Short_Label
-   is (FX_Drive.Param_Short_Label (Id));
+   is (Mixer.FX_Drive.Param_Short_Label (Id));
 
    --------------------------
    -- Bitcrush_Param_Label --
@@ -848,7 +828,7 @@ package body WNM.Synth is
 
    function Bitcrush_Param_Label (Id : Tresses.Param_Id)
                                return String
-   is (FX_Bitcrush.Param_Label (Id));
+   is (Mixer.FX_Bitcrush.Param_Label (Id));
 
    --------------------------------
    -- Bitcrush_Param_Short_Label --
@@ -856,7 +836,7 @@ package body WNM.Synth is
 
    function Bitcrush_Param_Short_Label (Id : Tresses.Param_Id)
                                         return Tresses.Short_Label
-   is (FX_Bitcrush.Param_Short_Label (Id));
+   is (Mixer.FX_Bitcrush.Param_Short_Label (Id));
 
    ------------------------
    -- Speech_Param_Label --
@@ -915,4 +895,6 @@ package body WNM.Synth is
    function Record_Size return Natural
    is (Recording_Size);
 
+begin
+   Lead.Set_Engine (Voice_Saw_Swarm);
 end WNM.Synth;

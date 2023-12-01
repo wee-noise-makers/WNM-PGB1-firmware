@@ -21,6 +21,7 @@
 
 with WNM.GUI.Menu.Drawing;
 with WNM.Synth;
+with WNM.Synth.Mixer;
 with WNM.Project.Library;
 
 package body WNM.GUI.Menu.System_Info is
@@ -58,8 +59,12 @@ package body WNM.GUI.Menu.System_Info is
             Drawing.Draw_Value (Img (Synth.Max_CPU_Load));
 
          when Synth_Missed_Deadlines =>
-            Drawing.Draw_Title ("Synth Miss DL", "");
+            Drawing.Draw_Title ("Synth Missed DL", "");
             Drawing.Draw_Value (Synth.Missed_Deadlines'Img);
+
+         when DAC_Missed_Deadlines =>
+            Drawing.Draw_Title ("DAC Missed DL", "");
+            Drawing.Draw_Value (Synth.Mixer.Missed_DAC_Deadlines'Img);
 
          when Prj_Last_Load_Size =>
             Drawing.Draw_Title ("Size of last loaded", "project");
@@ -87,6 +92,8 @@ package body WNM.GUI.Menu.System_Info is
                   Synth.Clear_Max_CPU_Load;
                when Synth_Missed_Deadlines =>
                   Synth.Clear_Missed_Deadlines;
+               when DAC_Missed_Deadlines =>
+                  Synth.Mixer.Clear_Missed_DAC_Deadlines;
                when others =>
                   null;
             end case;

@@ -56,6 +56,8 @@ package body WNM.UI is
    Solo_Mode_Enabled : Boolean := False;
    Solo_Track : WNM.Tracks := 1;
 
+   Play_Released : Boolean := False;
+
    ----------------
    -- Input_Mode --
    ----------------
@@ -497,6 +499,16 @@ package body WNM.UI is
       State : WNM_HAL.Buttons_State;
    begin
       State := WNM_HAL.State;
+
+      if not Play_Released then
+         --  The device starts when holding the play button down. We wait for
+         --  the user to release this button befor doing anyting.
+         if State (Play) = Up then
+            Play_Released := True;
+         else
+            return;
+         end if;
+      end if;
 
       --  Handle buttons
       for B in Button loop

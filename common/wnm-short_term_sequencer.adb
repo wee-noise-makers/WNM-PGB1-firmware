@@ -233,7 +233,7 @@ package body WNM.Short_Term_Sequencer is
                  ((MIDI.Note_On, Node.D.Chan, Node.D.Key, Node.D.Velocity));
 
             when Internal =>
-               WNM.Coproc.Push
+               WNM.Coproc.Push_To_Synth
                  ((WNM.Coproc.MIDI_Event,
                   (MIDI.Note_On, Node.D.Chan, Node.D.Key, Node.D.Velocity)));
          end case;

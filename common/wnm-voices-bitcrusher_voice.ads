@@ -21,73 +21,50 @@
 
 with Tresses;            use Tresses;
 with Tresses.Interfaces; use Tresses.Interfaces;
-with WNM.QOA;
 
-private with Tresses.Envelopes.AR;
-private with WNM.Sample_Library;
+with Tresses.FX.Bitcrusher;
 
-private package WNM.Synth.Sampler_Voice is
+package WNM.Voices.Bitcrusher_Voice is
 
    type Instance
    is new Four_Params_Voice
    with private;
 
-   procedure Set_Sample (This : in out Instance; Id : MIDI.MIDI_Data);
-
-   procedure Init (This : in out Instance);
-
    procedure Render (This   : in out Instance;
-                     Buffer :    out Tresses.Mono_Buffer);
+                     Left   : in out Tresses.Mono_Buffer;
+                     Right  : in out Tresses.Mono_Buffer);
 
-   procedure Set_MIDI_Pitch (This : in out Instance;
-                             Key  :        MIDI.MIDI_Key);
-
-   P_Sample  : constant Tresses.Param_Id := 1;
-   P_Start   : constant Tresses.Param_Id := 2;
-   P_Release : constant Tresses.Param_Id := 3;
-   P_Drive   : constant Tresses.Param_Id := 4;
+   P_Depth  : constant Tresses.Param_Id := 1;
+   P_Down   : constant Tresses.Param_Id := 2;
+   P_Cutoff : constant Tresses.Param_Id := 3;
+   P_Mix    : constant Tresses.Param_Id := 4;
 
    --  Interfaces --
 
    overriding
    function Param_Label (This : Instance; Id : Param_Id) return String
    is (case Id is
-          when P_Sample  => "Sample",
-          when P_Start   => "Start",
-          when P_Release => "Release",
-          when P_Drive   => "Drive");
+          when P_Depth  => "Depth",
+          when P_Down   => "Downsampling",
+          when P_Cutoff => "Cutoff",
+          when P_Mix    => "Mix");
 
    overriding
    function Param_Short_Label (This : Instance; Id : Param_Id)
                                return Short_Label
    is (case Id is
-          when P_Sample  => "SMP",
-          when P_Start   => "STR",
-          when P_Release => "REL",
-          when P_Drive   => "DRV");
+          when P_Depth  => "DPT",
+          when P_Down   => "DSP",
+          when P_Cutoff => "CTF",
+          when P_Mix    => "MIX");
 
 private
-
-   subtype Sample_Phase is Interfaces.Unsigned_32;
-   Phase_Integer_Bits : constant := 17;
-   Phase_Frac_Bits : constant := Sample_Phase'Size - Phase_Integer_Bits;
-
-   pragma Compile_Time_Error
-     (2**Phase_Integer_Bits < QOA.Points_Per_Sample,
-      "Interger part too small for sample point count");
 
    type Instance
    is new Four_Params_Voice
    with record
-      Sample_Id : Sample_Library.Valid_Sample_Index :=
-        Sample_Library.Valid_Sample_Index'First;
-
-      Phase : Sample_Phase := 0;
-      Phase_Increment : Sample_Phase := 0;
-
-      Env : Tresses.Envelopes.AR.Instance;
-
-      Do_Init : Boolean := True;
+      BTL : Tresses.FX.Bitcrusher.Instance;
+      BTR : Tresses.FX.Bitcrusher.Instance;
    end record;
 
-end WNM.Synth.Sampler_Voice;
+end WNM.Voices.Bitcrusher_Voice;

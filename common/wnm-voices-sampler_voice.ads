@@ -19,58 +19,78 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with Interfaces;
+
 with Tresses;            use Tresses;
 with Tresses.Interfaces; use Tresses.Interfaces;
+with WNM.QOA;
 
-private with LPC_Synth;
-private with WNM.Speech;
+private with Tresses.Envelopes.AR;
+private with WNM.Sample_Library;
 
-private package WNM.Synth.Speech_Voice is
+package WNM.Voices.Sampler_Voice is
 
    type Instance
    is new Four_Params_Voice
    with private;
 
-   procedure Set_Word (This : in out Instance; Id : MIDI.MIDI_Data);
+   procedure Set_Sample (This : in out Instance; Id : MIDI.MIDI_Data);
 
    procedure Init (This : in out Instance);
 
    procedure Render (This   : in out Instance;
-                     Buffer :    out Tresses.Mono_Buffer);
+                     Buffer :    out Tresses.Mono_Buffer)
+     with Linker_Section => ".time_critical.sampler_voice";
 
    procedure Set_MIDI_Pitch (This : in out Instance;
                              Key  :        MIDI.MIDI_Key);
 
-   P_Word : constant Tresses.Param_Id := 1;
-   P_Time : constant Tresses.Param_Id := 2;
+   P_Sample  : constant Tresses.Param_Id := 1;
+   P_Start   : constant Tresses.Param_Id := 2;
+   P_Release : constant Tresses.Param_Id := 3;
+   P_Drive   : constant Tresses.Param_Id := 4;
 
    --  Interfaces --
 
    overriding
    function Param_Label (This : Instance; Id : Param_Id) return String
    is (case Id is
-          when P_Word => "Word",
-          when P_Time => "Time Stretch",
-          when 3      => "N/A",
-          when 4      => "N/A");
+          when P_Sample  => "Sample",
+          when P_Start   => "Start",
+          when P_Release => "Release",
+          when P_Drive   => "Drive");
 
    overriding
    function Param_Short_Label (This : Instance; Id : Param_Id)
                                return Short_Label
    is (case Id is
-          when P_Word => "WRD",
-          when P_Time => "Time",
-          when 3      => "N/A",
-          when 4      => "N/A");
+          when P_Sample  => "SMP",
+          when P_Start   => "STR",
+          when P_Release => "REL",
+          when P_Drive   => "DRV");
 
 private
+
+   subtype Sample_Phase is Standard.Interfaces.Unsigned_32;
+   Phase_Integer_Bits : constant := 17;
+   Phase_Frac_Bits : constant := Sample_Phase'Size - Phase_Integer_Bits;
+
+   pragma Compile_Time_Error
+     (2**Phase_Integer_Bits < QOA.Points_Per_Sample,
+      "Interger part too small for sample point count");
 
    type Instance
    is new Four_Params_Voice
    with record
-      LPC : LPC_Synth.Instance;
-      Selected_Word : WNM.Speech.Word := 0;
-      Speech_Pitch : Float := MIDI.Key_To_Frequency (MIDI.C4);
+      Sample_Id : Sample_Library.Valid_Sample_Index :=
+        Sample_Library.Valid_Sample_Index'First;
+
+      Phase : Sample_Phase := 0;
+      Phase_Increment : Sample_Phase := 0;
+
+      Env : Tresses.Envelopes.AR.Instance;
+
+      Do_Init : Boolean := True;
    end record;
 
-end WNM.Synth.Speech_Voice;
+end WNM.Voices.Sampler_Voice;

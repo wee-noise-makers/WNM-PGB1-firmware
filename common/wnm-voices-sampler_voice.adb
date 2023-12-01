@@ -28,7 +28,7 @@ with Tresses.Resources;
 with WNM.Sample_Library; use WNM.Sample_Library;
 with WNM.QOA; use WNM.QOA;
 
-package body WNM.Synth.Sampler_Voice is
+package body WNM.Voices.Sampler_Voice is
 
    C4_Phase_Incr : constant := 2.0**(Phase_Frac_Bits);
 
@@ -315,4 +315,4 @@ package body WNM.Synth.Sampler_Voice is
       end;
    end Render;
 
-end WNM.Synth.Sampler_Voice;
+end WNM.Voices.Sampler_Voice;

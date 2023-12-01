@@ -1,5 +1,8 @@
+with WNM.Tasks;
+
 with Ada.Synchronous_Task_Control;
 with GNAT.OS_Lib;
+with Ada.Text_IO;
 with Interfaces;
 
 with Sf;
@@ -10,15 +13,7 @@ with ASFML_SIM_Storage;
 
 with RtMIDI;
 
-with BBqueue;
-
 package body WNM_HAL is
-
-   use type System.Storage_Elements.Storage_Offset;
-
-   Coproc_Queue : BBqueue.Offsets_Only (Coproc_Queue_Capacity);
-   Coproc_Buffer : array (BBqueue.Buffer_Offset range
-                            0 .. Coproc_Queue_Capacity - 1) of Coproc_Data;
 
    LEDs_Internal : ASFML_Sim.SFML_LED_Strip := ASFML_Sim.SFML_LEDs;
 
@@ -28,6 +23,73 @@ package body WNM_HAL is
      (others => (others => False));
 
    MIDI_Out : constant RtMIDI.MIDI_Out := RtMIDI.Create ("WNM Simulator");
+
+   type Circular_Buffer_Content is array (Positive range <>) of Coproc_Data;
+
+   protected type Circular_Buffer (Capacity : Positive) is
+      entry Insert (Item : Coproc_Data);
+      entry Remove (Item : out Coproc_Data);
+
+      function Empty  return Boolean;
+      function Full   return Boolean;
+
+   private
+      Values   : Circular_Buffer_Content (1 .. Capacity);
+      Next_In  : Positive := 1;
+      Next_Out : Positive := 1;
+      Count    : Natural  := 0;
+   end Circular_Buffer;
+
+   Coproc_Queue : array (Coproc_Target)
+     of Circular_Buffer (Coproc_Queue_Capacity);
+
+   ---------------------
+   -- Circular_Buffer --
+   ---------------------
+
+   protected body Circular_Buffer is
+
+      ------------
+      -- Insert --
+      ------------
+
+      entry Insert (Item : Coproc_Data) when Count /= Capacity is
+      begin
+         Values (Next_In) := Item;
+         Next_In := (Next_In mod Capacity) + 1;
+         Count := Count + 1;
+      end Insert;
+
+      ------------
+      -- Remove --
+      ------------
+
+      entry Remove (Item : out Coproc_Data) when Count > 0 is
+      begin
+         Item := Values (Next_Out);
+         Next_Out := (Next_Out mod Capacity) + 1;
+         Count := Count - 1;
+      end Remove;
+
+      -----------
+      -- Empty --
+      -----------
+
+      function Empty return Boolean is
+      begin
+         return Count = 0;
+      end Empty;
+
+      ----------
+      -- Full --
+      ----------
+
+      function Full return Boolean is
+      begin
+         return Count = Capacity;
+      end Full;
+
+   end Circular_Buffer;
 
    -----------
    -- State --
@@ -224,36 +286,6 @@ package body WNM_HAL is
       end loop;
    end Mix;
 
-   ---------
-   -- Mix --
-   ---------
-
-   procedure Mix (Output      : in out Stereo_Buffer;
-                  In_L, In_R  :        Mono_Buffer)
-   is
-      procedure Point_Mix (P_Out : in out Mono_Point;
-                           P_In  :        Mono_Point)
-      is
-         use Interfaces;
-
-         Res : constant Integer_32 := Integer_32 (P_Out) + Integer_32 (P_In);
-      begin
-
-         if Res > Integer_32 (Mono_Point'Last) then
-            P_Out := Mono_Point'Last;
-         elsif Res < Integer_32 (Mono_Point'First) then
-            P_Out := Mono_Point'First;
-         else
-            P_Out := Mono_Point (Res);
-         end if;
-      end Point_Mix;
-   begin
-      for Idx in Output'Range loop
-         Point_Mix (Output (Idx).L, In_L (Idx));
-         Point_Mix (Output (Idx).R, In_R (Idx));
-      end loop;
-   end Mix;
-
    ------------------
    -- Milliseconds --
    ------------------
@@ -321,19 +353,21 @@ package body WNM_HAL is
    -- Push --
    ----------
 
-   procedure Push (D : Coproc_Data) is
-      use BBqueue;
-
-      WG : Write_Grant;
+   procedure Push (Target : Coproc_Target;
+                   D      : Coproc_Data)
+   is
    begin
 
-      Grant (Coproc_Queue, WG, 1);
+      if not Coproc_Queue (Target).Full then
+         Coproc_Queue (Target).Insert (D);
 
-      if State (WG) = Valid then
-         Coproc_Buffer (Slice (WG).From) := D;
-         Commit (Coproc_Queue, WG, 1);
+         --  Hack to simulate an interrupt
+         if Target = Main_CPU then
+            WNM.Tasks.Sequencer_Coproc_Receive;
+         end if;
       else
-         raise Program_Error with "Corproc queue is full";
+         Ada.Text_IO.Put_Line (Coproc_Queue (Target)'Img);
+         raise Program_Error with Target'Img &  " Corproc queue is full";
       end if;
    end Push;
 
@@ -341,20 +375,17 @@ package body WNM_HAL is
    -- Pop --
    ---------
 
-   procedure Pop (D : out Coproc_Data; Success : out Boolean) is
-      use BBqueue;
-
-      RG : Read_Grant;
+   procedure Pop (Target  :     Coproc_Target;
+                  D       : out Coproc_Data;
+                  Success : out Boolean)
+   is
    begin
 
-      Read (Coproc_Queue, RG, 1);
-
-      if State (RG) = Valid then
-         D := Coproc_Buffer (Slice (RG).From);
-         Release (Coproc_Queue, RG, 1);
-         Success := True;
-      else
+      if Coproc_Queue (Target).Empty then
          Success := False;
+      else
+         Coproc_Queue (Target).Remove (D);
+         Success := True;
       end if;
    end Pop;
 
@@ -390,13 +421,13 @@ package body WNM_HAL is
    -- Set_Indicator_IO --
    ----------------------
 
-   procedure Set_Indicator_IO is null;
+   procedure Set_Indicator_IO (Id : Indicator_IO_Line) is null;
 
    ------------------------
    -- Clear_Indicator_IO --
    ------------------------
 
-   procedure Clear_Indicator_IO is null;
+   procedure Clear_Indicator_IO (Id : Indicator_IO_Line) is null;
 
 begin
    if not RtMIDI.Valid (MIDI_Out) then

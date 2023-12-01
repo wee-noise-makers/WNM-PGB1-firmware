@@ -24,7 +24,7 @@ with Tresses.Drums.Snare;
 with Tresses.Drums.Analog_Snare;
 with Tresses.Macro;
 
-package body WNM.Synth.Snare_Voice is
+package body WNM.Voices.Snare_Voice is
 
    ------------
    -- Engine --
@@ -138,4 +138,4 @@ package body WNM.Synth.Snare_Voice is
                                return Short_Label
    is (Tresses.Macro.Param_Short_Label (Tresse_Engine (This.Engine), Id));
 
-end WNM.Synth.Snare_Voice;
+end WNM.Voices.Snare_Voice;

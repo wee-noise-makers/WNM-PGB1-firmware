@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2022 Fabien Chouteau                    --
+--                     Copyright (C) 2023 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,57 +19,58 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with MIDI;
+with Tresses;            use Tresses;
+with Tresses.Interfaces; use Tresses.Interfaces;
 
-with WNM_Configuration;
-with WNM_HAL;
-with WNM.Synth.Mixer;
+private with Tresses.Random;
+private with Tresses.Filters.SVF;
+private with Tresses.Excitation;
+private with Tresses.Envelopes.AR;
 
-private with Ada.Unchecked_Conversion;
+package WNM.Voices.Snare_Voice is
 
-with WNM.Synth;
+   type Instance
+   is new Four_Params_Voice
+   with private;
 
-package WNM.Coproc is
+   type Snare_Engine is (Analog_Snare, Snare, Clap);
 
-   type Message_Kind is (MIDI_Event, Buffer_Available)
-     with Size => 4;
+   function Engine (This : Instance) return Snare_Engine;
+   procedure Set_Engine (This : in out Instance; E : Snare_Engine);
 
-   subtype MIDI_Event_Rec is MIDI.Message;
+   function Img (E : Snare_Engine) return String;
 
-   type Message (Kind : Message_Kind := MIDI_Event) is record
-      case Kind is
-         when MIDI_Event =>
-            MIDI_Evt : MIDI_Event_Rec;
+   procedure Init (This : in out Instance);
 
-         when Buffer_Available =>
-            Buffer_Id : WNM.Synth.Mixer.Mixer_Buffer_Index;
-      end case;
-   end record
-     with Size => WNM_Configuration.Coproc_Data_Size;
+   procedure Render (This   : in out Instance;
+                     Buffer :    out Tresses.Mono_Buffer);
 
-   for Message use record
-      Kind        at 0 range 0 .. 7;
-      MIDI_Evt    at 0 range 8 .. 31;
-      Buffer_Id   at 0 range 8 .. 16;
-   end record;
+   --  Interfaces --
 
-   procedure Push_To_Synth (Msg : Message);
-   --  Send a message to the synth coprocessor. Fails silently if the message
-   --  cannot be pushed (e.g. queue is full).
+   overriding
+   function Param_Label (This : Instance; Id : Param_Id) return String;
 
-   procedure Pop_For_Synth (Msg : out Message; Success : out Boolean);
-   --  Tentatively get a message for the synth coprocessor. Success is False
-   --  if no message is available.
-
-   procedure Push_To_Main (Msg : Message);
-   procedure Pop_For_Main (Msg : out Message; Success : out Boolean);
+   overriding
+   function Param_Short_Label (This : Instance; Id : Param_Id)
+                               return Short_Label;
 
 private
 
-   function To_Coproc_Data
-   is new Ada.Unchecked_Conversion (Message, WNM_HAL.Coproc_Data);
+   type Instance
+   is new Four_Params_Voice
+   with record
 
-   function From_Coproc_Data
-   is new Ada.Unchecked_Conversion (WNM_HAL.Coproc_Data, Message);
+      Engine : Snare_Engine := Snare_Engine'First;
 
-end WNM.Coproc;
+      Phase, Target_Phase_Increment, Phase_Increment : U32 := 0;
+
+      Pulse0, Pulse1, Pulse2, Pulse3 : Excitation.Instance;
+      Filter0, Filter1, Filter2 : Filters.SVF.Instance;
+      Rng : Tresses.Random.Instance;
+      Env0, Env1 : Tresses.Envelopes.AR.Instance;
+      Re_Trig : Tresses.U32;
+
+      Do_Init : Boolean := True;
+   end record;
+
+end WNM.Voices.Snare_Voice;

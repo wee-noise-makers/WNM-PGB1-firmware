@@ -21,27 +21,50 @@
 
 package body WNM.Coproc is
 
-   ----------
-   -- Push --
-   ----------
+   -------------------
+   -- Push_To_Synth --
+   -------------------
 
-   procedure Push (Msg : Message) is
+   procedure Push_To_Synth (Msg : Message) is
    begin
-      WNM_HAL.Push (To_Coproc_Data (Msg));
-   end Push;
+      WNM_HAL.Push (Synth_CPU, To_Coproc_Data (Msg));
+   end Push_To_Synth;
 
-   ---------
-   -- Pop --
-   ---------
+   -------------------
+   -- Pop_For_Synth --
+   -------------------
 
-   procedure Pop (Msg : out Message; Success : out Boolean) is
+   procedure Pop_For_Synth (Msg : out Message; Success : out Boolean) is
       D : WNM_HAL.Coproc_Data;
    begin
-      WNM_HAL.Pop (D, Success);
+      WNM_HAL.Pop (Synth_CPU, D, Success);
 
       if Success then
          Msg := From_Coproc_Data (D);
       end if;
-   end Pop;
+   end Pop_For_Synth;
+
+   ------------------
+   -- Push_To_Main --
+   ------------------
+
+   procedure Push_To_Main (Msg : Message) is
+   begin
+      WNM_HAL.Push (Main_CPU, To_Coproc_Data (Msg));
+   end Push_To_Main;
+
+   ------------------
+   -- Pop_For_Main --
+   ------------------
+
+   procedure Pop_For_Main (Msg : out Message; Success : out Boolean) is
+      D : WNM_HAL.Coproc_Data;
+   begin
+      WNM_HAL.Pop (Main_CPU, D, Success);
+
+      if Success then
+         Msg := From_Coproc_Data (D);
+      end if;
+   end Pop_For_Main;
 
 end WNM.Coproc;

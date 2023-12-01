@@ -19,18 +19,52 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-package body WNM.Synth.Reverb_Voice is
+with Tresses;            use Tresses;
+with Tresses.Interfaces; use Tresses.Interfaces;
+
+private with Tresses.Filters.SVF;
+
+package WNM.Voices.Filter_Voice is
+
+   type Instance
+   is new Four_Params_Voice
+   with private;
 
    procedure Render (This   : in out Instance;
                      Left   : in out Tresses.Mono_Buffer;
-                     Right  : in out Tresses.Mono_Buffer)
-   is
-   begin
-      Reverb_Pck.Set_Amount (This.Rev, This.Params (P_Amount));
-      Reverb_Pck.Set_Time (This.Rev, This.Params (P_Time));
-      Reverb_Pck.Set_Diffusion (This.Rev, This.Params (P_Diffusion));
-      Reverb_Pck.Set_Low_Pass (This.Rev, This.Params (P_Cutoff));
-      Reverb_Pck.Process (This.Rev, Left, Right);
-   end Render;
+                     Right  : in out Tresses.Mono_Buffer);
 
-end WNM.Synth.Reverb_Voice;
+   P_Mode      : constant Tresses.Param_Id := 1;
+   P_Cutoff    : constant Tresses.Param_Id := 2;
+   P_Resonance : constant Tresses.Param_Id := 3;
+   P_Nope      : constant Tresses.Param_Id := 4;
+
+   --  Interfaces --
+
+   overriding
+   function Param_Label (This : Instance; Id : Param_Id) return String
+   is (case Id is
+          when P_Mode      => "Mode",
+          when P_Cutoff    => "Cutoff",
+          when P_Resonance => "Resonance",
+          when P_Nope      => "N/A");
+
+   overriding
+   function Param_Short_Label (This : Instance; Id : Param_Id)
+                               return Short_Label
+   is (case Id is
+          when P_Mode      => "MOD",
+          when P_Cutoff    => "CTF",
+          when P_Resonance => "RES",
+          when P_Nope      => "N/A");
+
+private
+
+   type Instance
+   is new Four_Params_Voice
+   with record
+      Left  : Tresses.Filters.SVF.Instance;
+      Right : Tresses.Filters.SVF.Instance;
+   end record;
+
+end WNM.Voices.Filter_Voice;

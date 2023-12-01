@@ -22,6 +22,8 @@
 with Tresses;            use Tresses;
 with Tresses.Interfaces; use Tresses.Interfaces;
 
+with Tresses.Resources;
+
 private with Tresses.FX.Reverb;
 
 private package WNM.Synth.Reverb_Voice is
@@ -60,7 +62,19 @@ private package WNM.Synth.Reverb_Voice is
 
 private
 
-   package Reverb_Pck is new Tresses.FX.Reverb;
+   package Reverb_Pck is new Tresses.FX.Reverb
+     (
+      Ap1_Len   => Tresses.U16 (( 113.0 / 32_000.0 / 4.0) * Tresses.Resources.SAMPLE_RATE_REAL),
+      Ap2_Len   => Tresses.U16 (( 162.0 / 32_000.0 / 4.0) * Tresses.Resources.SAMPLE_RATE_REAL),
+      Ap3_Len   => Tresses.U16 (( 241.0 / 32_000.0 / 4.0) * Tresses.Resources.SAMPLE_RATE_REAL),
+      Ap4_Len   => Tresses.U16 (( 399.0 / 32_000.0 / 4.0) * Tresses.Resources.SAMPLE_RATE_REAL),
+      Dap1a_Len => Tresses.U16 ((1653.0 / 32_000.0 / 4.0) * Tresses.Resources.SAMPLE_RATE_REAL),
+      Dap1b_Len => Tresses.U16 ((2038.0 / 32_000.0 / 4.0) * Tresses.Resources.SAMPLE_RATE_REAL),
+      Del1_Len  => Tresses.U16 ((3411.0 / 32_000.0 / 4.0) * Tresses.Resources.SAMPLE_RATE_REAL),
+      Dap2a_Len => Tresses.U16 ((1913.0 / 32_000.0 / 4.0) * Tresses.Resources.SAMPLE_RATE_REAL),
+      Dap2b_Len => Tresses.U16 ((1663.0 / 32_000.0 / 4.0) * Tresses.Resources.SAMPLE_RATE_REAL),
+      Del2_Len  => Tresses.U16 ((4782.0 / 32_000.0 / 4.0) * Tresses.Resources.SAMPLE_RATE_REAL)
+     );
 
    type Instance
    is new Four_Params_Voice

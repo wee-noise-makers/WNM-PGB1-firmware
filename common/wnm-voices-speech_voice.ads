@@ -19,45 +19,58 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Tresses.Filters.SVF; use Tresses.Filters.SVF;
+with Tresses;            use Tresses;
+with Tresses.Interfaces; use Tresses.Interfaces;
 
-package body WNM.Synth.Filter_Voice is
+private with LPC_Synth;
+private with WNM.Speech;
 
-   ------------
-   -- Render --
-   ------------
+package WNM.Voices.Speech_Voice is
+
+   type Instance
+   is new Four_Params_Voice
+   with private;
+
+   procedure Set_Word (This : in out Instance; Id : MIDI.MIDI_Data);
+
+   procedure Init (This : in out Instance);
 
    procedure Render (This   : in out Instance;
-                     Left   : in out Tresses.Mono_Buffer;
-                     Right  : in out Tresses.Mono_Buffer)
-   is
-   begin
-      Set_Frequency (This.Left, This.Params (P_Cutoff));
-      Set_Frequency (This.Right, This.Params (P_Cutoff));
+                     Buffer :    out Tresses.Mono_Buffer);
 
-      Set_Resonance (This.Left, This.Params (P_Resonance));
-      Set_Resonance (This.Right, This.Params (P_Resonance));
+   procedure Set_MIDI_Pitch (This : in out Instance;
+                             Key  :        MIDI.MIDI_Key);
 
-      declare
-         Third : constant Tresses.Param_Range := Tresses.Param_Range'Last / 3;
-         Filter_Mode : constant Mode_Kind :=
-           (case This.Params (P_Mode) is
-               when 0 .. Third => Low_Pass,
-               when Third + 1 .. 2 * Third => Band_Pass,
-               when others => High_Pass);
-      begin
-         Tresses.Filters.SVF.Set_Mode (This.Left, Filter_Mode);
-         Tresses.Filters.SVF.Set_Mode (This.Right, Filter_Mode);
-      end;
+   P_Word : constant Tresses.Param_Id := 1;
+   P_Time : constant Tresses.Param_Id := 2;
 
-      for Elt of Left loop
-         Elt := S16 (Tresses.Filters.SVF.Process (This.Left, S32 (Elt)));
-      end loop;
+   --  Interfaces --
 
-      for Elt of Right loop
-         Elt := S16 (Tresses.Filters.SVF.Process (This.Right, S32 (Elt)));
-      end loop;
+   overriding
+   function Param_Label (This : Instance; Id : Param_Id) return String
+   is (case Id is
+          when P_Word => "Word",
+          when P_Time => "Time Stretch",
+          when 3      => "N/A",
+          when 4      => "N/A");
 
-   end Render;
+   overriding
+   function Param_Short_Label (This : Instance; Id : Param_Id)
+                               return Short_Label
+   is (case Id is
+          when P_Word => "WRD",
+          when P_Time => "Time",
+          when 3      => "N/A",
+          when 4      => "N/A");
 
-end WNM.Synth.Filter_Voice;
+private
+
+   type Instance
+   is new Four_Params_Voice
+   with record
+      LPC : LPC_Synth.Instance;
+      Selected_Word : WNM.Speech.Word := 0;
+      Speech_Pitch : Float := MIDI.Key_To_Frequency (MIDI.C4);
+   end record;
+
+end WNM.Voices.Speech_Voice;

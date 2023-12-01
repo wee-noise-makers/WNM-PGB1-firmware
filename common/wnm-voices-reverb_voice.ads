@@ -22,9 +22,11 @@
 with Tresses;            use Tresses;
 with Tresses.Interfaces; use Tresses.Interfaces;
 
-private with Tresses.Filters.SVF;
+with Tresses.Resources;
 
-private package WNM.Synth.Filter_Voice is
+private with Tresses.FX.Reverb;
+
+package WNM.Voices.Reverb_Voice is
 
    type Instance
    is new Four_Params_Voice
@@ -34,37 +36,50 @@ private package WNM.Synth.Filter_Voice is
                      Left   : in out Tresses.Mono_Buffer;
                      Right  : in out Tresses.Mono_Buffer);
 
-   P_Mode      : constant Tresses.Param_Id := 1;
-   P_Cutoff    : constant Tresses.Param_Id := 2;
-   P_Resonance : constant Tresses.Param_Id := 3;
-   P_Nope      : constant Tresses.Param_Id := 4;
+   P_Amount    : constant Tresses.Param_Id := 1;
+   P_Time      : constant Tresses.Param_Id := 2;
+   P_Diffusion : constant Tresses.Param_Id := 3;
+   P_Cutoff    : constant Tresses.Param_Id := 4;
 
    --  Interfaces --
 
    overriding
    function Param_Label (This : Instance; Id : Param_Id) return String
    is (case Id is
-          when P_Mode      => "Mode",
-          when P_Cutoff    => "Cutoff",
-          when P_Resonance => "Resonance",
-          when P_Nope      => "N/A");
+          when P_Amount    => "Amount",
+          when P_Time      => "Time",
+          when P_Diffusion => "Diffusion",
+          when P_Cutoff    => "LP Cutoff");
 
    overriding
    function Param_Short_Label (This : Instance; Id : Param_Id)
                                return Short_Label
    is (case Id is
-          when P_Mode      => "MOD",
-          when P_Cutoff    => "CTF",
-          when P_Resonance => "RES",
-          when P_Nope      => "N/A");
+          when P_Amount    => "AMT",
+          when P_Time      => "TIM",
+          when P_Diffusion => "DIF",
+          when P_Cutoff    => "CTF");
 
 private
+   pragma Style_Checks ("M120");
+   package Reverb_Pck is new Tresses.FX.Reverb
+     (
+      Ap1_Len   => Tresses.U16 (( 113.0 / 32_000.0 / 1.0) * Tresses.Resources.SAMPLE_RATE_REAL),
+      Ap2_Len   => Tresses.U16 (( 162.0 / 32_000.0 / 1.0) * Tresses.Resources.SAMPLE_RATE_REAL),
+      Ap3_Len   => Tresses.U16 (( 241.0 / 32_000.0 / 1.0) * Tresses.Resources.SAMPLE_RATE_REAL),
+      Ap4_Len   => Tresses.U16 (( 399.0 / 32_000.0 / 1.0) * Tresses.Resources.SAMPLE_RATE_REAL),
+      Dap1a_Len => Tresses.U16 ((1653.0 / 32_000.0 / 1.0) * Tresses.Resources.SAMPLE_RATE_REAL),
+      Dap1b_Len => Tresses.U16 ((2038.0 / 32_000.0 / 1.0) * Tresses.Resources.SAMPLE_RATE_REAL),
+      Del1_Len  => Tresses.U16 ((3411.0 / 32_000.0 / 1.0) * Tresses.Resources.SAMPLE_RATE_REAL),
+      Dap2a_Len => Tresses.U16 ((1913.0 / 32_000.0 / 1.0) * Tresses.Resources.SAMPLE_RATE_REAL),
+      Dap2b_Len => Tresses.U16 ((1663.0 / 32_000.0 / 1.0) * Tresses.Resources.SAMPLE_RATE_REAL),
+      Del2_Len  => Tresses.U16 ((4782.0 / 32_000.0 / 1.0) * Tresses.Resources.SAMPLE_RATE_REAL)
+     );
 
    type Instance
    is new Four_Params_Voice
    with record
-      Left  : Tresses.Filters.SVF.Instance;
-      Right : Tresses.Filters.SVF.Instance;
+      Rev : Reverb_Pck.Instance;
    end record;
 
-end WNM.Synth.Filter_Voice;
+end WNM.Voices.Reverb_Voice;

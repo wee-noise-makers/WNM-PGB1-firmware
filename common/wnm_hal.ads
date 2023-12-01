@@ -92,9 +92,6 @@ package WNM_HAL is
                   Volume       :        Audio_Volume;
                   Pan          :        Audio_Pan);
 
-   procedure Mix (Output      : in out Stereo_Buffer;
-                  In_L, In_R  :        Mono_Buffer);
-
    ----------
    -- Time --
    ----------
@@ -123,14 +120,19 @@ package WNM_HAL is
    -- Coproc Messages --
    ---------------------
 
+   type Coproc_Target is (Synth_CPU, Main_CPU);
+
    type Coproc_Data is mod 2**Coproc_Data_Size
      with size => Coproc_Data_Size;
 
-   procedure Push (D : Coproc_Data);
+   procedure Push (Target : Coproc_Target;
+                   D      : Coproc_Data);
    --  Send data to the synth coprocessor. Fails silently if the data cannot
    --  be pushed (e.g. queue is full).
 
-   procedure Pop (D : out Coproc_Data; Success : out Boolean);
+   procedure Pop (Target  :     Coproc_Target;
+                  D       : out Coproc_Data;
+                  Success : out Boolean);
    --  Tentatively get data for the synth coprocessor. Success is False if
    --  no data is available.
 
@@ -150,7 +152,8 @@ package WNM_HAL is
    -- Debug --
    -----------
 
-   procedure Set_Indicator_IO;
-   procedure Clear_Indicator_IO;
+   type Indicator_IO_Line is (GP16, GP17, GP18, GP19);
+   procedure Set_Indicator_IO (Id : Indicator_IO_Line);
+   procedure Clear_Indicator_IO (Id : Indicator_IO_Line);
 
 end WNM_HAL;

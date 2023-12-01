@@ -22,55 +22,44 @@
 with Tresses;            use Tresses;
 with Tresses.Interfaces; use Tresses.Interfaces;
 
-private with Tresses.Random;
-private with Tresses.Filters.SVF;
-private with Tresses.Excitation;
-private with Tresses.Envelopes.AR;
-
-private package WNM.Synth.Snare_Voice is
+package WNM.Voices.Drive_Voice is
 
    type Instance
    is new Four_Params_Voice
    with private;
 
-   type Snare_Engine is (Analog_Snare, Snare, Clap);
-
-   function Engine (This : Instance) return Snare_Engine;
-   procedure Set_Engine (This : in out Instance; E : Snare_Engine);
-
-   function Img (E : Snare_Engine) return String;
-
-   procedure Init (This : in out Instance);
-
    procedure Render (This   : in out Instance;
-                     Buffer :    out Tresses.Mono_Buffer);
+                     Left   : in out Tresses.Mono_Buffer;
+                     Right  : in out Tresses.Mono_Buffer);
+
+   P_Gain  : constant Tresses.Param_Id := 1;
+   P_Drive : constant Tresses.Param_Id := 2;
+   P_Pan   : constant Tresses.Param_Id := 3;
+   P_Level : constant Tresses.Param_Id := 4;
 
    --  Interfaces --
 
    overriding
-   function Param_Label (This : Instance; Id : Param_Id) return String;
+   function Param_Label (This : Instance; Id : Param_Id) return String
+   is (case Id is
+          when P_Gain  => "Pre-Gain",
+          when P_Drive => "Drive",
+          when P_Pan   => "Pan",
+          when P_Level => "Output Level");
 
    overriding
    function Param_Short_Label (This : Instance; Id : Param_Id)
-                               return Short_Label;
+                               return Short_Label
+   is (case Id is
+          when P_Gain  => "PRE",
+          when P_Drive => "DRV",
+          when P_Pan   => "PAN",
+          when P_Level => "LVL");
 
 private
 
    type Instance
    is new Four_Params_Voice
-   with record
+   with null record;
 
-      Engine : Snare_Engine := Snare_Engine'First;
-
-      Phase, Target_Phase_Increment, Phase_Increment : U32 := 0;
-
-      Pulse0, Pulse1, Pulse2, Pulse3 : Excitation.Instance;
-      Filter0, Filter1, Filter2 : Filters.SVF.Instance;
-      Rng : Tresses.Random.Instance;
-      Env0, Env1 : Tresses.Envelopes.AR.Instance;
-      Re_Trig : Tresses.U32;
-
-      Do_Init : Boolean := True;
-   end record;
-
-end WNM.Synth.Snare_Voice;
+end WNM.Voices.Drive_Voice;

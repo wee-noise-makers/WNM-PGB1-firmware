@@ -212,8 +212,8 @@ package body WNM.Project.Step_Sequencer is
                  Voice_MIDI_Chan (Mode (T));
             begin
 
-               WNM.Coproc.Push ((WNM.Coproc.MIDI_Event,
-                                (MIDI.Note_On, Chan, Key, Velo)));
+               WNM.Coproc.Push_To_Synth ((WNM.Coproc.MIDI_Event,
+                                         (MIDI.Note_On, Chan, Key, Velo)));
 
                WNM.Note_Off_Sequencer.Note_Off
                  (Internal, Chan, Key, Now + Duration);
@@ -285,10 +285,10 @@ package body WNM.Project.Step_Sequencer is
          case Mode (T) is
 
             when Synth_Track_Mode_Kind =>
-               WNM.Coproc.Push ((Kind => WNM.Coproc.MIDI_Event,
-                                 MIDI_Evt =>
-                                   (MIDI.Continous_Controller,
-                                    Chan, Ctrl, Val)));
+               WNM.Coproc.Push_To_Synth ((Kind => WNM.Coproc.MIDI_Event,
+                                          MIDI_Evt =>
+                                            (MIDI.Continous_Controller,
+                                             Chan, Ctrl, Val)));
 
             when MIDI_Mode =>
                WNM.MIDI_Queues.Send_External

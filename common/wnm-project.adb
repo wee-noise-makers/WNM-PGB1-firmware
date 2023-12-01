@@ -1300,12 +1300,12 @@ package body WNM.Project is
       M : constant Track_Mode_Kind := Mode (T);
    begin
       if M in Synth_Track_Mode_Kind then
-         Coproc.Push ((Kind     => MIDI_Event,
-                       MIDI_Evt =>
-                         (Kind => MIDI.Continous_Controller,
-                          Chan => Voice_MIDI_Chan (M),
-                          Controller => Synth.Voice_Engine_CC,
-                          Controller_Value => Selected_Engine (T))));
+         Coproc.Push_To_Synth ((Kind     => MIDI_Event,
+                                MIDI_Evt =>
+                                  (Kind => MIDI.Continous_Controller,
+                                   Chan => Voice_MIDI_Chan (M),
+                                   Controller => Synth.Voice_Engine_CC,
+                                   Controller_Value => Selected_Engine (T))));
       end if;
    end Synchronize_Voice_Engine;
 
@@ -1325,12 +1325,12 @@ package body WNM.Project is
       procedure Send_CC (Chan : MIDI.MIDI_Channel; CC, Val : MIDI.MIDI_Data)
       is
       begin
-         Coproc.Push ((Kind     => MIDI_Event,
-                       MIDI_Evt =>
-                         (Kind => MIDI.Continous_Controller,
-                          Chan => Chan,
-                          Controller => CC,
-                          Controller_Value => Val)));
+         Coproc.Push_To_Synth ((Kind     => MIDI_Event,
+                                MIDI_Evt =>
+                                  (Kind => MIDI.Continous_Controller,
+                                   Chan => Chan,
+                                   Controller => CC,
+                                   Controller_Value => Val)));
       end Send_CC;
    begin
       if M in Synth_Track_Mode_Kind then
