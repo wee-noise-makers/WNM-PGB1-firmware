@@ -31,6 +31,7 @@ with RP.Timer;
 with RP.Device;
 with RP.Multicore;
 with RP.Multicore.FIFO;
+with RP.DMA;
 
 with Noise_Nugget_SDK.WS2812;
 with Noise_Nugget_SDK.Audio;
@@ -71,7 +72,14 @@ package body WNM_HAL is
                             GP19 => (Pin => 19));
 
 
-   package Screen renames Noise_Nugget_SDK.Screen.SSD1306;
+   package Screen is new Noise_Nugget_SDK.Screen.SSD1306
+     (SPI         => RP.Device.SPI_1'Access,
+      DMA_Trigger => RP.DMA.SPI1_TX,
+      N_Reset_Pin => 13,
+      DC_Pin      => 12,
+      SCK_Pin     => 10,
+      MOSI_Pin    => 11);
+
    ----------
    -- LEDs --
    ----------
@@ -267,31 +275,6 @@ package body WNM_HAL is
    -- Mix --
    ---------
 
-   procedure Mix (Output : in out Stereo_Buffer;
-                  Input  :        Mono_Buffer;
-                  Volume :        Audio_Volume;
-                  Pan    :        Audio_Pan)
-   is
-      pragma Unreferenced (Volume, Pan);
-      use Interfaces;
-      use Tresses;
-      Point : S32;
-   begin
-      for Index in Output'Range loop
-
-         Point := S32 (Output (Index).L) + S32 (Input (Index));
-         Tresses.DSP.Clip_S16 (Point);
-         Output (Index).L := S16 (Point);
-
-         Point := S32 (Output (Index).R) + S32 (Input (Index));
-         Tresses.DSP.Clip_S16 (Point);
-         Output (Index).R := S16 (Point);
-      end loop;
-   end Mix;
-
-   ---------
-   -- Mix --
-   ---------
 
    procedure Mix (Out_L, Out_R : in out Mono_Buffer;
                   Input        :        Mono_Buffer;

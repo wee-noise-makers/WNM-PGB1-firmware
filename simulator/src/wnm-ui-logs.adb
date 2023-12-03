@@ -11,7 +11,7 @@ package body WNM.UI.Logs is
       case B is
          when PAD_Up =>
             if Evt = On_Press then
-              ASFML_Sim.User_Input_Event_Logs.Insert
+               ASFML_Sim.User_Input_Event_Logs.Insert
                  ((ASFML_Sim.Up_Down, 1));
             end if;
 

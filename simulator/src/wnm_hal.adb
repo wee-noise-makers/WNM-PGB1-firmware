@@ -206,48 +206,6 @@ package body WNM_HAL is
    -- Mix --
    ---------
 
-   procedure Mix (Output : in out Stereo_Buffer;
-                  Input  :        Mono_Buffer;
-                  Volume :        Audio_Volume;
-                  Pan    :        Audio_Pan)
-   is
-      Volume_F : constant Float := Float (Volume) / Float (Audio_Volume'Last);
-
-      procedure Point_Mix (P_Out : in out Mono_Point;
-                           P_In  :        Mono_Point;
-                           Pan_F :        Float)
-      is
-         use Interfaces;
-
-         Sample : constant Float := Float (P_In) * Volume_F * Pan_F;
-         Res : constant Integer_32 := Integer_32 (P_Out) + Integer_32 (Sample);
-      begin
-
-         if Res > Integer_32 (Mono_Point'Last) then
-            P_Out := Mono_Point'Last;
-         elsif Res < Integer_32 (Mono_Point'First) then
-            P_Out := Mono_Point'First;
-         else
-            P_Out := Mono_Point (Res);
-         end if;
-      end Point_Mix;
-
-      Pan_F : constant Float := Float (Pan) / Float (Audio_Pan'Last);
-
-      Pan_L : constant Float := 1.0 - Pan_F;
-      Pan_R : constant Float := 0.0 + Pan_F;
-   begin
-
-      for Idx in Output'Range loop
-         Point_Mix (Output (Idx).L, Input (Idx), Pan_L);
-         Point_Mix (Output (Idx).R, Input (Idx), Pan_R);
-      end loop;
-   end Mix;
-
-   ---------
-   -- Mix --
-   ---------
-
    procedure Mix (Out_L, Out_R : in out Mono_Buffer;
                   Input        :        Mono_Buffer;
                   Volume       :        Audio_Volume;

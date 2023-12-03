@@ -41,7 +41,7 @@ package WNM.Synth.Mixer is
       Parameters : FX_Parameters;
    end record;
 
-   type Mixer_Buffer_Index is range 0 .. 20
+   type Mixer_Buffer_Index is range 0 .. 5
      with Size => 8;
 
    Mixer_Buffers : array (Mixer_Buffer_Index) of aliased FX_Send_Buffers;
