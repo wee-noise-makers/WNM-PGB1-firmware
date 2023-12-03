@@ -211,36 +211,46 @@ package body WNM_HAL is
                   Volume       :        Audio_Volume;
                   Pan          :        Audio_Pan)
    is
-      Volume_F : constant Float := Float (Volume) / Float (Audio_Volume'Last);
+      use Tresses;
+      use Interfaces;
 
-      procedure Point_Mix (P_Out : in out Mono_Point;
-                           P_In  :        Mono_Point;
-                           Pan_F :        Float)
+      procedure Point_Mix (P_Out    : in out Mono_Point;
+                           P_In     :        Mono_Point;
+                           Chan_Vol :        S16)
       is
-         use Interfaces;
 
-         Sample : constant Float := Float (P_In) * Volume_F * Pan_F;
-         Res : constant Integer_32 := Integer_32 (P_Out) + Integer_32 (Sample);
+         Sample : constant S32 := (S32 (P_In) * S32 (Chan_Vol)) / 2**15;
+         Res    : constant S32 := S32 (P_Out) + Sample;
       begin
 
-         if Res > Integer_32 (Mono_Point'Last) then
+         if Res > S32 (Mono_Point'Last) then
             P_Out := Mono_Point'Last;
-         elsif Res < Integer_32 (Mono_Point'First) then
+         elsif Res < S32 (Mono_Point'First) then
             P_Out := Mono_Point'First;
          else
             P_Out := Mono_Point (Res);
          end if;
       end Point_Mix;
 
-      Pan_F : constant Float := Float (Pan) / Float (Audio_Pan'Last);
+      Pan_R_S16 : constant S16 :=
+        (S16'Last / S16 (Audio_Pan'Last)) * S16 (Pan);
 
-      Pan_L : constant Float := 1.0 - Pan_F;
-      Pan_R : constant Float := 0.0 + Pan_F;
+      Pan_L_S16 : constant S16 :=
+        (S16'Last / S16 (Audio_Pan'Last)) * S16 (Audio_Pan'Last - Pan);
+
+      Vol_S16 : constant S16 :=
+        (S16'Last / S16 (Audio_Volume'Last)) * S16 (Volume);
+
+      Vol_R_S16 : constant S16 :=
+        S16 ((S32 (Vol_S16) * S32 (Pan_R_S16)) / 2**15);
+
+      Vol_L_S16 : constant S16 :=
+        S16 ((S32 (Vol_S16) * S32 (Pan_L_S16)) / 2**15);
    begin
 
       for Idx in Out_L'Range loop
-         Point_Mix (Out_L (Idx), Input (Idx), Pan_L);
-         Point_Mix (Out_R (Idx), Input (Idx), Pan_R);
+         Point_Mix (Out_L (Idx), Input (Idx), Vol_L_S16);
+         Point_Mix (Out_R (Idx), Input (Idx), Vol_R_S16);
       end loop;
    end Mix;
 
