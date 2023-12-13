@@ -117,6 +117,11 @@ package body ASFML_Sim is
 
          WNM.Tasks.Sequencer_1khz_Tick;
       end loop;
+   exception
+      when E : others =>
+         Ada.Text_IO.Put_Line ("=== Seq 1kHz Task exception ===");
+         AAA.Debug.Put_Exception (E);
+         GNAT.OS_Lib.OS_Exit (1);
    end Seq_1kHz_Task;
 
    ----------------
@@ -242,8 +247,10 @@ package body ASFML_Sim is
          --  Print_MIDI_Out;
 
       end loop;
+
    exception
       when E : others =>
+         Ada.Text_IO.Put_Line ("=== Periodic Update Task exception ===");
          AAA.Debug.Put_Exception (E);
          GNAT.OS_Lib.OS_Exit (1);
    end Periodic_Update;

@@ -20,6 +20,7 @@
 -------------------------------------------------------------------------------
 
 with WNM.GUI.Menu.Drawing;
+with WNM.GUI.Menu.Yes_No_Dialog;
 with WNM.Synth;
 with WNM.Synth.Mixer;
 with WNM.Project.Library;
@@ -73,6 +74,9 @@ package body WNM.GUI.Menu.System_Info is
          when Prj_Last_Save_Size =>
             Drawing.Draw_Title ("Size of last saved", "project");
             Drawing.Draw_Value (Project.Library.Last_Saved_Size'Img);
+
+         when Raise_Exception =>
+            Drawing.Draw_Title ("Press A to raise", "an exception");
       end case;
    end Draw;
 
@@ -94,6 +98,9 @@ package body WNM.GUI.Menu.System_Info is
                   Synth.Clear_Missed_Deadlines;
                when DAC_Missed_Deadlines =>
                   Synth.Mixer.Clear_Missed_DAC_Deadlines;
+               when Raise_Exception =>
+                  Yes_No_Dialog.Set_Title ("Raise exception?");
+                  Yes_No_Dialog.Push_Window;
                when others =>
                   null;
             end case;
@@ -110,5 +117,25 @@ package body WNM.GUI.Menu.System_Info is
             null;
       end case;
    end On_Event;
+
+   --------------
+   -- On_Focus --
+   --------------
+
+   overriding
+   procedure On_Focus (This       : in out Instance;
+                       Exit_Value : Window_Exit_Value)
+   is
+   begin
+      case This.K is
+         when Raise_Exception =>
+            if Exit_Value = Success then
+               raise Program_Error with "System info raise";
+            end if;
+
+         when others =>
+            null;
+      end case;
+   end On_Focus;
 
 end WNM.GUI.Menu.System_Info;

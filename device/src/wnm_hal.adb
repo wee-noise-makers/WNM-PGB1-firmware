@@ -19,11 +19,15 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with Ada.Unchecked_Conversion;
 with Interfaces;
+with System.Machine_Code;
 
 with Tresses.DSP;
 
 with WNM.Tasks;
+with WNM.GUI.Bitmap_Fonts;
+with WNM.Coproc;
 
 with HAL; use HAL;
 with RP.GPIO;
@@ -31,7 +35,10 @@ with RP.Timer;
 with RP.Device;
 with RP.Multicore;
 with RP.Multicore.FIFO;
+with RP.Multicore.Spinlocks;
 with RP.DMA;
+with RP.ROM;
+with RP.Watchdog;
 
 with Noise_Nugget_SDK.WS2812;
 with Noise_Nugget_SDK.Audio;
@@ -39,7 +46,10 @@ with Noise_Nugget_SDK.Button_Matrix_Definition;
 with Noise_Nugget_SDK.Button_Matrix;
 with Noise_Nugget_SDK.Screen.SSD1306;
 
+with Atomic.Critical_Section;
+
 with Cortex_M.Systick;
+with Cortex_M.Debug;
 
 package body WNM_HAL is
 
@@ -79,6 +89,24 @@ package body WNM_HAL is
       DC_Pin      => 12,
       SCK_Pin     => 10,
       MOSI_Pin    => 11);
+
+   procedure Last_Chance_Handler (Msg : System.Address; Line : Integer);
+   pragma Export (C, Last_Chance_Handler, "__gnat_last_chance_handler");
+   pragma No_Return (Last_Chance_Handler);
+
+   procedure ISR_Hard_Fault;
+   pragma Export (ASM, ISR_Hard_Fault, "isr_hardfault");
+
+   procedure ISR_NMI;
+   pragma Export (ASM, ISR_NMI, "isr_nmi");
+
+   procedure ISR_Invalid;
+   pragma Export (ASM, ISR_Invalid, "isr_invalid");
+
+   Synth_CPU_LCH_Msg  : System.Address := System.Null_Address
+     with Volatile, Atomic;
+   Synth_CPU_LCH_Line : Integer := 0
+     with Volatile, Atomic;
 
    ----------
    -- LEDs --
@@ -179,24 +207,6 @@ package body WNM_HAL is
             PAD_B          => (if S_PAD_B then Down else Up));
       end;
    end State;
-
-   ------------------
-   -- Left_Encoder --
-   ------------------
-
-   function Left_Encoder return Integer is
-   begin
-      return 0;
-   end Left_Encoder;
-
-   -------------------
-   -- Right_Encoder --
-   -------------------
-
-   function Right_Encoder return Integer is
-   begin
-      return 0;
-   end Right_Encoder;
 
    ---------
    -- Set --
@@ -393,10 +403,11 @@ package body WNM_HAL is
       pragma Unreferenced (Target);
       --  Target is meaningless in the device code since a CPU can only push
       --  to the FIFO of the other CPU.
+
+      Unused : Boolean;
    begin
 
-
-      RP.Multicore.FIFO.Push_Blocking (UInt32 (D));
+      Unused := RP.Multicore.FIFO.Try_Push (UInt32 (D));
    end Push;
 
    ---------
@@ -431,6 +442,110 @@ package body WNM_HAL is
       B_Play_Power.Clear;
    end Power_Down;
 
+   --------------------
+   -- Enter_DFU_Mode --
+   --------------------
+
+   procedure Enter_DFU_Mode is
+   begin
+      RP.ROM.reset_to_usb_boot (0, 0);
+   end Enter_DFU_Mode;
+
+   -------------------
+   -- Watchdog_Init --
+   -------------------
+
+   procedure Watchdog_Init is
+   begin
+      RP.Watchdog.Configure (500);
+   end Watchdog_Init;
+
+   --------------------
+   -- Watchdog_Check --
+   --------------------
+
+   procedure Watchdog_Check is
+   begin
+      RP.Watchdog.Reload;
+   end Watchdog_Check;
+
+   -------------------------
+   -- Wait_Synth_CPU_Hold --
+   -------------------------
+
+   Hold_Request_Lock : RP.Multicore.Spinlocks.Lock_Id := 0;
+   Hold_Confirmed_Lock : RP.Multicore.Spinlocks.Lock_Id := 1;
+   procedure RAM_Hold_Wait_Loop
+     with Linker_Section => ".time_critical.synth_cpu_hold_loop";
+
+   procedure Wait_Synth_CPU_Hold is
+      use RP.Multicore.Spinlocks;
+
+   begin
+
+      if Locked (Hold_Confirmed_Lock) then
+         raise Program_Error with "Synth CPU should be running";
+      end if;
+
+      if not Try_Lock (Hold_Request_Lock) then
+         raise Program_Error with "This lock should not be contested...";
+      end if;
+
+      loop
+         exit when Locked (Hold_Confirmed_Lock);
+      end loop;
+   end Wait_Synth_CPU_Hold;
+
+   ----------------------------
+   -- Release_Synth_CPU_Hold --
+   ----------------------------
+
+   procedure Release_Synth_CPU_Hold is
+      use RP.Multicore.Spinlocks;
+   begin
+      Release (Hold_Request_Lock);
+   end Release_Synth_CPU_Hold;
+
+   ------------------------
+   -- RAM_Hold_Wait_Loop --
+   ------------------------
+
+   procedure RAM_Hold_Wait_Loop is
+      use RP.Multicore.Spinlocks;
+
+   begin
+      if not Try_Lock (Hold_Confirmed_Lock) then
+         raise Program_Error with "This lock should not be contested...";
+      end if;
+
+      loop
+         exit when not Locked (Hold_Request_Lock);
+      end loop;
+
+      Release (Hold_Confirmed_Lock);
+
+   end RAM_Hold_Wait_Loop;
+
+   --------------------------
+   -- Synth_CPU_Check_Hold --
+   --------------------------
+
+   procedure Synth_CPU_Check_Hold is
+      use RP.Multicore.Spinlocks;
+
+      State : Atomic.Critical_Section.Interrupt_State;
+   begin
+      if Locked (Hold_Request_Lock) then
+
+         Atomic.Critical_Section.Enter (State);
+
+         RAM_Hold_Wait_Loop;
+
+         Atomic.Critical_Section.Leave (State);
+
+      end if;
+   end Synth_CPU_Check_Hold;
+
    ----------------------
    -- Set_Indicator_IO --
    ----------------------
@@ -452,6 +567,179 @@ package body WNM_HAL is
          Indicator_IO (Id).Clear;
       end if;
    end Clear_Indicator_IO;
+
+   -------------------------
+   -- Breakpoint_If_Debug --
+   -------------------------
+
+   procedure Breakpoint_If_Debug is
+      use System.Machine_Code;
+   begin
+      --  If a debugger is attached, triggger an breakpoint event, otherwise
+      --  do nothing and return.
+      if Cortex_M.Debug.Halting_Debug_Enabled then
+         Asm ("bkpt",
+              Volatile => True);
+      end if;
+   end Breakpoint_If_Debug;
+
+   -------------------------
+   -- Last_Chance_Handler --
+   -------------------------
+
+   procedure Last_Chance_Handler (Msg : System.Address; Line : Integer) is
+      use System;
+
+      CPU_Id : constant Natural := RP.Multicore.CPU_Id;
+
+      ---------------
+      -- Print_Msg --
+      ---------------
+
+      procedure Print_Msg (Str : System.Address; Y : in out Integer) is
+         Message : String (1 .. 80)
+           with Address => Str;
+         X : Integer := 0;
+      begin
+         for C of Message loop
+            exit when C = Character'Val (0);
+            WNM.GUI.Bitmap_Fonts.Print (X, Y, C);
+            if X > Screen_Width then
+               X := 0;
+               Y := Y + WNM.GUI.Bitmap_Fonts.Height;
+            end if;
+         end loop;
+      end Print_Msg;
+
+
+      ----------------
+      -- Print_Code --
+      ----------------
+
+      procedure Print_Code (Code :        Integer;
+                            X    : in out Integer;
+                            Y    :        Integer)
+      is
+         function To_UInt32
+         is new Ada.Unchecked_Conversion (Integer, UInt32);
+
+         U32 : constant UInt32 := To_UInt32 (Code);
+      begin
+         WNM.GUI.Bitmap_Fonts.Print (X, Y, 'x');
+
+         for Cnt in reverse 0 .. 7 loop
+            WNM.GUI.Bitmap_Fonts.Print
+              (X, Y,
+               (case Shift_Right (U32, 4 * Cnt) and 16#F# is
+                   when 0 => '0',
+                   when 1 => '1',
+                   when 2 => '2',
+                   when 3 => '3',
+                   when 4 => '4',
+                   when 5 => '5',
+                   when 6 => '6',
+                   when 7 => '7',
+                   when 8 => '8',
+                   when 9 => '9',
+                   when 10 => 'A',
+                   when 11 => 'B',
+                   when 12 => 'C',
+                   when 13 => 'D',
+                   when 14 => 'E',
+                   when 15 => 'F',
+                   when others => '-'));
+         end loop;
+      end Print_Code;
+
+      X, Y : Integer;
+
+   begin
+
+      if CPU_Id = 1 then
+         Synth_CPU_LCH_Line := Line;
+         Synth_CPU_LCH_Msg  := Msg;
+         WNM.Coproc.Push_To_Main ((Kind => WNM.Coproc.Synth_CPU_Crash));
+
+         loop
+            Breakpoint_If_Debug;
+         end loop;
+      end if;
+
+      --  All LEDs in red
+      Clear_LEDs;
+      for L in LED loop
+         Set (L, (255, 0, 0));
+      end loop;
+      Update_LEDs;
+
+      --  Write error message on screen
+      Clear_Pixels;
+      X := 0;
+      WNM.GUI.Bitmap_Fonts.Print (X, 0, "CPU-0 Err:");
+      Print_Code (Line, X, -2);
+
+      Y := WNM.GUI.Bitmap_Fonts.Height;
+      Print_Msg (Msg, Y);
+
+      --  Check and Write synth CPU error message on screen
+      if Synth_CPU_LCH_Msg /= System.Null_Address then
+         X := 0;
+         Y := Y + WNM.GUI.Bitmap_Fonts.Height;
+         WNM.GUI.Bitmap_Fonts.Print (X, Y, "CPU-1 Err:");
+         Print_Code (Synth_CPU_LCH_Line, X, Y);
+
+         Y := Y + WNM.GUI.Bitmap_Fonts.Height;
+         Print_Msg (Synth_CPU_LCH_Msg, Y);
+      end if;
+
+      Update_Screen;
+
+      loop
+         Watchdog_Check;
+         Breakpoint_If_Debug;
+      end loop;
+   end Last_Chance_Handler;
+
+   ---------------------------
+   -- Cortex_M_Fault_Status --
+   ---------------------------
+
+   function Cortex_M_Fault_Status return Integer is
+      CFSR : Integer
+        with Volatile, Address => System'To_Address (16#E000ED28#);
+   begin
+      return CFSR;
+   end Cortex_M_Fault_Status;
+
+   --------------------
+   -- ISR_Hard_Fault --
+   --------------------
+
+   procedure ISR_Hard_Fault is
+      Message : constant String := "ISR Hardfault" & ASCII.NUL;
+   begin
+      Last_Chance_Handler (Message'Address, Cortex_M_Fault_Status);
+   end ISR_Hard_Fault;
+
+   -------------
+   -- ISR_NMI --
+   -------------
+
+   procedure ISR_NMI is
+      Message : constant String := "ISR NMI" & ASCII.NUL;
+   begin
+      Last_Chance_Handler (Message'Address, Cortex_M_Fault_Status);
+   end ISR_NMI;
+
+   -----------------
+   -- ISR_Invalid --
+   -----------------
+
+   procedure ISR_Invalid is
+      Message : constant String := "ISR Invalid" & ASCII.NUL;
+   begin
+      Last_Chance_Handler (Message'Address, Cortex_M_Fault_Status);
+   end ISR_Invalid;
 
 
 begin

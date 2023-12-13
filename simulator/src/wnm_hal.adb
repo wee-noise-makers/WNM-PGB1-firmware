@@ -385,6 +385,50 @@ package body WNM_HAL is
       GNAT.OS_Lib.OS_Exit (0);
    end Power_Down;
 
+   --------------------
+   -- Enter_DFU_Mode --
+   --------------------
+
+   procedure Enter_DFU_Mode is
+   begin
+      Power_Down;
+   end Enter_DFU_Mode;
+
+   -------------------
+   -- Watchdog_Init --
+   -------------------
+
+   procedure Watchdog_Init
+   is null;
+
+   --------------------
+   -- Watchdog_Check --
+   --------------------
+
+   procedure Watchdog_Check
+   is null;
+
+   -------------------------
+   -- Wait_Synth_CPU_Hold --
+   -------------------------
+
+   procedure Wait_Synth_CPU_Hold
+   is null;
+
+   ----------------------------
+   -- Release_Synth_CPU_Hold --
+   ----------------------------
+
+   procedure Release_Synth_CPU_Hold
+   is null;
+
+   --------------------------
+   -- Synth_CPU_Check_Hold --
+   --------------------------
+
+   procedure Synth_CPU_Check_Hold
+   is null;
+
    ----------------------
    -- Set_Indicator_IO --
    ----------------------

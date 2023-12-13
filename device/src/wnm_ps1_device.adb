@@ -39,7 +39,6 @@ begin
       --                   ^^ PendSV
    end;
 
-
    --  Start the second CPU core that will run the synth
    RP.Multicore.Launch_Core1
      (Trap_Vector   => WNM_HAL.Synth_Core.Trap_Vector,
@@ -55,7 +54,7 @@ begin
       raise Program_Error with "MDM";
    end if;
 
-   Noise_Nugget_SDK.Audio.Set_HP_Volume (0.7, 0.7);
+   WNM_HAL.Set_Main_Volume (WNM_HAL.Init_Volume);
 
    WNM.Tasks.Sequencer_Core;
 end WNM_PS1_Device;

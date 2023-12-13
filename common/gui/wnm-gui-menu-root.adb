@@ -53,6 +53,7 @@ package body WNM.GUI.Menu.Root is
           --  when Load            => "Load",
           --  when Save            => "Save",
           --  when Settings        => "Settings",
+          when DFU_Mode        => "Update Mode",
           when Shutdown        => "Shutdown",
           when System_Info     => "System Info");
 
@@ -120,6 +121,10 @@ package body WNM.GUI.Menu.Root is
 
                when Shutdown =>
                   Yes_No_Dialog.Set_Title ("Shutdown?");
+                  Yes_No_Dialog.Push_Window;
+
+               when DFU_Mode =>
+                  Yes_No_Dialog.Set_Title ("Enter Update Mode?");
                   Yes_No_Dialog.Push_Window;
 
                when System_Info =>
@@ -195,6 +200,11 @@ package body WNM.GUI.Menu.Root is
                                         500_000);
                   end if;
                end;
+            end if;
+
+         when DFU_Mode =>
+            if Exit_Value = Success then
+               WNM.Power_Control.Enter_DFU_Mode;
             end if;
 
          when Shutdown =>

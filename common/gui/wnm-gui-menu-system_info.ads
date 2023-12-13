@@ -30,7 +30,8 @@ private
                       Synth_Missed_Deadlines,
                       DAC_Missed_Deadlines,
                       Prj_Last_Load_Size,
-                      Prj_Last_Save_Size);
+                      Prj_Last_Save_Size,
+                      Raise_Exception);
 
    package Next_Info_Kind is new Enum_Next (Info_Kind, Wrap => True);
    use Next_Info_Kind;
@@ -54,7 +55,6 @@ private
 
    overriding
    procedure On_Focus (This       : in out Instance;
-                       Exit_Value : Window_Exit_Value)
-   is null;
+                       Exit_Value : Window_Exit_Value);
 
 end WNM.GUI.Menu.System_Info;

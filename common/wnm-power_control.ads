@@ -23,4 +23,6 @@ package WNM.Power_Control is
 
    procedure Power_Down;
 
+   procedure Enter_DFU_Mode;
+
 end WNM.Power_Control;

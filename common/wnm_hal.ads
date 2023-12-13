@@ -75,7 +75,7 @@ package WNM_HAL is
    procedure Select_Audio_Input (Kind : Audio_Input_Kind);
 
    type Audio_Volume is range 0 .. 100;
-   Init_Volume : constant Audio_Volume := 100;
+   Init_Volume : constant Audio_Volume := 70;
 
    type Audio_Pan is range 0 .. 100;
    Init_Pan : constant Audio_Pan := 50;
@@ -142,6 +142,35 @@ package WNM_HAL is
    -----------
 
    procedure Power_Down;
+
+   procedure Enter_DFU_Mode;
+
+   --------------
+   -- Watchdog --
+   --------------
+
+   procedure Watchdog_Init;
+   procedure Watchdog_Check;
+
+   --------------
+   -- CPU Hold --
+   --------------
+
+   --  Writing to the flash storage disables read access for a short period of
+   --  time. During this periode the synth CPU must not execute code or read
+   --  data from the flash. The following subprograms provide a way for the
+   --  sequencre CPU to request the synth CPU to hold during flash operations.
+
+   procedure Wait_Synth_CPU_Hold;
+   --  This procedure will request the synth CPU to hold and only return when
+   --  hold is confirmed by the synth CPU.
+
+   procedure Release_Synth_CPU_Hold;
+   --  This procedure releases the synth CPU from hold
+
+   procedure Synth_CPU_Check_Hold;
+   --  This procedure checks if the sequencer CPU asked for a hold, and if
+   --  that's the case holds until released.
 
    -----------
    -- Debug --

@@ -36,6 +36,7 @@ private
                        --  Save,
                        --  Settings,
                        System_Info,
+                       DFU_Mode,
                        Shutdown);
 
    function Menu_Items_Count is new Enum_Count (Menu_Items);

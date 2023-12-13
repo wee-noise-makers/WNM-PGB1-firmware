@@ -31,7 +31,7 @@ with WNM.Synth;
 
 package WNM.Coproc is
 
-   type Message_Kind is (MIDI_Event, Buffer_Available)
+   type Message_Kind is (MIDI_Event, Buffer_Available, Synth_CPU_Crash)
      with Size => 4;
 
    subtype MIDI_Event_Rec is MIDI.Message;
@@ -43,6 +43,9 @@ package WNM.Coproc is
 
          when Buffer_Available =>
             Buffer_Id : WNM.Synth.Mixer.Mixer_Buffer_Index;
+
+         when others =>
+            null;
       end case;
    end record
      with Size => WNM_Configuration.Coproc_Data_Size;

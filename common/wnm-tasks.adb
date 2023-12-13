@@ -48,6 +48,8 @@ package body WNM.Tasks is
 
    procedure Sequencer_1khz_Tick is
    begin
+      WNM_HAL.Watchdog_Check;
+
       WNM_HAL.Set_Indicator_IO (WNM_HAL.GP17);
       WNM.MIDI_Clock.Update;
       WNM.Short_Term_Sequencer.Update (Clock);
@@ -81,11 +83,18 @@ package body WNM.Tasks is
 
          exit when not Success;
 
-         if Msg.Kind = Coproc.Buffer_Available then
-            WNM_HAL.Set_Indicator_IO (WNM_HAL.GP16);
-            WNM.Synth.Mixer.Push_To_Mix (Msg.Buffer_Id);
-            WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP16);
-         end if;
+         case Msg.Kind is
+            when Coproc.Buffer_Available =>
+               WNM_HAL.Set_Indicator_IO (WNM_HAL.GP16);
+               WNM.Synth.Mixer.Push_To_Mix (Msg.Buffer_Id);
+               WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP16);
+
+            when Synth_CPU_Crash =>
+               raise Program_Error with "Synth crash";
+
+            when MIDI_Event =>
+               raise Program_Error with "MIDI event in seq coproc queue";
+         end case;
       end loop;
    end Sequencer_Coproc_Receive;
 
@@ -95,6 +104,7 @@ package body WNM.Tasks is
 
    procedure Sequencer_Core is
    begin
+
       if WNM_HAL.Get_LFS_Config /= null then
          WNM.File_System.Mount;
          WNM.Persistent.Load;
@@ -106,6 +116,8 @@ package body WNM.Tasks is
       WNM.GUI.Menu.Track_Settings.Push_Window;
 
       WNM.Synth.Mixer.Start_Mixer;
+
+      WNM_HAL.Watchdog_Init;
 
       loop
          WNM.GUI.Update.Update;
