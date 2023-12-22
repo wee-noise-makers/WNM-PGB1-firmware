@@ -109,11 +109,6 @@ is
 
    function Sample_Data return not null Global_Sample_Array_Access;
 
-   procedure Load_Points (Sample_Id   : Valid_Sample_Index;
-                          Point_Index : QOA.Sample_Point_Index;
-                          A, B        : out Mono_Point);
-   --  Load two consecutive sample points from the given sample
-
    function Entry_Name (Index : Sample_Index) return Sample_Entry_Name;
 
    function Entry_Len (Index : Sample_Index) return QOA.Sample_Point_Count;

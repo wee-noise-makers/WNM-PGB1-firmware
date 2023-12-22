@@ -19,6 +19,8 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+--  with Ada.Text_IO; use Ada.Text_IO;
+
 with Interfaces; use Interfaces;
 
 with Tresses.Envelopes.AR; use Tresses.Envelopes.AR;
@@ -27,6 +29,8 @@ with Tresses.Resources;
 
 with WNM.Sample_Library; use WNM.Sample_Library;
 with WNM.QOA; use WNM.QOA;
+
+with HAL;
 
 package body WNM.Voices.Sampler_Voice is
 
@@ -214,24 +218,74 @@ package body WNM.Voices.Sampler_Voice is
    procedure Render (This   : in out Instance;
                      Buffer :    out Tresses.Mono_Buffer)
    is
+      use HAL;
+
+      Last_Point : constant Sample_Storage_Len :=
+        Sample_Data.all (This.Sample_Id).Len - 1;
+
+      ------------------
+      -- Decode_Point --
+      ------------------
+
+      function Decode_Point (Idx : QOA.Sample_Point_Index)
+                             return Tresses.Mono_Point
+      is
+         Frame_Id : constant Integer :=
+           Integer (Idx) / QOA.Points_Per_Frame;
+         Point_Index : constant QOA.Sample_Point_Index :=
+           Idx mod QOA.Points_Per_Frame;
+      begin
+
+         if Sample_Storage_Len (Idx) >= Last_Point then
+            return 0;
+         end if;
+
+         --  First search for the frame in cache
+         if Frame_Id = This.Cache (This.Cache_Last_In).Id then
+            --  Put_Line ("Cache hit!");
+            return This.Cache (This.Cache_Last_In).Audio (Point_Index);
+         elsif Frame_Id = This.Cache (This.Cache_Last_In + 1).Id then
+            --  Put_Line ("Cache hit!");
+            return This.Cache (This.Cache_Last_In + 1).Audio (Point_Index);
+         end if;
+
+         --  Put_Line ("Cache miss (query:" & Frame_Id'Img & " cache:" &
+         --              This.Cache (0).Id'Img & " & " &
+         --              This.Cache (1).Id'Img & ")!");
+
+         --  Frame not found, we have to decode it
+         declare
+            --  Copy the frame to the stack in one go for faster access during
+            --  decoding.
+            Frame : QOA.Frame :=
+              Sample_Data.all (This.Sample_Id).Audio (Frame_Id);
+         begin
+            This.Cache_Last_In := This.Cache_Last_In + 1;
+            WNM_HAL.Set_Indicator_IO (WNM_HAL.GP16);
+            QOA.Decode_Frame (Frame,
+                              This.Cache (This.Cache_Last_In).Audio);
+            This.Cache (This.Cache_Last_In).Id := Frame_Id;
+            This.Cache_Sample_Id := This.Sample_Id;
+            WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP16);
+         end;
+
+         return This.Cache (This.Cache_Last_In).Audio (Point_Index);
+      end Decode_Point;
+
+      -----------------
+      -- Interpolate --
+      -----------------
 
       function Interpolate (Phase : U32) return S32 is
          P : constant U32 := Shift_Right (Phase, Phase_Frac_Bits);
          V : constant S32 :=
            S32 (Shift_Right (Phase, Phase_Frac_Bits - 15) and 16#7FFF#);
 
-         A_16, B_16 : WNM_HAL.Mono_Point;
+         A : constant S32 := S32 (Decode_Point (Sample_Point_Index (P)));
+         B : constant S32 := S32 (Decode_Point (Sample_Point_Index (P) + 1));
 
       begin
-         WNM.Sample_Library.Load_Points (This.Sample_Id,
-                                         Sample_Point_Index (P),
-                                         A_16, B_16);
-         declare
-            A : constant S32 := S32 (A_16);
-            B : constant S32 := S32 (B_16);
-         begin
-            return A + ((B - A) * V) / 2**15;
-         end;
+         return A + ((B - A) * V) / 2**15;
       end Interpolate;
 
    begin
@@ -264,6 +318,13 @@ package body WNM.Voices.Sampler_Voice is
             Off (This.Env);
          when None => null;
       end case;
+
+      --  Check if sample id changed since last render
+      if This.Sample_Id /= This.Cache_Sample_Id then
+         --  Invalidate cache
+         This.Cache (0).Id := -1;
+         This.Cache (1).Id := -1;
+      end if;
 
       Set_Release (This.Env, This.Params (P_Release));
 

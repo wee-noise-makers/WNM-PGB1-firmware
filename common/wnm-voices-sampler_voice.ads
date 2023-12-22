@@ -39,8 +39,7 @@ package WNM.Voices.Sampler_Voice is
    procedure Init (This : in out Instance);
 
    procedure Render (This   : in out Instance;
-                     Buffer :    out Tresses.Mono_Buffer)
-     with Linker_Section => ".time_critical.sampler_voice";
+                     Buffer :    out Tresses.Mono_Buffer);
 
    procedure Set_MIDI_Pitch (This : in out Instance;
                              Key  :        MIDI.MIDI_Key);
@@ -79,6 +78,14 @@ private
      (2**Phase_Integer_Bits < QOA.Points_Per_Sample,
       "Interger part too small for sample point count");
 
+   type Frame_Cache_Entry is record
+      Id    : Integer := -1;
+      Audio : QOA.Frame_Audio_Data;
+   end record;
+
+   type Cache_Entry_Index is mod 2;
+   type Frame_Cache is array (Cache_Entry_Index) of Frame_Cache_Entry;
+
    type Instance
    is new Four_Params_Voice
    with record
@@ -91,6 +98,11 @@ private
       Env : Tresses.Envelopes.AR.Instance;
 
       Do_Init : Boolean := True;
+
+      Cache_Sample_Id   : Sample_Library.Sample_Index :=
+        Sample_Library.Invalid_Sample_Entry;
+      Cache_Last_In : Cache_Entry_Index := Cache_Entry_Index'Last;
+      Cache : Frame_Cache;
    end record;
 
 end WNM.Voices.Sampler_Voice;

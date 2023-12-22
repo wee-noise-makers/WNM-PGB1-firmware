@@ -40,7 +40,7 @@ package WNM.QOA is
    Points_Per_Frame : constant := Slices_Per_Frame * Points_Per_Slice;
    Points_Per_Sample : constant := Frames_Per_Sample * Points_Per_Frame;
 
-   Slice_Bit_Size : constant := 64;
+   Slice_Bit_Size : constant := Points_Per_Slice * 3 + 4;
    LMS_Data_Bit_Size : constant := 16 * 4 * 2;
    Frame_Bit_Size : constant :=
      LMS_Data_Bit_Size + Slice_Bit_Size * Slices_Per_Frame;
@@ -61,7 +61,7 @@ package WNM.QOA is
      with Pack, Size => Slice_Bit_Size;
 
    type Slice_Array is array (0 .. Slices_Per_Frame - 1) of Slice
-     with Size => Slices_Per_Frame * Slice_Bit_Size;
+     with Pack, Size => Slices_Per_Frame * Slice_Bit_Size;
 
    type LMS_Array is array (0 .. 3) of Mono_Point
      with Size => 16 * 4;
