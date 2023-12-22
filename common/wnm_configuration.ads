@@ -75,6 +75,7 @@ package WNM_Configuration is
          "Invalid number of used sectors");
 
       FS_Byte_Size    : constant := Sector_Byte_Size * FS_Sectors;
+      FS_Offset       : constant := Sector_Byte_Size * Code_Sectors;
 
       Sample_Library_Byte_Size : constant := Sector_Byte_Size * Sample_Library_Sectors;
       Sample_Library_Base_Addr : constant := Flash_Base + (Code_Sectors + FS_Sectors) * Sector_Byte_Size;

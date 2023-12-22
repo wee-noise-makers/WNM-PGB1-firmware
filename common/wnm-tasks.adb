@@ -117,6 +117,7 @@ package body WNM.Tasks is
 
       WNM.Synth.Mixer.Start_Mixer;
 
+      WNM_HAL.Start_Sequencer_Tick;
       WNM_HAL.Watchdog_Init;
 
       loop
@@ -145,6 +146,14 @@ package body WNM.Tasks is
    procedure Synth_Core is
    begin
       loop
+         --  During file-system operations, the synth CPU must not access the
+         --  flash memory. This procedure will check if there is a request to
+         --  hold the synth CPU for file-system operation.
+         --  TODO: Run the hold check between every coproc messages, instead
+         --  of handling messages in batches?
+         WNM_HAL.Synth_CPU_Check_Hold;
+
+         --  Read and process coproc events
          WNM.Synth.Process_Coproc_Events;
       end loop;
    end Synth_Core;

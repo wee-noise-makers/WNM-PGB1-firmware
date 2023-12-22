@@ -23,8 +23,6 @@ with Ada.Unchecked_Conversion;
 with Interfaces;
 with System.Machine_Code;
 
-with Tresses.DSP;
-
 with WNM.Tasks;
 with WNM.GUI.Bitmap_Fonts;
 with WNM.Coproc;
@@ -50,6 +48,8 @@ with Atomic.Critical_Section;
 
 with Cortex_M.Systick;
 with Cortex_M.Debug;
+
+with WNM_HAL.File_System;
 
 package body WNM_HAL is
 
@@ -81,7 +81,6 @@ package body WNM_HAL is
                             GP18 => (Pin => 18),
                             GP19 => (Pin => 19));
 
-
    package Screen is new Noise_Nugget_SDK.Screen.SSD1306
      (SPI         => RP.Device.SPI_1'Access,
       DMA_Trigger => RP.DMA.SPI1_TX,
@@ -102,6 +101,8 @@ package body WNM_HAL is
 
    procedure ISR_Invalid;
    pragma Export (ASM, ISR_Invalid, "isr_invalid");
+
+   procedure Breakpoint_If_Debug;
 
    Synth_CPU_LCH_Msg  : System.Address := System.Null_Address
      with Volatile, Atomic;
@@ -374,12 +375,27 @@ package body WNM_HAL is
       RP.Device.Timer.Delay_Microseconds (Integer (Us));
    end Delay_Microseconds;
 
+   --------------------------
+   -- Start_Sequencer_Tick --
+   --------------------------
+
+   procedure Start_Sequencer_Tick is
+   begin
+      --  1kHz tick
+      Cortex_M.Systick.Configure
+        (Cortex_M.Systick.CPU_Clock,
+         Generate_Interrupt => True,
+         Reload_Value       => UInt24 ((133_000_000 / 1_000) - 1));
+
+      Cortex_M.Systick.Enable;
+   end Start_Sequencer_Tick;
+
    -------------
    -- Storage --
    -------------
 
    function Get_LFS_Config return access Littlefs.LFS_Config
-   is (null);
+   is (WNM_HAL.File_System.Get_LFS_Config);
 
    ----------------------
    -- Sample_Data_Base --
@@ -404,10 +420,11 @@ package body WNM_HAL is
       --  Target is meaningless in the device code since a CPU can only push
       --  to the FIFO of the other CPU.
 
-      Unused : Boolean;
    begin
 
-      Unused := RP.Multicore.FIFO.Try_Push (UInt32 (D));
+      --  TODO: Use non-blocking push with an interrupt handling on the synth
+      --  CPU.
+      RP.Multicore.FIFO.Push_Blocking (UInt32 (D));
    end Push;
 
    ---------
@@ -440,6 +457,10 @@ package body WNM_HAL is
    begin
       B_Play_Power.Configure (RP.GPIO.Output, RP.GPIO.Pull_Down);
       B_Play_Power.Clear;
+
+      loop
+         Breakpoint_If_Debug;
+      end loop;
    end Power_Down;
 
    --------------------
@@ -457,7 +478,8 @@ package body WNM_HAL is
 
    procedure Watchdog_Init is
    begin
-      RP.Watchdog.Configure (500);
+      --  RP.Watchdog.Configure (500);
+      null;
    end Watchdog_Init;
 
    --------------------
@@ -466,21 +488,21 @@ package body WNM_HAL is
 
    procedure Watchdog_Check is
    begin
-      RP.Watchdog.Reload;
+      --  RP.Watchdog.Reload;
+      null;
    end Watchdog_Check;
 
    -------------------------
    -- Wait_Synth_CPU_Hold --
    -------------------------
 
-   Hold_Request_Lock : RP.Multicore.Spinlocks.Lock_Id := 0;
-   Hold_Confirmed_Lock : RP.Multicore.Spinlocks.Lock_Id := 1;
+   Hold_Request_Lock   : constant RP.Multicore.Spinlocks.Lock_Id := 0;
+   Hold_Confirmed_Lock : constant RP.Multicore.Spinlocks.Lock_Id := 1;
    procedure RAM_Hold_Wait_Loop
-     with Linker_Section => ".time_critical.synth_cpu_hold_loop";
+     with No_Inline, Linker_Section => ".time_critical.synth_cpu_hold_loop";
 
    procedure Wait_Synth_CPU_Hold is
       use RP.Multicore.Spinlocks;
-
    begin
 
       if Locked (Hold_Confirmed_Lock) then
@@ -604,7 +626,7 @@ package body WNM_HAL is
          for C of Message loop
             exit when C = Character'Val (0);
             WNM.GUI.Bitmap_Fonts.Print (X, Y, C);
-            if X > Screen_Width then
+            if X > Screen_Width - WNM.GUI.Bitmap_Fonts.Height then
                X := 0;
                Y := Y + WNM.GUI.Bitmap_Fonts.Height;
             end if;
@@ -744,14 +766,6 @@ package body WNM_HAL is
 
 begin
    B_Play_Power.Configure (RP.GPIO.Input, RP.GPIO.Pull_Up);
-
-   --  1kHz tick
-   Cortex_M.Systick.Configure
-     (Cortex_M.Systick.CPU_Clock,
-      Generate_Interrupt => True,
-      Reload_Value       => UInt24 ((133_000_000 / 1_000) - 1));
-
-   Cortex_M.Systick.Enable;
 
    if Enable_Indicator_IO then
       for Id in Indicator_IO_Line loop

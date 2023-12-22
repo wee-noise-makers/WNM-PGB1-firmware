@@ -19,57 +19,10 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Tasks;
-with RP.Multicore.FIFO;
-with RP.Multicore.Spinlocks;
+with Littlefs;
 
-package body WNM_HAL.Synth_Core is
+package WNM_HAL.File_System is
 
-   Scartch_X_Size  : constant := 4 * 1024;
-   Scartch_X_Start : constant := 16#20040000#;
-   Scartch_X_End   : constant := Scartch_X_Start + Scartch_X_Size;
+   function Get_LFS_Config return access Littlefs.LFS_Config;
 
-   procedure Main;
-
-   Vector : Integer;
-   pragma Import (C, Vector, "__vectors");
-
-   -----------------
-   -- Trap_Vector --
-   -----------------
-
-   function Trap_Vector return HAL.UInt32
-   is (HAL.UInt32 (System.Storage_Elements.To_Integer (Vector'Address)));
-
-   -------------------
-   -- Stack_Pointer --
-   -------------------
-
-   function Stack_Pointer return HAL.UInt32
-   is (Scartch_X_End);
-
-   -----------------
-   -- Entry_Point --
-   -----------------
-
-   function Entry_Point return HAL.UInt32
-   is (HAL.UInt32 (System.Storage_Elements.To_Integer (Main'Address)));
-
-   ----------
-   -- Main --
-   ----------
-
-   procedure Main is
-   begin
-      --  Make sure we don't have data left in the FIFO after reset
-      RP.Multicore.FIFO.Drain;
-
-      --  Make sure we don't have spinlocks locked after reset
-      for Id in RP.Multicore.Spinlocks.Lock_Id loop
-         RP.Multicore.Spinlocks.Release (Id);
-      end loop;
-
-      WNM.Tasks.Synth_Core;
-   end Main;
-
-end WNM_HAL.Synth_Core;
+end WNM_HAL.File_System;

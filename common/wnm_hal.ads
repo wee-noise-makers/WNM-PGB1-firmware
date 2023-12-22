@@ -103,6 +103,8 @@ package WNM_HAL is
 
    procedure Delay_Microseconds (Us : HAL.UInt64);
 
+   procedure Start_Sequencer_Tick;
+
    -------------
    -- Storage --
    -------------

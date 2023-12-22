@@ -461,6 +461,9 @@ package body WNM.Synth is
                      end case;
                   end;
                end if;
+
+            when Synth_CPU_Crash =>
+               raise Program_Error with "Unexpected coproc message for synth";
          end case;
       end loop;
    end Process_Coproc_Events;

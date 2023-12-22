@@ -52,7 +52,7 @@ package body WNM.File_System is
 
    function Query_User_To_Format return Boolean is
       X : Integer;
-      Play, Last_Play : Boolean := False;
+      Menu, Last_Menu : Boolean := False;
       Rec, Last_Rec : Boolean := False;
    begin
       Screen.Clear;
@@ -60,23 +60,34 @@ package body WNM.File_System is
       GUI.Bitmap_Fonts.Print (X, 1, "No file-system found");
 
       X := 1;
-      GUI.Bitmap_Fonts.Print (X, 9, "Click Play to format");
+      GUI.Bitmap_Fonts.Print (X, 9, "Press Menu to format");
       X := 1;
-      GUI.Bitmap_Fonts.Print (X, 18, "Click Rec to shutdown");
+      GUI.Bitmap_Fonts.Print (X, 18, "Press Rec to shutdown");
 
       Screen.Update;
 
+      for X in 1 .. 10_000 loop
+         null;
+      end loop;
       loop
          declare
             State : constant WNM_HAL.Buttons_State := WNM_HAL.State;
          begin
-            Last_Play := Play;
+            Last_Menu := Menu;
             Last_Rec := Rec;
-            Play := State (WNM_Configuration.Play) = Down;
+            Menu := State (WNM_Configuration.Menu) = Down;
             Rec := State (WNM_Configuration.Rec) = Down;
-            if Last_Rec and then not Rec then
+            if Rec and then not Last_Rec then
+               Screen.Clear;
+               X := 1;
+               GUI.Bitmap_Fonts.Print (X, 1, "Shuting down...");
+               Screen.Update;
                return False;
-            elsif Last_Play and then not Play then
+            elsif Menu and then not Last_Menu then
+               Screen.Clear;
+               X := 1;
+               GUI.Bitmap_Fonts.Print (X, 1, "Formating...");
+               Screen.Update;
                return True;
             end if;
          end;

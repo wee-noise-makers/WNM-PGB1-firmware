@@ -114,6 +114,11 @@ package body ASFML_SIM_Storage is
            with Address => C.Context;
 
       begin
+
+         if Off /= 0 then
+            raise Program_Error;
+         end if;
+
          if Block not in 0 .. WNM_Configuration.Storage.FS_Sectors - 1 then
             raise Program_Error with "Invalid block to program: " & Block'Img;
          end if;

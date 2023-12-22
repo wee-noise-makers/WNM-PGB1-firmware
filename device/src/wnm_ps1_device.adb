@@ -8,12 +8,18 @@ with WNM_Configuration;
 with RP_Interrupts;
 with RP2040_SVD.Interrupts;
 with RP.Multicore.FIFO;
+with RP.Multicore.Spinlocks;
 with Cortex_M.NVIC;
 
 procedure WNM_PS1_Device is
 begin
    --  Make sure we don't have data left in the FIFO after reset
    RP.Multicore.FIFO.Drain;
+
+   --  Make sure we don't have spinlocks locked after reset
+   for Id in RP.Multicore.Spinlocks.Lock_Id loop
+      RP.Multicore.Spinlocks.Release (Id);
+   end loop;
 
    RP_Interrupts.Attach_Handler
      (WNM.Tasks.Sequencer_Coproc_Receive'Access,

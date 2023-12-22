@@ -303,6 +303,16 @@ package body WNM_HAL is
       delay Duration (Us) / 1_000_000.0;
    end Delay_Microseconds;
 
+   --------------------------
+   -- Start_Sequencer_Tick --
+   --------------------------
+
+   procedure Start_Sequencer_Tick is
+   begin
+      null;
+      --  ASFML_Sim.Start_1khz_Tick;
+   end Start_Sequencer_Tick;
+
    --------------------
    -- Get_LFS_Config --
    --------------------

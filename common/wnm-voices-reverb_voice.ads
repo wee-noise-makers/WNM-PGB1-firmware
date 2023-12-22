@@ -64,10 +64,10 @@ private
    pragma Style_Checks ("M120");
    package Reverb_Pck is new Tresses.FX.Reverb
      (
-      Ap1_Len   => Tresses.U16 (( 113.0 / 32_000.0 / 1.0) * Tresses.Resources.SAMPLE_RATE_REAL),
-      Ap2_Len   => Tresses.U16 (( 162.0 / 32_000.0 / 1.0) * Tresses.Resources.SAMPLE_RATE_REAL),
-      Ap3_Len   => Tresses.U16 (( 241.0 / 32_000.0 / 1.0) * Tresses.Resources.SAMPLE_RATE_REAL),
-      Ap4_Len   => Tresses.U16 (( 399.0 / 32_000.0 / 1.0) * Tresses.Resources.SAMPLE_RATE_REAL),
+      Ap1_Len   => Tresses.U16 ((113.0 / 32_000.0 / 1.0) * Tresses.Resources.SAMPLE_RATE_REAL),
+      Ap2_Len   => Tresses.U16 ((162.0 / 32_000.0 / 1.0) * Tresses.Resources.SAMPLE_RATE_REAL),
+      Ap3_Len   => Tresses.U16 ((241.0 / 32_000.0 / 1.0) * Tresses.Resources.SAMPLE_RATE_REAL),
+      Ap4_Len   => Tresses.U16 ((399.0 / 32_000.0 / 1.0) * Tresses.Resources.SAMPLE_RATE_REAL),
       Dap1a_Len => Tresses.U16 ((1653.0 / 32_000.0 / 1.0) * Tresses.Resources.SAMPLE_RATE_REAL),
       Dap1b_Len => Tresses.U16 ((2038.0 / 32_000.0 / 1.0) * Tresses.Resources.SAMPLE_RATE_REAL),
       Del1_Len  => Tresses.U16 ((3411.0 / 32_000.0 / 1.0) * Tresses.Resources.SAMPLE_RATE_REAL),
