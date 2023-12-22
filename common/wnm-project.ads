@@ -198,8 +198,8 @@ package WNM.Project is
 
    type Track_Mode_Kind is (MIDI_Mode, Sample1_Mode, Sample2_Mode,
                             Speech_Mode, Kick_Mode, Snare_Mode, Cymbal_Mode,
-                            Bass_Mode, Lead_Mode, Reverb_Mode, Filter_Mode,
-                            Drive_Mode, Bitcrush_Mode);
+                            Bass_Mode, Lead_Mode, Chord_Mode, Reverb_Mode,
+                            Filter_Mode, Drive_Mode, Bitcrush_Mode);
 
    function Img (M : Track_Mode_Kind) return String
    is (case M is
@@ -212,6 +212,7 @@ package WNM.Project is
           when Cymbal_Mode   => "Cymbal",
           when Lead_Mode     => "Lead",
           when Bass_Mode     => "Bass",
+          when Chord_Mode    => "Chord",
           when Reverb_Mode   => "FX Reverb",
           when Filter_Mode   => "FX Filter",
           when Drive_Mode    => "FX Overdrive",
@@ -231,6 +232,7 @@ package WNM.Project is
           when Cymbal_Mode   => Synth.Cymbal_Channel,
           when Bass_Mode     => Synth.Bass_Channel,
           when Lead_Mode     => Synth.Lead_Channel,
+          when Chord_Mode    => Synth.Chord_Channel,
           when Reverb_Mode   => Synth.Reverb_Channel,
           when Filter_Mode   => Synth.Filter_Channel,
           when Drive_Mode    => Synth.Drive_Channel,
@@ -572,6 +574,18 @@ private
       CC_Ena => (others => False),
       CC_Val => (others => 0));
 
+   Default_Step_Chord : constant Step_Rec :=
+     (Trig => None,
+      Repeat => 0,
+      Repeat_Rate => Rate_1_8,
+      Note_Mode => Chord,
+      Note => 0,
+      Oct => 0,
+      Duration => Quarter,
+      Velo => MIDI.MIDI_Data'Last,
+      CC_Ena => (others => False),
+      CC_Val => (others => 0));
+
    type Sequence is array (Sequencer_Steps) of Step_Rec with Pack;
    type Pattern is array (Tracks) of Sequence;
    type All_Patterns is array (Patterns) of Pattern;
@@ -609,9 +623,10 @@ private
    Cymbal_Track   : constant Tracks := 3;
    Bass_Track     : constant Tracks := 4;
    Lead_Track     : constant Tracks := 5;
-   Sample1_Track  : constant Tracks := 6;
-   Sample2_Track  : constant Tracks := 7;
-   Speech_Track   : constant Tracks := 8;
+   Chord_Track    : constant Tracks := 6;
+   Sample1_Track  : constant Tracks := 7;
+   Sample2_Track  : constant Tracks := 8;
+   --  Speech_Track   : constant Tracks := 8;
    Reverb_Track   : constant Tracks := 9;
    Filter_Track   : constant Tracks := 10;
    Drive_Track    : constant Tracks := 11;
@@ -703,6 +718,12 @@ private
                                       (3, 63, "CC3              ")
                                      ));
 
+   Default_Chord_Track : constant Track_Rec :=
+     (Default_Track with delta CC => ((0, 0, "CC0              "),
+                                      (1, 63, "CC1              "),
+                                      (2, 0, "CC2              "),
+                                      (3, 63, "CC3              ")
+                                     ));
    type Chord_Rec is record
       Tonic : MIDI.MIDI_Key := MIDI.C4;
       Name  : WNM.Chord_Settings.Chord_Name :=
@@ -727,8 +748,9 @@ private
       BPM : Beat_Per_Minute := 120;
 
       Seqs : All_Patterns :=
-        (others => (4 => (others => Default_Step_Bass),
-                    5 => (others => Default_Step_Lead),
+        (others => (Bass_Track => (others => Default_Step_Bass),
+                    Lead_Track => (others => Default_Step_Lead),
+                    Chord_Track => (others => Default_Step_Chord),
                     others => (others => Default_Step)));
 
       Tracks : Track_Arr := (Kick_Track    => Default_Kick_Track,
@@ -738,7 +760,7 @@ private
                              Lead_Track    => Default_Lead_Track,
                              Sample1_Track => Default_Sample1_Track,
                              Sample2_Track => Default_Sample2_Track,
-                             Speech_Track  => Default_Speech_Track,
+                             Chord_Track   => Default_Chord_Track,
                              others        => Default_Track);
       Chords : Chord_Arr := (others => Default_Chord);
       FX     : FX_Rec := Default_FX;

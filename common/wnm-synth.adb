@@ -26,6 +26,7 @@ with WNM.Coproc;
 with WNM.Voices.Snare_Voice;
 with WNM.Voices.Sampler_Voice;
 with WNM.Voices.Speech_Voice;
+with WNM.Voices.Chord_Voice;
 with WNM.Synth.Mixer;
 
 with Tresses; use Tresses;
@@ -42,6 +43,7 @@ package body WNM.Synth is
    TC          : aliased Tresses.Drums.Cymbal.Instance;
    Lead        : aliased Tresses.Voices.Macro.Instance;
    Bass        : aliased Tresses.Voices.Macro.Instance;
+   Chord       : aliased WNM.Voices.Chord_Voice.Instance;
    Speech      : aliased WNM.Voices.Speech_Voice.Instance;
    Sampler1    : aliased WNM.Voices.Sampler_Voice.Instance;
    Sampler2    : aliased WNM.Voices.Sampler_Voice.Instance;
@@ -83,6 +85,7 @@ package body WNM.Synth is
       Cymbal_Channel     => 0,
       Lead_Channel       => 0,
       Bass_Channel       => -3,
+      Chord_Channel      => 0,
       Reverb_Channel     => 0,
       Filter_Channel     => 0,
       Drive_Channel      => 0,
@@ -98,6 +101,7 @@ package body WNM.Synth is
         Cymbal_Channel     => TC'Access,
         Lead_Channel       => Lead'Access,
         Bass_Channel       => Bass'Access,
+        Chord_Channel      => Chord'Access,
         Reverb_Channel     => Mixer.FX_Reverb'Access,
         Filter_Channel     => Mixer.FX_Filter'Access,
         Drive_Channel      => Mixer.FX_Drive'Access,
@@ -134,8 +138,6 @@ package body WNM.Synth is
    Recording_Size   : Natural;
 
    Passthrough : Audio_Input_Kind := Line_In;
-
-   Glob_Sample_Clock : Sample_Time := 0 with Volatile;
 
    G_CPU_Load : CPU_Load := 0.0 with Volatile, Atomic;
    G_Max_CPU_Load : CPU_Load := 0.0 with Volatile, Atomic;
@@ -260,13 +262,6 @@ package body WNM.Synth is
       G_Count_Missed_Deadlines := 0;
    end Clear_Missed_Deadlines;
 
-   ------------------
-   -- Sample_Clock --
-   ------------------
-
-   function Sample_Clock return Sample_Time
-   is (Glob_Sample_Clock);
-
    ---------------------------
    -- Process_Coproc_Events --
    ---------------------------
@@ -322,6 +317,12 @@ package body WNM.Synth is
                               Sampler2.Set_MIDI_Pitch (Key);
                            elsif Msg.MIDI_Evt.Chan = Speech_Channel then
                               Speech.Set_MIDI_Pitch (Key);
+                           elsif Msg.MIDI_Evt.Chan = Chord_Channel then
+
+                              Chord.Key_On (Msg.MIDI_Evt.Key,
+                                            To_Param
+                                              (Msg.MIDI_Evt.Velocity));
+
                            else
                               Voice.Set_Pitch (Tresses.MIDI_Pitch
                                                (Standard.MIDI.MIDI_UInt8
@@ -347,8 +348,10 @@ package body WNM.Synth is
                            Key : constant MIDI_Key :=
                              Add_Sat (Msg.MIDI_Evt.Key, Offset);
                         begin
-                           if Last_Key (Msg.MIDI_Evt.Chan) = Key
-                           then
+                           if Msg.MIDI_Evt.Chan = Chord_Channel then
+                              Chord.Key_Off (Msg.MIDI_Evt.Key);
+
+                           elsif Last_Key (Msg.MIDI_Evt.Chan) = Key then
                               --  Only apply note_off if it matches the last
                               --  played key.
                               Voice.Note_Off;
@@ -625,9 +628,6 @@ package body WNM.Synth is
          --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
       end;
 
-      Glob_Sample_Clock :=
-        Glob_Sample_Clock + WNM_Configuration.Audio.Samples_Per_Buffer;
-
       declare
          Synthesis_End      : constant WNM_HAL.Time_Microseconds :=
            WNM_HAL.Clock;
@@ -635,13 +635,14 @@ package body WNM.Synth is
            Synthesis_End - Synthesis_Start;
 
          Synthesis_Duration_Float : constant Float :=
-           Float (Synthesis_Duration) / 1_000.0;
+           Float (Synthesis_Duration) / 1_000_000.0;
 
          Synthesized_Time : constant Float :=
            (1.0 / Float (WNM_Configuration.Audio.Sample_Frequency) *
                 Float (WNM_Configuration.Audio.Samples_Per_Buffer));
       begin
-         G_CPU_Load := CPU_Load (Synthesis_Duration_Float / Synthesized_Time);
+         G_CPU_Load :=
+           CPU_Load (Synthesis_Duration_Float / Synthesized_Time) * 100.0;
 
          if G_CPU_Load > 100.0 then
             G_Count_Missed_Deadlines := G_Count_Missed_Deadlines + 1;
@@ -853,6 +854,22 @@ package body WNM.Synth is
    function Speech_Param_Short_Label (Id : Tresses.Param_Id)
                                       return Tresses.Short_Label
    is (Speech.Param_Short_Label (Id));
+
+   -----------------------
+   -- Chord_Param_Label --
+   -----------------------
+
+   function Chord_Param_Label (Id : Tresses.Param_Id)
+                               return String
+   is (Chord.Param_Label (Id));
+
+   -----------------------------
+   -- Chord_Param_Short_Label --
+   -----------------------------
+
+   function Chord_Param_Short_Label (Id : Tresses.Param_Id)
+                                     return Tresses.Short_Label
+   is (Chord.Param_Short_Label (Id));
 
    -------------------
    -- Now_Recording --

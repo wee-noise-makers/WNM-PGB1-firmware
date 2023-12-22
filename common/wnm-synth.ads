@@ -23,8 +23,6 @@ with HAL;
 
 with Interfaces;
 
-with WNM_HAL;
-
 with MIDI;
 
 with Tresses;
@@ -41,11 +39,12 @@ package WNM.Synth is
    Snare_Channel      : constant MIDI.MIDI_Channel := 5;
    Cymbal_Channel     : constant MIDI.MIDI_Channel := 6;
    Lead_Channel       : constant MIDI.MIDI_Channel := 7;
-   Bass_Channel       : constant MIDI.MIDI_Channel := 8;
-   Reverb_Channel     : constant MIDI.MIDI_Channel := 9;
-   Filter_Channel     : constant MIDI.MIDI_Channel := 10;
-   Drive_Channel      : constant MIDI.MIDI_Channel := 11;
-   Bitcrusher_Channel : constant MIDI.MIDI_Channel := 12;
+   Chord_Channel      : constant MIDI.MIDI_Channel := 8;
+   Bass_Channel       : constant MIDI.MIDI_Channel := 9;
+   Reverb_Channel     : constant MIDI.MIDI_Channel := 10;
+   Filter_Channel     : constant MIDI.MIDI_Channel := 11;
+   Drive_Channel      : constant MIDI.MIDI_Channel := 12;
+   Bitcrusher_Channel : constant MIDI.MIDI_Channel := 13;
 
    Voice_Param_1_CC      : constant MIDI.MIDI_Data := 0;
    Voice_Param_2_CC      : constant MIDI.MIDI_Data := 1;
@@ -89,10 +88,6 @@ package WNM.Synth is
    procedure Clear_Missed_Deadlines;
 
    type Sample_Time is new Interfaces.Unsigned_64;
-
-   function Sample_Clock return Sample_Time;
-   --  How many audio samples have been sent to the DAC so far.
-   --  This number can be used to count time between two events.
 
    procedure Process_Coproc_Events;
 
@@ -156,6 +151,11 @@ package WNM.Synth is
                                 return String;
    function Speech_Param_Short_Label (Id : Tresses.Param_Id)
                                       return Tresses.Short_Label;
+
+   function Chord_Param_Label (Id : Tresses.Param_Id)
+                               return String;
+   function Chord_Param_Short_Label (Id : Tresses.Param_Id)
+                                     return Tresses.Short_Label;
 
    ---------------
    -- Recording --

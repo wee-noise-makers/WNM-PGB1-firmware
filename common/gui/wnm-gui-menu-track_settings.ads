@@ -60,21 +60,25 @@ private
              S in Track_Mode | MIDI_Chan | MIDI_Instrument | Arp_Mode |
                   Arp_Notes | Notes_Per_Chord | CC_Default_A .. CC_Label_D,
 
+          --  Speech
           when Project.Speech_Mode =>
              S in Track_Mode | Volume | Pan | Master_FX | Arp_Mode |
                   Arp_Notes | CC_Default_A .. CC_Default_B,
 
-          when Project.Kick_Mode | Project.Cymbal_Mode |
+          --  Single engine
+          when Project.Kick_Mode | Project.Cymbal_Mode | Project.Chord_Mode |
                Project.Sample1_Mode | Project.Sample2_Mode =>
              S in Track_Mode | Volume | Pan | Master_FX | Arp_Mode |
                   Arp_Notes | CC_Default_A .. CC_Default_D |
                   LFO_Rate | LFO_Amplitude | LFO_Target | LFO_Shape,
 
-          when Project.Lead_Mode | Bass_Mode | Project.Snare_Mode =>
+          --  Multi engines
+          when Project.Lead_Mode | Project.Bass_Mode | Project.Snare_Mode =>
              S in Track_Mode | Engine | Volume | Pan | Master_FX | Arp_Mode |
                   Arp_Notes | CC_Default_A .. CC_Default_D |
                   LFO_Rate | LFO_Amplitude | LFO_Target | LFO_Shape,
 
+          --  Effects
           when Project.Reverb_Mode | Project.Filter_Mode |
                Project.Drive_Mode | Project.Bitcrush_Mode =>
              S in Track_Mode | CC_Default_A .. CC_Default_D |

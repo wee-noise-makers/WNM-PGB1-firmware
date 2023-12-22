@@ -281,8 +281,8 @@ package body WNM.Project is
    begin
       case Mode (Editing_Track) is
          when MIDI_Mode | Kick_Mode | Snare_Mode | Cymbal_Mode | Lead_Mode |
-              Bass_Mode | Reverb_Mode | Filter_Mode | Drive_Mode |
-              Bitcrush_Mode =>
+              Chord_Mode | Bass_Mode | Reverb_Mode | Filter_Mode |
+              Drive_Mode | Bitcrush_Mode =>
             return CC_Value (Step, Id)'Img;
 
          when Sample1_Mode | Sample2_Mode =>
@@ -591,7 +591,8 @@ package body WNM.Project is
                     when Lead_Track     => Lead_Mode,
                     when Sample1_Track  => Sample1_Mode,
                     when Sample2_Track  => Sample2_Mode,
-                    when Speech_Track   => Speech_Mode,
+                    --  when Speech_Track   => Speech_Mode,
+                    when Chord_Track    => Chord_Mode,
                     when Reverb_Track   => Reverb_Mode,
                     when Filter_Track   => Filter_Mode,
                     when Drive_Track    => Drive_Mode,
@@ -753,6 +754,10 @@ package body WNM.Project is
             Utils.Copy_Str (Synth.Cymbal_Param_Label (Tresses_Id), Result);
             return Result;
 
+         when Chord_Mode =>
+            Utils.Copy_Str (Synth.Chord_Param_Label (Tresses_Id), Result);
+            return Result;
+
          when Lead_Mode | Bass_Mode =>
             Utils.Copy_Str (Synth.Lead_Param_Label (Selected_Engine (T),
                                                     Tresses_Id),
@@ -811,6 +816,9 @@ package body WNM.Project is
 
          when Cymbal_Mode =>
             return Synth.Cymbal_Param_Short_Label (Tresses_Id);
+
+         when Chord_Mode =>
+            return Synth.Chord_Param_Short_Label (Tresses_Id);
 
          when Lead_Mode | Bass_Mode =>
             return Synth.Lead_Param_Short_Label (Selected_Engine (T),
