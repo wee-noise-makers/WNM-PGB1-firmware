@@ -7,6 +7,7 @@ with Noise_Nugget_SDK.Audio;
 with WNM_Configuration;
 with RP_Interrupts;
 with RP2040_SVD.Interrupts;
+with RP2040_SVD.SIO;
 with RP.Multicore.FIFO;
 with RP.Multicore.Spinlocks;
 with Cortex_M.NVIC;
@@ -15,6 +16,9 @@ procedure WNM_PS1_Device is
 begin
    --  Make sure we don't have data left in the FIFO after reset
    RP.Multicore.FIFO.Drain;
+
+   --  Clear FIFO Status
+   RP2040_SVD.SIO.SIO_Periph.FIFO_ST := (others => <>);
 
    --  Make sure we don't have spinlocks locked after reset
    for Id in RP.Multicore.Spinlocks.Lock_Id loop

@@ -22,27 +22,23 @@
 with System;
 with HAL;
 
+with WNM.Synth;
 with WNM.Voices.Reverb_Voice;
 with WNM.Voices.Filter_Voice;
 with WNM.Voices.Drive_Voice;
 with WNM.Voices.Bitcrusher_Voice;
 
-package WNM.Synth.Mixer is
+package WNM.Mixer is
 
-   type FX_Buffers
-   is array (WNM.Synth.FX_Kind) of WNM_HAL.Mono_Buffer;
+   type FX_Buffers is array (FX_Kind) of WNM_HAL.Mono_Buffer;
 
-   type FX_Parameters
-   is array (WNM.Synth.FX_Kind) of WNM.Synth.Voice_Parameters;
+   type FX_Parameters  is array (FX_Kind) of WNM.Synth.Voice_Parameters;
 
    type FX_Send_Buffers is record
       L, R : FX_Buffers;
 
       Parameters : FX_Parameters;
    end record;
-
-   type Mixer_Buffer_Index is range 0 .. 5
-     with Size => 8;
 
    Mixer_Buffers : array (Mixer_Buffer_Index) of aliased FX_Send_Buffers;
 
@@ -61,4 +57,4 @@ package WNM.Synth.Mixer is
    FX_Drive    : aliased WNM.Voices.Drive_Voice.Instance;
    FX_Bitcrush : aliased WNM.Voices.Bitcrusher_Voice.Instance;
 
-end WNM.Synth.Mixer;
+end WNM.Mixer;

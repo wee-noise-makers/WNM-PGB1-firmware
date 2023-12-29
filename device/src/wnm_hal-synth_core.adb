@@ -22,6 +22,10 @@
 with WNM.Tasks;
 with RP.Multicore.FIFO;
 with RP.Multicore.Spinlocks;
+with RP_Interrupts;
+with RP2040_SVD.Interrupts;
+with RP2040_SVD.SIO;
+with Cortex_M.NVIC;
 
 package body WNM_HAL.Synth_Core is
 
@@ -64,10 +68,23 @@ package body WNM_HAL.Synth_Core is
       --  Make sure we don't have data left in the FIFO after reset
       RP.Multicore.FIFO.Drain;
 
+      --  Clear FIFO Status
+      RP2040_SVD.SIO.SIO_Periph.FIFO_ST := (others => <>);
+
       --  Make sure we don't have spinlocks locked after reset
       for Id in RP.Multicore.Spinlocks.Lock_Id loop
          RP.Multicore.Spinlocks.Release (Id);
       end loop;
+
+      --  Attach copproc interrupt handler
+      RP_Interrupts.Attach_Handler
+        (WNM.Tasks.Synth_Coproc_Receive'Access,
+         RP2040_SVD.Interrupts.SIO_IRQ_PROC1_Interrupt,
+         RP_Interrupts.Interrupt_Priority'Last);
+
+      Cortex_M.NVIC.Set_Priority
+        (RP2040_SVD.Interrupts.SIO_IRQ_PROC1_Interrupt,
+         1);
 
       WNM.Tasks.Synth_Core;
    end Main;

@@ -23,11 +23,11 @@ with HAL; use HAL;
 with Interfaces; use Interfaces;
 with WNM.Coproc;
 
+with WNM.Mixer;
 with WNM.Voices.Snare_Voice;
 with WNM.Voices.Sampler_Voice;
 with WNM.Voices.Speech_Voice;
 with WNM.Voices.Chord_Voice;
-with WNM.Synth.Mixer;
 
 with Tresses; use Tresses;
 with Tresses.Drums.Kick;
@@ -35,6 +35,8 @@ with Tresses.Drums.Cymbal;
 with Tresses.Voices.Macro;
 with Tresses.Macro;
 with Tresses.Interfaces;
+
+with WNM.Generic_Queue;
 
 package body WNM.Synth is
 
@@ -143,7 +145,13 @@ package body WNM.Synth is
    G_Max_CPU_Load : CPU_Load := 0.0 with Volatile, Atomic;
    G_Count_Missed_Deadlines : HAL.UInt32 := 0 with Volatile, Atomic;
 
-   procedure Next_Points (Output : out WNM.Synth.Mixer.FX_Send_Buffers);
+   -- Coproc Event Queue --
+   package Coproc_Event_Queues
+   is new WNM.Generic_Queue (Coproc.Message, "Synth coproc");
+   Coproc_Event_Queue : Coproc_Event_Queues.Instance
+     (WNM_Configuration.Coproc_Queue_Capacity);
+
+   procedure Next_Points (Output : out WNM.Mixer.FX_Send_Buffers);
 
    function To_Param (V : MIDI.MIDI_Data)
                       return Tresses.Param_Range
@@ -262,6 +270,15 @@ package body WNM.Synth is
       G_Count_Missed_Deadlines := 0;
    end Clear_Missed_Deadlines;
 
+   ----------------------
+   -- Push_Copro_Event --
+   ----------------------
+
+   procedure Push_Copro_Event (Msg : WNM.Coproc.Message) is
+   begin
+      Coproc_Event_Queues.Push (Coproc_Event_Queue, Msg);
+   end Push_Copro_Event;
+
    ---------------------------
    -- Process_Coproc_Events --
    ---------------------------
@@ -274,7 +291,7 @@ package body WNM.Synth is
       Success : Boolean;
    begin
       loop
-         WNM.Coproc.Pop_For_Synth (Msg, Success);
+         Coproc_Event_Queues.Pop (Coproc_Event_Queue, Msg, Success);
 
          exit when not Success;
 
@@ -283,7 +300,7 @@ package body WNM.Synth is
             when WNM.Coproc.Buffer_Available =>
 
                --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
-               Next_Points (WNM.Synth.Mixer.Mixer_Buffers (Msg.Buffer_Id));
+               Next_Points (WNM.Mixer.Mixer_Buffers (Msg.Buffer_Id));
                --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
 
                --  Send the buffers back to main CPU
@@ -472,7 +489,7 @@ package body WNM.Synth is
    -- Next_Points --
    -----------------
 
-   procedure Next_Points (Output : out WNM.Synth.Mixer.FX_Send_Buffers)
+   procedure Next_Points (Output : out WNM.Mixer.FX_Send_Buffers)
    is
       Buffer, Aux_Buffer : WNM_HAL.Mono_Buffer;
 

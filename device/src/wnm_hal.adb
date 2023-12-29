@@ -421,9 +421,6 @@ package body WNM_HAL is
       --  to the FIFO of the other CPU.
 
    begin
-
-      --  TODO: Use non-blocking push with an interrupt handling on the synth
-      --  CPU.
       RP.Multicore.FIFO.Push_Blocking (UInt32 (D));
    end Push;
 

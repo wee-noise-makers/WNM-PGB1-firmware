@@ -33,7 +33,7 @@ with WNM.File_System;
 with WNM.Persistent;
 with WNM.Sample_Library;
 with WNM.Project.Library;
-with WNM.Synth.Mixer;
+with WNM.Mixer;
 with WNM.Coproc;
 
 package body WNM.Tasks is
@@ -86,8 +86,8 @@ package body WNM.Tasks is
          case Msg.Kind is
             when Coproc.Buffer_Available =>
                WNM_HAL.Set_Indicator_IO (WNM_HAL.GP16);
-               WNM.Synth.Mixer.Push_To_Mix (Msg.Buffer_Id);
                WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP16);
+               WNM.Mixer.Push_To_Mix (Msg.Buffer_Id);
 
             when Synth_CPU_Crash =>
                raise Program_Error with "Synth crash";
@@ -97,6 +97,25 @@ package body WNM.Tasks is
          end case;
       end loop;
    end Sequencer_Coproc_Receive;
+
+   --------------------------
+   -- Synth_Coproc_Receive --
+   --------------------------
+
+   procedure Synth_Coproc_Receive is
+      use WNM.Coproc;
+
+      Msg     : WNM.Coproc.Message;
+      Success : Boolean;
+   begin
+
+      loop
+         WNM.Coproc.Pop_For_Synth (Msg, Success);
+         exit when not Success;
+
+         WNM.Synth.Push_Copro_Event (Msg);
+      end loop;
+   end Synth_Coproc_Receive;
 
    --------------------
    -- Sequencer_Core --
@@ -115,7 +134,7 @@ package body WNM.Tasks is
 
       WNM.GUI.Menu.Track_Settings.Push_Window;
 
-      WNM.Synth.Mixer.Start_Mixer;
+      WNM.Mixer.Start_Mixer;
 
       WNM_HAL.Start_Sequencer_Tick;
       WNM_HAL.Watchdog_Init;
@@ -135,8 +154,8 @@ package body WNM.Tasks is
    is
    begin
       WNM_HAL.Set_Indicator_IO (WNM_HAL.GP18);
-      WNM.Synth.Mixer.Synth_Out_Buffer (Buffer, Stereo_Point_Count);
       WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP18);
+      WNM.Mixer.Synth_Out_Buffer (Buffer, Stereo_Point_Count);
    end Synth_Next_Buffer;
 
    ----------------

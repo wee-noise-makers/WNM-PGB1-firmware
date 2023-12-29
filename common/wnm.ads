@@ -40,6 +40,12 @@ package WNM is
    subtype Patterns is Keyboard_Value;
    subtype Chords is Keyboard_Value;
 
+   -- Mixer --
+   type FX_Kind is (Bypass, Overdrive, Reverb, Filter, Bitcrusher);
+
+   type Mixer_Buffer_Index is range 0 .. 5
+     with Size => 8;
+
    subtype Beat_Per_Minute is Positive range 50 .. 200;
    subtype Sequencer_Steps is Keyboard_Value;
 

@@ -19,6 +19,8 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with WNM.Coproc;
+
 with HAL;
 
 with Interfaces;
@@ -29,8 +31,6 @@ with Tresses;
 with Tresses.LFO;
 
 package WNM.Synth is
-
-   type FX_Kind is (Bypass, Overdrive, Reverb, Filter, Bitcrusher);
 
    Speech_Channel     : constant MIDI.MIDI_Channel := 1;
    Sample1_Channel    : constant MIDI.MIDI_Channel := 2;
@@ -89,6 +89,7 @@ package WNM.Synth is
 
    type Sample_Time is new Interfaces.Unsigned_64;
 
+   procedure Push_Copro_Event (Msg : WNM.Coproc.Message);
    procedure Process_Coproc_Events;
 
    procedure Set_Passthrough (Kind : Audio_Input_Kind);

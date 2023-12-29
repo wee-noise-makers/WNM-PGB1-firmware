@@ -23,21 +23,19 @@ with Interfaces;
 with Tresses.DSP;
 with HAL; use HAL;
 with WNM_HAL;
-with BBqueue;
 with WNM.Coproc;
+with WNM.Synth; use WNM.Synth;
+with WNM.Generic_Queue;
 
-with System.Storage_Elements; use System.Storage_Elements;
-
-package body WNM.Synth.Mixer is
+package body WNM.Mixer is
 
    Output_Id_Queue_Capacity : constant :=
      Mixer_Buffers'Length + 1;
 
-   Output_Id_Queue : BBqueue.Offsets_Only (Output_Id_Queue_Capacity);
+   package Buffer_Id_Queues is new WNM.Generic_Queue
+     (Mixer_Buffer_Index, "Mixer out ");
 
-   Output_Ids_Buffer : array (BBqueue.Buffer_Offset range
-                                0 .. Output_Id_Queue_Capacity - 1)
-       of Mixer_Buffer_Index;
+   Output_Id_Queue : Buffer_Id_Queues.Instance (Output_Id_Queue_Capacity);
 
    Output_Audio_Buffers : array (Mixer_Buffer_Index)
      of WNM_HAL.Stereo_Buffer;
@@ -89,7 +87,7 @@ package body WNM.Synth.Mixer is
       L, R : S32;
 
       Input : FX_Send_Buffers renames Mixer_Buffers (Id);
-      Output : Stereo_Buffer renames Output_Audio_Buffers (Id);
+      Output : WNM_HAL.Stereo_Buffer renames Output_Audio_Buffers (Id);
    begin
 
       --  Overdrive
@@ -142,21 +140,7 @@ package body WNM.Synth.Mixer is
       end loop;
 
       --  Push the mixed output buffer in ready queue
-      declare
-         use BBqueue;
-
-         WG : Write_Grant;
-      begin
-
-         Grant (Output_Id_Queue, WG, 1);
-
-         if State (WG) = Valid then
-            Output_Ids_Buffer (Slice (WG).From) := Id;
-            Commit (Output_Id_Queue, WG, 1);
-         else
-            raise Program_Error with "Output buffer queue is full";
-         end if;
-      end;
+      Buffer_Id_Queues.Push (Output_Id_Queue, Id);
 
       --  Clear the FX buffer
       Input.R := (others => (others => 0));
@@ -170,10 +154,8 @@ package body WNM.Synth.Mixer is
    procedure Synth_Out_Buffer (Buffer             : out System.Address;
                                Stereo_Point_Count : out HAL.UInt32)
    is
-      use BBqueue;
-
-      RG : Read_Grant;
       Id : Mixer_Buffer_Index;
+      Success : Boolean;
    begin
 
       if Valid_Current_Output_Id then
@@ -185,12 +167,9 @@ package body WNM.Synth.Mixer is
          Valid_Current_Output_Id := False;
       end if;
 
-      Read (Output_Id_Queue, RG, 1);
+      Buffer_Id_Queues.Pop (Output_Id_Queue, Id, Success);
 
-      if State (RG) = Valid then
-         Id := Output_Ids_Buffer (Slice (RG).From);
-
-         Release (Output_Id_Queue, RG, 1);
+      if Success then
 
          Buffer := Output_Audio_Buffers (Id)'Address;
          Stereo_Point_Count := Output_Audio_Buffers (Id)'Length;
@@ -209,4 +188,4 @@ package body WNM.Synth.Mixer is
       end if;
    end Synth_Out_Buffer;
 
-end WNM.Synth.Mixer;
+end WNM.Mixer;

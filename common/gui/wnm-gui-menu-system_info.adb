@@ -22,7 +22,7 @@
 with WNM.GUI.Menu.Drawing;
 with WNM.GUI.Menu.Yes_No_Dialog;
 with WNM.Synth;
-with WNM.Synth.Mixer;
+with WNM.Mixer;
 with WNM.Project.Library;
 
 package body WNM.GUI.Menu.System_Info is
@@ -65,7 +65,7 @@ package body WNM.GUI.Menu.System_Info is
 
          when DAC_Missed_Deadlines =>
             Drawing.Draw_Title ("DAC Missed DL", "");
-            Drawing.Draw_Value (Synth.Mixer.Missed_DAC_Deadlines'Img);
+            Drawing.Draw_Value (Mixer.Missed_DAC_Deadlines'Img);
 
          when Prj_Last_Load_Size =>
             Drawing.Draw_Title ("Size of last loaded", "project");
@@ -97,7 +97,7 @@ package body WNM.GUI.Menu.System_Info is
                when Synth_Missed_Deadlines =>
                   Synth.Clear_Missed_Deadlines;
                when DAC_Missed_Deadlines =>
-                  Synth.Mixer.Clear_Missed_DAC_Deadlines;
+                  Mixer.Clear_Missed_DAC_Deadlines;
                when Raise_Exception =>
                   Yes_No_Dialog.Set_Title ("Raise exception?");
                   Yes_No_Dialog.Push_Window;

@@ -23,11 +23,8 @@ with MIDI;
 
 with WNM_Configuration;
 with WNM_HAL;
-with WNM.Synth.Mixer;
 
 private with Ada.Unchecked_Conversion;
-
-with WNM.Synth;
 
 package WNM.Coproc is
 
@@ -42,7 +39,7 @@ package WNM.Coproc is
             MIDI_Evt : MIDI_Event_Rec;
 
          when Buffer_Available =>
-            Buffer_Id : WNM.Synth.Mixer.Mixer_Buffer_Index;
+            Buffer_Id : WNM.Mixer_Buffer_Index;
 
          when others =>
             null;

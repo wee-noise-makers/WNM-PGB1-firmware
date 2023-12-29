@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                  Copyright (C) 2016-2023 Fabien Chouteau                  --
+--                     Copyright (C) 2023 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,24 +19,36 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with System;
-with HAL;
+with BBqueue;
 
-package WNM.Tasks is
+generic
+   type Element is private;
+   Name : String;
+package WNM.Generic_Queue is
 
-   procedure Sequencer_1khz_Tick;
+   type Instance (Capacity : BBqueue.Buffer_Size)
+   is limited
+   private;
 
-   procedure Sequencer_Coproc_Receive;
+   type Element_Array is array (BBqueue.Buffer_Offset range <>) of Element;
 
-   procedure Sequencer_Core
-     with No_Return;
+   procedure Push (Q : in out Instance;
+                   E : Element);
 
-   procedure Synth_Next_Buffer (Buffer             : out System.Address;
-                                Stereo_Point_Count : out HAL.UInt32);
+   procedure Pop (Q       : in out Instance;
+                  E       : out Element;
+                  Success : out Boolean);
 
-   procedure Synth_Coproc_Receive;
+   generic
+      with procedure Process (E : Element);
+   procedure Pop_CB (Q : in out Instance);
 
-   procedure Synth_Core
-     with No_Return;
+private
+   type Instance (Capacity : BBqueue.Buffer_Size)
+   is limited
+           record
+              Queue : BBqueue.Offsets_Only (Capacity);
+              Data  : Element_Array (1 .. Capacity);
+           end record;
 
-end WNM.Tasks;
+end WNM.Generic_Queue;
