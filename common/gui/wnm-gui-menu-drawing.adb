@@ -656,7 +656,12 @@ package body WNM.GUI.Menu.Drawing is
          First := B;
 
          declare
-            Id : constant Natural := Natural (Val_A) + 1;
+            use MIDI;
+            use Sample_Library;
+            Id : constant Natural :=
+              (if Val_A > MIDI_Data (Valid_Sample_Index'Last - 1)
+               then Valid_Sample_Index'Last
+               else Natural (Val_A) + 1);
          begin
             Draw_Sample_Select
               (Sample_Library.Valid_Sample_Index (Id));

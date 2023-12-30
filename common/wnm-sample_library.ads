@@ -23,8 +23,6 @@ with WNM_Configuration;
 
 with HAL;
 
-with WNM.QOA;
-
 package WNM.Sample_Library
 with Elaborate_Body
 is
@@ -33,9 +31,6 @@ is
    --  sample have the same amout of memory available which means that getting
    --  the address of sample data is just an access to an array based on the
    --  sample index.
-   --
-   --  The samples are encoded in a modified QOA format to achieve good
-   --  compression with acceptable quality loss.
    --
    --  The meta-data associated with each sample (name and length) is located
    --  at the end of the sample memory.
@@ -70,6 +65,19 @@ is
      WNM_Configuration.Storage.Sample_Name_Lenght
        + Sample_Storage_Len'Size / 8;
 
+   Sample_Audio_Byte_Size : constant :=
+     Single_Sample_Data_Byte_Size - Sample_Metadata_Byte_Size;
+
+   Points_Per_Sample : constant :=
+     Sample_Audio_Byte_Size / 2;
+
+   type Sample_Point_Count is range 0 .. Points_Per_Sample;
+   subtype Sample_Point_Index
+     is Sample_Point_Count range 0 .. Sample_Point_Count'Last - 1;
+
+   type Sample_Audio_Data is array (Sample_Point_Index) of Mono_Point
+     with Size => Points_Per_Sample * 16;
+
    subtype Sample_Index is Natural range 0 .. Samples;
    subtype Valid_Sample_Index is Sample_Index range 1 .. Sample_Index'Last;
 
@@ -78,22 +86,8 @@ is
    subtype Sample_Entry_Name
      is String (1 .. WNM_Configuration.Storage.Sample_Name_Lenght);
 
-   Padding_Byte_Size : constant :=
-     Single_Sample_Data_Byte_Size -
-       Sample_Metadata_Byte_Size -
-         (WNM.QOA.Sample_Bit_Size / 8);
-
-   pragma Compile_Time_Error (Padding_Byte_Size < 0, "Negative padding");
-   pragma Compile_Time_Error
-     (Padding_Byte_Size >= WNM_Configuration.Storage.Sector_Byte_Size,
-      "Padding bigger than a page..");
-
-   type Sample_Data_Padding is array (1 .. Padding_Byte_Size) of HAL.UInt8
-     with Size => Padding_Byte_Size * 8;
-
    type Single_Sample_Data is record
-      Audio    : WNM.QOA.QOA_Sample;
-      Reserved : Sample_Data_Padding;
+      Audio    : Sample_Audio_Data;
       Name     : Sample_Entry_Name;
       Len      : Sample_Storage_Len;
    end record
@@ -111,7 +105,7 @@ is
 
    function Entry_Name (Index : Sample_Index) return Sample_Entry_Name;
 
-   function Entry_Len (Index : Sample_Index) return QOA.Sample_Point_Count;
+   function Entry_Len (Index : Sample_Index) return Sample_Point_Count;
 
    function Entry_Device_Address (Index : Valid_Sample_Index)
                                   return HAL.UInt32;
@@ -121,7 +115,7 @@ is
 
    type Sample_Time is delta 0.001 range 0.0 .. 3.0;
 
-   function Point_Index_To_Seconds (Index : QOA.Sample_Point_Index)
+   function Point_Index_To_Seconds (Index : Sample_Point_Index)
                                     return Sample_Time;
 
 private
@@ -129,7 +123,7 @@ private
    type Sample_Entry is record
       Used   : Boolean := False;
       Name   : Sample_Entry_Name := (others => ASCII.NUL);
-      Length : QOA.Sample_Point_Count := 0;
+      Length : Sample_Point_Count := 0;
    end record with Pack;
 
    Entries : array (Valid_Sample_Index) of Sample_Entry;

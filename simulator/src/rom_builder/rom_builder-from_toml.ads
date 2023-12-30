@@ -28,6 +28,8 @@ package ROM_Builder.From_TOML is
 
    procedure Write_To_File (Img : RAM_Image; Path_To_Output : String);
 
+   procedure Write_UF2 (Img : RAM_Image; Root_Dir : String);
+
 private
 
    type RAM_Image

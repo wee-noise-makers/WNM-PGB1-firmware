@@ -340,9 +340,12 @@ package body WNM_HAL is
          Coproc_Queue (Target).Insert (D);
 
          --  Hack to simulate an interrupt
-         if Target = Main_CPU then
-            WNM.Tasks.Sequencer_Coproc_Receive;
-         end if;
+         case Target is
+            when Main_CPU =>
+               WNM.Tasks.Sequencer_Coproc_Receive;
+            when Synth_CPU =>
+               WNM.Tasks.Synth_Coproc_Receive;
+         end case;
       else
          Ada.Text_IO.Put_Line (Coproc_Queue (Target)'Img);
          raise Program_Error with Target'Img &  " Corproc queue is full";

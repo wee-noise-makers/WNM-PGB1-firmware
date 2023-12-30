@@ -21,15 +21,14 @@
 
 with WNM.Sample_Library; use WNM.Sample_Library;
 with WNM.Screen;
-with WNM.QOA;
 
 package WNM.Sample_Edit is
 
    procedure Load (Index : Valid_Sample_Index;
-                   Start, Stop : QOA.Sample_Point_Index);
+                   Start, Stop : Sample_Point_Index);
 
-   function Start return QOA.Sample_Point_Index;
-   function Stop return QOA.Sample_Point_Index;
+   function Start return Sample_Point_Index;
+   function Stop return Sample_Point_Index;
 
    procedure Inc_Start;
    procedure Inc_Stop;

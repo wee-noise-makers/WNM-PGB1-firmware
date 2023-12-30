@@ -103,8 +103,6 @@ package body WNM.Tasks is
    --------------------------
 
    procedure Synth_Coproc_Receive is
-      use WNM.Coproc;
-
       Msg     : WNM.Coproc.Message;
       Success : Boolean;
    begin

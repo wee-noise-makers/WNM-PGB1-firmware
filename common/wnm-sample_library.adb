@@ -56,7 +56,7 @@ package body WNM.Sample_Library is
    -- Entry_Len --
    ---------------
 
-   function Entry_Len (Index : Sample_Index) return QOA.Sample_Point_Count is
+   function Entry_Len (Index : Sample_Index) return Sample_Point_Count is
    begin
       if Index /= Invalid_Sample_Entry and then Entries (Index).Used then
          return Entries (Index).Length;
@@ -102,7 +102,7 @@ package body WNM.Sample_Library is
 
             Len := UInt32'Min (Len, UInt32 (QOA.Sample_Point_Count'Last));
 
-            Entries (Sample_Id).Length := QOA.Sample_Point_Count (Len);
+            Entries (Sample_Id).Length := Sample_Point_Count (Len);
             Entries (Sample_Id).Used := True;
          end if;
       end loop;
@@ -112,9 +112,8 @@ package body WNM.Sample_Library is
    -- Point_Index_To_Seconds --
    ----------------------------
 
-   function Point_Index_To_Seconds
-     (Index : QOA.Sample_Point_Index)
-      return Sample_Time
+   function Point_Index_To_Seconds (Index : Sample_Point_Index)
+                                    return Sample_Time
    is
    begin
       return Sample_Time (Float (Index) /

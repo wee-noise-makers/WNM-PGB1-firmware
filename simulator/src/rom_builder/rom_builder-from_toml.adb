@@ -8,6 +8,8 @@ with ROM_Builder.File_System;
 with TOML; use TOML;
 with TOML.File_IO;
 
+with UF2_Utils.File_IO;
+
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 package body ROM_Builder.From_TOML is
@@ -156,6 +158,51 @@ package body ROM_Builder.From_TOML is
 
       Close (FD);
    end Write_To_File;
+
+   ---------------
+   -- Write_UF2 --
+   ---------------
+
+   procedure Write_UF2 (Img : RAM_Image; Root_Dir : String) is
+      use WNM_Configuration.Storage;
+      use UF2_Utils.File_IO;
+
+      Sample_Lib_Data : Storage_Array (1 .. Sample_Library_Byte_Size)
+        with Address => Img.Data (Sample_Library_Offset)'Address;
+
+      FS_Data : Storage_Array (1 .. FS_Byte_Size)
+        with Address => Img.Data (FS_Offset)'Address;
+
+      Sample_Lib_File : UF2_Sequential_IO.File_Type;
+      FS_File : UF2_Sequential_IO.File_Type;
+   begin
+      UF2_Sequential_IO.Create (Sample_Lib_File,
+                                Name => Root_Dir & "/sample_library.uf2");
+
+      Write_UF2
+        (Data => Sample_Lib_Data,
+         Start_Address => Sample_Library_Base_Addr,
+         File => Sample_Lib_File,
+         Max_Block_Size => 256,
+         Flags  => 16#00002000#,
+         Family => UF2_Family);
+
+      UF2_Sequential_IO.Close (Sample_Lib_File);
+
+      UF2_Sequential_IO.Create (FS_File,
+                                Name => Root_Dir & "/file_system.uf2");
+
+      Write_UF2
+        (Data => FS_Data,
+         Start_Address => FS_Base_Addr,
+         File => FS_File,
+         Max_Block_Size => 256,
+         Flags  => 16#00002000#,
+         Family => UF2_Family);
+
+      UF2_Sequential_IO.Close (FS_File);
+
+   end Write_UF2;
 
    -----------
    -- Write --

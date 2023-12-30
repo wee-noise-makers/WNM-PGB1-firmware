@@ -23,7 +23,6 @@ with Interfaces;
 
 with Tresses;            use Tresses;
 with Tresses.Interfaces; use Tresses.Interfaces;
-with WNM.QOA;
 
 private with Tresses.Envelopes.AR;
 private with WNM.Sample_Library;
@@ -75,16 +74,8 @@ private
    Phase_Frac_Bits : constant := Sample_Phase'Size - Phase_Integer_Bits;
 
    pragma Compile_Time_Error
-     (2**Phase_Integer_Bits < QOA.Points_Per_Sample,
+     (2**Phase_Integer_Bits < WNM.Sample_Library.Points_Per_Sample,
       "Interger part too small for sample point count");
-
-   type Frame_Cache_Entry is record
-      Id    : Integer := -1;
-      Audio : QOA.Frame_Audio_Data;
-   end record;
-
-   type Cache_Entry_Index is mod 2;
-   type Frame_Cache is array (Cache_Entry_Index) of Frame_Cache_Entry;
 
    type Instance
    is new Four_Params_Voice
@@ -98,11 +89,6 @@ private
       Env : Tresses.Envelopes.AR.Instance;
 
       Do_Init : Boolean := True;
-
-      Cache_Sample_Id   : Sample_Library.Sample_Index :=
-        Sample_Library.Invalid_Sample_Entry;
-      Cache_Last_In : Cache_Entry_Index := Cache_Entry_Index'Last;
-      Cache : Frame_Cache;
    end record;
 
 end WNM.Voices.Sampler_Voice;

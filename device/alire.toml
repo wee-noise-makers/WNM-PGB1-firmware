@@ -34,11 +34,15 @@ BBQUEUE_CONTRACTS = "disabled"
 [configuration.values]
 littlefs.Assert = false
 littlefs.Debug = false
-littlefs.Warn = true
-littlefs.Error = true
+littlefs.Warn = false
+littlefs.Error = false
 littlefs.Trace = false
 # littlefs.No_Malloc = true # Triggers a bug in alr 1.2.1, var set in fsmaker anyway
 tresses.Sample_Rate = "SR44100"
 # tresses.Resources_Linker_Section = ".time_critical.tresses_resources"
 # tresses.Code_Linker_Section = ".time_critical.tresses_code"
 flux.Enable_File_IO = false
+
+[build-profiles]
+# rp2040_hal = "development"
+# littlefs = "development"

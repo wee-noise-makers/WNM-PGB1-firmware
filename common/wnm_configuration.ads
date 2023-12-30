@@ -62,23 +62,30 @@ package WNM_Configuration is
       Total_Sectors : constant := Total_Storage_Byte_Size / Sector_Byte_Size;
       --  That's 3072 sectors
 
-      Nbr_Samples             : constant := 128;
-      Sample_Library_Sectors : constant := 11 * Nbr_Samples;
+      Code_Sectors : constant := 1204;
+      Code_Byte_Size : constant := Sector_Byte_Size * Code_Sectors;
+
+      FS_Sectors : constant := 1484;
+      FS_Byte_Size : constant := Sector_Byte_Size * FS_Sectors;
+
+      Nbr_Samples              : constant := 32;
+      Sample_Library_Sectors   : constant := 44 * Nbr_Samples;
+      Sample_Library_Byte_Size : constant := Sector_Byte_Size * Sample_Library_Sectors;
       --  Comes from the required sectors to store ~2 seconds of audio in QOA
       --  format.
 
-      Code_Sectors : constant := 1204;
-      FS_Sectors : constant := 1484;
+      Code_Offset           : constant := 0;
+      FS_Offset             : constant := Code_Offset + Code_Byte_Size;
+      Sample_Library_Offset : constant := FS_Offset + FS_Byte_Size;
+
+      Code_Base_Addr           : constant := Flash_Base + Code_Offset;
+      FS_Base_Addr             : constant := Flash_Base + FS_Offset;
+      Sample_Library_Base_Addr : constant := Flash_Base + Sample_Library_Offset;
 
       pragma Compile_Time_Error
         ((Code_Sectors + Sample_Library_Sectors + FS_Sectors) /= Total_Sectors,
          "Invalid number of used sectors");
 
-      FS_Byte_Size    : constant := Sector_Byte_Size * FS_Sectors;
-      FS_Offset       : constant := Sector_Byte_Size * Code_Sectors;
-
-      Sample_Library_Byte_Size : constant := Sector_Byte_Size * Sample_Library_Sectors;
-      Sample_Library_Base_Addr : constant := Flash_Base + (Code_Sectors + FS_Sectors) * Sector_Byte_Size;
       Sectors_Per_Sample       : constant := Sample_Library_Sectors / Nbr_Samples;
       Single_Sample_Byte_Size  : constant := Sample_Library_Byte_Size / Nbr_Samples;
       Single_Sample_Point_Cnt  : constant := Single_Sample_Byte_Size / 2;

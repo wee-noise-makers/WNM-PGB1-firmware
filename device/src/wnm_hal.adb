@@ -401,13 +401,9 @@ package body WNM_HAL is
    -- Sample_Data_Base --
    ----------------------
 
-   Plop_Sample : Integer;
-   pragma Import (C, Plop_Sample, "test_sample_1");
-
    function Sample_Data_Base return System.Address
-   is (Plop_Sample'Address);
-   --  is (System.Storage_Elements.To_Address
-   --      (WNM_Configuration.Storage.Sample_Library_Base_Addr));
+   is (System.Storage_Elements.To_Address
+       (WNM_Configuration.Storage.Sample_Library_Base_Addr));
 
    ----------
    -- Push --

@@ -41,9 +41,9 @@ package ROM_Builder.Sample_Library is
    procedure Write_Data (This :        Instance;
                          File : in out FSmaker.Sink.Class);
 
-   procedure Write_UF2_File (Id     : WNM.Sample_Library.Valid_Sample_Index;
-                             Sample : WNM.Sample_Library.Single_Sample_Data;
-                             Root_Dir : String);
+   procedure Write_UF2_Single (Id     : WNM.Sample_Library.Valid_Sample_Index;
+                               Sample : WNM.Sample_Library.Single_Sample_Data;
+                               Root_Dir : String);
 
 private
 

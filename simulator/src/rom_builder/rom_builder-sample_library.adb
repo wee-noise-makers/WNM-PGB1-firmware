@@ -6,7 +6,6 @@ with HAL;
 with FSmaker.Source.File;
 with Simple_Logging;
 with WNM.Sample_Library; use WNM.Sample_Library;
-with WNM.QOA;
 
 with Ada.Text_IO;
 with GNAT.OS_Lib;
@@ -27,7 +26,7 @@ package body ROM_Builder.Sample_Library is
       Src : FSmaker.Source.File.Instance :=
         FSmaker.Source.File.Create (Filename);
 
-      Points : WNM.QOA.Sample_Audio_Data;
+      Points : WNM.Sample_Library.Sample_Audio_Data := (others => 0);
       Len    : Natural;
    begin
 
@@ -35,8 +34,7 @@ package body ROM_Builder.Sample_Library is
 
       Simple_Logging.Debug ("Load sample data:" & Len'Img);
 
-      WNM.QOA.Encode (Points, This.Data (Index).Audio);
-
+      This.Data (Index).Audio := Points;
       This.Data (Index).Len := HAL.UInt32 (Len / 2);
 
    end Load_From_File;
@@ -164,13 +162,13 @@ package body ROM_Builder.Sample_Library is
       end if;
    end Write_Data;
 
-   --------------------
-   -- Write_UF2_File --
-   --------------------
+   ----------------------
+   -- Write_UF2_Single --
+   ----------------------
 
-   procedure Write_UF2_File (Id     : WNM.Sample_Library.Valid_Sample_Index;
-                             Sample : WNM.Sample_Library.Single_Sample_Data;
-                             Root_Dir : String)
+   procedure Write_UF2_Single (Id     : WNM.Sample_Library.Valid_Sample_Index;
+                               Sample : WNM.Sample_Library.Single_Sample_Data;
+                               Root_Dir : String)
    is
       use HAL;
 
@@ -217,8 +215,12 @@ package body ROM_Builder.Sample_Library is
            (Data => Data,
             Start_Address => Unsigned_32 (Entry_Device_Address (Id)),
             File => File,
-            Max_Block_Size => 256);
+            Max_Block_Size => 256,
+            Flags  => 16#00002000#,
+            Family => UF2_Family);
+
+         UF2_Sequential_IO.Close (File);
       end if;
-   end Write_UF2_File;
+   end Write_UF2_Single;
 
 end ROM_Builder.Sample_Library;

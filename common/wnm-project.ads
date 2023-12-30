@@ -698,14 +698,14 @@ private
                                      ));
 
    Default_Sample1_Track : constant Track_Rec :=
-     (Default_Track with delta CC => ((0, 63, "CC0              "),
+     (Default_Track with delta CC => ((0, 0, "CC0              "),
                                       (1, 0, "CC1              "),
                                       (2, 127, "CC2              "),
                                       (3, 63, "CC3              ")
                                      ));
 
    Default_Sample2_Track : constant Track_Rec :=
-     (Default_Track with delta CC => ((0, 63, "CC0              "),
+     (Default_Track with delta CC => ((0, 1, "CC0              "),
                                       (1, 0, "CC1              "),
                                       (2, 127, "CC2              "),
                                       (3, 63, "CC3              ")
