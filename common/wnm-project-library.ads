@@ -48,6 +48,13 @@ package WNM.Project.Library is
    function Save_Project (Index : Valid_Prj_Index)
                           return File_System.Storage_Error;
 
+   function Rename_Project (Index : Valid_Prj_Index;
+                            Name  : String)
+                            return File_System.Storage_Error;
+
+   function Delete_Project (Index : Valid_Prj_Index)
+                            return File_System.Storage_Error;
+
    function Save_Project_With_Name (Index : Valid_Prj_Index;
                                     Name  : String)
                                     return File_System.Storage_Error;

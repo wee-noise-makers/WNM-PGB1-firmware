@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                    Copyright (C) 2022 Fabien Chouteau                     --
+--                  Copyright (C) 2016-2023 Fabien Chouteau                  --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,31 +19,36 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Project.Library; use WNM.Project.Library;
-
-package WNM.GUI.Menu.Save_Project is
+package WNM.GUI.Menu.Projects is
 
    procedure Push_Window;
 
 private
 
-   type Window_State is (Select_Project,
+   type Menu_Items is (Save_Project,
+                       Load_Project,
+                       Rename_Project,
+                       Delete_Project,
+                       Clear_Project);
+
+   function Menu_Items_Count is new Enum_Count (Menu_Items);
+
+   type Window_State is (Idle,
+                         Select_Project,
                          Enter_Name,
-                         Confirm_Overwrite);
+                         Confirm);
 
    type Instance is new Menu_Window with record
-      State     : Window_State;
-      Prj_Entry : Prj_Index := Invalid_Prj_Entry;
+      Item : Menu_Items;
+      State : Window_State := Select_Project;
    end record;
 
    overriding
-   procedure Draw (This   : in out Instance)
-   is null;
+   procedure Draw (This : in out Instance);
 
    overriding
    procedure On_Event (This  : in out Instance;
-                       Event : Menu_Event)
-   is null;
+                       Event : Menu_Event);
 
    overriding
    procedure On_Pushed (This  : in out Instance);
@@ -52,4 +57,4 @@ private
    procedure On_Focus (This       : in out Instance;
                        Exit_Value : Window_Exit_Value);
 
-end WNM.GUI.Menu.Save_Project;
+end WNM.GUI.Menu.Projects;

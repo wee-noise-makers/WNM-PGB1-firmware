@@ -35,4 +35,6 @@ package WNM.Utils is
      (Full'Length >= Suffix'Length
       and then Full (Full'Last - Suffix'Length + 1 .. Full'Last) = Suffix);
 
+   function Trim (Str : String) return String;
+
 end WNM.Utils;

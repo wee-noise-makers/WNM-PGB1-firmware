@@ -38,11 +38,14 @@ package body WNM.Project.Library is
    G_Saved_Size : File_System.File_Signed_Size := 0;
    G_Loaded_Size : File_System.File_Signed_Size := 0;
 
-   --------------------
-   -- Entry_Filename --
-   --------------------
+   ----------------------
+   -- Project_Filename --
+   ----------------------
 
-   function Entry_Filename (Index : Valid_Prj_Index) return String is
+   function Project_Filename (Index : Valid_Prj_Index;
+                              Name  : Prj_Entry_Name)
+                              return String
+   is
       Idx_Img : constant String := Index'Img;
       Trim : constant String := Idx_Img (Idx_Img'First + 1 .. Idx_Img'Last);
       Pad  : constant String :=
@@ -50,7 +53,16 @@ package body WNM.Project.Library is
          then "0" & Trim
          else Trim);
    begin
-      return Pad & G_Names (Index) & Prj_File_Ext;
+      return Pad & Name & Prj_File_Ext;
+   end Project_Filename;
+
+   --------------------
+   -- Entry_Filename --
+   --------------------
+
+   function Entry_Filename (Index : Valid_Prj_Index) return String is
+   begin
+      return Project_Filename (Index, G_Names (Index));
    end Entry_Filename;
 
    -----------------
@@ -237,6 +249,56 @@ package body WNM.Project.Library is
 
       return Ok;
    end Save_Project;
+
+   --------------------
+   -- Rename_Project --
+   --------------------
+
+   function Rename_Project (Index : Valid_Prj_Index;
+                            Name  : String)
+                            return File_System.Storage_Error
+   is
+      New_Name : Prj_Entry_Name;
+   begin
+      if not G_Has_Prj (Index) then
+         return File_System.Project_Do_Not_Exist;
+      end if;
+
+      Copy_Str (Name, New_Name);
+
+      declare
+         Current_File : constant String := Entry_Filename (Index);
+         New_File     : constant String := Project_Filename (Index, New_Name);
+      begin
+         if not File_System.Move (Current_File, New_File) then
+            return Move_Error;
+         end if;
+
+         G_Names (Index) := New_Name;
+      end;
+
+      return Ok;
+   end Rename_Project;
+
+   --------------------
+   -- Delete_Project --
+   --------------------
+
+   function Delete_Project (Index : Valid_Prj_Index)
+                            return File_System.Storage_Error is
+   begin
+      if not G_Has_Prj (Index) then
+         return File_System.Project_Do_Not_Exist;
+      end if;
+
+      if not File_System.Remove (Entry_Filename (Index)) then
+         return Remove_Error;
+      end if;
+
+      G_Names (Index) := (others => ' ');
+      G_Has_Prj (Index) := False;
+      return Ok;
+   end Delete_Project;
 
    ----------------------------
    -- Save_Project_With_Name --

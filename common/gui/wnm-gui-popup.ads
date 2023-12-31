@@ -25,7 +25,7 @@ private with WNM.GUI.Bitmap_Fonts;
 
 package WNM.GUI.Popup is
 
-   Text_Length : constant := 16;
+   Text_Length : constant := 20;
    subtype Popup_Text is String (1 .. Text_Length);
 
    procedure Display (T : String; Duration : Time.Time_Microseconds);

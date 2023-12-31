@@ -25,8 +25,7 @@ package WNM.GUI.Menu.Root is
 
 private
 
-   type Menu_Items is (Save_Project,
-                       Load_Project,
+   type Menu_Items is (Projects,
                        --  Edit_Sample,
                        --  Create_Sample,
                        --  Change_Sample,

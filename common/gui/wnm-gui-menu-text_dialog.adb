@@ -190,7 +190,7 @@ package body WNM.GUI.Menu.Text_Dialog is
    is
    begin
       if This.Reset_On_Push then
-         This.Len   := 1;
+         This.Len := 1;
          This.Index := This.Text'First;
          This.Text (This.Text'First) := 'A';
       end if;

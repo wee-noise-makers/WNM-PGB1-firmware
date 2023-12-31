@@ -1438,4 +1438,16 @@ package body WNM.Project is
       end if;
    end Synchronize_Track_Mix_Settings;
 
+   -----------
+   -- Clear --
+   -----------
+
+   procedure Clear is
+   begin
+      G_Project := (others => <>);
+      for T in Tracks loop
+         Synchronize_Track_Mix_Settings (T);
+      end loop;
+   end Clear;
+
 end WNM.Project;

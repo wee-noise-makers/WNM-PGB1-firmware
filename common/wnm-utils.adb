@@ -40,4 +40,22 @@ package body WNM.Utils is
       end if;
    end Copy_Str;
 
+   ----------
+   -- Trim --
+   ----------
+
+   function Trim (Str : String) return String is
+      First : Natural := Str'First;
+      Last : Natural := Str'Last;
+   begin
+      while First in Str'Range and then Str (First) = ' ' loop
+         First := First + 1;
+      end loop;
+
+      while Last in Str'Range and then Str (Last) = ' ' loop
+         Last := Last - 1;
+      end loop;
+
+      return Str (First .. Last);
+   end Trim;
 end WNM.Utils;

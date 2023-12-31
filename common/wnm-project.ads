@@ -48,6 +48,9 @@ package WNM.Project is
    procedure Change_Main_Volume (Volume_Delta : Integer);
    function Get_Main_Volume return Audio_Volume;
 
+   procedure Clear;
+   --  Reset the current project to default values
+
    ----------
    -- Step --
    ----------

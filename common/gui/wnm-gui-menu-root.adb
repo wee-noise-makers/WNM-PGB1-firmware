@@ -26,13 +26,8 @@ with WNM.GUI.Menu.Text_Dialog;       use WNM.GUI.Menu.Text_Dialog;
 with WNM.GUI.Menu.Yes_No_Dialog;
 --  with WNM.GUI.Menu.Create_Sample;
 --  with WNM.GUI.Menu.Passthrough;
-with WNM.GUI.Menu.Save_Project;
+with WNM.GUI.Menu.Projects;
 with WNM.GUI.Menu.System_Info;
-with WNM.GUI.Popup;
-with WNM.GUI.Menu.Project_Select;
-
-with WNM.Project.Library;
-with WNM.File_System;
 with WNM.Power_Control;
 
 package body WNM.GUI.Menu.Root is
@@ -43,8 +38,7 @@ package body WNM.GUI.Menu.Root is
 
    function Menu_Item_Text (Item : Menu_Items) return String
    is (case Item is
-          when Save_Project    => "Save project",
-          when Load_Project    => "Load project",
+          when Projects    => "Projects",
           --  when Edit_Sample     => "Edit sample",
           --  when Create_Sample   => "Create sample",
           --  when Change_Sample   => "Change sample",
@@ -97,11 +91,8 @@ package body WNM.GUI.Menu.Root is
       case Event.Kind is
          when A_Press =>
             case This.Item is
-               when Save_Project =>
-                  Menu.Save_Project.Push_Window;
-
-               when Load_Project =>
-                  Menu.Project_Select.Push_Window;
+               when Projects =>
+                  Menu.Projects.Push_Window;
 
                --  when Edit_Sample =>
                --     Menu.Sample_Edit.Push_Window;
@@ -181,27 +172,6 @@ package body WNM.GUI.Menu.Root is
    is
    begin
       case This.Item is
-         when Load_Project =>
-
-            if Exit_Value = Success then
-               declare
-                  use WNM.File_System;
-                  Err : File_System.Storage_Error;
-               begin
-                  Err := Project.Library.Load_Project
-                    (Project_Select.Selected);
-
-                  if Err /= Ok then
-                     GUI.Popup.Display_2L ("Can't Load Project",
-                                           File_System.Img (Err),
-                                           1_500_000);
-                  else
-                     GUI.Popup.Display ("Project Loaded",
-                                        500_000);
-                  end if;
-               end;
-            end if;
-
          when DFU_Mode =>
             if Exit_Value = Success then
                WNM.Power_Control.Enter_DFU_Mode;

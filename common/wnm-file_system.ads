@@ -76,6 +76,7 @@ package WNM.File_System is
                           Project_Do_Not_Exist,
                           Disk_Error,
                           Move_Error,
+                          Remove_Error,
                           Format_Error,
                           Unknown_Error);
 
@@ -86,6 +87,7 @@ package WNM.File_System is
           when Project_Do_Not_Exist => "No project",
           when Disk_Error => "Disk error",
           when Move_Error => "Move error",
+          when Remove_Error => "Remove error",
           when Format_Error => "Format Error",
           when Unknown_Error => "Unknown_Error");
 
