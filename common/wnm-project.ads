@@ -701,14 +701,14 @@ private
      (Default_Track with delta CC => ((0, 0, "CC0              "),
                                       (1, 0, "CC1              "),
                                       (2, 127, "CC2              "),
-                                      (3, 63, "CC3              ")
+                                      (3, 0, "CC3              ")
                                      ));
 
    Default_Sample2_Track : constant Track_Rec :=
      (Default_Track with delta CC => ((0, 1, "CC0              "),
                                       (1, 0, "CC1              "),
                                       (2, 127, "CC2              "),
-                                      (3, 63, "CC3              ")
+                                      (3, 0, "CC3              ")
                                      ));
 
    Default_Speech_Track : constant Track_Rec :=
@@ -724,6 +724,7 @@ private
                                       (2, 0, "CC2              "),
                                       (3, 63, "CC3              ")
                                      ));
+
    type Chord_Rec is record
       Tonic : MIDI.MIDI_Key := MIDI.C4;
       Name  : WNM.Chord_Settings.Chord_Name :=

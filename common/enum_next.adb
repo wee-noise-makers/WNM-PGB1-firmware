@@ -21,68 +21,83 @@
 
 package body Enum_Next is
 
+   -----------
+   -- Clamp --
+   -----------
+
+   function Clamp (Elt : T; Lim : Limits) return T is
+   begin
+      return T'Min (T'Max (Elt, Lim.Min), Lim.Max);
+   end Clamp;
+
    ----------
    -- Next --
    ----------
 
-   function Next (Elt : T) return T is
+   function Next (Elt : T; Lim : Limits := Default_Limits) return T is
+      Res : T;
    begin
       if Elt = T'Last then
          if Wrap then
-            return T'First;
+            Res := T'First;
          else
-            return Elt;
+            Res := Elt;
          end if;
       else
-         return T'Succ (Elt);
+         Res := T'Succ (Elt);
       end if;
+
+      return Clamp (Res, Lim);
    end Next;
 
    ----------
    -- Prev --
    ----------
 
-   function Prev (Elt : T) return T is
+   function Prev (Elt : T; Lim : Limits := Default_Limits) return T is
+      Res : T;
    begin
       if Elt = T'First then
          if Wrap then
-            return T'Last;
+            Res := T'Last;
          else
-            return Elt;
+            Res := Elt;
          end if;
       else
-         return T'Pred (Elt);
+         Res := T'Pred (Elt);
       end if;
+
+      return Clamp (Res, Lim);
    end Prev;
 
    ----------
    -- Next --
    ----------
 
-   procedure Next (Elt : in out T) is
+   procedure Next (Elt : in out T; Lim : Limits := Default_Limits) is
    begin
-      Elt := Next (Elt);
+      Elt := Next (Elt, Lim);
    end Next;
 
    ----------
    -- Prev --
    ----------
 
-   procedure Prev (Elt : in out T) is
+   procedure Prev (Elt : in out T; Lim : Limits := Default_Limits) is
    begin
-      Elt := Prev (Elt);
+      Elt := Prev (Elt, Lim);
    end Prev;
 
    ---------------
    -- Next_Fast --
    ---------------
 
-   function Next_Fast (Elt : T) return T is
+   function Next_Fast (Elt : T; Lim : Limits := Default_Limits) return T is
       Result : T := Elt;
    begin
       --  Naive implementation using a loop, not sure if we can do better
       for Cnt in 1 .. 10 loop
-         Next (Result);
+         Next (Result, Lim);
       end loop;
       return Result;
    end Next_Fast;
@@ -91,12 +106,12 @@ package body Enum_Next is
    -- Prev_Fast --
    ---------------
 
-   function Prev_Fast (Elt : T) return T is
+   function Prev_Fast (Elt : T; Lim : Limits := Default_Limits) return T is
       Result : T := Elt;
    begin
       --  Naive implementation using a loop, not sure if we can do better
       for Cnt in 1 .. 10 loop
-         Prev (Result);
+         Prev (Result, Lim);
       end loop;
       return Result;
    end Prev_Fast;
@@ -105,17 +120,17 @@ package body Enum_Next is
    -- Next_Fast --
    ---------------
 
-   procedure Next_Fast (Elt : in out T) is
+   procedure Next_Fast (Elt : in out T; Lim : Limits := Default_Limits) is
    begin
-      Elt := Next_Fast (Elt);
+      Elt := Next_Fast (Elt, Lim);
    end Next_Fast;
 
    ---------------
    -- Prev_Fast --
    ---------------
 
-   procedure Prev_Fast (Elt : in out T) is
+   procedure Prev_Fast (Elt : in out T; Lim : Limits := Default_Limits) is
    begin
-      Elt := Prev_Fast (Elt);
+      Elt := Prev_Fast (Elt, Lim);
    end Prev_Fast;
 end Enum_Next;

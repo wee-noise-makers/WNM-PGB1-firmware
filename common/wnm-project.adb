@@ -25,6 +25,7 @@ with WNM.Coproc;
 with WNM.Utils;
 with WNM.Speech;
 with WNM.Persistent;
+with WNM.Sample_Library;
 
 package body WNM.Project is
 
@@ -270,6 +271,48 @@ package body WNM.Project is
                       return MIDI.MIDI_Data
    is (G_Project.Seqs (Editing_Pattern) (Editing_Track) (Step).CC_Val (Id));
 
+   ---------------
+   -- CC_Limits --
+   ---------------
+
+   function CC_Limits (Id : CC_Id) return MIDI_Data_Next.Limits is
+      use MIDI;
+   begin
+      if not G_Project.Tracks (Editing_Track).MIDI_Enabled then
+         case Mode is
+            when Sample1_Mode | Sample2_Mode =>
+               if Id = A then
+                  return (0,
+                          MIDI.MIDI_Data
+                            (Sample_Library.Valid_Sample_Index'Last) - 1);
+               end if;
+            when others =>
+               null;
+         end case;
+      end if;
+
+      return MIDI_Data_Next.Default_Limits;
+   end CC_Limits;
+
+   -------------------
+   -- Engine_Limits --
+   -------------------
+
+   function Engine_Limits return MIDI_Data_Next.Limits is
+      use MIDI;
+   begin
+      case Mode is
+         when Lead_Mode =>
+            return (MIDI_Data'First, Synth.Lead_Engine_Last);
+         when Bass_Mode =>
+            return (MIDI_Data'First, Synth.Lead_Engine_Last);
+         when Snare_Mode =>
+            return (MIDI_Data'First, Synth.Snare_Engine_Last);
+         when others =>
+            return (MIDI_Data'First, MIDI_Data'First);
+      end case;
+   end Engine_Limits;
+
    --------------
    -- CC_Image --
    --------------
@@ -413,8 +456,8 @@ package body WNM.Project is
    ------------------
 
    procedure CC_Value_Inc (Step : Sequencer_Steps;
-                           Id : CC_Id;
-                           Val : MIDI.MIDI_Data := 1)
+                           Id   : CC_Id;
+                           Fast : Boolean := False)
    is
       use MIDI;
 
@@ -422,11 +465,13 @@ package body WNM.Project is
         (Editing_Pattern)
         (Editing_Track)
         (Step).CC_Val (Id);
+
    begin
-      if CC < MIDI.MIDI_Data'Last - Val then
-         CC := CC + Val;
+
+      if Fast then
+         Next_Fast (CC, CC_Limits (Id));
       else
-         CC := MIDI.MIDI_Data'Last;
+         Next (CC, CC_Limits (Id));
       end if;
 
       --  Enable when the value is changed
@@ -442,7 +487,7 @@ package body WNM.Project is
 
    procedure CC_Value_Dec (Step : Sequencer_Steps;
                            Id   : CC_Id;
-                           Val  : MIDI.MIDI_Data := 1)
+                           Fast : Boolean := False)
    is
       use MIDI;
 
@@ -451,10 +496,10 @@ package body WNM.Project is
         (Editing_Track)
         (Step).CC_Val (Id);
    begin
-      if CC >= Val then
-         CC := CC - Val;
+      if Fast then
+         Prev_Fast (CC, CC_Limits (Id));
       else
-         CC := MIDI.MIDI_Data'First;
+         Prev (CC, CC_Limits (Id));
       end if;
 
       --  Enable when the value is changed
@@ -542,7 +587,7 @@ package body WNM.Project is
                               when CC_B   => B,
                               when CC_C   => C,
                               when others => D),
-                          Val => 8);
+                          Fast => True);
       end case;
    end Next_Value_Fast;
 
@@ -570,7 +615,7 @@ package body WNM.Project is
                               when CC_B   => B,
                               when CC_C   => C,
                               when others => D),
-                          Val => 8);
+                          Fast => True);
       end case;
    end Prev_Value_Fast;
 
@@ -1011,7 +1056,7 @@ package body WNM.Project is
    begin
       case S is
          when Track_Mode      => Next (Track.MIDI_Enabled);
-         when Engine          => Next (Track.Engine);
+         when Engine          => Next (Track.Engine, Engine_Limits);
          when Volume          => Next (Track.Volume);
          when Pan             => Next (Track.Pan);
          when Master_FX       => Next (Track.FX_Kind);
@@ -1026,10 +1071,10 @@ package body WNM.Project is
          when Notes_Per_Chord => Next (Track.Notes_Per_Chord);
          when MIDI_Chan       => Next (Track.Chan);
          when MIDI_Instrument => null;
-         when CC_Default_A    => Next (Track.CC (A).Value);
-         when CC_Default_B    => Next (Track.CC (B).Value);
-         when CC_Default_C    => Next (Track.CC (C).Value);
-         when CC_Default_D    => Next (Track.CC (D).Value);
+         when CC_Default_A    => Next (Track.CC (A).Value, CC_Limits (A));
+         when CC_Default_B    => Next (Track.CC (B).Value, CC_Limits (B));
+         when CC_Default_C    => Next (Track.CC (C).Value, CC_Limits (C));
+         when CC_Default_D    => Next (Track.CC (D).Value, CC_Limits (D));
          when CC_Ctrl_A       => Next (Track.CC (A).Controller);
          when CC_Ctrl_B       => Next (Track.CC (B).Controller);
          when CC_Ctrl_C       => Next (Track.CC (C).Controller);
@@ -1055,7 +1100,7 @@ package body WNM.Project is
    begin
       case S is
          when Track_Mode      => Prev (Track.MIDI_Enabled);
-         when Engine          => Prev (Track.Engine);
+         when Engine          => Prev (Track.Engine, Engine_Limits);
          when Volume          => Prev (Track.Volume);
          when Pan             => Prev (Track.Pan);
          when Master_FX       => Prev (Track.FX_Kind);
@@ -1070,10 +1115,10 @@ package body WNM.Project is
          when Notes_Per_Chord => Prev (Track.Notes_Per_Chord);
          when MIDI_Chan       => Prev (Track.Chan);
          when MIDI_Instrument => null;
-         when CC_Default_A    => Prev (Track.CC (A).Value);
-         when CC_Default_B    => Prev (Track.CC (B).Value);
-         when CC_Default_C    => Prev (Track.CC (C).Value);
-         when CC_Default_D    => Prev (Track.CC (D).Value);
+         when CC_Default_A    => Prev (Track.CC (A).Value, CC_Limits (A));
+         when CC_Default_B    => Prev (Track.CC (B).Value, CC_Limits (B));
+         when CC_Default_C    => Prev (Track.CC (C).Value, CC_Limits (C));
+         when CC_Default_D    => Prev (Track.CC (D).Value, CC_Limits (D));
          when CC_Ctrl_A       => Prev (Track.CC (A).Controller);
          when CC_Ctrl_B       => Prev (Track.CC (B).Controller);
          when CC_Ctrl_C       => Prev (Track.CC (C).Controller);
@@ -1099,7 +1144,7 @@ package body WNM.Project is
    begin
       case S is
          when Track_Mode      => Next_Fast (Track.MIDI_Enabled);
-         when Engine          => Next_Fast (Track.Engine);
+         when Engine          => Next_Fast (Track.Engine, Engine_Limits);
          when Volume          => Next_Fast (Track.Volume);
          when Pan             => Next_Fast (Track.Pan);
          when Master_FX       => Next_Fast (Track.FX_Kind);
@@ -1114,10 +1159,10 @@ package body WNM.Project is
          when Notes_Per_Chord => Next_Fast (Track.Notes_Per_Chord);
          when MIDI_Chan       => Next_Fast (Track.Chan);
          when MIDI_Instrument => null;
-         when CC_Default_A    => Next_Fast (Track.CC (A).Value);
-         when CC_Default_B    => Next_Fast (Track.CC (B).Value);
-         when CC_Default_C    => Next_Fast (Track.CC (C).Value);
-         when CC_Default_D    => Next_Fast (Track.CC (D).Value);
+         when CC_Default_A    => Next_Fast (Track.CC (A).Value, CC_Limits (A));
+         when CC_Default_B    => Next_Fast (Track.CC (B).Value, CC_Limits (B));
+         when CC_Default_C    => Next_Fast (Track.CC (C).Value, CC_Limits (C));
+         when CC_Default_D    => Next_Fast (Track.CC (D).Value, CC_Limits (D));
          when CC_Ctrl_A       => Next_Fast (Track.CC (A).Controller);
          when CC_Ctrl_B       => Next_Fast (Track.CC (B).Controller);
          when CC_Ctrl_C       => Next_Fast (Track.CC (C).Controller);
@@ -1143,7 +1188,7 @@ package body WNM.Project is
    begin
       case S is
          when Track_Mode      => Prev_Fast (Track.MIDI_Enabled);
-         when Engine          => Prev_Fast (Track.Engine);
+         when Engine          => Prev_Fast (Track.Engine, Engine_Limits);
          when Volume          => Prev_Fast (Track.Volume);
          when Pan             => Prev_Fast (Track.Pan);
          when Master_FX       => Prev_Fast (Track.FX_Kind);
@@ -1158,10 +1203,10 @@ package body WNM.Project is
          when Notes_Per_Chord => Prev_Fast (Track.Notes_Per_Chord);
          when MIDI_Chan       => Prev_Fast (Track.Chan);
          when MIDI_Instrument => null;
-         when CC_Default_A    => Prev_Fast (Track.CC (A).Value);
-         when CC_Default_B    => Prev_Fast (Track.CC (B).Value);
-         when CC_Default_C    => Prev_Fast (Track.CC (C).Value);
-         when CC_Default_D    => Prev_Fast (Track.CC (D).Value);
+         when CC_Default_A    => Prev_Fast (Track.CC (A).Value, CC_Limits (A));
+         when CC_Default_B    => Prev_Fast (Track.CC (B).Value, CC_Limits (B));
+         when CC_Default_C    => Prev_Fast (Track.CC (C).Value, CC_Limits (C));
+         when CC_Default_D    => Prev_Fast (Track.CC (D).Value, CC_Limits (D));
          when CC_Ctrl_A       => Prev_Fast (Track.CC (A).Controller);
          when CC_Ctrl_B       => Prev_Fast (Track.CC (B).Controller);
          when CC_Ctrl_C       => Prev_Fast (Track.CC (C).Controller);

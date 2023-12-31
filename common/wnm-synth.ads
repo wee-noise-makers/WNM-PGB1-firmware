@@ -99,6 +99,7 @@ package WNM.Synth is
    -- Synth --
    -----------
 
+   function Lead_Engine_Last return MIDI.MIDI_Data;
    function Lead_Engine_Img (Engine : MIDI.MIDI_Data) return String;
    function Lead_Param_Label (Engine : MIDI.MIDI_Data;
                               Id : Tresses.Param_Id)
@@ -112,6 +113,7 @@ package WNM.Synth is
    function Kick_Param_Short_Label (Id : Tresses.Param_Id)
                                     return Tresses.Short_Label;
 
+   function Snare_Engine_Last return MIDI.MIDI_Data;
    function Snare_Engine_Img (Engine : MIDI.MIDI_Data) return String;
    function Snare_Param_Label (Id : Tresses.Param_Id)
                                return String;

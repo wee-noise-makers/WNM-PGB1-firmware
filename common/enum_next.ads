@@ -23,23 +23,39 @@ generic
    type T is (<>);
    Wrap : Boolean := True;
 package Enum_Next is
-   function Next (Elt : T) return T with Inline_Always;
-   --  Return the next value of type T, wraps to the first value of the type
+
+   type Limits is record
+      Min : T := T'First;
+      Max : T := T'Last;
+   end record;
+
+   Default_Limits : constant Limits := (others => <>);
+
+   function Next (Elt : T; Lim : Limits := Default_Limits) return T
+     with Inline_Always;
+   --  Return the next value of type T within limits, wraps to the Min value
    --  if Wrap is True.
 
-   function Prev (Elt : T) return T with Inline_Always;
-   --  Return the previous value of type T, wraps to the last value of the
-   --  type if Wrap is True.
+   function Prev (Elt : T; Lim : Limits := Default_Limits) return T
+     with Inline_Always;
+   --  Return the previous value of type T within limits, wraps to the Max
+   --  value within limits type if Wrap is True.
 
-   procedure Next (Elt : in out T) with Inline_Always;
-   procedure Prev (Elt : in out T) with Inline_Always;
+   procedure Next (Elt : in out T; Lim : Limits := Default_Limits)
+     with Inline_Always;
+   procedure Prev (Elt : in out T; Lim : Limits := Default_Limits)
+     with Inline_Always;
 
-   function Next_Fast (Elt : T) return T with Inline_Always;
+   function Next_Fast (Elt : T; Lim : Limits := Default_Limits) return T
+     with Inline_Always;
    --  Same as Next but jumping over 10 values
 
-   function Prev_Fast (Elt : T) return T with Inline_Always;
+   function Prev_Fast (Elt : T; Lim : Limits := Default_Limits) return T
+     with Inline_Always;
    --  Same as Prev but jumping over 10 values
 
-   procedure Next_Fast (Elt : in out T) with Inline_Always;
-   procedure Prev_Fast (Elt : in out T) with Inline_Always;
+   procedure Next_Fast (Elt : in out T; Lim : Limits := Default_Limits)
+     with Inline_Always;
+   procedure Prev_Fast (Elt : in out T; Lim : Limits := Default_Limits)
+     with Inline_Always;
 end Enum_Next;

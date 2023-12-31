@@ -21,7 +21,6 @@
 
 with HAL; use HAL;
 with Interfaces; use Interfaces;
-with WNM.Coproc;
 
 with WNM.Mixer;
 with WNM.Voices.Snare_Voice;
@@ -53,6 +52,7 @@ package body WNM.Synth is
    subtype Voice_Class is Tresses.Interfaces.Four_Params_Voice'Class;
    type Voice_Access is access all Voice_Class;
 
+   subtype Lead_Engine_Range is MIDI.MIDI_Data range 0 .. 11;
    function Lead_Engines (V : MIDI.MIDI_Data) return Tresses.Engines
    is (case V is
           when 0  => Tresses.Voice_Saw_Swarm,
@@ -66,14 +66,17 @@ package body WNM.Synth is
           when 8  => Tresses.Voice_Pluck_Bass,
           when 9  => Tresses.Voice_Reese,
           when 10 => Tresses.Voice_Screech,
-          when others => Tresses.Voice_Plucked);
+          when Lead_Engine_Range'Last .. MIDI.MIDI_Data'Last
+                  => Tresses.Voice_Plucked);
 
+   subtype Snare_Engine_Range is MIDI.MIDI_Data range 0 .. 1;
    function Snare_Engines (V : MIDI.MIDI_Data)
                            return Voices.Snare_Voice.Snare_Engine
    is (case V is
-          when 0      => Voices.Snare_Voice.Snare,
-          when 1      => Voices.Snare_Voice.Analog_Snare,
-          when others => Voices.Snare_Voice.Clap);
+          --  when 0      => Voices.Snare_Voice.Snare,
+          when 0      => Voices.Snare_Voice.Analog_Snare,
+          when Snare_Engine_Range'Last .. MIDI.MIDI_Data'Last
+                      => Voices.Snare_Voice.Clap);
 
    subtype Tresses_Channels
      is MIDI.MIDI_Channel range Speech_Channel .. Bitcrusher_Channel;
@@ -104,10 +107,10 @@ package body WNM.Synth is
         Lead_Channel       => Lead'Access,
         Bass_Channel       => Bass'Access,
         Chord_Channel      => Chord'Access,
-        Reverb_Channel     => Mixer.FX_Reverb'Access,
-        Filter_Channel     => Mixer.FX_Filter'Access,
-        Drive_Channel      => Mixer.FX_Drive'Access,
-        Bitcrusher_Channel => Mixer.FX_Bitcrush'Access);
+        Reverb_Channel     => WNM.Mixer.FX_Reverb'Access,
+        Filter_Channel     => WNM.Mixer.FX_Filter'Access,
+        Drive_Channel      => WNM.Mixer.FX_Drive'Access,
+        Bitcrusher_Channel => WNM.Mixer.FX_Bitcrush'Access);
 
    LFO_Targets : array (Tresses_Channels) of MIDI.MIDI_Data :=
      (others => Voice_Pan_CC);
@@ -694,6 +697,13 @@ package body WNM.Synth is
       return Passthrough;
    end Get_Passthrough;
 
+   ----------------------
+   -- Lead_Engine_Last --
+   ----------------------
+
+   function Lead_Engine_Last return MIDI.MIDI_Data
+   is (Lead_Engine_Range'Last);
+
    ---------------------
    -- Lead_Engine_Img --
    ---------------------
@@ -741,6 +751,13 @@ package body WNM.Synth is
    function Kick_Param_Short_Label (Id : Tresses.Param_Id)
                                     return Tresses.Short_Label
    is (Tresses.Macro.Param_Short_Label (Tresses.Drum_Kick, Id));
+
+   -----------------------
+   -- Snare_Engine_Last --
+   -----------------------
+
+   function Snare_Engine_Last return MIDI.MIDI_Data
+   is (Snare_Engine_Range'Last);
 
    ----------------------
    -- Snare_Engine_Img --
