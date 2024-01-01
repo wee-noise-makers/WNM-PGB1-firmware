@@ -33,16 +33,27 @@ package WNM.GUI.Menu.Text_Dialog is
 
    function Value return String;
 
-   subtype Valid_Character is Character range ' ' .. '~';
+   type Valid_Character is
+     ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+      'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+
+      ' ', '_', '-', '(', ')', '[', ']', '{', '}', '<', '>', '!', '@',
+      '#', '$', '%', '^', '&', '*', '+', '=',
+
+      'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+      'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+     );
 
 private
 
    subtype Text_Range is Natural range 1 .. 15;
+   type Input_Text is array (Text_Range) of Valid_Character;
 
    type Text_Dialog_Window is new Menu_Window with record
-      Text          : String (Text_Range);
+      Dialog_Title : String (1 .. Title_Max_Len) := (others => ' ');
+      Text          : Input_Text;
       Len           : Natural;
-      Index         : Natural;
+      Cursor        : Natural;
       Reset_On_Push : Boolean;
    end record;
 
@@ -60,5 +71,162 @@ private
    procedure On_Focus (This       : in out Text_Dialog_Window;
                        Exit_Value : Window_Exit_Value)
    is null;
+
+   function To_String (This : Text_Dialog_Window) return String;
+
+   --  These are a little bit of silly conversions. Even if we are using
+   --  character literals in the definition of the Valid_Character type, the
+   --  enumeration representation of the Valid_Character values do no match
+   --  the enumeration representation of the standard Character type used in
+   --  strings. So we need conversions.
+   To_Char : constant array (Valid_Character) of Character :=
+     ('A' => 'A',
+      'B' => 'B',
+      'C' => 'C',
+      'D' => 'D',
+      'E' => 'E',
+      'F' => 'F',
+      'G' => 'G',
+      'H' => 'H',
+      'I' => 'I',
+      'J' => 'J',
+      'K' => 'K',
+      'L' => 'L',
+      'M' => 'M',
+      'N' => 'N',
+      'O' => 'O',
+      'P' => 'P',
+      'Q' => 'Q',
+      'R' => 'R',
+      'S' => 'S',
+      'T' => 'T',
+      'U' => 'U',
+      'V' => 'V',
+      'W' => 'W',
+      'X' => 'X',
+      'Y' => 'Y',
+      'Z' => 'Z',
+      ' ' => ' ',
+      '_' => '_',
+      '-' => '-',
+      '(' => '(',
+      ')' => ')',
+      '[' => '[',
+      ']' => ']',
+      '{' => '{',
+      '}' => '}',
+      '<' => '<',
+      '>' => '>',
+      '!' => '!',
+      '@' => '@',
+      '#' => '#',
+      '$' => '$',
+      '%' => '%',
+      '^' => '^',
+      '&' => '&',
+      '*' => '*',
+      '+' => '+',
+      '=' => '=',
+      'a' => 'a',
+      'b' => 'b',
+      'c' => 'c',
+      'd' => 'd',
+      'e' => 'e',
+      'f' => 'f',
+      'g' => 'g',
+      'h' => 'h',
+      'i' => 'i',
+      'j' => 'j',
+      'k' => 'k',
+      'l' => 'l',
+      'm' => 'm',
+      'n' => 'n',
+      'o' => 'o',
+      'p' => 'p',
+      'q' => 'q',
+      'r' => 'r',
+      's' => 's',
+      't' => 't',
+      'u' => 'u',
+      'v' => 'v',
+      'w' => 'w',
+      'x' => 'x',
+      'y' => 'y',
+      'z' => 'z');
+   To_Valid_Char : constant array (Character) of Valid_Character :=
+     ('A' => 'A',
+      'B' => 'B',
+      'C' => 'C',
+      'D' => 'D',
+      'E' => 'E',
+      'F' => 'F',
+      'G' => 'G',
+      'H' => 'H',
+      'I' => 'I',
+      'J' => 'J',
+      'K' => 'K',
+      'L' => 'L',
+      'M' => 'M',
+      'N' => 'N',
+      'O' => 'O',
+      'P' => 'P',
+      'Q' => 'Q',
+      'R' => 'R',
+      'S' => 'S',
+      'T' => 'T',
+      'U' => 'U',
+      'V' => 'V',
+      'W' => 'W',
+      'X' => 'X',
+      'Y' => 'Y',
+      'Z' => 'Z',
+      ' ' => ' ',
+      '_' => '_',
+      '-' => '-',
+      '(' => '(',
+      ')' => ')',
+      '[' => '[',
+      ']' => ']',
+      '{' => '{',
+      '}' => '}',
+      '<' => '<',
+      '>' => '>',
+      '!' => '!',
+      '@' => '@',
+      '#' => '#',
+      '$' => '$',
+      '%' => '%',
+      '^' => '^',
+      '&' => '&',
+      '*' => '*',
+      '+' => '+',
+      '=' => '=',
+      'a' => 'a',
+      'b' => 'b',
+      'c' => 'c',
+      'd' => 'd',
+      'e' => 'e',
+      'f' => 'f',
+      'g' => 'g',
+      'h' => 'h',
+      'i' => 'i',
+      'j' => 'j',
+      'k' => 'k',
+      'l' => 'l',
+      'm' => 'm',
+      'n' => 'n',
+      'o' => 'o',
+      'p' => 'p',
+      'q' => 'q',
+      'r' => 'r',
+      's' => 's',
+      't' => 't',
+      'u' => 'u',
+      'v' => 'v',
+      'w' => 'w',
+      'x' => 'x',
+      'y' => 'y',
+      'z' => 'z',
+      others => ' ');
 
 end WNM.GUI.Menu.Text_Dialog;
