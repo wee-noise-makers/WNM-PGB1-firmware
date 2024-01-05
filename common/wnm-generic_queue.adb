@@ -40,7 +40,9 @@ package body WNM.Generic_Queue is
 
          Commit (Q.Queue, WG, 1);
       else
-         raise Program_Error with Name & " Queue is full";
+         raise Program_Error
+           with Name & " queue error: write grant failed ( " &
+           State (WG)'Img & ")";
       end if;
    end Push;
 

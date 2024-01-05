@@ -1,8 +1,6 @@
-with WNM.Tasks;
-
+with System.Storage_Elements;
 with Ada.Synchronous_Task_Control;
 with GNAT.OS_Lib;
-with Ada.Text_IO;
 with Interfaces;
 with Interfaces.C;
 
@@ -10,6 +8,7 @@ with Sf;
 with Sf.Graphics.Color;
 
 with ASFML_Sim;
+with ASFML_Sim.Coproc_Queues;
 with ASFML_SIM_Storage;
 
 with MIDI.Encoder;
@@ -17,6 +16,7 @@ with MIDI.Decoder.Queue;
 with RtMIDI;
 
 with Wnm_Ps1_Simulator_Config;
+
 package body WNM_HAL is
 
    LEDs_Internal : ASFML_Sim.SFML_LED_Strip := ASFML_Sim.SFML_LEDs;
@@ -30,62 +30,8 @@ package body WNM_HAL is
      RtMIDI.Create (Wnm_Ps1_Simulator_Config.Crate_Name & " Output");
    MIDI_In : constant RtMIDI.MIDI_In :=
      RtMIDI.Create (Wnm_Ps1_Simulator_Config.Crate_Name & " Input");
-   type Circular_Buffer_Content is array (Positive range <>) of Coproc_Data;
-
-   protected type Circular_Buffer (Capacity : Positive) is
-      entry Insert (Item : Coproc_Data);
-      entry Remove (Item : out Coproc_Data);
-
-      function Empty  return Boolean;
-      function Full   return Boolean;
-
-   private
-      Values   : Circular_Buffer_Content (1 .. Capacity);
-      Next_In  : Positive := 1;
-      Next_Out : Positive := 1;
-      Count    : Natural  := 0;
-   end Circular_Buffer;
-
-   Coproc_Queue : array (Coproc_Target)
-     of Circular_Buffer (Coproc_Queue_Capacity);
-
-   ---------------------
-   -- Circular_Buffer --
-   ---------------------
-
-   protected body Circular_Buffer is
-
-      ------------
-      -- Insert --
-      ------------
-
-      entry Insert (Item : Coproc_Data) when Count /= Capacity is
-      begin
-         Values (Next_In) := Item;
-         Next_In := (Next_In mod Capacity) + 1;
-         Count := Count + 1;
-      end Insert;
-
-      ------------
-      -- Remove --
-      ------------
-
-      entry Remove (Item : out Coproc_Data) when Count > 0 is
-      begin
-         Item := Values (Next_Out);
-         Next_Out := (Next_Out mod Capacity) + 1;
-         Count := Count - 1;
-      end Remove;
-
-      -----------
-      -- Empty --
-      -----------
 
    MIDI_In_Queue : MIDI.Decoder.Queue.Instance (1024);
-      function Empty return Boolean is
-      begin
-         return Count = 0;
-      end Empty;
 
    procedure MIDI_Input_Callback_C
      (Time_Stamp   : Interfaces.C.double;
@@ -93,16 +39,6 @@ package body WNM_HAL is
       Message_Size : Interfaces.C.size_t;
       User_Data    : System.Address)
      with Convention => C;
-      ----------
-      -- Full --
-      ----------
-
-      function Full return Boolean is
-      begin
-         return Count = Capacity;
-      end Full;
-
-   end Circular_Buffer;
 
    -----------
    -- State --
@@ -346,24 +282,7 @@ package body WNM_HAL is
 
    procedure Push (Target : Coproc_Target;
                    D      : Coproc_Data)
-   is
-   begin
-
-      if not Coproc_Queue (Target).Full then
-         Coproc_Queue (Target).Insert (D);
-
-         --  Hack to simulate an interrupt
-         case Target is
-            when Main_CPU =>
-               WNM.Tasks.Sequencer_Coproc_Receive;
-            when Synth_CPU =>
-               WNM.Tasks.Synth_Coproc_Receive;
-         end case;
-      else
-         Ada.Text_IO.Put_Line (Coproc_Queue (Target)'Img);
-         raise Program_Error with Target'Img &  " Corproc queue is full";
-      end if;
-   end Push;
+   renames ASFML_Sim.Coproc_Queues.Push;
 
    ---------
    -- Pop --
@@ -372,16 +291,7 @@ package body WNM_HAL is
    procedure Pop (Target  :     Coproc_Target;
                   D       : out Coproc_Data;
                   Success : out Boolean)
-   is
-   begin
-
-      if Coproc_Queue (Target).Empty then
-         Success := False;
-      else
-         Coproc_Queue (Target).Remove (D);
-         Success := True;
-      end if;
-   end Pop;
+   renames ASFML_Sim.Coproc_Queues.Pop;
 
    -------------------
    -- Send_External --
