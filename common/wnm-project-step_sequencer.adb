@@ -27,7 +27,6 @@ with WNM.Pattern_Sequencer;
 with WNM.Chord_Settings;
 with WNM.Project.Arpeggiator;
 with WNM.UI; use WNM.UI;
-with WNM.MIDI_Queues;
 with WNM.Coproc;
 with WNM.Project.Chord_Sequencer;
 with WNM.Step_Event_Broadcast;
@@ -220,7 +219,7 @@ package body WNM.Project.Step_Sequencer is
             end;
 
          when MIDI_Mode =>
-            WNM.MIDI_Queues.Send_External
+            WNM_HAL.Send_External
               ((MIDI.Note_On, MIDI_Chan (T), Key, Velo));
 
             WNM.Note_Off_Sequencer.Note_Off
@@ -291,7 +290,7 @@ package body WNM.Project.Step_Sequencer is
                                              Chan, Ctrl, Val)));
 
             when MIDI_Mode =>
-               WNM.MIDI_Queues.Send_External
+               WNM_HAL.Send_External
                  ((MIDI.Continous_Controller,
                   Chan, Ctrl, Val));
 

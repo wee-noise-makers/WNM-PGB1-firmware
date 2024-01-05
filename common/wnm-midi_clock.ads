@@ -3,7 +3,7 @@ with MIDI.Time.Generic_Clock;
 with WNM.Time;
 with WNM.Project;
 with WNM.Project.Step_Sequencer;
-with WNM.MIDI_Queues;
+with WNM_HAL;
 
 package WNM.MIDI_Clock
 is new MIDI.Time.Generic_Clock
@@ -14,4 +14,4 @@ is new MIDI.Time.Generic_Clock
    Start_Callback     => WNM.Project.Step_Sequencer.MIDI_Song_Start,
    Continue_Callback  => WNM.Project.Step_Sequencer.MIDI_Song_Continue,
    Stop_Callback      => WNM.Project.Step_Sequencer.MIDI_Song_Stop,
-   Send_Message       => WNM.MIDI_Queues.Send_External);
+   Send_Message       => WNM_HAL.Send_External);

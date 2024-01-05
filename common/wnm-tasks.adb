@@ -63,6 +63,10 @@ package body WNM.Tasks is
          WNM.UI.Update_LEDs;
       end if;
 
+      --  Try to flush MIDI external output after all clock, sequencer and UI
+      --  updates that can all potentially send external MIDI data.
+      WNM_HAL.Flush_Output;
+
       Systick_Count := Systick_Count + 1;
       WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP17);
    end Sequencer_1khz_Tick;

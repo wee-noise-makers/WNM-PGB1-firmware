@@ -37,12 +37,14 @@ with RP.Multicore.Spinlocks;
 with RP.DMA;
 with RP.ROM;
 with RP.Watchdog;
+with RP2040_SVD.Interrupts;
 
 with Noise_Nugget_SDK.WS2812;
 with Noise_Nugget_SDK.Audio;
 with Noise_Nugget_SDK.Button_Matrix_Definition;
 with Noise_Nugget_SDK.Button_Matrix;
 with Noise_Nugget_SDK.Screen.SSD1306;
+with Noise_Nugget_SDK.MIDI;
 
 with Atomic.Critical_Section;
 
@@ -88,6 +90,13 @@ package body WNM_HAL is
       DC_Pin      => 12,
       SCK_Pin     => 10,
       MOSI_Pin    => 11);
+
+   package External_MIDI is new Noise_Nugget_SDK.MIDI
+     (UART           => RP.Device.UART_1'Access,
+      UART_Interrupt => RP2040_SVD.Interrupts.UART1_Interrupt,
+      DMA_TX_Trigger => RP.DMA.UART1_TX,
+      TX_Pin         => 8,
+      RX_Pin         => 9);
 
    procedure Last_Chance_Handler (Msg : System.Address; Line : Integer);
    pragma Export (C, Last_Chance_Handler, "__gnat_last_chance_handler");
@@ -435,12 +444,30 @@ package body WNM_HAL is
       Success := RP.Multicore.FIFO.Try_Pop (UInt32 (D));
    end Pop;
 
-   ---------------
-   -- Send_MIDI --
-   ---------------
+   -------------------
+   -- Send_External --
+   -------------------
 
-   procedure Send_MIDI (Data : System.Storage_Elements.Storage_Array)
-   is null;
+   procedure Send_External (Msg : MIDI.Message) is
+   begin
+      External_MIDI.Send (Msg);
+   end Send_External;
+
+   ------------------
+   -- Flush_Output --
+   ------------------
+
+   procedure Flush_Output is
+   begin
+      External_MIDI.Flush_Output;
+   end Flush_Output;
+
+   ------------------
+   -- Get_External --
+   ------------------
+
+   procedure Get_External (Msg : out MIDI.Message; Success : out Boolean)
+   renames External_MIDI.Get_Input;
 
    -----------
    -- Power --

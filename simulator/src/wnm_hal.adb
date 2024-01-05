@@ -4,6 +4,7 @@ with Ada.Synchronous_Task_Control;
 with GNAT.OS_Lib;
 with Ada.Text_IO;
 with Interfaces;
+with Interfaces.C;
 
 with Sf;
 with Sf.Graphics.Color;
@@ -11,8 +12,11 @@ with Sf.Graphics.Color;
 with ASFML_Sim;
 with ASFML_SIM_Storage;
 
+with MIDI.Encoder;
+with MIDI.Decoder.Queue;
 with RtMIDI;
 
+with Wnm_Ps1_Simulator_Config;
 package body WNM_HAL is
 
    LEDs_Internal : ASFML_Sim.SFML_LED_Strip := ASFML_Sim.SFML_LEDs;
@@ -22,8 +26,10 @@ package body WNM_HAL is
    Pixels_Internal : array (Pix_X, Pix_Y) of Boolean :=
      (others => (others => False));
 
-   MIDI_Out : constant RtMIDI.MIDI_Out := RtMIDI.Create ("WNM Simulator");
-
+   MIDI_Out : constant RtMIDI.MIDI_Out :=
+     RtMIDI.Create (Wnm_Ps1_Simulator_Config.Crate_Name & " Output");
+   MIDI_In : constant RtMIDI.MIDI_In :=
+     RtMIDI.Create (Wnm_Ps1_Simulator_Config.Crate_Name & " Input");
    type Circular_Buffer_Content is array (Positive range <>) of Coproc_Data;
 
    protected type Circular_Buffer (Capacity : Positive) is
@@ -75,11 +81,18 @@ package body WNM_HAL is
       -- Empty --
       -----------
 
+   MIDI_In_Queue : MIDI.Decoder.Queue.Instance (1024);
       function Empty return Boolean is
       begin
          return Count = 0;
       end Empty;
 
+   procedure MIDI_Input_Callback_C
+     (Time_Stamp   : Interfaces.C.double;
+      Message      : System.Address;
+      Message_Size : Interfaces.C.size_t;
+      User_Data    : System.Address)
+     with Convention => C;
       ----------
       -- Full --
       ----------
@@ -370,11 +383,13 @@ package body WNM_HAL is
       end if;
    end Pop;
 
-   ---------------
-   -- Send_MIDI --
-   ---------------
+   -------------------
+   -- Send_External --
+   -------------------
 
-   procedure Send_MIDI (Data : System.Storage_Elements.Storage_Array) is
+   procedure Send_External (Msg : MIDI.Message) is
+      use System.Storage_Elements;
+      Data : constant Storage_Array := MIDI.Encoder.Encode (Msg);
       Success : Boolean;
    begin
       RtMIDI.Send_Message (MIDI_Out, Data, Success);
@@ -382,7 +397,42 @@ package body WNM_HAL is
       if not Success then
          raise Program_Error with "MIDI OUT error";
       end if;
-   end Send_MIDI;
+   end Send_External;
+
+   ------------------
+   -- Flush_Output --
+   ------------------
+
+   procedure Flush_Output
+   is null;
+
+   ---------------------------
+   -- MIDI_Input_Callback_C --
+   ---------------------------
+
+   procedure MIDI_Input_Callback_C
+     (Time_Stamp   : Interfaces.C.double;
+      Message      : System.Address;
+      Message_Size : Interfaces.C.size_t;
+      User_Data    : System.Address)
+   is
+      pragma Unreferenced (Time_Stamp, User_Data);
+      Data : HAL.UInt8_Array (1 .. Natural (Message_Size))
+        with Address => Message;
+   begin
+      for Elt of Data loop
+         MIDI.Decoder.Queue.Push (MIDI_In_Queue, Elt);
+      end loop;
+   end MIDI_Input_Callback_C;
+
+   ------------------
+   -- Get_External --
+   ------------------
+
+   procedure Get_External (Msg : out MIDI.Message; Success : out Boolean) is
+   begin
+      MIDI.Decoder.Queue.Pop (MIDI_In_Queue, Msg, Success);
+   end Get_External;
 
    ----------------
    -- Power_Down --
@@ -456,8 +506,20 @@ package body WNM_HAL is
 
 begin
    if not RtMIDI.Valid (MIDI_Out) then
-      raise Program_Error with "Cannot create MIDI device";
+      raise Program_Error with "Cannot create MIDI out device";
    end if;
 
    RtMIDI.Open_Port (MIDI_Out, 0, "Output");
+
+   if not RtMIDI.Valid (MIDI_In) then
+      raise Program_Error with "Cannot create MIDI In device";
+   end if;
+
+   RtMIDI.Ignore_Messages (MIDI_In,
+                           SysEx => True,
+                           Time  => False,
+                           Sense => True);
+
+   RtMIDI.Set_Callback (MIDI_In, MIDI_Input_Callback_C'Access);
+   RtMIDI.Open_Port (MIDI_In, 0, "Input");
 end WNM_HAL;

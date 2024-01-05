@@ -5,6 +5,8 @@ with HAL;
 with Littlefs;
 with WNM_Configuration; use WNM_Configuration;
 
+with MIDI;
+
 with Tresses;
 
 package WNM_HAL is
@@ -137,7 +139,9 @@ package WNM_HAL is
    -- MIDI --
    ----------
 
-   procedure Send_MIDI (Data : System.Storage_Elements.Storage_Array);
+   procedure Send_External (Msg : MIDI.Message);
+   procedure Flush_Output;
+   procedure Get_External (Msg : out MIDI.Message; Success : out Boolean);
 
    -----------
    -- Power --
