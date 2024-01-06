@@ -43,7 +43,7 @@ package WNM is
    -- Mixer --
    type FX_Kind is (Bypass, Overdrive, Reverb, Filter, Bitcrusher);
 
-   type Mixer_Buffer_Index is range 0 .. 5
+   type Mixer_Buffer_Index is range 1 .. Audio.Mixer_Buffer_Count
      with Size => 8;
 
    subtype Beat_Per_Minute is Positive range 50 .. 200;
@@ -52,10 +52,6 @@ package WNM is
    Steps_Per_Beat      : constant := 4;
    Max_Events_Per_Step : constant := 6;
 
-   UI_Task_Period_Microseconds  : constant := 50 * 1_000;
-   GUI_Task_Period_Microseconds : constant := 50 * 1_000;
-   LED_Task_Period_Microseconds : constant := 50 * 1_000;
-
    Long_Press_Time_Span_Microseconds : constant := 300 * 1_000;
    --  How much time (in microseconds) users have to press a button to get the
    --  alternative function.
@@ -63,8 +59,6 @@ package WNM is
    Repeat_Press_Time_Span_Microseconds : constant := 30 * 1_000;
    --  How much time (in microseconds) a button press event will be repeated
    --  when the button is held down.
-
-   Audio_Queue_Size : constant := 3;
 
    function Img (V : Keyboard_Value) return String
    is (case V is

@@ -829,7 +829,7 @@ package body WNM.Project.Storage is
 
       --  Update all the synth settings after loading a project
       for T in Tracks loop
-         Synchronize_Voice_Settings (T);
+         Synchronize_Synth_Settings (T);
       end loop;
 
       return Input.Status;

@@ -51,6 +51,8 @@ package WNM.Project is
    procedure Clear;
    --  Reset the current project to default values
 
+   procedure Handle_MIDI (Msg : MIDI.Message);
+
    ----------
    -- Step --
    ----------
@@ -772,14 +774,7 @@ private
 
    G_Project : Project_Rec := (others => <>);
 
-   procedure Synchronize_Voice_Settings (T : Tracks);
+   procedure Synchronize_Synth_Settings (T : Tracks);
    --  Send all the synth voice settings to the coprocessor to update it
-
-   procedure Synchronize_Voice_Engine (T : Tracks);
-   --  Send a message to coprocessor with selector engine for the track
-
-   procedure Synchronize_Track_Mix_Settings (T : Tracks);
-   --  Send a message to coprocessor with Volume, Pan, and FX values for the
-   --  track
 
 end WNM.Project;

@@ -19,6 +19,8 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with System.Storage_Elements;
+
 with WNM.Tasks;
 with RP.Multicore.FIFO;
 with RP.Multicore.Spinlocks;

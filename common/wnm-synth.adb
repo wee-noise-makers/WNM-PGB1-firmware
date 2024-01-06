@@ -79,14 +79,14 @@ package body WNM.Synth is
                       => Voices.Snare_Voice.Clap);
 
    subtype Tresses_Channels
-     is MIDI.MIDI_Channel range Speech_Channel .. Bitcrusher_Channel;
+     is MIDI.MIDI_Channel range Kick_Channel .. Speech_Channel;
 
    Synth_Oct_Offset : constant array (Tresses_Channels) of Integer :=
      (Speech_Channel     => 0,
       Sample1_Channel    => 0,
       Sample2_Channel    => 0,
       Kick_Channel       => -4,
-      Snare_Channel      => 0,
+      Snare_Channel      => -1,
       Cymbal_Channel     => 0,
       Lead_Channel       => 0,
       Bass_Channel       => -3,
@@ -302,9 +302,9 @@ package body WNM.Synth is
 
             when WNM.Coproc.Buffer_Available =>
 
-               --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
+               Set_Indicator_IO (GP19);
                Next_Points (WNM.Mixer.Mixer_Buffers (Msg.Buffer_Id));
-               --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
+               Clear_Indicator_IO (GP19);
 
                --  Send the buffers back to main CPU
                WNM.Coproc.Push_To_Main (Msg);
@@ -324,6 +324,7 @@ package body WNM.Synth is
                      case Msg.MIDI_Evt.Kind is
                      when MIDI.Note_On =>
 
+                        Set_Indicator_IO (GP16);
                         declare
                            Offset : constant Integer :=
                              Synth_Oct_Offset (Msg.MIDI_Evt.Chan) * 12;
@@ -359,6 +360,7 @@ package body WNM.Synth is
                            end if;
                         end;
 
+                        Clear_Indicator_IO (GP16);
                      when MIDI.Note_Off =>
 
                         declare
@@ -515,7 +517,6 @@ package body WNM.Synth is
       Synthesis_Start : constant WNM_HAL.Time_Microseconds := WNM_HAL.Clock;
    begin
 
-      WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
       --  Take input params
       Out_Voice_Parameters := In_Voice_Parameters;
 
@@ -558,97 +559,71 @@ package body WNM.Synth is
         Out_Voice_Parameters (Bitcrusher_Channel);
       Output.Parameters (Filter) := Out_Voice_Parameters (Filter_Channel);
       Output.Parameters (Reverb) := Out_Voice_Parameters (Reverb_Channel);
-      WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
 
       declare
       begin
-         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
          TK.Render (Buffer);
-         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
-         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
          WNM_HAL.Mix (Output.L (FX_Send (Kick_Channel)),
                       Output.R (FX_Send (Kick_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Kick_Channel),
                       Pan => Pan_For_Chan (Kick_Channel));
-         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
 
-         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
          TS.Render (Buffer);
-         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
-         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
          WNM_HAL.Mix (Output.L (FX_Send (Snare_Channel)),
                       Output.R (FX_Send (Snare_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Snare_Channel),
                       Pan => Pan_For_Chan (Snare_Channel));
-         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
 
-         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
          TC.Render (Buffer);
-         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
-         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
          WNM_HAL.Mix (Output.L (FX_Send (Cymbal_Channel)),
                       Output.R (FX_Send (Cymbal_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Cymbal_Channel),
                       Pan => Pan_For_Chan (Cymbal_Channel));
-         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
 
-         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
          Lead.Render (Buffer, Aux_Buffer);
-         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
-         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
          WNM_HAL.Mix (Output.L (FX_Send (Lead_Channel)),
                       Output.R (FX_Send (Lead_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Lead_Channel),
                       Pan => Pan_For_Chan (Lead_Channel));
-         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
 
-         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
          Bass.Render (Buffer, Aux_Buffer);
-         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
-         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
          WNM_HAL.Mix (Output.L (FX_Send (Bass_Channel)),
                       Output.R (FX_Send (Bass_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Bass_Channel),
                       Pan => Pan_For_Chan (Bass_Channel));
-         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
 
-         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
+         Chord.Render (Buffer);
+         WNM_HAL.Mix (Output.L (FX_Send (Chord_Channel)),
+                      Output.R (FX_Send (Chord_Channel)),
+                      Input => Buffer,
+                      Volume => Volume_For_Chan (Chord_Channel),
+                      Pan => Pan_For_Chan (Chord_Channel));
+
          Sampler1.Render (Buffer);
-         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
-         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
          WNM_HAL.Mix (Output.L (FX_Send (Sample1_Channel)),
                       Output.R (FX_Send (Sample1_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Sample1_Channel),
                       Pan => Pan_For_Chan (Sample1_Channel));
-         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
 
-         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
          Sampler2.Render (Buffer);
-         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
-         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
          WNM_HAL.Mix (Output.L (FX_Send (Sample2_Channel)),
                       Output.R (FX_Send (Sample2_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Sample2_Channel),
                       Pan => Pan_For_Chan (Sample2_Channel));
-         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
 
-         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
-         Speech.Render (Buffer);
-         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
-         --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP19);
-         WNM_HAL.Mix (Output.L (FX_Send (Speech_Channel)),
-                      Output.R (FX_Send (Speech_Channel)),
-                      Input => Buffer,
-                      Volume => Volume_For_Chan (Speech_Channel),
-                      Pan => Pan_For_Chan (Speech_Channel));
-         --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
+         --  Speech.Render (Buffer);
+         --  WNM_HAL.Mix (Output.L (FX_Send (Speech_Channel)),
+         --               Output.R (FX_Send (Speech_Channel)),
+         --               Input => Buffer,
+         --               Volume => Volume_For_Chan (Speech_Channel),
+         --               Pan => Pan_For_Chan (Speech_Channel));
       end;
 
       declare
@@ -675,6 +650,8 @@ package body WNM.Synth is
             G_Max_CPU_Load := G_CPU_Load;
          end if;
       end;
+
+      WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
 
    end Next_Points;
 

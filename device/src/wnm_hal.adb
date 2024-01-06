@@ -22,6 +22,7 @@
 with Ada.Unchecked_Conversion;
 with Interfaces;
 with System.Machine_Code;
+with System.Storage_Elements;
 
 with WNM.Tasks;
 with WNM.GUI.Bitmap_Fonts;

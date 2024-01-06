@@ -26,6 +26,7 @@ with WNM.Utils;
 with WNM.Speech;
 with WNM.Persistent;
 with WNM.Sample_Library;
+with WNM.UI;
 
 package body WNM.Project is
 
@@ -660,7 +661,7 @@ package body WNM.Project is
    function Track_Name (T : Tracks := Editing_Track) return String
    is (case Mode (T) is
           when MIDI_Mode => "MIDI" & MIDI_Chan (T)'Img,
-          when others    =>  Img (Mode (T)));
+          when others    => Img (Mode (T)));
 
    ------------------
    -- Track_Volume --
@@ -1047,6 +1048,88 @@ package body WNM.Project is
       end case;
    end Prev;
 
+   --------------------------
+   -- CC_For_Track_Setting --
+   --------------------------
+
+   function CC_For_Track_Setting (S : Track_Settings)
+                                  return MIDI.MIDI_Data
+   is (case S is
+          when Engine          => Synth.Voice_Engine_CC,
+          when Volume          => Synth.Voice_Volume_CC,
+          when Pan             => Synth.Voice_Pan_CC,
+          when Master_FX       => Synth.Voice_FX_CC,
+          when LFO_Rate        => Synth.Voice_LFO_Rate_CC,
+          when LFO_Amplitude   => Synth.Voice_LFO_Amp_CC,
+          when LFO_Amp_Mode    => Synth.Voice_LFO_Amp_Mode_CC,
+          when LFO_Shape       => Synth.Voice_LFO_Shape_CC,
+          when LFO_Loop        => Synth.Voice_LFO_Loop_CC,
+          when LFO_Sync        => Synth.Voice_LFO_Sync_CC,
+          when LFO_Target      => Synth.Voice_LFO_Target_CC,
+          when CC_Default_A    => Synth.Voice_Param_1_CC,
+          when CC_Default_B    => Synth.Voice_Param_2_CC,
+          when CC_Default_C    => Synth.Voice_Param_3_CC,
+          when CC_Default_D    => Synth.Voice_Param_4_CC,
+          when others          => MIDI.MIDI_Data'Last);
+
+   -------------------------------
+   -- Synchronize_Synth_Setting --
+   -------------------------------
+
+   procedure Synchronize_Synth_Setting (T : Tracks;
+                                        S : Track_Settings)
+   is
+      use Coproc;
+      use MIDI;
+
+      Track : Track_Rec renames G_Project.Tracks (T);
+      Chan : MIDI.MIDI_Channel;
+      CC, Val : MIDI.MIDI_Data;
+   begin
+
+      if Mode (T) in Synth_Track_Mode_Kind then
+         Chan := Voice_MIDI_Chan (Mode (Editing_Track));
+         CC := CC_For_Track_Setting (S);
+
+         if CC = MIDI.MIDI_Data'Last then
+            --  This setting doesn't control the synth
+            return;
+         end if;
+
+         Val := (case S is
+                    when Engine          => Track.Engine,
+                    when Volume          => MIDI.MIDI_Data (Track.Volume),
+                    when Pan             => MIDI.MIDI_Data (Track.Pan),
+                    when Master_FX       =>
+                   (case Track.FX_Kind is
+                       when Bypass     => Synth.FX_Select_Bypass,
+                       when Overdrive  => Synth.FX_Select_Overdrive,
+                       when Bitcrusher => Synth.FX_Select_Bitcrusher,
+                       when Reverb     => Synth.FX_Select_Reverb,
+                       when Filter     => Synth.FX_Select_Filter),
+                    when LFO_Rate        => Track.LFO_Rate,
+                    when LFO_Amplitude   => Track.LFO_Amp,
+                    when LFO_Amp_Mode    => Track.LFO_Amp_Mode'Enum_Rep,
+                    when LFO_Shape       => Track.LFO_Shape'Enum_Rep,
+                    when LFO_Target      => Track.LFO_Target'Enum_Rep,
+                    when LFO_Loop        => Track.LFO_Loop'Enum_Rep,
+                    when LFO_Sync        => Track.LFO_Sync'Enum_Rep,
+                    when CC_Default_A    => Track.CC (A).Value,
+                    when CC_Default_B    => Track.CC (B).Value,
+                    when CC_Default_C    => Track.CC (C).Value,
+                    when CC_Default_D    => Track.CC (D).Value,
+                    when others          => MIDI.MIDI_Data'Last);
+
+         Coproc.Push_To_Synth
+           ((Kind     => MIDI_Event,
+             MIDI_Evt =>
+               (Kind => MIDI.Continous_Controller,
+                Chan => Chan,
+                Controller => CC,
+                Controller_Value => Val)));
+      end if;
+   end Synchronize_Synth_Setting;
+
    ----------------
    -- Next_Value --
    ----------------
@@ -1061,10 +1144,16 @@ package body WNM.Project is
          when Pan             => Next (Track.Pan);
          when Master_FX       => Next (Track.FX_Kind);
          when LFO_Rate        => Next (Track.LFO_Rate);
-         when LFO_Amplitude   => Next (Track.LFO_Amp, Track.LFO_Amp_Mode, 1);
-         when LFO_Shape       => Next (Track.LFO_Shape,
-                                       Track.LFO_Sync,
-                                       Track.LFO_Loop);
+
+         when LFO_Amplitude   =>
+            Next (Track.LFO_Amp, Track.LFO_Amp_Mode, 1);
+            Synchronize_Synth_Setting (Editing_Track, LFO_Amp_Mode);
+
+         when LFO_Shape       =>
+            Next (Track.LFO_Shape, Track.LFO_Sync, Track.LFO_Loop);
+            Synchronize_Synth_Setting (Editing_Track, LFO_Sync);
+            Synchronize_Synth_Setting (Editing_Track, LFO_Loop);
+
          when LFO_Target      => Next (Track.LFO_Target);
          when Arp_Mode        => Next (Track.Arp_Mode);
          when Arp_Notes       => Next (Track.Arp_Notes);
@@ -1082,13 +1171,8 @@ package body WNM.Project is
          when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D => null;
       end case;
 
-      if S in Pan | Volume | Master_FX | LFO_Rate | LFO_Amplitude |
-              LFO_Target | LFO_Shape
-      then
-         Synchronize_Track_Mix_Settings (Editing_Track);
-      elsif S in Engine then
-         Synchronize_Voice_Engine (Editing_Track);
-      end if;
+      Synchronize_Synth_Setting (Editing_Track, S);
+
    end Next_Value;
 
    ----------------
@@ -1105,10 +1189,15 @@ package body WNM.Project is
          when Pan             => Prev (Track.Pan);
          when Master_FX       => Prev (Track.FX_Kind);
          when LFO_Rate        => Prev (Track.LFO_Rate);
-         when LFO_Amplitude   => Prev (Track.LFO_Amp, Track.LFO_Amp_Mode, 1);
-         when LFO_Shape       => Prev (Track.LFO_Shape,
-                                       Track.LFO_Sync,
-                                       Track.LFO_Loop);
+         when LFO_Amplitude   =>
+            Prev (Track.LFO_Amp, Track.LFO_Amp_Mode, 1);
+            Synchronize_Synth_Setting (Editing_Track, LFO_Amp_Mode);
+
+         when LFO_Shape       =>
+            Prev (Track.LFO_Shape, Track.LFO_Sync, Track.LFO_Loop);
+            Synchronize_Synth_Setting (Editing_Track, LFO_Sync);
+            Synchronize_Synth_Setting (Editing_Track, LFO_Loop);
+
          when LFO_Target      => Prev (Track.LFO_Target);
          when Arp_Mode        => Prev (Track.Arp_Mode);
          when Arp_Notes       => Prev (Track.Arp_Notes);
@@ -1126,13 +1215,7 @@ package body WNM.Project is
          when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D => null;
       end case;
 
-      if S in Pan | Volume | Master_FX | LFO_Rate | LFO_Amplitude |
-              LFO_Target | LFO_Shape
-      then
-         Synchronize_Track_Mix_Settings (Editing_Track);
-      elsif S in Engine then
-         Synchronize_Voice_Engine (Editing_Track);
-      end if;
+      Synchronize_Synth_Setting (Editing_Track, S);
    end Prev_Value;
 
    ---------------------
@@ -1149,10 +1232,16 @@ package body WNM.Project is
          when Pan             => Next_Fast (Track.Pan);
          when Master_FX       => Next_Fast (Track.FX_Kind);
          when LFO_Rate        => Next_Fast (Track.LFO_Rate);
-         when LFO_Amplitude   => Next (Track.LFO_Amp, Track.LFO_Amp_Mode, 10);
-         when LFO_Shape       => Next (Track.LFO_Shape,
-                                       Track.LFO_Sync,
-                                       Track.LFO_Loop);
+
+         when LFO_Amplitude   =>
+            Next (Track.LFO_Amp, Track.LFO_Amp_Mode, 10);
+            Synchronize_Synth_Setting (Editing_Track, LFO_Amp_Mode);
+
+         when LFO_Shape       =>
+            Next (Track.LFO_Shape, Track.LFO_Sync, Track.LFO_Loop);
+            Synchronize_Synth_Setting (Editing_Track, LFO_Sync);
+            Synchronize_Synth_Setting (Editing_Track, LFO_Loop);
+
          when LFO_Target      => Next_Fast (Track.LFO_Target);
          when Arp_Mode        => Next_Fast (Track.Arp_Mode);
          when Arp_Notes       => Next_Fast (Track.Arp_Notes);
@@ -1170,13 +1259,7 @@ package body WNM.Project is
          when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D => null;
       end case;
 
-      if S in Pan | Volume | Master_FX | LFO_Rate | LFO_Amplitude |
-              LFO_Target | LFO_Shape
-      then
-         Synchronize_Track_Mix_Settings (Editing_Track);
-      elsif S in Engine then
-         Synchronize_Voice_Engine (Editing_Track);
-      end if;
+      Synchronize_Synth_Setting (Editing_Track, S);
    end Next_Value_Fast;
 
    ---------------------
@@ -1193,10 +1276,16 @@ package body WNM.Project is
          when Pan             => Prev_Fast (Track.Pan);
          when Master_FX       => Prev_Fast (Track.FX_Kind);
          when LFO_Rate        => Prev_Fast (Track.LFO_Rate);
-         when LFO_Amplitude   => Prev (Track.LFO_Amp, Track.LFO_Amp_Mode, 10);
-         when LFO_Shape       => Prev (Track.LFO_Shape,
-                                       Track.LFO_Sync,
-                                       Track.LFO_Loop);
+
+         when LFO_Amplitude   =>
+            Prev (Track.LFO_Amp, Track.LFO_Amp_Mode, 10);
+            Synchronize_Synth_Setting (Editing_Track, LFO_Amp_Mode);
+
+         when LFO_Shape       =>
+            Prev (Track.LFO_Shape, Track.LFO_Sync, Track.LFO_Loop);
+            Synchronize_Synth_Setting (Editing_Track, LFO_Sync);
+            Synchronize_Synth_Setting (Editing_Track, LFO_Loop);
+
          when LFO_Target      => Prev_Fast (Track.LFO_Target);
          when Arp_Mode        => Prev_Fast (Track.Arp_Mode);
          when Arp_Notes       => Prev_Fast (Track.Arp_Notes);
@@ -1214,13 +1303,7 @@ package body WNM.Project is
          when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D => null;
       end case;
 
-      if S in Pan | Volume | Master_FX | LFO_Rate | LFO_Amplitude |
-              LFO_Target | LFO_Shape
-      then
-         Synchronize_Track_Mix_Settings (Editing_Track);
-      elsif S in Engine then
-         Synchronize_Voice_Engine (Editing_Track);
-      end if;
+      Synchronize_Synth_Setting (Editing_Track, S);
    end Prev_Value_Fast;
 
    -----------------------
@@ -1335,108 +1418,15 @@ package body WNM.Project is
    end Randomly_Pick_A_Progression;
 
    --------------------------------
-   -- Synchronize_Voice_Settings --
+   -- Synchronize_Synth_Settings --
    --------------------------------
 
-   procedure Synchronize_Voice_Settings (T : Tracks) is
+   procedure Synchronize_Synth_Settings (T : Tracks) is
    begin
-      Synchronize_Track_Mix_Settings (T);
-      Synchronize_Voice_Engine (T);
-   end Synchronize_Voice_Settings;
-
-   ------------------------------
-   -- Synchronize_Voice_Engine --
-   ------------------------------
-
-   procedure Synchronize_Voice_Engine (T : Tracks) is
-      use WNM.Coproc;
-      M : constant Track_Mode_Kind := Mode (T);
-   begin
-      if M in Synth_Track_Mode_Kind then
-         Coproc.Push_To_Synth ((Kind     => MIDI_Event,
-                                MIDI_Evt =>
-                                  (Kind => MIDI.Continous_Controller,
-                                   Chan => Voice_MIDI_Chan (M),
-                                   Controller => Synth.Voice_Engine_CC,
-                                   Controller_Value => Selected_Engine (T))));
-      end if;
-   end Synchronize_Voice_Engine;
-
-   --------------------------------
-   -- Synchronize_Coproc_Vol_Pan --
-   --------------------------------
-
-   procedure Synchronize_Track_Mix_Settings (T : Tracks) is
-      use WNM.Coproc;
-      M : constant Track_Mode_Kind := Mode (T);
-      Chan : MIDI.MIDI_Channel;
-
-      -------------
-      -- Send_CC --
-      -------------
-
-      procedure Send_CC (Chan : MIDI.MIDI_Channel; CC, Val : MIDI.MIDI_Data)
-      is
-      begin
-         Coproc.Push_To_Synth ((Kind     => MIDI_Event,
-                                MIDI_Evt =>
-                                  (Kind => MIDI.Continous_Controller,
-                                   Chan => Chan,
-                                   Controller => CC,
-                                   Controller_Value => Val)));
-      end Send_CC;
-   begin
-      if M in Synth_Track_Mode_Kind then
-
-         Chan := Voice_MIDI_Chan (M);
-
-         Send_CC (Chan,
-                  Synth.Voice_Volume_CC,
-                  MIDI.MIDI_Data (G_Project.Tracks (T).Volume));
-
-         Send_CC (Chan,
-                  Synth.Voice_Pan_CC,
-                  MIDI.MIDI_Data (G_Project.Tracks (T).Pan));
-
-         Send_CC (Chan,
-                  Synth.Voice_LFO_Rate_CC,
-                  G_Project.Tracks (T).LFO_Rate);
-
-         Send_CC (Chan,
-                  Synth.Voice_LFO_Amp_CC,
-                  G_Project.Tracks (T).LFO_Amp);
-
-         Send_CC (Chan,
-                  Synth.Voice_LFO_Target_CC,
-                  G_Project.Tracks (T).LFO_Target'Enum_Rep);
-
-         Send_CC (Chan,
-                  Synth.Voice_LFO_Shape_CC,
-                  G_Project.Tracks (T).LFO_Shape'Enum_Rep);
-
-         Send_CC (Chan,
-                  Synth.Voice_LFO_Amp_Mode_CC,
-                  G_Project.Tracks (T).LFO_Amp_Mode'Enum_Rep);
-
-         Send_CC (Chan,
-                  Synth.Voice_LFO_Loop_CC,
-                  G_Project.Tracks (T).LFO_Loop'Enum_Rep);
-
-         Send_CC (Chan,
-                  Synth.Voice_LFO_Sync_CC,
-                  G_Project.Tracks (T).LFO_Sync'Enum_Rep);
-
-         Send_CC (Chan,
-                  Synth.Voice_FX_CC,
-                  (case Master_FX (T) is
-                      when Bypass     => Synth.FX_Select_Bypass,
-                      when Overdrive  => Synth.FX_Select_Overdrive,
-                      when Bitcrusher => Synth.FX_Select_Bitcrusher,
-                      when Reverb     => Synth.FX_Select_Reverb,
-                      when Filter     => Synth.FX_Select_Filter));
-
-      end if;
-   end Synchronize_Track_Mix_Settings;
+      for S in Track_Settings loop
+         Synchronize_Synth_Setting (T, S);
+      end loop;
+   end Synchronize_Synth_Settings;
 
    -----------
    -- Clear --
@@ -1446,8 +1436,74 @@ package body WNM.Project is
    begin
       G_Project := (others => <>);
       for T in Tracks loop
-         Synchronize_Track_Mix_Settings (T);
+         Synchronize_Synth_Settings (T);
       end loop;
    end Clear;
+
+   -----------------
+   -- Handle_MIDI --
+   -----------------
+
+   procedure Handle_MIDI (Msg : MIDI.Message) is
+      use MIDI;
+      use WNM.UI;
+      use WNM.Coproc;
+
+      -------------------
+      -- Send_To_Synth --
+      -------------------
+
+      procedure Send_To_Synth is
+         New_Msg : MIDI.Message := Msg;
+      begin
+         case Mode (Editing_Track) is
+         when Synth_Track_Mode_Kind =>
+            New_Msg.Chan := Voice_MIDI_Chan (Mode (Editing_Track));
+
+         when MIDI_Mode =>
+            New_Msg.Chan := MIDI_Chan (Editing_Track);
+         end case;
+
+         WNM.Coproc.Push_To_Synth ((Kind => MIDI_Event,
+                                    MIDI_Evt => New_Msg));
+      end Send_To_Synth;
+
+   begin
+      case Msg.Kind is
+         when Note_On =>
+            if WNM.UI.Input_Mode = WNM.UI.Step_Mode then
+               declare
+                  Ed_Step : Step_Rec renames G_Project.Seqs
+                    (Editing_Pattern)
+                    (Editing_Track)
+                    (Editing_Step);
+               begin
+                  Ed_Step.Note_Mode := Note;
+                  Ed_Step.Note := Msg.Key;
+                  Ed_Step.Velo := Msg.Velocity;
+
+                  if Ed_Step.Trig = None then
+                     Ed_Step.Trig := Always;
+                  end if;
+               end;
+            else
+               Send_To_Synth;
+            end if;
+
+         when Note_Off =>
+            if WNM.UI.Input_Mode /= WNM.UI.Step_Mode then
+               Send_To_Synth;
+            end if;
+
+         when Continous_Controller =>
+            if WNM.UI.Input_Mode = WNM.UI.Step_Mode then
+               null; -- TODO: Change track settings from CC messages
+            else
+               Send_To_Synth;
+            end if;
+         when others =>
+            null;
+      end case;
+   end Handle_MIDI;
 
 end WNM.Project;

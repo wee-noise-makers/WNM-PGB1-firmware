@@ -36,11 +36,56 @@ with WNM.Project.Library;
 with WNM.Mixer;
 with WNM.Coproc;
 
+with MIDI;
+
 package body WNM.Tasks is
 
    Systick_Count : UInt32 := 0;
    UI_Period_Miliseconds : constant := 20;
    LED_Period_Miliseconds : constant := 100;
+
+   --------------------
+   -- Handle_MIDI_In --
+   --------------------
+
+   procedure Handle_MIDI_In is
+      use MIDI;
+      Msg : MIDI.Message;
+      Success : Boolean;
+   begin
+      loop
+         WNM_HAL.Get_External (Msg, Success);
+         exit when not Success;
+
+         case Msg.Kind is
+            when MIDI.Sys =>
+               case Msg.Cmd is
+                  when MIDI.Start_Song =>
+                     WNM.MIDI_Clock.External_Start;
+                  when MIDI.Stop_Song =>
+                     WNM.MIDI_Clock.External_Stop;
+                  when MIDI.Continue_Song =>
+                     WNM.MIDI_Clock.External_Continue;
+                  when MIDI.Timming_Tick =>
+                     WNM.MIDI_Clock.External_Tick;
+                  when others =>
+                     null;
+               end case;
+
+            when Note_On | Note_Off | Continous_Controller =>
+               if Msg.Chan = 0 then
+                  WNM.Project.Handle_MIDI (Msg);
+               else
+                  Coproc.Push_To_Synth ((Kind     => Coproc.MIDI_Event,
+                                         MIDI_Evt => Msg));
+               end if;
+
+            when others =>
+               null;
+
+         end case;
+      end loop;
+   end Handle_MIDI_In;
 
    -------------------------
    -- Sequencer_1khz_Tick --
@@ -50,7 +95,7 @@ package body WNM.Tasks is
    begin
       WNM_HAL.Watchdog_Check;
 
-      WNM_HAL.Set_Indicator_IO (WNM_HAL.GP17);
+      --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP17);
       WNM.MIDI_Clock.Update;
       WNM.Short_Term_Sequencer.Update (Clock);
       WNM.Note_Off_Sequencer.Update (Clock);
@@ -63,12 +108,14 @@ package body WNM.Tasks is
          WNM.UI.Update_LEDs;
       end if;
 
+      Handle_MIDI_In;
+
       --  Try to flush MIDI external output after all clock, sequencer and UI
       --  updates that can all potentially send external MIDI data.
       WNM_HAL.Flush_Output;
 
       Systick_Count := Systick_Count + 1;
-      WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP17);
+      --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP17);
    end Sequencer_1khz_Tick;
 
    ------------------------------
@@ -89,9 +136,9 @@ package body WNM.Tasks is
 
          case Msg.Kind is
             when Coproc.Buffer_Available =>
-               WNM_HAL.Set_Indicator_IO (WNM_HAL.GP16);
-               WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP16);
+               WNM_HAL.Set_Indicator_IO (WNM_HAL.GP18);
                WNM.Mixer.Push_To_Mix (Msg.Buffer_Id);
+               WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP18);
 
             when Synth_CPU_Crash =>
                raise Program_Error with "Synth crash";
@@ -155,9 +202,9 @@ package body WNM.Tasks is
                                 Stereo_Point_Count : out HAL.UInt32)
    is
    begin
-      WNM_HAL.Set_Indicator_IO (WNM_HAL.GP18);
-      WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP18);
+      WNM_HAL.Set_Indicator_IO (WNM_HAL.GP17);
       WNM.Mixer.Synth_Out_Buffer (Buffer, Stereo_Point_Count);
+      WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP17);
    end Synth_Next_Buffer;
 
    ----------------
