@@ -280,16 +280,22 @@ package body WNM.Project.Step_Sequencer is
    begin
       for Id in CC_Id loop
          Val := CC_Value_To_Use (P, T, S, Id);
-         Ctrl := G_Project.Tracks (T).CC (Id).Controller;
          case Mode (T) is
 
             when Synth_Track_Mode_Kind =>
+               Ctrl := (case Id is
+                           when A => Synth.Voice_Param_1_CC,
+                           when B => Synth.Voice_Param_2_CC,
+                           when C => Synth.Voice_Param_3_CC,
+                           when D => Synth.Voice_Param_4_CC);
+
                WNM.Coproc.Push_To_Synth ((Kind => WNM.Coproc.MIDI_Event,
                                           MIDI_Evt =>
                                             (MIDI.Continous_Controller,
                                              Chan, Ctrl, Val)));
 
             when MIDI_Mode =>
+               Ctrl := G_Project.Tracks (T).CC (Id).Controller;
                WNM_HAL.Send_External
                  ((MIDI.Continous_Controller,
                   Chan, Ctrl, Val));
