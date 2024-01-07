@@ -1088,7 +1088,7 @@ package body WNM.Project is
    begin
 
       if Mode (T) in Synth_Track_Mode_Kind then
-         Chan := Voice_MIDI_Chan (Mode (Editing_Track));
+         Chan := Voice_MIDI_Chan (Mode (T));
          CC := CC_For_Track_Setting (S);
 
          if CC = MIDI.MIDI_Data'Last then
@@ -1097,7 +1097,7 @@ package body WNM.Project is
          end if;
 
          Val := (case S is
-                    when Engine          => Track.Engine,
+                    when Engine          => Selected_Engine (T),
                     when Volume          => MIDI.MIDI_Data (Track.Volume),
                     when Pan             => MIDI.MIDI_Data (Track.Pan),
                     when Master_FX       =>
@@ -1138,7 +1138,13 @@ package body WNM.Project is
       Track : Track_Rec renames G_Project.Tracks (Editing_Track);
    begin
       case S is
-         when Track_Mode      => Next (Track.MIDI_Enabled);
+         when Track_Mode      =>
+            Next (Track.MIDI_Enabled);
+            --  Switching from MIDI to synth, update all settings
+            if not Track.MIDI_Enabled then
+               Synchronize_Synth_Settings (Editing_Track);
+            end if;
+
          when Engine          => Next (Track.Engine, Engine_Limits);
          when Volume          => Next (Track.Volume);
          when Pan             => Next (Track.Pan);
@@ -1183,7 +1189,13 @@ package body WNM.Project is
       Track : Track_Rec renames G_Project.Tracks (Editing_Track);
    begin
       case S is
-         when Track_Mode      => Prev (Track.MIDI_Enabled);
+         when Track_Mode      =>
+            Prev (Track.MIDI_Enabled);
+            --  Switching from MIDI to synth, update all settings
+            if not Track.MIDI_Enabled then
+               Synchronize_Synth_Settings (Editing_Track);
+            end if;
+
          when Engine          => Prev (Track.Engine, Engine_Limits);
          when Volume          => Prev (Track.Volume);
          when Pan             => Prev (Track.Pan);
@@ -1226,7 +1238,13 @@ package body WNM.Project is
       Track : Track_Rec renames G_Project.Tracks (Editing_Track);
    begin
       case S is
-         when Track_Mode      => Next_Fast (Track.MIDI_Enabled);
+         when Track_Mode      =>
+            Next_Fast (Track.MIDI_Enabled);
+            --  Switching from MIDI to synth, update all settings
+            if not Track.MIDI_Enabled then
+               Synchronize_Synth_Settings (Editing_Track);
+            end if;
+
          when Engine          => Next_Fast (Track.Engine, Engine_Limits);
          when Volume          => Next_Fast (Track.Volume);
          when Pan             => Next_Fast (Track.Pan);
@@ -1270,7 +1288,13 @@ package body WNM.Project is
       Track : Track_Rec renames G_Project.Tracks (Editing_Track);
    begin
       case S is
-         when Track_Mode      => Prev_Fast (Track.MIDI_Enabled);
+         when Track_Mode      =>
+            Prev_Fast (Track.MIDI_Enabled);
+            --  Switching from MIDI to synth, update all settings
+            if not Track.MIDI_Enabled then
+               Synchronize_Synth_Settings (Editing_Track);
+            end if;
+
          when Engine          => Prev_Fast (Track.Engine, Engine_Limits);
          when Volume          => Prev_Fast (Track.Volume);
          when Pan             => Prev_Fast (Track.Pan);
