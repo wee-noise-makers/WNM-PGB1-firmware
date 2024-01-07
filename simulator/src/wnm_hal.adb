@@ -27,9 +27,9 @@ package body WNM_HAL is
      (others => (others => False));
 
    MIDI_Out : constant RtMIDI.MIDI_Out :=
-     RtMIDI.Create (Wnm_Ps1_Simulator_Config.Crate_Name & " Output");
+     RtMIDI.Create (Wnm_Ps1_Simulator_Config.Crate_Name);
    MIDI_In : constant RtMIDI.MIDI_In :=
-     RtMIDI.Create (Wnm_Ps1_Simulator_Config.Crate_Name & " Input");
+     RtMIDI.Create (Wnm_Ps1_Simulator_Config.Crate_Name);
 
    MIDI_In_Queue : MIDI.Decoder.Queue.Instance (1024);
 
@@ -419,7 +419,12 @@ begin
       raise Program_Error with "Cannot create MIDI out device";
    end if;
 
-   RtMIDI.Open_Port (MIDI_Out, 0, "Output");
+   pragma Warnings (Off, "condition is always");
+   if Wnm_Ps1_Simulator_Config.Alire_Host_OS = "windows" then
+      RtMIDI.Open_Port (MIDI_Out, 1, "Output");
+   else
+      RtMIDI.Create_Virtual_Port (MIDI_Out, "Output");
+   end if;
 
    if not RtMIDI.Valid (MIDI_In) then
       raise Program_Error with "Cannot create MIDI In device";
@@ -431,5 +436,12 @@ begin
                            Sense => True);
 
    RtMIDI.Set_Callback (MIDI_In, MIDI_Input_Callback_C'Access);
-   RtMIDI.Open_Port (MIDI_In, 0, "Input");
+
+   pragma Warnings (Off, "condition is always *");
+   if Wnm_Ps1_Simulator_Config.Alire_Host_OS = "windows" then
+      RtMIDI.Open_Port (MIDI_In, 0, "Input");
+   else
+      RtMIDI.Create_Virtual_Port (MIDI_In, "Input");
+   end if;
+
 end WNM_HAL;
