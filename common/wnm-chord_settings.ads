@@ -181,7 +181,9 @@ package WNM.Chord_Settings is
 
    function "+" (K : MIDI.MIDI_Key; I : Interval)
                  return MIDI.MIDI_Key
-   is (K + I'Enum_Rep)
+   is (if K <= MIDI.MIDI_Key'Last - I'Enum_Rep
+       then K + I'Enum_Rep
+       else K)
    with Inline;
 
    function "+" (K : MIDI.MIDI_Key; I : Chord_Intervals)

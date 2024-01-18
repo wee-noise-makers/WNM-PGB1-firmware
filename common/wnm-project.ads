@@ -433,7 +433,7 @@ package WNM.Project is
 
    subtype User_Chord_Settings is Chord_Setting_Kind range Tonic .. Duration;
 
-   type Chord_Bar_Duration is range 1 .. 8;
+   type Chord_Step_Duration is range 1 .. 16 * 4;
 
    -- Chord Getters --
 
@@ -442,7 +442,7 @@ package WNM.Project is
    function Selected_Name (C : WNM.Chords :=  Editing_Chord)
                            return WNM.Chord_Settings.Chord_Name;
    function Selected_Duration (C : WNM.Chords :=  Editing_Chord)
-                               return Chord_Bar_Duration;
+                               return Chord_Step_Duration;
 
    procedure Next_Value (S : User_Chord_Settings);
    procedure Prev_Value (S : User_Chord_Settings);
@@ -508,7 +508,7 @@ private
    package Chord_Name_Next is new Enum_Next (WNM.Chord_Settings.Chord_Name);
    use Chord_Name_Next;
 
-   package Chord_Duration_Next is new Enum_Next (Chord_Bar_Duration);
+   package Chord_Duration_Next is new Enum_Next (Chord_Step_Duration);
    use Chord_Duration_Next;
 
    package Notes_Per_Chord_Next
@@ -734,7 +734,7 @@ private
       Tonic : MIDI.MIDI_Key := MIDI.C4;
       Name  : WNM.Chord_Settings.Chord_Name :=
         WNM.Chord_Settings.Chord_Name'First;
-      Duration : Chord_Bar_Duration := 4;
+      Duration : Chord_Step_Duration := 16;
    end record;
 
    type Chord_Arr is array (WNM.Chords) of Chord_Rec;
@@ -742,7 +742,7 @@ private
    Default_Chord : constant Chord_Rec :=
      (Tonic    => MIDI.C4,
       Name     => WNM.Chord_Settings.Chord_Name'First,
-      Duration => 4);
+      Duration => 16);
 
    type FX_Rec is record
       Drive_Amt : MIDI.MIDI_Data := 60;

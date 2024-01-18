@@ -36,74 +36,74 @@ package body WNM.Project.Chord_Sequencer is
    C_Chord_Name : Chord_Name := Chord_Name'First;
    C_Chord : Chord_Notes := (others => MIDI.C4);
 
-   G_Bars_Count : Natural := 0;
+   G_Steps_Count : Natural := 0;
 
    Init_Scale_Root : constant MIDI.MIDI_Key := MIDI.C4;
    Init_Scale      : constant Scale_Name := Minor_Scale;
    Init_Chords     : constant Chord_Arr :=
      (1 => (Init_Scale_Root + Scales (Init_Scale)(0),
             Substitutions (Scale_Chords (Init_Scale)(0)).Sub (1),
-            4),
+            Default_Chord.Duration),
 
       2 => (Init_Scale_Root + Scales (Init_Scale)(1),
             Substitutions (Scale_Chords (Init_Scale)(1)).Sub (1),
-            4),
+            Default_Chord.Duration),
 
       3 => (Init_Scale_Root + Scales (Init_Scale)(2),
             Substitutions (Scale_Chords (Init_Scale)(2)).Sub (1),
-            4),
+            Default_Chord.Duration),
 
       4 => (Init_Scale_Root + Scales (Init_Scale)(3),
             Substitutions (Scale_Chords (Init_Scale)(3)).Sub (1),
-            4),
+            Default_Chord.Duration),
 
       5 => (Init_Scale_Root + Scales (Init_Scale)(4),
             Substitutions (Scale_Chords (Init_Scale)(4)).Sub (1),
-            4),
+            Default_Chord.Duration),
 
       6 => (Init_Scale_Root + Scales (Init_Scale)(5),
             Substitutions (Scale_Chords (Init_Scale)(5)).Sub (1),
-            4),
+            Default_Chord.Duration),
 
       7 => (Init_Scale_Root + Scales (Init_Scale)(6),
             Substitutions (Scale_Chords (Init_Scale)(6)).Sub (1),
-            4),
+            Default_Chord.Duration),
 
       8 => (Init_Scale_Root + Scales (Init_Scale)(0),
             Substitutions (Scale_Chords (Init_Scale)(0)).Sub (3),
-            4),
+            Default_Chord.Duration),
 
       9 => (Init_Scale_Root + Scales (Init_Scale)(0),
             Substitutions (Scale_Chords (Init_Scale)(0)).Sub (2),
-            4),
+            Default_Chord.Duration),
 
       10 => (Init_Scale_Root + Scales (Init_Scale)(1),
              Substitutions (Scale_Chords (Init_Scale)(1)).Sub (2),
-             4),
+             Default_Chord.Duration),
 
       11 => (Init_Scale_Root + Scales (Init_Scale)(2),
              Substitutions (Scale_Chords (Init_Scale)(2)).Sub (2),
-             4),
+             Default_Chord.Duration),
 
       12 => (Init_Scale_Root + Scales (Init_Scale)(3),
              Substitutions (Scale_Chords (Init_Scale)(3)).Sub (2),
-             4),
+             Default_Chord.Duration),
 
       13 => (Init_Scale_Root + Scales (Init_Scale)(4),
              Substitutions (Scale_Chords (Init_Scale)(4)).Sub (2),
-             4),
+             Default_Chord.Duration),
 
       14 => (Init_Scale_Root + Scales (Init_Scale)(5),
              Substitutions (Scale_Chords (Init_Scale)(5)).Sub (2),
-             4),
+             Default_Chord.Duration),
 
       15 => (Init_Scale_Root + Scales (Init_Scale)(6),
              Substitutions (Scale_Chords (Init_Scale)(6)).Sub (2),
-             4),
+             Default_Chord.Duration),
 
       16 => (Init_Scale_Root + Scales (Init_Scale)(0),
              Substitutions (Scale_Chords (Init_Scale)(0)).Sub (4),
-             4)
+             Default_Chord.Duration)
      );
 
    -----------
@@ -140,18 +140,13 @@ package body WNM.Project.Chord_Sequencer is
    -------------------
 
    procedure Step_Callback (Step : Sequencer_Steps) is
+      pragma Unreferenced (Step);
+      C : constant WNM.Chords := Chain.Playing;
    begin
-      if Step in 4 | 8 | 12 | 16 then
-         declare
-            C : constant WNM.Chords := Chain.Playing;
-         begin
+      G_Steps_Count := G_Steps_Count + 1;
 
-            G_Bars_Count := G_Bars_Count + 1;
-
-            if G_Bars_Count >= Natural (G_Project.Chords (C).Duration) then
-               Signal_End_Of_Chord;
-            end if;
-         end;
+      if G_Steps_Count >= Natural (G_Project.Chords (C).Duration) then
+         Signal_End_Of_Chord;
       end if;
    end Step_Callback;
 
@@ -192,7 +187,7 @@ package body WNM.Project.Chord_Sequencer is
    procedure Update_Current is
       C : constant WNM.Chords := Chain.Playing;
    begin
-      G_Bars_Count := 0;
+      G_Steps_Count := 0;
       C_Tonic := G_Project.Chords (C).Tonic;
       C_Chord_Name := G_Project.Chords (C).Name;
       C_Chord := C_Tonic + WNM.Chord_Settings.Chords (C_Chord_Name);

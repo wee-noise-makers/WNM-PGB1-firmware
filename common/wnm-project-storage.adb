@@ -561,7 +561,7 @@ package body WNM.Project.Storage is
       procedure Read is new File_In.Read_Gen_Mod (MIDI.MIDI_Key);
       procedure Read is new File_In.Read_Gen_Enum
         (WNM.Chord_Settings.Chord_Name);
-      procedure Read is new File_In.Read_Gen_Int (Chord_Bar_Duration);
+      procedure Read is new File_In.Read_Gen_Int (Chord_Step_Duration);
 
       C_Id : Chords;
       S : Chord_Setting_Kind;

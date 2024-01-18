@@ -67,7 +67,7 @@ package body WNM.GUI.Menu.Chord_Settings is
       Tonic : constant MIDI.MIDI_Key := WNM.Project.Selected_Tonic;
       Name : constant WNM.Chord_Settings.Chord_Name :=
         WNM.Project.Selected_Name;
-      Duration : constant WNM.Project.Chord_Bar_Duration :=
+      Duration : constant WNM.Project.Chord_Step_Duration :=
         WNM.Project.Selected_Duration;
 
       Notes : constant WNM.Chord_Settings.Chord_Notes :=
@@ -84,11 +84,11 @@ package body WNM.GUI.Menu.Chord_Settings is
                             This.Current_Setting = WNM.Project.Tonic);
 
             Draw_Value_Pos (WNM.Chord_Settings.Img (Name),
-                            WNM.GUI.Menu.Drawing.Box_Center.X - 30,
+                            WNM.GUI.Menu.Drawing.Box_Center.X - 32,
                             This.Current_Setting = WNM.Project.Name);
 
-            Draw_Value_Pos (Duration'Img & "Bars",
                             WNM.GUI.Menu.Drawing.Box_Center.X + 18,
+            Draw_Value_Pos (Utils.Trim (Duration'Img) & "Stps",
                             This.Current_Setting = WNM.Project.Duration);
 
             declare

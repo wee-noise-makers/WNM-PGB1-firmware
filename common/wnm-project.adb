@@ -1372,7 +1372,7 @@ package body WNM.Project is
    -----------------------
 
    function Selected_Duration (C : WNM.Chords :=  Editing_Chord)
-                               return Chord_Bar_Duration
+                               return Chord_Step_Duration
    is (G_Project.Chords (C).Duration);
 
    ----------------
