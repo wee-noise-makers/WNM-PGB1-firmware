@@ -24,6 +24,7 @@ with MIDI;
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
 with WNM.GUI.Bitmap_Fonts;
 with WNM.Chord_Settings;
+with WNM.Utils;
 
 package body WNM.GUI.Menu.Chord_Settings is
 
@@ -87,8 +88,8 @@ package body WNM.GUI.Menu.Chord_Settings is
                             WNM.GUI.Menu.Drawing.Box_Center.X - 32,
                             This.Current_Setting = WNM.Project.Name);
 
-                            WNM.GUI.Menu.Drawing.Box_Center.X + 18,
             Draw_Value_Pos (Utils.Trim (Duration'Img) & "Stps",
+                            WNM.GUI.Menu.Drawing.Box_Center.X + 21,
                             This.Current_Setting = WNM.Project.Duration);
 
             declare

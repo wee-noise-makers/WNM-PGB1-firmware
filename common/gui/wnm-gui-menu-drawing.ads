@@ -22,7 +22,6 @@
 with MIDI;
 
 with WNM.Screen;
-with WNM.GUI.Bitmap_Fonts;
 with WNM.Sample_Library;
 with WNM.Speech;
 with WNM.Project;
@@ -31,9 +30,9 @@ with WNM.Project.Library;
 package WNM.GUI.Menu.Drawing is
 
    Box_Top    : constant := 22;
-   Box_Bottom : constant := Screen.Height - 3;
-   Box_Left   : constant := Bitmap_Fonts.Width;
-   Box_Right  : constant := Screen.Width - Box_Left;
+   Box_Bottom : constant := Screen.Height - 1;
+   Box_Left   : constant := 0; -- Bitmap_Fonts.Width;
+   Box_Right  : constant := Screen.Width - 1; -- Box_Left;
 
    Box_Center : constant Screen.Point := ((Box_Right + Box_Left) / 2,
                                           (Box_Top + Box_Bottom) / 2);

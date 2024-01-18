@@ -19,6 +19,7 @@ fsmaker = "~0.0.0"
 flux = "~0.1.0-dev"
 stopwatch = "~0.1.0"
 tresses = "*"
+uf2_utils = "*"
 
 [[pins]]
 fsmaker = { url="https://github.com/Fabien-Chouteau/fsmaker" }
@@ -27,6 +28,7 @@ lpc_synth = { url="https://github.com/Fabien-Chouteau/lpc_synth" }
 flux = { url="https://github.com/Fabien-Chouteau/flux" }
 tresses = { url="https://github.com/wee-noise-maker/tresses" }
 midi = { url="https://github.com/Fabien-Chouteau/midi" }
+uf2_utils = { url="https://github.com/Fabien-Chouteau/uf2_utils" }
 
 [configuration.values]
 littlefs.Assert = false

@@ -338,7 +338,7 @@ package body WNM.GUI.Menu.Track_Settings is
                         This.Instrument := This.Instrument + 1;
                      end if;
                when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D =>
-                  GUI.Popup.Display ("L press to edit ", 500_000);
+                  GUI.Popup.Display ("Press A to edit ", 500_000);
 
                when others =>
                   Project.Next_Value (This.Current_Setting);
@@ -352,7 +352,7 @@ package body WNM.GUI.Menu.Track_Settings is
                   end if;
 
                when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D =>
-                  GUI.Popup.Display ("L press to edit ", 500_000);
+                  GUI.Popup.Display ("Press A to edit ", 500_000);
 
                when others =>
                   Project.Prev_Value (This.Current_Setting);
@@ -390,7 +390,8 @@ package body WNM.GUI.Menu.Track_Settings is
                      WNM.GUI.Menu.Text_Dialog.Set_Title
                        ("CC " & Project.CC_Letter (CC) & " Label");
                      WNM.GUI.Menu.Text_Dialog.Push_Window
-                       (Project.CC_Controller_Label (Editing_Track, CC));
+                       (Utils.Trim
+                          (Project.CC_Controller_Label (Editing_Track, CC)));
                   end;
 
                when others =>

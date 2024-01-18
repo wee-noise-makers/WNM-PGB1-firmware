@@ -22,6 +22,7 @@
 with WNM.GUI.Bitmap_Fonts; use WNM.GUI.Bitmap_Fonts;
 
 with WNM.Sample_Edit;
+with WNM.Utils;
 
 with lfo_sine;
 with lfo_ramp_up;
@@ -43,8 +44,7 @@ package body WNM.GUI.Menu.Drawing is
    Value_Text_Y : constant := Box_Bottom - 13;
    Title_Text_Y : constant := Box_Top + 4;
 
-   Arrow_Y_Offset : constant :=
-     Box_Top + ((Box_Bottom - Box_Top + 1) - Bitmap_Fonts.Height) / 2;
+   Arrow_Y_Offset : constant := Box_Top - Bitmap_Fonts.Height - 2;
 
    Select_Line_Y : constant := Box_Bottom - 3;
 
@@ -67,23 +67,26 @@ package body WNM.GUI.Menu.Drawing is
 
       if Count > 0 then
          declare
-            X_Offset : constant Natural := (Screen.Width - Count * 3) / 2;
+            Item_width   : constant := 4;
+            Item_Spacing : constant := Item_width + 2;
+            X_Offset : constant Natural :=
+              (Screen.Width - Count * Item_Spacing) / 2;
          begin
             for Item in 0 .. Count - 1 loop
-               Screen.Set_Pixel ((X_Offset + Item * 3,
-                                 Scroll_Bar_Y_Offset));
-               Screen.Set_Pixel ((X_Offset + Item * 3 + 1,
-                                 Scroll_Bar_Y_Offset));
+               Screen.Draw_Line ((X_Offset + Item * Item_Spacing,
+                                 Scroll_Bar_Y_Offset),
+                                 (X_Offset + Item * Item_Spacing + Item_width,
+                                  Scroll_Bar_Y_Offset));
             end loop;
 
-            Screen.Set_Pixel ((X_Offset + Index * 3, Scroll_Bar_Y_Offset + 1));
-
-            Screen.Set_Pixel ((X_Offset + Index * 3 + 1,
-                              Scroll_Bar_Y_Offset + 1));
+            Screen.Draw_Line ((X_Offset + Index * Item_Spacing,
+                              Scroll_Bar_Y_Offset + 1),
+                              (X_Offset + Index * Item_Spacing + Item_width,
+                               Scroll_Bar_Y_Offset + 1));
          end;
 
          if Index < Count - 1 then
-            X := Box_Right + 1;
+            X := Box_Right - Bitmap_Fonts.Width;
             Print (X_Offset => X,
                    Y_Offset => Arrow_Y_Offset,
                    C        => '>');
@@ -194,16 +197,18 @@ package body WNM.GUI.Menu.Drawing is
    procedure Draw_MIDI_Note (Key      : MIDI.MIDI_Key;
                              Selected : Boolean)
    is
-      X : Integer := Box_Left + 8;
+      X : Integer := Box_Left + 5;
+      Str : constant String := Utils.Trim (Key_Img (Key));
    begin
       if Selected then
          Screen.Draw_Line ((X - 1, Select_Line_Y),
-                           (X + 3 * 6, Select_Line_Y));
+                           (X + Str'Length * Bitmap_Fonts.Width,
+                            Select_Line_Y));
       end if;
 
       Print (X_Offset    => X,
              Y_Offset    => Value_Text_Y,
-             Str         => Key_Img (Key));
+             Str         => Str);
 
    end Draw_MIDI_Note;
 
@@ -457,8 +462,8 @@ package body WNM.GUI.Menu.Drawing is
       Last_Width : Natural;
       X, Y : Natural;
 
-      Spacing : constant := 30;
-      Left : constant Natural := Box_Left + 5 +
+      Spacing : constant := 32;
+      Left : constant Natural := Box_Left + 6 +
         (case Id is
             when WNM.Project.A => 0 * Spacing,
             when WNM.Project.B => 1 * Spacing,
@@ -559,8 +564,8 @@ package body WNM.GUI.Menu.Drawing is
 
       X, Y : Natural;
 
-      Spacing : constant := 30;
-      Left : constant Natural := Box_Left + 5 +
+      Spacing : constant := 32;
+      Left : constant Natural := Box_Left + 6 +
         (case Id is
             when WNM.Project.A => 0 * Spacing,
             when WNM.Project.B => 1 * Spacing,

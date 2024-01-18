@@ -80,7 +80,7 @@ package body WNM.GUI.Menu.Step_Settings is
          when Note =>
             case This.Current_Setting is
                when Project.Note =>
-                  Draw_Title (Project.Img (Project.Note_Mode), "");
+                  Draw_Title (Project.Img (Project.Note_Mode), "(A)");
                when Project.Duration =>
                   Draw_Title ("Duration", "");
                when Project.Velo =>

@@ -57,8 +57,9 @@ private
                            return Boolean
    is (case M is
           when Project.MIDI_Mode =>
-             S in Track_Mode | MIDI_Chan | MIDI_Instrument | Arp_Mode |
-                  Arp_Notes | Notes_Per_Chord | CC_Default_A .. CC_Label_D,
+             S in Track_Mode | CC_Default_A .. CC_Default_D |
+                  MIDI_Chan | MIDI_Instrument | Arp_Mode |
+                  Arp_Notes | Notes_Per_Chord | CC_Ctrl_A .. CC_Label_D,
 
           --  Speech
           when Project.Speech_Mode =>
