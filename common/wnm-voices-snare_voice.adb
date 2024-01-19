@@ -20,7 +20,7 @@
 -------------------------------------------------------------------------------
 
 with Tresses.Drums.Clap;
-with Tresses.Drums.Snare;
+--  with Tresses.Drums.Snare;
 with Tresses.Drums.Analog_Snare;
 with Tresses.Macro;
 
@@ -63,20 +63,20 @@ package body WNM.Voices.Snare_Voice is
    is
    begin
       case This.Engine is
-         when Snare =>
-            Tresses.Drums.Snare.Render_Snare (Buffer,
-                                              Params => This.Params,
-                                              Pulse0 => This.Pulse0,
-                                              Pulse1 => This.Pulse1,
-                                              Pulse2 => This.Pulse2,
-                                              Pulse3 => This.Pulse3,
-                                              Filter0 => This.Filter0,
-                                              Filter1 => This.Filter1,
-                                              Filter2 => This.Filter2,
-                                              Rng =>  This.Rng,
-                                              Pitch => This.Pitch,
-                                              Do_Init => This.Do_Init,
-                                              Do_Strike => This.Do_Strike);
+         --  when Snare =>
+         --     Tresses.Drums.Snare.Render_Snare (Buffer,
+         --                                       Params => This.Params,
+         --                                       Pulse0 => This.Pulse0,
+         --                                       Pulse1 => This.Pulse1,
+         --                                       Pulse2 => This.Pulse2,
+         --                                       Pulse3 => This.Pulse3,
+         --                                       Filter0 => This.Filter0,
+         --                                       Filter1 => This.Filter1,
+         --                                       Filter2 => This.Filter2,
+         --                                       Rng =>  This.Rng,
+         --                                       Pitch => This.Pitch,
+         --                                       Do_Init => This.Do_Init,
+         --                                       Do_Strike => This.Do_Strike);
          when Analog_Snare =>
             Tresses.Drums.Analog_Snare.Render_Analog_Snare
               (Buffer,
@@ -111,7 +111,7 @@ package body WNM.Voices.Snare_Voice is
    function Tresse_Engine (E : Snare_Engine) return Tresses.Engines
    is (case E is
           when Analog_Snare => Tresses.Drum_Analog_Snare,
-          when Snare => Tresses.Drum_Snare,
+          --  when Snare => Tresses.Drum_Snare,
           when Clap  => Tresses.Drum_Clap);
 
    ---------

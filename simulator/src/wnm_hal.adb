@@ -151,6 +151,9 @@ package body WNM_HAL is
       ASFML_Sim.Main_Volume := Step * Integer_16 (Volume);
    end Set_Main_Volume;
 
+   procedure Set_Line_In_Volume (Volume : Audio_Volume) is null;
+   procedure Set_Mic_Volumes (Headset, Internal : Audio_Volume) is null;
+
    ---------
    -- Mix --
    ---------

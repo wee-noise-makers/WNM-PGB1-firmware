@@ -77,11 +77,14 @@ package WNM_HAL is
 
    type Audio_Volume is range 0 .. 100;
    Init_Volume : constant Audio_Volume := 70;
+   Init_Input_Volume : constant Audio_Volume := 0;
 
    type Audio_Pan is range 0 .. 100;
    Init_Pan : constant Audio_Pan := 50;
 
    procedure Set_Main_Volume (Volume : Audio_Volume);
+   procedure Set_Line_In_Volume (Volume : Audio_Volume);
+   procedure Set_Mic_Volumes (Headset, Internal : Audio_Volume);
 
    procedure Mix (Out_L, Out_R : in out Mono_Buffer;
                   Input        :        Mono_Buffer;

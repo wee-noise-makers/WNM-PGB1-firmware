@@ -45,9 +45,6 @@ package WNM.Project is
    function Samples_Per_Beat return Synth.Sample_Time;
    function Microseconds_Per_Beat return Time.Time_Microseconds;
 
-   procedure Change_Main_Volume (Volume_Delta : Integer);
-   function Get_Main_Volume return Audio_Volume;
-
    procedure Clear;
    --  Reset the current project to default values
 
@@ -264,16 +261,6 @@ package WNM.Project is
    is (case N is
           when Chord => "Notes of chord");
 
-   type Master_FX_Kind is (Bypass, Overdrive, Bitcrusher, Reverb, Filter);
-
-   function Img (M : Master_FX_Kind) return String
-   is (case M is
-          when Bypass     => "Bypass",
-          when Overdrive  => "Overdrive",
-          when Bitcrusher => "Bitcrusher",
-          when Reverb     => "Reverb",
-          when Filter     => "Filter");
-
    -- Track Getters --
    function Mode (T : Tracks := Editing_Track) return Track_Mode_Kind;
    function MIDI_Chan (T : Tracks := Editing_Track) return MIDI.MIDI_Channel;
@@ -283,7 +270,7 @@ package WNM.Project is
    function CC_Default (T : Tracks := Editing_Track;
                         Id : CC_Id)
                         return MIDI.MIDI_Data;
-   function Master_FX (T : Tracks := Editing_Track) return Master_FX_Kind;
+   function Master_FX (T : Tracks := Editing_Track) return FX_Kind;
 
    function LFO_Rate (T : Tracks := Editing_Track) return MIDI.MIDI_Data;
    function LFO_Amp (T : Tracks := Editing_Track) return MIDI.MIDI_Data;
@@ -495,7 +482,7 @@ private
                                             Wrap => False);
    use Audio_Pan_Next;
 
-   package Master_FX_Next is new Enum_Next (T    => Master_FX_Kind,
+   package Master_FX_Next is new Enum_Next (T    => FX_Kind,
                                             Wrap => False);
    use Master_FX_Next;
 
@@ -607,7 +594,7 @@ private
       Chan : MIDI.MIDI_Channel := 0;
       Volume : Audio_Volume := Init_Volume;
       Pan : Audio_Pan := Init_Pan;
-      FX_Kind : Master_FX_Kind := Bypass;
+      FX  : FX_Kind := Bypass;
       LFO_Rate : MIDI.MIDI_Data := 0;
       LFO_Amp : MIDI.MIDI_Data := 0;
       LFO_Shape : LFO_Shape_Kind := LFO_Shape_Kind'First;
@@ -644,7 +631,7 @@ private
       Chan => 0,
       Volume => Init_Volume,
       Pan => Init_Pan,
-      FX_Kind => Bypass,
+      FX  => Bypass,
       LFO_Rate => 63,
       LFO_Amp => 63,
       LFO_Shape => LFO_Shape_Kind'First,
@@ -686,7 +673,7 @@ private
 
    Default_Bass_Track : constant Track_Rec :=
      (Default_Track with delta Engine => 7,
-                               FX_Kind => Reverb,
+                               FX => Reverb,
                                CC => ((0, 63, "CC0              "),
                                       (1, 63, "CC1              "),
                                       (2,  0, "CC2              "),
@@ -695,7 +682,7 @@ private
 
    Default_Lead_Track : constant Track_Rec :=
      (Default_Track with delta Engine => 0,
-                               FX_Kind => Reverb,
+                               FX => Reverb,
                                CC => ((0, 60, "CC0              "),
                                       (1, 40, "CC1              "),
                                       (2,  0, "CC2              "),
@@ -730,6 +717,13 @@ private
                                       (3, 63, "CC3              ")
                                      ));
 
+   Default_Bitcrush_Track : constant Track_Rec :=
+     (Default_Track with delta CC => ((0, 63, "CC0              "),
+                                      (1, 103, "CC1              "),
+                                      (2, 63, "CC2              "),
+                                      (3, 119, "CC3              ")
+                                     ));
+
    type Chord_Rec is record
       Tonic : MIDI.MIDI_Key := MIDI.C4;
       Name  : WNM.Chord_Settings.Chord_Name :=
@@ -759,15 +753,16 @@ private
                     Chord_Track => (others => Default_Step_Chord),
                     others => (others => Default_Step)));
 
-      Tracks : Track_Arr := (Kick_Track    => Default_Kick_Track,
-                             Snare_Track   => Default_Snare_Track,
-                             Cymbal_Track  => Default_Cymbal_Track,
-                             Bass_Track    => Default_Bass_Track,
-                             Lead_Track    => Default_Lead_Track,
-                             Sample1_Track => Default_Sample1_Track,
-                             Sample2_Track => Default_Sample2_Track,
-                             Chord_Track   => Default_Chord_Track,
-                             others        => Default_Track);
+      Tracks : Track_Arr := (Kick_Track     => Default_Kick_Track,
+                             Snare_Track    => Default_Snare_Track,
+                             Cymbal_Track   => Default_Cymbal_Track,
+                             Bass_Track     => Default_Bass_Track,
+                             Lead_Track     => Default_Lead_Track,
+                             Sample1_Track  => Default_Sample1_Track,
+                             Sample2_Track  => Default_Sample2_Track,
+                             Chord_Track    => Default_Chord_Track,
+                             Bitcrush_Track => Default_Bitcrush_Track,
+                             others         => Default_Track);
       Chords : Chord_Arr := (others => Default_Chord);
       FX     : FX_Rec := Default_FX;
    end record;

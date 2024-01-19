@@ -31,7 +31,10 @@ package WNM.Tasks is
    procedure Sequencer_Core
      with No_Return;
 
-   procedure Synth_Next_Buffer (Buffer             : out System.Address;
+   procedure Next_Output_Buffer (Buffer             : out System.Address;
+                                Stereo_Point_Count : out HAL.UInt32);
+
+   procedure Next_Input_Buffer (Buffer             : out System.Address;
                                 Stereo_Point_Count : out HAL.UInt32);
 
    procedure Synth_Coproc_Receive;

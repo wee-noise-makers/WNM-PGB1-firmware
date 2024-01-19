@@ -58,13 +58,20 @@ begin
    --  DAC interrupts will run on the first core
    if not Noise_Nugget_SDK.Audio.Start
      (WNM_Configuration.Audio.Sample_Frequency,
-      Output_Callback => WNM.Tasks.Synth_Next_Buffer'Access,
-      Input_Callback  => null)
+      Output_Callback => WNM.Tasks.Next_Output_Buffer'Access,
+      Input_Callback  => WNM.Tasks.Next_Input_Buffer'Access)
    then
       raise Program_Error with "MDM";
    end if;
 
-   WNM_HAL.Set_Main_Volume (WNM_HAL.Init_Volume);
+   Noise_Nugget_SDK.Audio.Enable_Mic (True, True);
+   Noise_Nugget_SDK.Audio.Mixer_To_Output (False, False);
+   Noise_Nugget_SDK.Audio.Set_ADC_Volume (1.0, 1.0);
+
+   WNM_HAL.Set_Line_In_Volume (WNM_HAL.Init_Volume);
+   WNM_HAL.Set_Mic_Volumes (WNM_HAL.Init_Input_Volume,
+                            WNM_HAL.Init_Input_Volume);
+   WNM_HAL.Set_Main_Volume (WNM_HAL.Init_Input_Volume);
 
    WNM.Tasks.Sequencer_Core;
 end WNM_PS1_Device;

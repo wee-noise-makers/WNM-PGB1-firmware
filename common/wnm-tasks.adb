@@ -194,18 +194,29 @@ package body WNM.Tasks is
       end loop;
    end Sequencer_Core;
 
-   -----------------------
-   -- Synth_Next_Buffer --
-   -----------------------
+   ------------------------
+   -- Next_Output_Buffer --
+   ------------------------
 
-   procedure Synth_Next_Buffer (Buffer             : out System.Address;
+   procedure Next_Output_Buffer (Buffer             : out System.Address;
                                 Stereo_Point_Count : out HAL.UInt32)
    is
    begin
       WNM_HAL.Set_Indicator_IO (WNM_HAL.GP17);
-      WNM.Mixer.Synth_Out_Buffer (Buffer, Stereo_Point_Count);
+      WNM.Mixer.Next_Out_Buffer (Buffer, Stereo_Point_Count);
       WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP17);
-   end Synth_Next_Buffer;
+   end Next_Output_Buffer;
+
+   -----------------------
+   -- Next_Input_Buffer --
+   -----------------------
+
+   procedure Next_Input_Buffer (Buffer             : out System.Address;
+                                Stereo_Point_Count : out HAL.UInt32)
+   is
+   begin
+      WNM.Mixer.Next_In_Buffer (Buffer, Stereo_Point_Count);
+   end Next_Input_Buffer;
 
    ----------------
    -- Synth_Core --

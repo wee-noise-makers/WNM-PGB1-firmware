@@ -29,6 +29,7 @@ with WNM.GUI.Menu.Root;
 with WNM.LEDs;
 with WNM.Time;
 with WNM.UI.Logs;
+with WNM.Mixer;
 
 with HAL; use HAL;
 
@@ -103,9 +104,9 @@ package body WNM.UI is
             when Volume_BPM_Mute | Volume_BPM_Solo =>
                case B is
                   when PAD_Up =>
-                     WNM.Project.Change_Main_Volume (1);
+                     WNM.Mixer.Change_Main_Volume (1);
                   when PAD_Down =>
-                     WNM.Project.Change_Main_Volume (-1);
+                     WNM.Mixer.Change_Main_Volume (-1);
                   when PAD_Left =>
                      WNM.Project.Change_BPM (-1);
                   when PAD_Right =>

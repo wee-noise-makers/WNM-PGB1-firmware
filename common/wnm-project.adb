@@ -24,7 +24,6 @@ with HAL; use HAL;
 with WNM.Coproc;
 with WNM.Utils;
 with WNM.Speech;
-with WNM.Persistent;
 with WNM.Sample_Library;
 with WNM.UI;
 
@@ -111,30 +110,6 @@ package body WNM.Project is
    begin
       return (60 * 1_000 * 1_000) / Time.Time_Microseconds (Get_BPM);
    end Microseconds_Per_Beat;
-
-   ------------------------
-   -- Change_Main_Volume --
-   ------------------------
-
-   procedure Change_Main_Volume (Volume_Delta : Integer) is
-      Res : Integer;
-   begin
-      Res := Integer (WNM.Persistent.Data.Main_Volume) + Volume_Delta;
-      if Res in Integer (Audio_Volume'First) .. Integer (Audio_Volume'Last)
-      then
-         WNM.Persistent.Data.Main_Volume := Audio_Volume (Res);
-         WNM_HAL.Set_Main_Volume (Audio_Volume (Res));
-      end if;
-   end Change_Main_Volume;
-
-   ---------------------
-   -- Get_Main_Volume --
-   ---------------------
-
-   function Get_Main_Volume return Audio_Volume is
-   begin
-      return WNM.Persistent.Data.Main_Volume;
-   end Get_Main_Volume;
 
    ---------
    -- Set --
@@ -699,8 +674,8 @@ package body WNM.Project is
    -- Master_FX --
    ---------------
 
-   function Master_FX (T : Tracks := Editing_Track) return Master_FX_Kind
-   is (G_Project.Tracks (T).FX_Kind);
+   function Master_FX (T : Tracks := Editing_Track) return FX_Kind
+   is (G_Project.Tracks (T).FX);
 
    --------------
    -- LFO_Rate --
@@ -1101,7 +1076,7 @@ package body WNM.Project is
                     when Volume          => MIDI.MIDI_Data (Track.Volume),
                     when Pan             => MIDI.MIDI_Data (Track.Pan),
                     when Master_FX       =>
-                   (case Track.FX_Kind is
+                   (case Track.FX is
                        when Bypass     => Synth.FX_Select_Bypass,
                        when Overdrive  => Synth.FX_Select_Overdrive,
                        when Bitcrusher => Synth.FX_Select_Bitcrusher,
@@ -1148,7 +1123,7 @@ package body WNM.Project is
          when Engine          => Next (Track.Engine, Engine_Limits);
          when Volume          => Next (Track.Volume);
          when Pan             => Next (Track.Pan);
-         when Master_FX       => Next (Track.FX_Kind);
+         when Master_FX       => Next (Track.FX);
          when LFO_Rate        => Next (Track.LFO_Rate);
 
          when LFO_Amplitude   =>
@@ -1199,7 +1174,7 @@ package body WNM.Project is
          when Engine          => Prev (Track.Engine, Engine_Limits);
          when Volume          => Prev (Track.Volume);
          when Pan             => Prev (Track.Pan);
-         when Master_FX       => Prev (Track.FX_Kind);
+         when Master_FX       => Prev (Track.FX);
          when LFO_Rate        => Prev (Track.LFO_Rate);
          when LFO_Amplitude   =>
             Prev (Track.LFO_Amp, Track.LFO_Amp_Mode, 1);
@@ -1248,7 +1223,7 @@ package body WNM.Project is
          when Engine          => Next_Fast (Track.Engine, Engine_Limits);
          when Volume          => Next_Fast (Track.Volume);
          when Pan             => Next_Fast (Track.Pan);
-         when Master_FX       => Next_Fast (Track.FX_Kind);
+         when Master_FX       => Next_Fast (Track.FX);
          when LFO_Rate        => Next_Fast (Track.LFO_Rate);
 
          when LFO_Amplitude   =>
@@ -1298,7 +1273,7 @@ package body WNM.Project is
          when Engine          => Prev_Fast (Track.Engine, Engine_Limits);
          when Volume          => Prev_Fast (Track.Volume);
          when Pan             => Prev_Fast (Track.Pan);
-         when Master_FX       => Prev_Fast (Track.FX_Kind);
+         when Master_FX       => Prev_Fast (Track.FX);
          when LFO_Rate        => Prev_Fast (Track.LFO_Rate);
 
          when LFO_Amplitude   =>

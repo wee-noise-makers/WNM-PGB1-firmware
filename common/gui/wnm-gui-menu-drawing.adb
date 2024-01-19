@@ -35,6 +35,11 @@ with lfo_loop;
 with filter_bp;
 with filter_lp;
 with filter_hp;
+with fx_bypass;
+with fx_bitcrusher;
+with fx_filter;
+with fx_overdrive;
+with fx_reverb;
 
 package body WNM.GUI.Menu.Drawing is
 
@@ -451,12 +456,12 @@ package body WNM.GUI.Menu.Drawing is
    -- Draw_CC_Value --
    -------------------
 
-   procedure Draw_CC_Value (Id    : WNM.Project.CC_Id;
-                            Value : MIDI.MIDI_Data;
-                            Label : String;
+   procedure Draw_CC_Value (Id       : WNM.Project.CC_Id;
+                            Value    : MIDI.MIDI_Data;
+                            Label    : String;
                             Selected : Boolean;
-                            Enabled : Boolean := True;
-                            Style   : CC_Draw_Style := Positive)
+                            Enabled  : Boolean := True;
+                            Style    : CC_Draw_Style := Positive)
    is
       Val : Natural := Natural (Value) + 1;
       Last_Width : Natural;
@@ -553,8 +558,8 @@ package body WNM.GUI.Menu.Drawing is
    -- Draw_LFO_Shape --
    --------------------
 
-   procedure Draw_LFO_Shape (Id    : WNM.Project.CC_Id;
-                             Label : String;
+   procedure Draw_LFO_Shape (Id       : WNM.Project.CC_Id;
+                             Label    : String;
                              Selected : Boolean;
                              Shape    : WNM.Project.LFO_Shape_Kind;
                              Sync     : WNM.Project.LFO_Sync_Kind;
@@ -638,6 +643,151 @@ package body WNM.GUI.Menu.Drawing is
       end case;
 
    end Draw_LFO_Shape;
+
+   -----------------
+   -- Draw_Volume --
+   -----------------
+
+   procedure Draw_Volume (Id       : WNM.Project.CC_Id;
+                          Value    : WNM_HAL.Audio_Volume;
+                          Label    : String;
+                          Selected : Boolean)
+   is
+      Val : Natural := Natural (Value);
+      Last_Width : Natural;
+      X, Y : Natural;
+
+      Spacing : constant := 32;
+      Left : constant Natural := Box_Left + 6 +
+        (case Id is
+            when WNM.Project.A => 0 * Spacing,
+            when WNM.Project.B => 1 * Spacing,
+            when WNM.Project.C => 2 * Spacing,
+            when WNM.Project.D => 3 * Spacing);
+
+      Sub_Label_Width : constant := (Bitmap_Fonts.Width * 3) - 1;
+      Bar_Width : constant := 10;
+      Bar_Height : constant := 100 / Bar_Width - 1;
+      Bar_Left : constant Natural :=
+        Left + (Sub_Label_Width - Bar_Width) / 2;
+      Bar_Bottom : constant := Value_Text_Y - 3;
+      Bar_Center : constant Screen.Point :=
+        (Bar_Left + Bar_Width / 2,
+         Bar_Bottom - Bar_Height / 2);
+
+      Enabled : constant Boolean := Value /= 0;
+   begin
+      Y := Bar_Bottom;
+
+      if Selected then
+         Screen.Draw_Line ((Bar_Left - 2, Y), (Bar_Left - 2, Y - Bar_Height));
+         Screen.Draw_Line ((Bar_Left + Bar_Width + 1, Y),
+                           (Bar_Left + Bar_Width + 1, Y - Bar_Height));
+      end if;
+
+      --  Short label
+      X := Left;
+      Print (X_Offset => X,
+             Y_Offset => Value_Text_Y + 4,
+             Str      => Label);
+
+      if Enabled then
+
+         Y := Bar_Bottom;
+
+         while Val >= Bar_Width loop
+            Val := Val - Bar_Width;
+            Screen.Draw_Line ((Bar_Left, Y),
+                              (Bar_Left + Bar_Width - 1, Y));
+            Y := Y - 1;
+         end loop;
+
+         if Val > 0 then
+            Last_Width := Val - 1;
+            Screen.Draw_Line ((Bar_Left, Y),
+                              (Bar_Left + Last_Width, Y));
+         end if;
+
+      else
+         Screen.Draw_Line
+           ((Bar_Center.X - Bar_Width / 2, Bar_Center.Y + Bar_Width / 2),
+            (Bar_Center.X + Bar_Width / 2, Bar_Center.Y - Bar_Width / 2));
+         Screen.Draw_Line
+           ((Bar_Center.X + Bar_Width / 2, Bar_Center.Y + Bar_Width / 2),
+            (Bar_Center.X - Bar_Width / 2, Bar_Center.Y - Bar_Width / 2));
+      end if;
+
+   end Draw_Volume;
+
+   -------------
+   -- Draw_FX --
+   -------------
+
+   procedure Draw_FX (Id       : WNM.Project.CC_Id;
+                      Value    : FX_Kind;
+                      Selected : Boolean)
+   is
+      use WNM.Project;
+
+      X, Y : Natural;
+
+      Spacing : constant := 32;
+      Left : constant Natural := Box_Left + 6 +
+        (case Id is
+            when WNM.Project.A => 0 * Spacing,
+            when WNM.Project.B => 1 * Spacing,
+            when WNM.Project.C => 2 * Spacing,
+            when WNM.Project.D => 3 * Spacing);
+
+      Sub_Label_Width : constant := (Bitmap_Fonts.Width * 3) - 1;
+      Bar_Width : constant := 8;
+      Bar_Height : constant := 128 / Bar_Width - 1;
+      Bar_Left : constant Natural :=
+        Left + (Sub_Label_Width - Bar_Width) / 2;
+      Bar_Bottom : constant := Value_Text_Y + 2;
+      Bar_Top    : constant := Bar_Bottom - Bar_Height;
+      --  Bar_Center : constant Screen.Point :=
+      --    (Bar_Left + Bar_Width / 2,
+      --     Bar_Bottom - Bar_Height / 2);
+
+      Label : constant String := "FX";
+   begin
+
+      Y := Bar_Bottom;
+
+      if Selected then
+         Screen.Draw_Line ((Bar_Left - 3, Y), (Bar_Left - 3, Y - Bar_Height));
+         Screen.Draw_Line ((Bar_Left + Bar_Width + 2, Y),
+                           (Bar_Left + Bar_Width + 2, Y - Bar_Height));
+      end if;
+
+      --  Short label
+      X := Left;
+      Print (X_Offset => X,
+             Y_Offset => Value_Text_Y + 4,
+             Str      => Label);
+
+      X := Bar_Left - 1;
+      Y := Bar_Top;
+      case Value is
+         when Bypass =>
+            Screen.Copy_Bitmap
+              (fx_bypass.Data, X, Y, Invert_Color => True);
+         when Overdrive =>
+            Screen.Copy_Bitmap
+              (fx_overdrive.Data, X, Y, Invert_Color => True);
+         when Filter =>
+            Screen.Copy_Bitmap
+              (fx_filter.Data, X, Y, Invert_Color => True);
+         when Bitcrusher =>
+            Screen.Copy_Bitmap
+              (fx_bitcrusher.Data, X, Y, Invert_Color => True);
+         when Reverb =>
+            Screen.Copy_Bitmap
+              (fx_reverb.Data, X, Y, Invert_Color => True);
+      end case;
+
+   end Draw_FX;
 
    --------------------------
    -- Draw_CC_Control_Page --

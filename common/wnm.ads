@@ -43,6 +43,14 @@ package WNM is
    -- Mixer --
    type FX_Kind is (Bypass, Overdrive, Reverb, Filter, Bitcrusher);
 
+   function Img (M : FX_Kind) return String
+   is (case M is
+          when Bypass     => "Bypass",
+          when Overdrive  => "Overdrive",
+          when Bitcrusher => "Bitcrusher",
+          when Reverb     => "Reverb",
+          when Filter     => "Filter");
+
    type Mixer_Buffer_Index is range 1 .. Audio.Mixer_Buffer_Count
      with Size => 8;
 

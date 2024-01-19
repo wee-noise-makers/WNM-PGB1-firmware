@@ -43,16 +43,16 @@ package body WNM.GUI.Logo is
       Copy_Bitmap (wnm_logo_text.Data, Left, Top);
 
       WNM.Screen.Draw_Line (Start     => (Left, Top + 9),
-                            Stop      => (Left + 28, Top + 9));
-      WNM.Screen.Draw_Line (Start     => (Left + 57, Top + 9),
-                            Stop      => (Left + 83, Top + 9));
+                            Stop      => (Left + 29, Top + 9));
+      WNM.Screen.Draw_Line (Start     => (Left + 58, Top + 9),
+                            Stop      => (Left + 89, Top + 9));
 
       Copy_Bitmap ((case Anim_Step is
                       when 0 => wnm_logo_wave_1.Data,
                       when 1 => wnm_logo_wave_2.Data,
                       when 2 => wnm_logo_wave_3.Data,
                       when 3 => wnm_logo_wave_4.Data),
-                   Left + 27, Top + 7);
+                   Left + 30, Top + 7);
    end Draw_On_Screen;
 
 end WNM.GUI.Logo;

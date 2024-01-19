@@ -33,7 +33,7 @@ package WNM.Voices.Snare_Voice is
    is new Four_Params_Voice
    with private;
 
-   type Snare_Engine is (Analog_Snare, Snare, Clap);
+   type Snare_Engine is (Analog_Snare, Clap);
 
    function Engine (This : Instance) return Snare_Engine;
    procedure Set_Engine (This : in out Instance; E : Snare_Engine);

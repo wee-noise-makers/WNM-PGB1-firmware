@@ -27,6 +27,7 @@ with WNM.GUI.Menu.Yes_No_Dialog;
 --  with WNM.GUI.Menu.Create_Sample;
 --  with WNM.GUI.Menu.Passthrough;
 with WNM.GUI.Menu.Projects;
+with WNM.GUI.Menu.Inputs;
 with WNM.GUI.Menu.System_Info;
 with WNM.Power_Control;
 
@@ -39,6 +40,7 @@ package body WNM.GUI.Menu.Root is
    function Menu_Item_Text (Item : Menu_Items) return String
    is (case Item is
           when Projects    => "Projects",
+          when Inputs      => "Inputs",
           --  when Edit_Sample     => "Edit sample",
           --  when Create_Sample   => "Create sample",
           --  when Change_Sample   => "Change sample",
@@ -94,6 +96,8 @@ package body WNM.GUI.Menu.Root is
                when Projects =>
                   Menu.Projects.Push_Window;
 
+               when Inputs =>
+                  Menu.Inputs.Push_Window;
                --  when Edit_Sample =>
                --     Menu.Sample_Edit.Push_Window;
                --
@@ -157,8 +161,10 @@ package body WNM.GUI.Menu.Root is
    procedure On_Pushed
      (This  : in out Root_Menu)
    is
+      --  pragma Unreferenced (This);
    begin
       This.Item := Menu_Items'First;
+      --  Menu.System_Info.Push_Window;
    end On_Pushed;
 
    --------------

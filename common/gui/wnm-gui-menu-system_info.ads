@@ -29,6 +29,7 @@ private
                       Synth_Max_CPU_Load,
                       Synth_Missed_Deadlines,
                       DAC_Missed_Deadlines,
+                      Input_Missed_Deadlines,
                       Prj_Last_Load_Size,
                       Prj_Last_Save_Size,
                       Raise_Exception);

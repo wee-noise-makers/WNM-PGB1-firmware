@@ -19,6 +19,7 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with System.Storage_Elements;
 with Interfaces;
 with Tresses.DSP;
 with HAL; use HAL;
@@ -26,8 +27,16 @@ with WNM_HAL;
 with WNM.Coproc;
 with WNM.Synth; use WNM.Synth;
 with WNM.Generic_Queue;
+with WNM.Persistent;
+with BBqueue;
 
 package body WNM.Mixer is
+
+   package Master_FX_Next is new Enum_Next (T    => FX_Kind,
+                                            Wrap => False);
+   use Master_FX_Next;
+
+   -- Output --
 
    Output_Id_Queue_Capacity : constant :=
      Mixer_Buffers'Length + 1;
@@ -40,11 +49,19 @@ package body WNM.Mixer is
    Output_Audio_Buffers : array (Mixer_Buffer_Index)
      of WNM_HAL.Stereo_Buffer;
 
-   Current_Output_Id : Mixer_Buffer_Index;
-   Valid_Current_Output_Id : Boolean := False;
+   Current_Output_Id : Mixer_Buffer_Index with Volatile;
+   Valid_Current_Output_Id : Boolean := False with Volatile;
 
-   Zeroes : constant Stereo_Buffer := (others => (0, 0));
+   -- Input --
+
+   subtype Input_Buffer_Index
+     is System.Storage_Elements.Storage_Count range 1 .. 3;
+   Input_Audio_Buffers : array (Input_Buffer_Index) of WNM_HAL.Stereo_Buffer;
+   Input_Queue : BBqueue.Offsets_Only (Input_Audio_Buffers'Length);
+   Input_Queue_WG : BBqueue.Write_Grant;
+
    Count_Missed_DAC_Deadlines : HAL.UInt32 := 0 with Volatile, Atomic;
+   Count_Missed_Input_Deadlines : HAL.UInt32 := 0 with Volatile, Atomic;
 
    --------------------------
    -- Missed_DAC_Deadlines --
@@ -61,6 +78,22 @@ package body WNM.Mixer is
    begin
       Count_Missed_DAC_Deadlines := 0;
    end Clear_Missed_DAC_Deadlines;
+
+   ----------------------------
+   -- Missed_Input_Deadlines --
+   ----------------------------
+
+   function Missed_Input_Deadlines return HAL.UInt32
+   is (Count_Missed_Input_Deadlines);
+
+   ----------------------------------
+   -- Clear_Missed_Input_Deadlines --
+   ----------------------------------
+
+   procedure Clear_Missed_Input_Deadlines is
+   begin
+      Count_Missed_Input_Deadlines := 0;
+   end Clear_Missed_Input_Deadlines;
 
    -----------------
    -- Start_Mixer --
@@ -83,12 +116,37 @@ package body WNM.Mixer is
       use Tresses;
       use Tresses.DSP;
       use Interfaces;
+         use BBqueue;
 
       L, R : S32;
 
       Input : FX_Send_Buffers renames Mixer_Buffers (Id);
       Output : WNM_HAL.Stereo_Buffer renames Output_Audio_Buffers (Id);
+
+      Input_RG : BBqueue.Read_Grant;
    begin
+
+      --  Handle audio input
+      Read (Input_Queue, Input_RG, 1);
+      if State (Input_RG) = Valid then
+         declare
+            use System.Storage_Elements;
+            Offset : constant Storage_Offset := Slice (Input_RG).From;
+            In_Buffer : Stereo_Buffer renames
+              Input_Audio_Buffers (Input_Audio_Buffers'First + Offset);
+
+            FX : constant FX_Kind := Persistent.Data.Input_FX;
+         begin
+            for Index in In_Buffer'Range loop
+               Input.L (FX)(Index) :=
+                 S16 (Clip_S16 (S32 (@) + S32 (In_Buffer (Index).L)));
+               Input.R (FX)(Index) :=
+                 S16 (Clip_S16 (S32 (@) + S32 (In_Buffer (Index).R)));
+            end loop;
+         end;
+
+         Release (Input_Queue, Input_RG, 1);
+      end if;
 
       --  Overdrive
       FX_Drive.Set_Param (1, Input.Parameters (Overdrive)(Voice_Param_1_CC));
@@ -147,11 +205,11 @@ package body WNM.Mixer is
       Input.L := (others => (others => 0));
    end Push_To_Mix;
 
-   ----------------------
-   -- Synth_Out_Buffer --
-   ----------------------
+   ---------------------
+   -- Next_Out_Buffer --
+   ---------------------
 
-   procedure Synth_Out_Buffer (Buffer             : out System.Address;
+   procedure Next_Out_Buffer (Buffer             : out System.Address;
                                Stereo_Point_Count : out HAL.UInt32)
    is
       Id : Mixer_Buffer_Index;
@@ -178,14 +236,158 @@ package body WNM.Mixer is
          Valid_Current_Output_Id := True;
       else
 
-         --  We don't have a buffer available, so we send silence...
-         Buffer := Zeroes'Address;
-         Stereo_Point_Count := Zeroes'Length;
+         --  We don't have a buffer available
+         Buffer := System.Null_Address;
+         Stereo_Point_Count := 0;
 
          Valid_Current_Output_Id := False;
 
          Count_Missed_DAC_Deadlines := Count_Missed_DAC_Deadlines + 1;
       end if;
-   end Synth_Out_Buffer;
+   end Next_Out_Buffer;
+
+   --------------------
+   -- Next_In_Buffer --
+   --------------------
+
+   procedure Next_In_Buffer (Buffer             : out System.Address;
+                             Stereo_Point_Count : out HAL.UInt32)
+   is
+      use System.Storage_Elements;
+      use BBqueue;
+   begin
+      if State (Input_Queue_WG) = Valid then
+         Commit (Input_Queue, Input_Queue_WG, 1);
+      end if;
+
+      Grant (Input_Queue, Input_Queue_WG, 1);
+
+      if State (Input_Queue_WG) = Valid then
+         declare
+            Offset : constant Storage_Offset := Slice (Input_Queue_WG).From;
+            In_Buffer : Stereo_Buffer renames
+              Input_Audio_Buffers (Input_Audio_Buffers'First + Offset);
+         begin
+            Buffer := In_Buffer'Address;
+            Stereo_Point_Count := In_Buffer'Length;
+         end;
+
+      else
+         --  We don't have a buffer available
+         Buffer := System.Null_Address;
+         Stereo_Point_Count := 0;
+
+         Count_Missed_Input_Deadlines := Count_Missed_Input_Deadlines + 1;
+      end if;
+   end Next_In_Buffer;
+
+   -------------------
+   -- Volume_Change --
+   -------------------
+
+   procedure Volume_Change (V : in out Audio_Volume; Delt : Integer) is
+      Res : Integer;
+   begin
+      Res := Integer (V) + Delt;
+      if Res in Integer (Audio_Volume'First) .. Integer (Audio_Volume'Last)
+      then
+         V := Audio_Volume (Res);
+      end if;
+   end Volume_Change;
+
+   ------------------------
+   -- Change_Main_Volume --
+   ------------------------
+
+   procedure Change_Main_Volume (Volume_Delta : Integer) is
+   begin
+      Volume_Change (Persistent.Data.Main_Volume, Volume_Delta);
+      WNM_HAL.Set_Main_Volume (Persistent.Data.Main_Volume);
+   end Change_Main_Volume;
+
+   ---------------------
+   -- Get_Main_Volume --
+   ---------------------
+
+   function Get_Main_Volume return Audio_Volume
+   is (WNM.Persistent.Data.Main_Volume);
+
+   --------------------------------
+   -- Change_Internal_Mic_Volume --
+   --------------------------------
+
+   procedure Change_Internal_Mic_Volume (Volume_Delta : Integer) is
+   begin
+      Volume_Change (Persistent.Data.Internal_Mic_Volume, Volume_Delta);
+      WNM_HAL.Set_Mic_Volumes (Persistent.Data.Headset_Mic_Volume,
+                               Persistent.Data.Internal_Mic_Volume);
+   end Change_Internal_Mic_Volume;
+
+   -----------------------------
+   -- Get_Internal_Mic_Volume --
+   -----------------------------
+
+   function Get_Internal_Mic_Volume return Audio_Volume
+   is (WNM.Persistent.Data.Internal_Mic_Volume);
+
+   -------------------------------
+   -- Change_Headset_Mic_Volume --
+   -------------------------------
+
+   procedure Change_Headset_Mic_Volume (Volume_Delta : Integer) is
+   begin
+      Volume_Change (Persistent.Data.Headset_Mic_Volume, Volume_Delta);
+      WNM_HAL.Set_Mic_Volumes (Persistent.Data.Headset_Mic_Volume,
+                               Persistent.Data.Internal_Mic_Volume);
+   end Change_Headset_Mic_Volume;
+
+   ----------------------------
+   -- Get_Headset_Mic_Volume --
+   ----------------------------
+
+   function Get_Headset_Mic_Volume return Audio_Volume
+   is (WNM.Persistent.Data.Headset_Mic_Volume);
+
+   ---------------------------
+   -- Change_Line_In_Volume --
+   ---------------------------
+
+   procedure Change_Line_In_Volume (Volume_Delta : Integer) is
+   begin
+      Volume_Change (Persistent.Data.Line_In_Volume, Volume_Delta);
+      WNM_HAL.Set_Line_In_Volume (Persistent.Data.Line_In_Volume);
+   end Change_Line_In_Volume;
+
+   ------------------------
+   -- Get_Line_In_Volume --
+   ------------------------
+
+   function Get_Line_In_Volume return Audio_Volume
+   is (WNM.Persistent.Data.Line_In_Volume);
+
+   -------------------
+   -- Input_FX_Next --
+   -------------------
+
+   procedure Input_FX_Next is
+   begin
+      Next (WNM.Persistent.Data.Input_FX);
+   end Input_FX_Next;
+
+   -------------------
+   -- Input_FX_Prev --
+   -------------------
+
+   procedure Input_FX_Prev is
+   begin
+      Prev (WNM.Persistent.Data.Input_FX);
+   end Input_FX_Prev;
+
+   --------------
+   -- Input_FX --
+   --------------
+
+   function Input_FX return FX_Kind
+   is (WNM.Persistent.Data.Input_FX);
 
 end WNM.Mixer;

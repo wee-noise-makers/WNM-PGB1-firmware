@@ -46,11 +46,33 @@ package WNM.Mixer is
 
    procedure Push_To_Mix (Id : Mixer_Buffer_Index);
 
-   procedure Synth_Out_Buffer (Buffer             : out System.Address;
-                               Stereo_Point_Count : out HAL.UInt32);
+   procedure Next_Out_Buffer (Buffer             : out System.Address;
+                              Stereo_Point_Count : out HAL.UInt32);
+
+   procedure Next_In_Buffer (Buffer             : out System.Address;
+                             Stereo_Point_Count : out HAL.UInt32);
+
+   procedure Change_Main_Volume (Volume_Delta : Integer);
+   function Get_Main_Volume return Audio_Volume;
+
+   procedure Change_Internal_Mic_Volume (Volume_Delta : Integer);
+   function Get_Internal_Mic_Volume return Audio_Volume;
+
+   procedure Change_Headset_Mic_Volume (Volume_Delta : Integer);
+   function Get_Headset_Mic_Volume return Audio_Volume;
+
+   procedure Change_Line_In_Volume (Volume_Delta : Integer);
+   function Get_Line_In_Volume return Audio_Volume;
+
+   procedure Input_FX_Next;
+   procedure Input_FX_Prev;
+   function Input_FX return FX_Kind;
 
    function Missed_DAC_Deadlines return HAL.UInt32;
    procedure Clear_Missed_DAC_Deadlines;
+
+   function Missed_Input_Deadlines return HAL.UInt32;
+   procedure Clear_Missed_Input_Deadlines;
 
    FX_Reverb   : aliased WNM.Voices.Reverb_Voice.Instance;
    FX_Filter   : aliased WNM.Voices.Filter_Voice.Instance;

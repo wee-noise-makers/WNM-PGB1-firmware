@@ -67,6 +67,10 @@ package body WNM.GUI.Menu.System_Info is
             Drawing.Draw_Title ("DAC Missed DL", "");
             Drawing.Draw_Value (Mixer.Missed_DAC_Deadlines'Img);
 
+         when Input_Missed_Deadlines =>
+            Drawing.Draw_Title ("Input Missed DL", "");
+            Drawing.Draw_Value (Mixer.Missed_Input_Deadlines'Img);
+
          when Prj_Last_Load_Size =>
             Drawing.Draw_Title ("Size of last loaded", "project");
             Drawing.Draw_Value (Project.Library.Last_Loaded_Size'Img);
@@ -98,6 +102,8 @@ package body WNM.GUI.Menu.System_Info is
                   Synth.Clear_Missed_Deadlines;
                when DAC_Missed_Deadlines =>
                   Mixer.Clear_Missed_DAC_Deadlines;
+               when Input_Missed_Deadlines =>
+                  Mixer.Clear_Missed_Input_Deadlines;
                when Raise_Exception =>
                   Yes_No_Dialog.Set_Title ("Raise exception?");
                   Yes_No_Dialog.Push_Window;

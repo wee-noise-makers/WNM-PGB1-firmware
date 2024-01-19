@@ -17,9 +17,9 @@ with Tresses.Resources;
 
 package body ASFML_Sim is
 
-   Last_Buffer : System.Address := System.Null_Address;
-
    ------------- Audio
+
+   Zeroes : constant WNM_HAL.Stereo_Buffer := (others => (0, 0));
 
    procedure RTaudio_Callback (Buf    : System.Address;
                                Frames : Interfaces.C.unsigned);
@@ -44,12 +44,12 @@ package body ASFML_Sim is
            Frames'Img;
       end if;
 
-      loop
-         WNM.Tasks.Synth_Next_Buffer (Buffer, Len);
-         exit when Buffer /= Last_Buffer;
-      end loop;
+      WNM.Tasks.Next_Output_Buffer (Buffer, Len);
 
-      Last_Buffer := Buffer;
+      if Buffer = System.Null_Address then
+         Buffer := Zeroes'Address;
+         Len := Zeroes'Length;
+      end if;
 
       if Len /= WNM_HAL.Stereo_Buffer'Length then
          raise Program_Error with "Invalid buffer size from synth task";

@@ -204,7 +204,7 @@ package body WNM.GUI.Menu.Track_Settings is
 
          when Master_FX =>
             Draw_Title ("FX send:", "");
-            Draw_Value (Project.Img (Project.Master_FX));
+            Draw_Value (Img (Project.Master_FX));
 
          when Arp_Mode =>
             Draw_Title ("Arpeggiator mode:", "");

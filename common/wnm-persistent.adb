@@ -27,10 +27,19 @@ package body WNM.Persistent is
 
    Filename : constant String := "persistent.leb128";
 
-   type Persistent_Token is (P_Last_Project, P_Main_Volume);
+   type Persistent_Token is (P_Last_Project,
+                             P_Main_Volume,
+                             P_Line_In_Volume,
+                             P_Internal_Mic_Volume,
+                             P_Headset_Mic_Volume,
+                             P_Input_FX);
 
-   for Persistent_Token use (P_Last_Project => 0,
-                             P_Main_Volume  => 1);
+   for Persistent_Token use (P_Last_Project        => 0,
+                             P_Main_Volume         => 1,
+                             P_Line_In_Volume      => 2,
+                             P_Internal_Mic_Volume => 3,
+                             P_Headset_Mic_Volume  => 4,
+                             P_Input_FX            => 5);
 
    ----------
    -- Save --
@@ -41,15 +50,30 @@ package body WNM.Persistent is
    begin
       Output.Open (Filename);
 
-      if Output.Status = Ok then
-         Output.Push (Out_UInt (P_Last_Project'Enum_Rep));
-         Output.Push (Out_UInt (Data.Last_Project));
-      end if;
+      for Token in Persistent_Token loop
 
-      if Output.Status = Ok then
-         Output.Push (Out_UInt (P_Main_Volume'Enum_Rep));
-         Output.Push (Out_UInt (Data.Main_Volume));
-      end if;
+         Output.Push (Out_UInt (P_Last_Project'Enum_Rep));
+
+         exit when Output.Status /= Ok;
+
+         case Token is
+            when P_Last_Project =>
+               Output.Push (Out_UInt (Data.Last_Project));
+            when P_Main_Volume =>
+               Output.Push (Out_UInt (Data.Main_Volume));
+            when P_Line_In_Volume =>
+               Output.Push (Out_UInt (Data.Line_In_Volume));
+            when P_Internal_Mic_Volume =>
+               Output.Push (Out_UInt (Data.Internal_Mic_Volume));
+            when P_Headset_Mic_Volume =>
+               Output.Push (Out_UInt (Data.Headset_Mic_Volume));
+            when P_Input_FX =>
+               Output.Push (Data.Input_FX'Enum_Rep);
+         end case;
+
+         exit when Output.Status /= Ok;
+
+      end loop;
 
       Output.Close;
    end Save;
@@ -60,6 +84,7 @@ package body WNM.Persistent is
 
    procedure Load is
       procedure To_P_Token is new Convert_To_Enum (Persistent_Token);
+      procedure Read is new Read_Gen_Enum (FX_Kind);
       procedure Read_Prj is new Read_Gen_Int (Project.Library.Prj_Index);
       procedure Read_Volume is new Read_Gen_Int (Audio_Volume);
 
@@ -86,14 +111,27 @@ package body WNM.Persistent is
          exit when not Success;
 
          case Set is
-            when P_Last_Project => Read_Prj (Input, Data.Last_Project);
-            when P_Main_Volume => Read_Volume (Input, Data.Main_Volume);
+            when P_Last_Project =>
+               Read_Prj (Input, Data.Last_Project);
+            when P_Main_Volume =>
+               Read_Volume (Input, Data.Main_Volume);
+            when P_Line_In_Volume =>
+               Read_Volume (Input, Data.Line_In_Volume);
+            when P_Internal_Mic_Volume =>
+               Read_Volume (Input, Data.Internal_Mic_Volume);
+            when P_Headset_Mic_Volume  =>
+               Read_Volume (Input, Data.Headset_Mic_Volume);
+            when P_Input_FX =>
+               Read (Input, Data.Input_FX);
          end case;
 
          exit when Input.Status /= Ok;
       end loop;
 
       WNM_HAL.Set_Main_Volume (Data.Main_Volume);
+      WNM_HAL.Set_Line_In_Volume (Data.Line_In_Volume);
+      WNM_HAL.Set_Mic_Volumes (Data.Headset_Mic_Volume,
+                               Data.Internal_Mic_Volume);
 
       Input.Close;
    end Load;
