@@ -24,9 +24,7 @@ with MIDI.Time;
 
 package WNM.Project.Step_Sequencer is
 
-   function Playing_Step return Sequencer_Steps;
-
-   function Playing_Pattern return Patterns;
+   function Playing_Step (T : Tracks) return Playhead;
 
    procedure Play_Pause;
    --  Use it to signal a play/pause event

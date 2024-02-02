@@ -19,16 +19,18 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with WNM.Project;
+
 package WNM.GUI.Menu.Pattern_Settings is
 
    procedure Push_Window;
 
 private
 
-   type Top_Settings is (Top_Nothing);
+   type Top_Settings is (Only_This);
    function Top_Settings_Count is new Enum_Count (Top_Settings);
 
-   type Sub_Settings is (Sub_Nothing);
+   subtype Sub_Settings is Project.User_Pattern_Settings;
    function Sub_Settings_Count is new Enum_Count (Sub_Settings);
 
    type Pattern_Settings_Menu is new Menu_Window with record

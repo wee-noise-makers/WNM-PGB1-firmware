@@ -21,14 +21,14 @@
 
 package WNM.Step_Event_Broadcast is
 
-   type Callback is access procedure (Step : Sequencer_Steps);
+   type Callback is access procedure;
 
    type Listener (CB : not null Callback) is private;
    type Listener_Acess is access all Listener;
 
    procedure Register (Acc : not null Listener_Acess);
 
-   procedure Broadcast (Step : Sequencer_Steps);
+   procedure Broadcast;
 
 private
 

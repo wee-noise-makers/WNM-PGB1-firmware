@@ -55,7 +55,9 @@ package body WNM.Project.Storage.File_Out is
    -- Start_Chord_Settings --
    --------------------------
 
-   procedure Start_Chord_Settings (This : in out Instance; C : Chords) is
+   procedure Start_Chord_Settings (This : in out Instance;
+                                   C : Chord_Progressions)
+   is
    begin
       This.Push (Chord_Section);
       This.Push (Out_UInt (C'Enum_Rep));

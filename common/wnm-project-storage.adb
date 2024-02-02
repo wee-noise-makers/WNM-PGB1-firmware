@@ -84,9 +84,6 @@ with WNM.Project.Storage.File_Out;
 with WNM.Project.Storage.File_In;
 with WNM.File_System; use WNM.File_System;
 
-with WNM.Project.Chord_Sequencer;
-with WNM.Pattern_Sequencer;
-
 package body WNM.Project.Storage is
 
    --------------------
@@ -105,7 +102,8 @@ package body WNM.Project.Storage is
          for T in Tracks loop
             for S in Sequencer_Steps loop
                declare
-                  Step : Step_Rec renames G_Project.Seqs (P)(T)(S);
+                  Step : Step_Rec renames
+                    G_Project.Tracks (T).Patts (P).Seq (S);
                begin
                   if Step /= Default_Step then
 
@@ -359,44 +357,46 @@ package body WNM.Project.Storage is
    procedure Save_Chords (Output : in out File_Out.Instance)
    is
    begin
-      for C_Id in Chords loop
-         declare
-            Chord : Chord_Rec renames G_Project.Chords (C_Id);
-         begin
-            Output.Start_Chord_Settings (C_Id);
-
-            --  Using a loop over all settings and a case statement, we make
-            --  sure all settings are handled. This will hopefully prevent
-            --  mistakes when new settings are introduced.
-            for Set in Chord_Setting_Kind loop
-
-               Output.Push (Out_UInt (Set'Enum_Rep));
-
-               case Set is
-                  when Tonic =>
-                     Output.Push (Out_UInt (Chord.Tonic));
-
-                  when Name =>
-                     Output.Push (Out_UInt (Chord.Name'Enum_Rep));
-
-                  when Duration =>
-                     Output.Push (Out_UInt (Chord.Duration));
-
-               end case;
-
-               if Output.Status /= Ok then
-                  return;
-               end if;
-
-            end loop;
-
-            Output.End_Section;
-            if Output.Status /= Ok then
-               return;
-            end if;
-         end;
-      end loop;
-
+      --  for C_Id in Chord_Progressions loop
+      --     declare
+      --        Chord : Chord_Rec renames G_Project.Chords (C_Id);
+      --     begin
+      --        Output.Start_Chord_Settings (C_Id);
+      --
+      --        --  Using a loop over all settings and a case statement,
+      --        --  we make
+      --        --  sure all settings are handled. This will hopefully prevent
+      --        --  mistakes when new settings are introduced.
+      --        for Set in Chord_Setting_Kind loop
+      --
+      --           Output.Push (Out_UInt (Set'Enum_Rep));
+      --
+      --           case Set is
+      --              when Tonic =>
+      --                 Output.Push (Out_UInt (Chord.Tonic));
+      --
+      --              when Name =>
+      --                 Output.Push (Out_UInt (Chord.Name'Enum_Rep));
+      --
+      --              when Duration =>
+      --                 Output.Push (Out_UInt (Chord.Duration));
+      --
+      --           end case;
+      --
+      --           if Output.Status /= Ok then
+      --              return;
+      --           end if;
+      --
+      --        end loop;
+      --
+      --        Output.End_Section;
+      --        if Output.Status /= Ok then
+      --           return;
+      --        end if;
+      --     end;
+      --  end loop;
+      --
+      null;
    end Save_Chords;
 
    -----------------
@@ -440,13 +440,8 @@ package body WNM.Project.Storage is
 
       if Output.Status = Ok then
          Output.Start_Chord_Chain;
-         Chord_Sequencer.Chain.Save (Output);
-         Output.End_Section;
-      end if;
-
-      if Output.Status = Ok then
-         Output.Start_Pattern_Chain;
-         Pattern_Sequencer.Save (Output);
+         --  FIXME
+         --  Chord_Sequencer.Chain.Save (Output);
          Output.End_Section;
       end if;
 
@@ -556,48 +551,50 @@ package body WNM.Project.Storage is
    ----------------
 
    procedure Load_Chord (Input : in out File_In.Instance) is
-      procedure To_Chord_Settings is new Convert_To_Enum (Chord_Setting_Kind);
-
-      procedure Read is new File_In.Read_Gen_Mod (MIDI.MIDI_Key);
-      procedure Read is new File_In.Read_Gen_Enum
-        (WNM.Chord_Settings.Chord_Name);
-      procedure Read is new File_In.Read_Gen_Int (Chord_Step_Duration);
-
-      C_Id : Chords;
-      S : Chord_Setting_Kind;
-      Raw : In_UInt;
-      Success : Boolean;
+      --  procedure To_Chord_Settings
+      --    is new Convert_To_Enum (Chord_Setting_Kind);
+      --
+      --  procedure Read is new File_In.Read_Gen_Mod (MIDI.MIDI_Key);
+      --  procedure Read is new File_In.Read_Gen_Enum
+      --    (WNM.Chord_Settings.Chord_Name);
+      --  procedure Read is new File_In.Read_Gen_Int (Chord_Step_Duration);
+      --
+      --  C_Id : Chord_Progressions;
+      --  S : Chord_Setting_Kind;
+      --  Raw : In_UInt;
+      --  Success : Boolean;
    begin
-      Input.Read (C_Id);
+      null;
+      --  Input.Read (C_Id);
+      --
+      --  if Input.Status /= Ok then
+      --     return;
+      --  end if;
 
-      if Input.Status /= Ok then
-         return;
-      end if;
-
-      declare
-         Chord : Chord_Rec renames G_Project.Chords (C_Id);
-      begin
-         Chord := Default_Chord;
-
-         loop
-            Input.Read (Raw);
-
-            exit when Input.Status /= Ok
-              or else Raw = End_Of_Section_Value;
-
-            To_Chord_Settings (Raw, S, Success);
-
-            exit when not Success;
-
-            case S is
-               when Tonic    => Read (Input, Chord.Tonic);
-               when Name     => Read (Input, Chord.Name);
-               when Duration => Read (Input, Chord.Duration);
-            end case;
-
-            exit when Input.Status /= Ok;
-         end loop;
-      end;
+      --  declare
+      --     Chord : Chord_Rec renames G_Project.Chords (C_Id);
+      --  begin
+      --     Chord := Default_Chord;
+      --
+      --     loop
+      --        Input.Read (Raw);
+      --
+      --        exit when Input.Status /= Ok
+      --          or else Raw = End_Of_Section_Value;
+      --
+      --        To_Chord_Settings (Raw, S, Success);
+      --
+      --        exit when not Success;
+      --
+      --        case S is
+      --           when Tonic    => Read (Input, Chord.Tonic);
+      --           when Name     => Read (Input, Chord.Name);
+      --           when Duration => Read (Input, Chord.Duration);
+      --        end case;
+      --
+      --        exit when Input.Status /= Ok;
+      --     end loop;
+      --  end;
    end Load_Chord;
 
    ---------------
@@ -617,7 +614,8 @@ package body WNM.Project.Storage is
       procedure Read is new File_In.Read_Gen_Enum (Repeat_Rate_Kind);
       procedure Read is new File_In.Read_Gen_Enum (Note_Mode_Kind);
 
-      Step : Step_Rec renames G_Project.Seqs (P)(T)(S);
+      Step : Step_Rec renames
+        G_Project.Tracks (P).Patts (T).Seq (S);
       Set : Step_Settings;
       Raw : In_UInt;
       Success : Boolean;
@@ -686,7 +684,7 @@ package body WNM.Project.Storage is
       for P in Patterns loop
          for T in Tracks loop
             for S in Sequencer_Steps loop
-               G_Project.Seqs (P)(T)(S) := Default_Step;
+               G_Project.Tracks (T).Patts (P).Seq (S) := Default_Step;
             end loop;
          end loop;
       end loop;
@@ -790,18 +788,8 @@ package body WNM.Project.Storage is
                Load_Sequences (Input);
 
             when Chord_Chain_Section =>
-               Project.Chord_Sequencer.Chain.Load (Input);
-               declare
-                  End_Sec : Token_Kind;
-               begin
-                  Input.Read (End_Sec);
-                  if End_Sec /= End_Of_Section then
-                     Input.Set_Format_Error;
-                  end if;
-               end;
-
-            when Pattern_Chain_Section =>
-               WNM.Pattern_Sequencer.Load (Input);
+               --  FIXME
+               --  Project.Chord_Sequencer.Chain.Load (Input);
                declare
                   End_Sec : Token_Kind;
                begin

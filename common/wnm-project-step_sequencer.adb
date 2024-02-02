@@ -23,11 +23,11 @@ with MIDI;
 
 with WNM.Short_Term_Sequencer;
 with WNM.Note_Off_Sequencer;
-with WNM.Pattern_Sequencer;
 with WNM.Chord_Settings;
 with WNM.Project.Arpeggiator;
 with WNM.UI; use WNM.UI;
 with WNM.Coproc;
+with WNM.Project.Song_Part_Sequencer;
 with WNM.Project.Chord_Sequencer;
 with WNM.Step_Event_Broadcast;
 with WNM.MIDI_Clock;
@@ -35,16 +35,19 @@ with HAL;                   use HAL;
 
 package body WNM.Project.Step_Sequencer is
 
-   Pattern_Counter : array (Patterns) of UInt32;
+   Pattern_Counter : array (Tracks, Patterns) of UInt32;
    --  Count how many times a pattern has played
 
-   procedure Process_Step (Pattern : Patterns; Step : Sequencer_Steps);
+   procedure Process_Step (Track   : Tracks;
+                           Pattern : Patterns;
+                           Step    : Sequencer_Steps);
 
    procedure Do_Preview_Trigger (T : Tracks);
    procedure Play_Step (P : Patterns; T : Tracks; S : Sequencer_Steps;
                         Now : Time.Time_Microseconds := Time.Clock);
 
    Playing : Boolean := False;
+   Playheads : array (Tracks) of Playhead;
 
    ------------
    -- Offset --
@@ -77,19 +80,12 @@ package body WNM.Project.Step_Sequencer is
       return Result;
    end Offset;
 
-   ------------------
-   -- Playing_Step --
-   ------------------
+   -------------
+   -- Playing --
+   -------------
 
-   function Playing_Step return Sequencer_Steps
-   is (Current_Playing_Step);
-
-   ---------------------
-   -- Playing_Pattern --
-   ---------------------
-
-   function Playing_Pattern return Patterns
-   is (Pattern_Sequencer.Playing);
+   function Playing_Step (T : Tracks) return Playhead
+   is (Playheads (T));
 
    ----------------
    -- Play_Pause --
@@ -116,11 +112,12 @@ package body WNM.Project.Step_Sequencer is
       case Mode is
          when UI.Pattern_Mode =>
             Editing_Pattern := V;
-            Pattern_Sequencer.On_Press (Button);
 
-         when UI.Chord_Mode =>
-            Editing_Chord := V;
-            Project.Chord_Sequencer.Chain.On_Press (Button);
+         when UI.Song_Mode =>
+            if V in WNM.Parts then
+               G_Project.Part_Origin := V;
+            end if;
+            Editing_Song_Elt := V;
 
          when UI.Track_Mode | UI.Step_Mode =>
 
@@ -146,9 +143,9 @@ package body WNM.Project.Step_Sequencer is
 
             if UI.Recording then
                declare
-                  S : Step_Rec renames G_Project.Seqs
-                    (Editing_Pattern)
-                    (Editing_Track)
+                  S : Step_Rec renames G_Project.Tracks
+                    (Editing_Pattern).Patts
+                    (Editing_Track).Seq
                     (To_Value (Button));
                begin
                   if S.Trig /= None then
@@ -180,15 +177,13 @@ package body WNM.Project.Step_Sequencer is
    procedure On_Release (Button : Keyboard_Button;
                          Mode   : WNM.UI.Main_Modes)
    is
+      pragma Unreferenced (Button);
    begin
       case Mode is
-         when UI.Pattern_Mode =>
-            Pattern_Sequencer.On_Release (Button);
+         when UI.Song_Mode =>
+            null;
 
-         when UI.Chord_Mode =>
-            Project.Chord_Sequencer.Chain.On_Release (Button);
-
-         when UI.Track_Mode | UI.Step_Mode | UI.FX_Mode =>
+         when UI.Track_Mode | UI.Step_Mode | UI.FX_Mode | UI.Pattern_Mode =>
             null;
       end case;
    end On_Release;
@@ -414,7 +409,7 @@ package body WNM.Project.Step_Sequencer is
       use WNM.Project.Chord_Sequencer;
       use MIDI;
 
-      Step : Step_Rec renames G_Project.Seqs (P) (T) (S);
+      Step : Step_Rec renames G_Project.Tracks (P).Patts (T).Seq (S);
 
       Note_Duration : constant Time.Time_Microseconds :=
         (case Step.Duration
@@ -487,29 +482,28 @@ package body WNM.Project.Step_Sequencer is
    -- Process_Step --
    ------------------
 
-   procedure Process_Step (Pattern : Patterns;
-                           Step : Sequencer_Steps)
+   procedure Process_Step (Track   : Tracks;
+                           Pattern : Patterns;
+                           Step    : Sequencer_Steps)
    is
       Condition : Boolean := False;
 
       Now : constant Time.Time_Microseconds := Time.Clock;
-
-      --  Now : constant Sample_Time := Sample_Clock;
-      --  Note_Duration : constant Sample_Time := Samples_Per_Beat / 4;
    begin
+
       if Step = Sequencer_Steps'First then
-         Pattern_Counter (Pattern) := Pattern_Counter (Pattern) + 1;
+         Pattern_Counter (Track, Pattern) := @ + 1;
       end if;
 
-      for Track in Tracks loop
-         declare
-            S : Step_Rec renames G_Project.Seqs (Pattern) (Track) (Step);
-         begin
-            --  Send CC first
-            Process_CC_Values (Pattern, Track, Step);
+      declare
+         S : Step_Rec renames
+           G_Project.Tracks (Pattern).Patts (Track).Seq (Step);
+      begin
+         --  Send CC first
+         Process_CC_Values (Pattern, Track, Step);
 
-            if not UI.Muted (Track) then
-               case S.Trig is
+         if not UI.Muted (Track) then
+            case S.Trig is
                when None =>
                   Condition := False;
                when Always =>
@@ -525,22 +519,21 @@ package body WNM.Project.Step_Sequencer is
                when Percent_75 =>
                   Condition := Random <= 75;
                when One_Of_Two =>
-                  Condition := Pattern_Counter (Pattern) mod 2 = 0;
+                  Condition := Pattern_Counter (Track, Pattern) mod 2 = 0;
                when One_Of_Three =>
-                  Condition := Pattern_Counter (Pattern) mod 3 = 0;
+                  Condition := Pattern_Counter (Track, Pattern) mod 3 = 0;
                when One_Of_Four =>
-                  Condition := Pattern_Counter (Pattern) mod 4 = 0;
+                  Condition := Pattern_Counter (Track, Pattern) mod 4 = 0;
                when One_Of_Five =>
-                  Condition := Pattern_Counter (Pattern) mod 5 = 0;
-               end case;
+                  Condition := Pattern_Counter (Track, Pattern) mod 5 = 0;
+            end case;
 
-               --  Play step?
-               if Condition then
-                  Play_Step (Pattern, Track, Step, Now);
-               end if;
+            --  Play step?
+            if Condition then
+               Play_Step (Pattern, Track, Step, Now);
             end if;
-         end;
-      end loop;
+         end if;
+      end;
    end Process_Step;
 
    ------------------
@@ -552,13 +545,12 @@ package body WNM.Project.Step_Sequencer is
 
       if Playing then
 
-         Process_Step (Pattern_Sequencer.Playing, Playing_Step);
+         for Track in Tracks loop
+            Process_Step (Track, Playheads (Track).P, Playheads (Track).S);
 
-         WNM.Step_Event_Broadcast.Broadcast (Current_Playing_Step);
+         end loop;
 
-         if Current_Playing_Step = Sequencer_Steps'Last then
-            Pattern_Sequencer.Goto_Next;
-         end if;
+         WNM.Step_Event_Broadcast.Broadcast;
 
          if (WNM.UI.FX_On (B2) or else WNM.UI.FX_On (B3))
            or else
@@ -579,6 +571,60 @@ package body WNM.Project.Step_Sequencer is
    end Execute_Step;
 
    ---------------------
+   -- Start_Playheads --
+   ---------------------
+
+   procedure Start_Playheads is
+   begin
+      for Track_Id in Tracks loop
+         Playheads (Track_Id).P := Patterns'First;
+         Playheads (Track_Id).S := Sequencer_Steps'First;
+         Arpeggiator.Signal_Start_Of_Pattern (Track_Id);
+      end loop;
+   end Start_Playheads;
+
+   --------------------
+   -- Move_Playheads --
+   --------------------
+
+   procedure Move_Playheads is
+      Current_Part : constant Parts := Song_Part_Sequencer.Playing;
+   begin
+      --  Put_Line ("Move Playheads!");
+      for Track_Id in Tracks loop
+         declare
+            PH    : Playhead renames Playheads (Track_Id);
+            Track : Track_Rec renames G_Project.Tracks (Track_Id);
+            Pat   : Pattern_Rec renames
+              G_Project.Tracks (Track_Id).Patts (PH.P);
+         begin
+            if PH.S >= Pat.Length then
+               PH.S := Sequencer_Steps'First;
+               Arpeggiator.Signal_Start_Of_Pattern (Track_Id);
+
+               --  We are at the end of the pattern, what do we do next?
+
+               --  Check if there's a pattern link
+               if PH.P /= Patterns'Last
+                 and then
+                  Track.Patts (PH.P).Has_Link
+               then
+                  --  Use pattern link
+                  PH.P := @ + 1;
+               else
+                  --  Look at song part to pick which pattern to play for this
+                  --  track.
+                  PH.P :=
+                    G_Project.Parts (Current_Part).Pattern_Select (Track_Id);
+               end if;
+            else
+               PH.S := @ + 1;
+            end if;
+         end;
+      end loop;
+   end Move_Playheads;
+
+   ---------------------
    -- MIDI_Clock_Tick --
    ---------------------
 
@@ -588,10 +634,14 @@ package body WNM.Project.Step_Sequencer is
       Clock_Div : constant MIDI.Time.Step_Count :=
         (if WNM.UI.FX_On (B2) then 3 else 6);
 
+      S : constant MIDI.Time.Step_Count := Step mod Clock_Div;
    begin
-      if (Step mod Clock_Div) = 0 then
+      if S = 0 then
          Execute_Step;
+      elsif S = (Clock_Div - 1) then
+         Move_Playheads;
       end if;
+
    end MIDI_Clock_Tick;
 
    ---------------------
@@ -602,9 +652,10 @@ package body WNM.Project.Step_Sequencer is
    begin
       Playing := True;
 
+      Start_Playheads;
+
       Current_Playing_Step := Sequencer_Steps'First;
 
-      Pattern_Sequencer.Start;
       WNM.Project.Chord_Sequencer.Start;
    end MIDI_Song_Start;
 
@@ -614,8 +665,10 @@ package body WNM.Project.Step_Sequencer is
 
    procedure MIDI_Song_Stop is
    begin
-      Pattern_Sequencer.Stop;
-      WNM.Project.Chord_Sequencer.Stop;
+      WNM.Project.Song_Part_Sequencer.Start;
+
+      --  Clear counters
+      Pattern_Counter := (others => (others => 0));
 
       Playing := False;
    end MIDI_Song_Stop;

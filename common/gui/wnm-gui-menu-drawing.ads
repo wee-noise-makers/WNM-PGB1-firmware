@@ -34,6 +34,8 @@ package WNM.GUI.Menu.Drawing is
    Box_Left   : constant := 0; -- Bitmap_Fonts.Width;
    Box_Right  : constant := Screen.Width - 1; -- Box_Left;
 
+   Box_Width : constant := Box_Right - Box_Left;
+   Box_Height : constant := Box_Bottom - Box_Top;
    Box_Center : constant Screen.Point := ((Box_Right + Box_Left) / 2,
                                           (Box_Top + Box_Bottom) / 2);
 
