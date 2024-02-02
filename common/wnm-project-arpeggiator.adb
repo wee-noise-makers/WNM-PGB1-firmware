@@ -21,14 +21,8 @@
 
 with WNM.Chord_Settings;
 with WNM.Project.Chord_Sequencer;
-with WNM.Step_Event_Broadcast;
 
 package body WNM.Project.Arpeggiator is
-
-   procedure Step_Callback (Step : Sequencer_Steps);
-
-   Step_Listener : aliased Step_Event_Broadcast.Listener
-     (Step_Callback'Access);
 
    type Arp_Pattern is array (Natural range <>) of
      WNM.Chord_Settings.Chord_Index_Range;
@@ -107,29 +101,15 @@ package body WNM.Project.Arpeggiator is
       return Current_Chord (Note_Index);
    end Next_Note;
 
-   ---------------------------
-   -- Signal_End_Of_Pattern --
-   ---------------------------
+   -----------------------------
+   -- Signal_Start_Of_Pattern --
+   -----------------------------
 
-   procedure Signal_End_Of_Pattern is
+   procedure Signal_Start_Of_Pattern (T : Tracks) is
    begin
-      --  Reset all arps before the start of next pattern
-      for Elt of Arpeggiators loop
-         Elt.Next_Index := 0;
-      end loop;
-   end Signal_End_Of_Pattern;
 
-   -------------------
-   -- Step_Callback --
-   -------------------
+      --  Reset arp before the start of next pattern
+      Arpeggiators (T).Next_Index := 0;
+   end Signal_Start_Of_Pattern;
 
-   procedure Step_Callback (Step : Sequencer_Steps) is
-   begin
-      if Step = 16 then
-         Signal_End_Of_Pattern;
-      end if;
-   end Step_Callback;
-
-begin
-   Step_Event_Broadcast.Register (Step_Listener'Access);
 end WNM.Project.Arpeggiator;

@@ -33,8 +33,10 @@ private package WNM.Project.Storage.File_Out is
    procedure Start_Chord_Chain (This : in out Instance);
    procedure Start_Pattern_Chain (This : in out Instance);
 
-   procedure Start_Chord_Settings (This : in out Instance; C : Chords);
-   procedure Start_Track_Settings (This : in out Instance; T : Tracks);
+   procedure Start_Chord_Settings (This : in out Instance;
+                                   C : Chord_Progressions);
+   procedure Start_Track_Settings (This : in out Instance;
+                                   T : Tracks);
 
    procedure Start_Sequence (This : in out Instance);
    procedure Start_Step_Settings (This : in out Instance;

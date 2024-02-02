@@ -46,13 +46,13 @@ package body WNM.Step_Event_Broadcast is
    -- Broadcast --
    ---------------
 
-   procedure Broadcast (Step : Sequencer_Steps) is
+   procedure Broadcast is
       Ptr : Listener_Acess := Head;
    begin
 
       --  Check if node is already in the list
       while Ptr /= null loop
-         Ptr.CB (Step);
+         Ptr.CB.all;
          Ptr := Ptr.Next;
       end loop;
    end Broadcast;

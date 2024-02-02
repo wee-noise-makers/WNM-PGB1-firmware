@@ -19,6 +19,8 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with WNM.Project; use WNM.Project;
+
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
 
 package body WNM.GUI.Menu.Pattern_Settings is
@@ -44,7 +46,8 @@ package body WNM.GUI.Menu.Pattern_Settings is
 
    function To_Top (S : Sub_Settings) return Top_Settings
    is (case S is
-          when Sub_Nothing => Top_Nothing);
+          when Length   => Only_This,
+          when Has_Link => Only_This);
 
    ----------
    -- Draw --
@@ -61,8 +64,24 @@ package body WNM.GUI.Menu.Pattern_Settings is
                      Index => Top_Settings'Pos (Top));
 
       case Top is
-         when Top_Nothing =>
-            Draw_Title ("Nothing here...", "");
+         when Only_This =>
+            case Sub is
+               when Length =>
+                  Draw_Title ("Length", "");
+               when Has_Link =>
+                  Draw_Title ("Link", "");
+            end case;
+
+            Draw_Value_Pos (Project.Pattern_Length'Img & " steps",
+                            4,
+                            Selected => Sub = Length);
+
+            Draw_Value_Pos
+              ((if Project.Link
+                then "Link"
+                else "X"),
+               70,
+               Selected => Sub = Has_Link);
       end case;
 
    end Draw;
@@ -82,15 +101,15 @@ package body WNM.GUI.Menu.Pattern_Settings is
          when Right_Press =>
             Next (This.Current_Setting);
          when Up_Press =>
-            null;
+            Project.Next_Value (This.Current_Setting);
          when Down_Press =>
-            null;
+            Project.Prev_Value (This.Current_Setting);
          when A_Press =>
             null;
          when B_Press =>
             null;
          when Slider_Touch =>
-            null; --  TODO
+            Project.Set (This.Current_Setting, Event.Slider_Value);
       end case;
 
    end On_Event;

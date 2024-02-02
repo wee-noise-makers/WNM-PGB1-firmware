@@ -21,10 +21,11 @@
 
 with MIDI; use MIDI;
 with WNM.Step_Event_Broadcast;
+with WNM.Project.Song_Part_Sequencer;
 
 package body WNM.Project.Chord_Sequencer is
 
-   procedure Step_Callback (Step : Sequencer_Steps);
+   procedure Step_Callback;
 
    Step_Listener : aliased Step_Event_Broadcast.Listener
      (Step_Callback'Access);
@@ -34,119 +35,139 @@ package body WNM.Project.Chord_Sequencer is
 
    C_Tonic : MIDI_Key := MIDI.C4;
    C_Chord_Name : Chord_Name := Chord_Name'First;
-   C_Chord : Chord_Notes := (others => MIDI.C4);
+   C_Chord : Chord_Notes := (others => 1);
 
    G_Steps_Count : Natural := 0;
 
-   Init_Scale_Root : constant MIDI.MIDI_Key := MIDI.C4;
-   Init_Scale      : constant Scale_Name := Minor_Scale;
-   Init_Chords     : constant Chord_Arr :=
-     (1 => (Init_Scale_Root + Scales (Init_Scale)(0),
-            Substitutions (Scale_Chords (Init_Scale)(0)).Sub (1),
-            Default_Chord.Duration),
+   C_Progression : WNM.Chord_Progressions := WNM.Chord_Progressions'First;
+   C_Chord_Id    : Chord_Slot_Id := Chord_Slot_Id'First;
 
-      2 => (Init_Scale_Root + Scales (Init_Scale)(1),
-            Substitutions (Scale_Chords (Init_Scale)(1)).Sub (1),
-            Default_Chord.Duration),
-
-      3 => (Init_Scale_Root + Scales (Init_Scale)(2),
-            Substitutions (Scale_Chords (Init_Scale)(2)).Sub (1),
-            Default_Chord.Duration),
-
-      4 => (Init_Scale_Root + Scales (Init_Scale)(3),
-            Substitutions (Scale_Chords (Init_Scale)(3)).Sub (1),
-            Default_Chord.Duration),
-
-      5 => (Init_Scale_Root + Scales (Init_Scale)(4),
-            Substitutions (Scale_Chords (Init_Scale)(4)).Sub (1),
-            Default_Chord.Duration),
-
-      6 => (Init_Scale_Root + Scales (Init_Scale)(5),
-            Substitutions (Scale_Chords (Init_Scale)(5)).Sub (1),
-            Default_Chord.Duration),
-
-      7 => (Init_Scale_Root + Scales (Init_Scale)(6),
-            Substitutions (Scale_Chords (Init_Scale)(6)).Sub (1),
-            Default_Chord.Duration),
-
-      8 => (Init_Scale_Root + Scales (Init_Scale)(0),
-            Substitutions (Scale_Chords (Init_Scale)(0)).Sub (3),
-            Default_Chord.Duration),
-
-      9 => (Init_Scale_Root + Scales (Init_Scale)(0),
-            Substitutions (Scale_Chords (Init_Scale)(0)).Sub (2),
-            Default_Chord.Duration),
-
-      10 => (Init_Scale_Root + Scales (Init_Scale)(1),
-             Substitutions (Scale_Chords (Init_Scale)(1)).Sub (2),
-             Default_Chord.Duration),
-
-      11 => (Init_Scale_Root + Scales (Init_Scale)(2),
-             Substitutions (Scale_Chords (Init_Scale)(2)).Sub (2),
-             Default_Chord.Duration),
-
-      12 => (Init_Scale_Root + Scales (Init_Scale)(3),
-             Substitutions (Scale_Chords (Init_Scale)(3)).Sub (2),
-             Default_Chord.Duration),
-
-      13 => (Init_Scale_Root + Scales (Init_Scale)(4),
-             Substitutions (Scale_Chords (Init_Scale)(4)).Sub (2),
-             Default_Chord.Duration),
-
-      14 => (Init_Scale_Root + Scales (Init_Scale)(5),
-             Substitutions (Scale_Chords (Init_Scale)(5)).Sub (2),
-             Default_Chord.Duration),
-
-      15 => (Init_Scale_Root + Scales (Init_Scale)(6),
-             Substitutions (Scale_Chords (Init_Scale)(6)).Sub (2),
-             Default_Chord.Duration),
-
-      16 => (Init_Scale_Root + Scales (Init_Scale)(0),
-             Substitutions (Scale_Chords (Init_Scale)(0)).Sub (4),
-             Default_Chord.Duration)
-     );
+   --  Init_Scale_Root : constant MIDI.MIDI_Key := MIDI.C4;
+   --  Init_Scale      : constant Scale_Name := Minor_Scale;
+   --  Init_Chords     : constant Chord_Arr :=
+   --    (1 => (Init_Scale_Root + Scales (Init_Scale)(0),
+   --           Substitutions (Scale_Chords (Init_Scale)(0)).Sub (1),
+   --           Default_Chord.Duration),
+   --
+   --     2 => (Init_Scale_Root + Scales (Init_Scale)(1),
+   --           Substitutions (Scale_Chords (Init_Scale)(1)).Sub (1),
+   --           Default_Chord.Duration),
+   --
+   --     3 => (Init_Scale_Root + Scales (Init_Scale)(2),
+   --           Substitutions (Scale_Chords (Init_Scale)(2)).Sub (1),
+   --           Default_Chord.Duration),
+   --
+   --     4 => (Init_Scale_Root + Scales (Init_Scale)(3),
+   --           Substitutions (Scale_Chords (Init_Scale)(3)).Sub (1),
+   --           Default_Chord.Duration),
+   --
+   --     5 => (Init_Scale_Root + Scales (Init_Scale)(4),
+   --           Substitutions (Scale_Chords (Init_Scale)(4)).Sub (1),
+   --           Default_Chord.Duration),
+   --
+   --     6 => (Init_Scale_Root + Scales (Init_Scale)(5),
+   --           Substitutions (Scale_Chords (Init_Scale)(5)).Sub (1),
+   --           Default_Chord.Duration),
+   --
+   --     7 => (Init_Scale_Root + Scales (Init_Scale)(6),
+   --           Substitutions (Scale_Chords (Init_Scale)(6)).Sub (1),
+   --           Default_Chord.Duration),
+   --
+   --     8 => (Init_Scale_Root + Scales (Init_Scale)(0),
+   --           Substitutions (Scale_Chords (Init_Scale)(0)).Sub (3),
+   --           Default_Chord.Duration),
+   --
+   --     9 => (Init_Scale_Root + Scales (Init_Scale)(0),
+   --           Substitutions (Scale_Chords (Init_Scale)(0)).Sub (2),
+   --           Default_Chord.Duration),
+   --
+   --     10 => (Init_Scale_Root + Scales (Init_Scale)(1),
+   --            Substitutions (Scale_Chords (Init_Scale)(1)).Sub (2),
+   --            Default_Chord.Duration),
+   --
+   --     11 => (Init_Scale_Root + Scales (Init_Scale)(2),
+   --            Substitutions (Scale_Chords (Init_Scale)(2)).Sub (2),
+   --            Default_Chord.Duration),
+   --
+   --     12 => (Init_Scale_Root + Scales (Init_Scale)(3),
+   --            Substitutions (Scale_Chords (Init_Scale)(3)).Sub (2),
+   --            Default_Chord.Duration),
+   --
+   --     13 => (Init_Scale_Root + Scales (Init_Scale)(4),
+   --            Substitutions (Scale_Chords (Init_Scale)(4)).Sub (2),
+   --            Default_Chord.Duration),
+   --
+   --     14 => (Init_Scale_Root + Scales (Init_Scale)(5),
+   --            Substitutions (Scale_Chords (Init_Scale)(5)).Sub (2),
+   --            Default_Chord.Duration),
+   --
+   --     15 => (Init_Scale_Root + Scales (Init_Scale)(6),
+   --            Substitutions (Scale_Chords (Init_Scale)(6)).Sub (2),
+   --            Default_Chord.Duration),
+   --
+   --     16 => (Init_Scale_Root + Scales (Init_Scale)(0),
+   --            Substitutions (Scale_Chords (Init_Scale)(0)).Sub (4),
+   --            Default_Chord.Duration)
+   --    );
 
    -----------
    -- Start --
    -----------
 
    procedure Start is
+      Part : constant Parts := Project.Song_Part_Sequencer.Playing;
+      Prog : constant WNM.Chord_Progressions :=
+        G_Project.Parts (Part).Progression;
    begin
-      Chain.Start;
+      C_Progression := Prog;
+      C_Chord_Id := Chord_Slot_Id'First;
+
       Update_Current;
    end Start;
-
-   ----------
-   -- Stop --
-   ----------
-
-   procedure Stop is
-   begin
-      Chain.Stop;
-   end Stop;
-
-   -------------------------
-   -- Signal_End_Of_Chord --
-   -------------------------
-
-   procedure Signal_End_Of_Chord is
-   begin
-      Chain.Goto_Next;
-      Update_Current;
-   end Signal_End_Of_Chord;
 
    -------------------
    -- Step_Callback --
    -------------------
 
-   procedure Step_Callback (Step : Sequencer_Steps) is
-      pragma Unreferenced (Step);
-      C : constant WNM.Chords := Chain.Playing;
+   procedure Step_Callback is
+      Part : constant Parts := Project.Song_Part_Sequencer.Playing;
+      New_Prog : constant WNM.Chord_Progressions :=
+        G_Project.Parts (Part).Progression;
    begin
-      G_Steps_Count := G_Steps_Count + 1;
 
-      if G_Steps_Count >= Natural (G_Project.Chords (C).Duration) then
-         Signal_End_Of_Chord;
+      --  Ada.Text_IO.Put_Line ("--------------------------------");
+      --  Ada.Text_IO.Put_Line ("Step callback");
+      if New_Prog /= C_Progression then
+         --  Ada.Text_IO.Put_Line ("New PROGRESSION");
+         --  There's a new progression in town
+         G_Steps_Count := 0;
+         C_Progression := New_Prog;
+         C_Chord_Id := Chord_Slot_Id'First;
+         Update_Current;
+      else
+
+         declare
+            Prog : Chord_Progression_Rec renames
+              G_Project.Progressions (C_Progression);
+            Chord : Chord_Rec renames Prog.Chords (C_Chord_Id);
+         begin
+            --  Ada.Text_IO.Put_Line ("G_Steps_Count:" & G_Steps_Count'Img);
+            --  Ada.Text_IO.Put_Line ("Chord_Duration:" & Chord.Duration'Img);
+            if G_Steps_Count >= Natural (Chord.Duration) then
+               --  End of this chord, going to the next one
+
+               if C_Chord_Id >= Prog.Len then
+                  C_Chord_Id := Chord_Slot_Id'First;
+               else
+                  C_Chord_Id := @ + 1;
+               end if;
+
+               G_Steps_Count := 0;
+               Update_Current;
+            else
+               G_Steps_Count := @ + 1;
+            end if;
+         end;
       end if;
    end Step_Callback;
 
@@ -185,17 +206,19 @@ package body WNM.Project.Chord_Sequencer is
    --------------------
 
    procedure Update_Current is
-      C : constant WNM.Chords := Chain.Playing;
    begin
-      G_Steps_Count := 0;
-      C_Tonic := G_Project.Chords (C).Tonic;
-      C_Chord_Name := G_Project.Chords (C).Name;
+      C_Tonic :=
+        G_Project.Progressions (C_Progression).Chords (C_Chord_Id).Tonic;
+
+      C_Chord_Name :=
+        G_Project.Progressions (C_Progression).Chords (C_Chord_Id).Name;
+
       C_Chord := C_Tonic + WNM.Chord_Settings.Chords (C_Chord_Name);
    end Update_Current;
 
 begin
    --  Set default values for chords
-   G_Project.Chords := Init_Chords;
+   --  G_Project.Chords := Init_Chords;
 
    Step_Event_Broadcast.Register (Step_Listener'Access);
 end WNM.Project.Chord_Sequencer;

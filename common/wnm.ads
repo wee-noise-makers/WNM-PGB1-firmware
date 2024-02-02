@@ -38,7 +38,9 @@ package WNM is
 
    subtype Tracks is Keyboard_Value;
    subtype Patterns is Keyboard_Value;
-   subtype Chords is Keyboard_Value;
+   subtype Song_Element is Keyboard_Value;
+   subtype Parts is Song_Element range 1 .. 8;
+   subtype Chord_Progressions is Song_Element range 9 .. 16;
 
    -- Mixer --
    type FX_Kind is (Bypass, Overdrive, Reverb, Filter, Bitcrusher);

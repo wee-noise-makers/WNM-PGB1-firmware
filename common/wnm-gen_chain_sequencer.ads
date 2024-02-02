@@ -27,6 +27,7 @@ with WNM.File_System.LEB128_File_In;
 
 generic
    Max_Patterns_In_Sequence : Natural := 30;
+
 package WNM.Gen_Chain_Sequencer is
 
    procedure Start_Recording;

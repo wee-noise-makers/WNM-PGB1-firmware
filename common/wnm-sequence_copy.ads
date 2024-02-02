@@ -21,40 +21,45 @@
 
 package WNM.Sequence_Copy is
 
-   type Addr_State is (None, Pattern, Track, Step);
-   type Copy_Kind is (Pattern, Track, Step);
+   type Addr_State is (None, Track, Pattern, Step);
+   type Copy_Kind is (Track, Pattern, Step);
 
    type Copy_Addr is record
-      State   : Addr_State;
-      Kind    : Copy_Kind;
-      P, T, S : Keyboard_Value := 1;
+      State   : Addr_State := None;
+      Kind    : Copy_Kind := Track;
+      T       : Tracks := 1;
+      P       : Patterns := 1;
+      S       : Sequencer_Steps := 1;
    end record;
 
    function Is_Complete (A : Copy_Addr) return Boolean
    is (case A.Kind is
-          when Pattern => A.State = Pattern,
           when Track   => A.State = Track,
+          when Pattern => A.State = Pattern,
           when Step    => A.State = Step);
 
    function Image (A : Copy_Addr; Q : String := "??") return String
    is (case A.Kind is
 
-          when Pattern =>
-         (if A.State = Pattern then "P" & Img (A.P) else "P" & Q),
-
           when Track =>
          (case A.State is
-             when None => "P" & Q & "-T__",
-             when Pattern => "P" & Img (A.P) & "-T" & Q,
-             when Track => "P" & Img (A.P) & "-T" & Img (A.T),
+             when None  => "T" & Q,
+             when Track => "T" & Img (A.T),
+             when others => raise Program_Error),
+
+          when Pattern =>
+         (case A.State is
+             when None    => "T" & Q & "-P__",
+             when Track   => "T" & Img (A.T) & "-P" & Q,
+             when Pattern => "T" & Img (A.T) & "-P" & Img (A.P),
              when others => raise Program_Error),
 
           when Step =>
          (case A.State is
-             when None => "P" & Q & "-T__-S__",
-             when Pattern => "P" & Img (A.P) & "-T" & Q & "-S__",
-             when Track => "P" & Img (A.P) & "-T" & Img (A.T) & "-S" & Q,
-             when Step => "P" & Img (A.P) & "-T" & Img (A.T) & "-S" &
+             when None    => "T" & Q & "-P__-S__",
+             when Track   => "T" & Img (A.T) & "-P" & Q & "-S__",
+             when Pattern => "T" & Img (A.T) & "-P" & Img (A.P) & "-S" & Q,
+             when Step    => "T" & Img (A.T) & "-P" & Img (A.P) & "-S" &
             Img (A.S)));
 
    type Copy_Transaction is record
@@ -67,11 +72,12 @@ package WNM.Sequence_Copy is
    procedure Apply (T : in out Copy_Transaction;
                     B :        Button);
 
-   function Start_Copy_Pattern return Copy_Transaction;
+   function Start_Copy_Track return Copy_Transaction;
 
-   function Start_Copy_Track (Current_Pattern : Keyboard_Value)
-                              return Copy_Transaction;
+   function Start_Copy_Pattern (Current_Track : Tracks)
+                               return Copy_Transaction;
 
-   function Start_Copy_Step (Current_Pattern, Current_Track : Keyboard_Value)
+   function Start_Copy_Step (Current_Track : Tracks;
+                             Current_Pattern : Patterns)
                              return Copy_Transaction;
 end WNM.Sequence_Copy;

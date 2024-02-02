@@ -24,7 +24,6 @@ with WNM.GUI.Bitmap_Fonts;  use WNM.GUI.Bitmap_Fonts;
 with WNM.GUI.Parameters;
 with WNM.Screen;
 with WNM.UI;
-with WNM.Project.Step_Sequencer;
 with WNM.Sequence_Copy;     use WNM.Sequence_Copy;
 with WNM.GUI.Menu;
 with WNM.GUI.Menu.Drawing;  use WNM.GUI.Menu.Drawing;
@@ -37,14 +36,6 @@ with WNM.Time;
 package body WNM.GUI.Update is
 
    Anim_Step : HAL.UInt32 := 0;
-
-   function Header_Str return String is
-      Result : String (1 .. 7) := "P00:S00";
-   begin
-      Result (2 .. 3) := Img (Project.Step_Sequencer.Playing_Pattern);
-      Result (6 .. 7) := Img (Project.Step_Sequencer.Playing_Step);
-      return Result;
-   end Header_Str;
 
    ------------
    -- Update --
@@ -72,10 +63,6 @@ package body WNM.GUI.Update is
       Print (X_Offset    => B,
              Y_Offset    => 0,
              Str         => Project.Track_Name);
-      B := Screen.Width - 42;
-      Print (X_Offset    => B,
-             Y_Offset    => 0,
-             Str         => Header_Str);
       Screen.Draw_H_Line (8);
 
       case WNM.UI.Input_GUI_Mode is
@@ -123,7 +110,7 @@ package body WNM.GUI.Update is
          when WNM.UI.Pattern_Mode |
               WNM.UI.Track_Mode |
               WNM.UI.Step_Mode |
-              WNM.UI.Chord_Mode |
+              WNM.UI.Song_Mode |
               WNM.UI.FX_Mode =>
 
             Menu.Draw;
@@ -160,7 +147,7 @@ package body WNM.GUI.Update is
          when WNM.UI.Step_Select |
               WNM.UI.Track_Select |
               WNM.UI.Pattern_Select |
-              WNM.UI.Chord_Select
+              WNM.UI.Song_Select
             =>
             raise Program_Error with
               "These mode are not expected for the GUI";

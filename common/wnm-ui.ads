@@ -35,13 +35,13 @@ package WNM.UI is
    type Input_Mode_Type is (Pattern_Mode,
                             Track_Mode,
                             Step_Mode,
-                            Chord_Mode,
+                            Song_Mode,
                             FX_Mode,
 
                             Pattern_Select,
                             Track_Select,
                             Step_Select,
-                            Chord_Select,
+                            Song_Select,
 
                             Volume_BPM_Mute,
                             Volume_BPM_Solo,

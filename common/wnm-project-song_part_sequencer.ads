@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                  Copyright (C) 2016-2022 Fabien Chouteau                  --
+--                     Copyright (C) 2022 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,6 +19,10 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Gen_Chain_Sequencer;
+package WNM.Project.Song_Part_Sequencer is
 
-package WNM.Pattern_Sequencer is new WNM.Gen_Chain_Sequencer;
+   procedure Start;
+
+   function Playing return Parts;
+
+end WNM.Project.Song_Part_Sequencer;

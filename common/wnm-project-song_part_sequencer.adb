@@ -19,18 +19,67 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-package WNM.Project.Arpeggiator is
+with WNM.Step_Event_Broadcast;
 
-   function Next_Note (T : Tracks) return MIDI.MIDI_Key;
+with Ada.Text_IO;
 
-   procedure Signal_Start_Of_Pattern (T : Tracks);
+package body WNM.Project.Song_Part_Sequencer is
 
-private
+   Playing_Part : WNM.Parts := WNM.Parts'First;
+   Origin       : WNM.Parts := WNM.Parts'First;
 
-   type Arpeggiator_Rec is record
-      Next_Index : Natural := 0;
-   end record;
+   procedure Step_Callback;
 
-   Arpeggiators : array (Tracks) of Arpeggiator_Rec;
+   Step_Listener : aliased Step_Event_Broadcast.Listener
+     (Step_Callback'Access);
 
-end WNM.Project.Arpeggiator;
+   G_Steps_Count : Natural := 0;
+
+   -----------
+   -- Start --
+   -----------
+
+   procedure Start is
+   begin
+      Origin := G_Project.Part_Origin;
+      Playing_Part := Origin;
+      G_Steps_Count := 0;
+   end Start;
+
+   -------------------
+   -- Step_Callback --
+   -------------------
+
+   procedure Step_Callback is
+   begin
+      G_Steps_Count := G_Steps_Count + 1;
+
+      if G_Steps_Count >= 16 then
+         if G_Project.Part_Origin /= Origin then
+            --  New origin, play this next
+            Origin := G_Project.Part_Origin;
+            Playing_Part := Origin;
+
+         elsif G_Project.Parts (Playing_Part).Link then
+            --  There's link
+            Playing_Part := @ + 1;
+         else
+            --  Start back to origin
+            Playing_Part := G_Project.Part_Origin;
+         end if;
+
+         Ada.Text_IO.Put_Line ("Going to Part" & Playing_Part'Img);
+         G_Steps_Count := 0;
+      end if;
+   end Step_Callback;
+
+   -------------
+   -- Playing --
+   -------------
+
+   function Playing return Parts
+   is (Playing_Part);
+
+begin
+   Step_Event_Broadcast.Register (Step_Listener'Access);
+end WNM.Project.Song_Part_Sequencer;

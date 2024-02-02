@@ -44,6 +44,7 @@ package WNM.LEDs is
    Track       : constant Hue := Azure;
    Pattern     : constant Hue := Blue;
    Chord       : constant Hue := Orange;
+   Part        : constant Hue := Chartreuse;
    FX          : constant Hue := Violet;
 
    procedure Set_Hue (H : Hue);

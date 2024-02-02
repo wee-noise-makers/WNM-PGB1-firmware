@@ -46,7 +46,7 @@ package body WNM.GUI.Menu.Drawing is
    Title_Y_Offset : constant := 10;
    Scroll_Bar_Y_Offset : constant := 19;
 
-   Value_Text_Y : constant := Box_Bottom - 13;
+   Value_Text_Y : constant := Box_Bottom - 11;
    Title_Text_Y : constant := Box_Top + 4;
 
    Arrow_Y_Offset : constant := Box_Top - Bitmap_Fonts.Height - 2;

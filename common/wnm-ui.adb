@@ -21,8 +21,7 @@
 
 with WNM.Project;
 with WNM.Project.Step_Sequencer;
-with WNM.Project.Chord_Sequencer;
-with WNM.Pattern_Sequencer;
+with WNM.Project.Song_Part_Sequencer;
 with WNM.MIDI_Clock; use WNM.MIDI_Clock;
 with WNM.GUI.Menu;
 with WNM.GUI.Menu.Root;
@@ -77,7 +76,7 @@ package body WNM.UI is
       if Current_Input_Mode in Pattern_Select |
                                Track_Select |
                                Step_Select |
-                               Chord_Select
+                               Song_Select
       then
          return Last_Main_Mode;
       else
@@ -149,7 +148,7 @@ package body WNM.UI is
                      Current_Input_Mode := Step_Select;
                      Select_Done := False;
                   when Chord_Button =>
-                     Current_Input_Mode := Chord_Select;
+                     Current_Input_Mode := Song_Select;
                      Select_Done := False;
 
                   when Func =>
@@ -165,18 +164,6 @@ package body WNM.UI is
 
                   when Rec =>
                      case Current_Input_Mode is
-                        when Pattern_Mode =>
-                           if Recording then
-                              Pattern_Sequencer.End_Recording;
-                           else
-                              Pattern_Sequencer.Start_Recording;
-                           end if;
-                        when Chord_Mode =>
-                           if Recording then
-                              Project.Chord_Sequencer.Chain.End_Recording;
-                           else
-                              Project.Chord_Sequencer.Chain.Start_Recording;
-                           end if;
                         when others =>
                            null;
                      end case;
@@ -300,10 +287,10 @@ package body WNM.UI is
                when others => null;
             end case;
 
-         when Chord_Select =>
+         when Song_Select =>
             case B is
                when Keyboard_Button =>
-                  Project.Editing_Chord := To_Value (B);
+                  Project.Editing_Song_Elt := To_Value (B);
                   Select_Done := True;
 
                when Chord_Button =>
@@ -313,8 +300,8 @@ package body WNM.UI is
                         Current_Input_Mode := Last_Main_Mode;
 
                      else
-                        --  Switch to pattern mode
-                        Current_Input_Mode := Chord_Mode;
+                        --  Switch to song mode
+                        Current_Input_Mode := Song_Mode;
                         GUI.Menu.Open (GUI.Menu.Chord_Menu);
                         Last_Main_Mode := Current_Input_Mode;
 
@@ -335,21 +322,21 @@ package body WNM.UI is
                         Select_Done := True;
 
                      when Pattern_Button =>
-                        Copy_T := WNM.Sequence_Copy.Start_Copy_Pattern;
+                        Copy_T := WNM.Sequence_Copy.Start_Copy_Pattern
+                          (Project.Editing_Track);
                         Current_Input_Mode := Copy;
                         Select_Done := True;
 
                      when Track_Button =>
-                        Copy_T := WNM.Sequence_Copy.Start_Copy_Track
-                          (Project.Editing_Pattern);
+                        Copy_T := WNM.Sequence_Copy.Start_Copy_Track;
 
                         Current_Input_Mode := Copy;
                         Select_Done := True;
 
                      when Step_Button =>
                         Copy_T := WNM.Sequence_Copy.Start_Copy_Step
-                          (Project.Editing_Pattern,
-                           Project.Editing_Track);
+                          (Project.Editing_Track,
+                           Project.Editing_Pattern);
 
                         Current_Input_Mode := Copy;
                         Select_Done := True;
@@ -597,9 +584,15 @@ package body WNM.UI is
       -- Play LED --
       if WNM.MIDI_Clock.Running  then
          --  LEDs.Turn_On (Play);
-         if Project.Step_Sequencer.Playing_Step not in 1 | 5 | 9 | 13 then
+         if WNM.MIDI_Clock.Step in 1 | 24 then
             LEDs.Turn_On (Play, LEDs.Play);
          end if;
+      end if;
+
+      --  The FX LED is on if there's at least one FX enabled
+      LEDs.Set_Hue (LEDs.FX);
+      if (for some B in Keyboard_Button => FX_Is_On (B)) then
+         LEDs.Turn_On (Func);
       end if;
 
       --  B1 .. B16 LEDs --
@@ -607,12 +600,9 @@ package body WNM.UI is
 
          -- FX selection mode --
          when FX_Alt =>
-            --  The FX LED will be on if there's at least one FX enabled
 
             LEDs.Set_Hue (LEDs.FX);
-            LEDs.Turn_On (Func);
-
-            for B in B1 .. B16 loop
+            for B in Keyboard_Button loop
                if FX_Is_On (B) then
                   LEDs.Turn_On (B);
                end if;
@@ -620,34 +610,36 @@ package body WNM.UI is
 
             -- Step select mode --
          when Step_Select =>
-            for B in B1 .. B16 loop
-               if Project.Editing_Step = To_Value (B) then
-                  LEDs.Turn_On (B, LEDs.Step);
-               end if;
-            end loop;
+            LEDs.Set_Hue (LEDs.Step);
+            LEDs.Turn_On (To_Button (Project.Editing_Step));
 
             -- Track assign mode --
          when Track_Select =>
-            for B in B1 .. B16 loop
-               if Project.Editing_Track = To_Value (B) then
-                  LEDs.Turn_On (B, LEDs.Track);
-               end if;
-            end loop;
+            LEDs.Set_Hue (LEDs.Track);
+            LEDs.Turn_On (To_Button (Project.Editing_Track));
 
             --  Pattern select --
          when Pattern_Select =>
-            for B in B1 .. B16 loop
-               if Project.Editing_Pattern = To_Value (B) then
-                  LEDs.Turn_On (B, LEDs.Pattern);
-               end if;
-            end loop;
+            LEDs.Set_Hue (LEDs.Pattern);
+            LEDs.Turn_On (To_Button (Project.Editing_Pattern));
 
-         --  Volume and BPM mode --
+            --  Song Part select --
+         when Song_Select =>
+            case Project.Editing_Song_Elt is
+               when Parts =>
+                  LEDs.Set_Hue (LEDs.Part);
+               when Chord_Progressions =>
+                  LEDs.Set_Hue (LEDs.Chord);
+            end case;
+            LEDs.Turn_On (To_Button (Project.Editing_Song_Elt));
+
+            --  Volume and BPM mode --
          when Volume_BPM_Mute | Volume_BPM_Solo =>
 
             LEDs.Set_Hue (LEDs.Track);
 
             if Solo_Mode_Enabled then
+               LEDs.Turn_On (Track_Button);
                LEDs.Turn_On (To_Button (Solo));
             else
                for B in B1 .. B16 loop
@@ -662,39 +654,24 @@ package body WNM.UI is
             when Pattern_Mode =>
                LEDs.Set_Hue (LEDs.Pattern);
                LEDs.Turn_On (Pattern_Button);
-               for B in B1 .. B16 loop
-                  if Pattern_Sequencer.Is_In_Sequence (To_Value (B))
-                  then
-                     LEDs.Turn_On (B);
-                  end if;
-               end loop;
+               LEDs.Turn_On (To_Button (Project.Editing_Pattern));
 
-               --  Blinking playing pattern
-               if WNM.MIDI_Clock.Running then
-                  if Project.Step_Sequencer.Playing_Step in 1 | 5 | 9 | 13
-                  then
-                     LEDs.Turn_On (To_Button (Pattern_Sequencer.Playing),
-                                   LEDs.Play);
-                  end if;
-               end if;
+            when Song_Mode =>
+               case Project.Editing_Song_Elt is
+               when Parts =>
+                  LEDs.Set_Hue (LEDs.Part);
+               when Chord_Progressions =>
+                  LEDs.Set_Hue (LEDs.Chord);
+               end case;
 
-            when Chord_Mode =>
-               LEDs.Set_Hue (LEDs.Chord);
                LEDs.Turn_On (Chord_Button);
-               for B in B1 .. B16 loop
-                  if Project.Chord_Sequencer.Chain.Is_In_Sequence
-                    (To_Value (B))
-                  then
-                     LEDs.Turn_On (B);
-                  end if;
-               end loop;
+               LEDs.Turn_On (To_Button (Project.Editing_Song_Elt));
 
                --  Blinking playing Chord
                if WNM.MIDI_Clock.Running then
-                  if Project.Step_Sequencer.Playing_Step in 1 | 5 | 9 | 13
-                  then
+                  if WNM.MIDI_Clock.Step in 1 | 24 then
                      LEDs.Turn_On
-                       (To_Button (Project.Chord_Sequencer.Chain.Playing),
+                       (To_Button (Project.Song_Part_Sequencer.Playing),
                         LEDs.Play);
                   end if;
                end if;
@@ -705,43 +682,39 @@ package body WNM.UI is
                LEDs.Turn_On (Track_Button);
 
                --  Playing step
-               if WNM.MIDI_Clock.Running then
-                  LEDs.Turn_On
-                    (To_Button (Project.Step_Sequencer.Playing_Step),
-                     LEDs.Play);
-               end if;
+               --  if WNM.MIDI_Clock.Running then
+               --     LEDs.Turn_On
+               --       (To_Button (Project.Step_Sequencer.Playing_Step),
+               --        LEDs.Play);
+               --  end if;
 
                if Recording then
 
                   --  Active steps in edit mode
                   LEDs.Set_Hue (LEDs.Recording);
                   for B in Keyboard_Button loop
-                     if Project.Set (To_Value (B)) then
+                     if Project.Set (Step => To_Value (B)) then
                         LEDs.Turn_On (B);
                      end if;
                   end loop;
                else
 
                   for B in Keyboard_Button loop
-                     if Project.Set (To_Value (B),
-                                     Project.Step_Sequencer.Playing_Step)
-                     then
-                        LEDs.Turn_On (B);
-                     end if;
+                     declare
+                        Track : constant Tracks := To_Value (B);
+                        PH    : constant Project.Playhead :=
+                          Project.Step_Sequencer.Playing_Step (Track);
+                     begin
+                        if Project.Set (Track, PH) then
+                           LEDs.Turn_On (B);
+                        end if;
+                     end;
                   end loop;
                end if;
 
             when Step_Mode =>
-
                LEDs.Set_Hue (LEDs.Step);
                LEDs.Turn_On (Step_Button);
-
-               --  Playing step
-               if WNM.MIDI_Clock.Running  then
-                  LEDs.Turn_On
-                    (To_Button (Project.Step_Sequencer.Playing_Step),
-                     LEDs.Play);
-               end if;
 
                if Recording then
                   --  Red means editing
@@ -750,7 +723,7 @@ package body WNM.UI is
 
                --  Active steps
                for B in Keyboard_Button loop
-                  if Project.Set (To_Value (B)) then
+                  if Project.Set (Step => To_Value (B)) then
                      LEDs.Turn_On (B);
                   end if;
                end loop;

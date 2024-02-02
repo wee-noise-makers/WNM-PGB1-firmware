@@ -28,25 +28,25 @@ package body WNM.Sequence_Copy is
    procedure Apply (A : in out Copy_Addr; B : Button) is
    begin
       case B is
-         when Pattern_Button =>
-            A.State := None;
          when Track_Button =>
-            if A.Kind in Track | Step then
-               A.State := Pattern;
+            A.State := None;
+         when Pattern_Button =>
+            if A.Kind in Pattern | Step then
+               A.State := Track;
             end if;
          when Step_Button =>
             if A.Kind in Step then
-               A.State := Track;
+               A.State := Pattern;
             end if;
          when B1 .. B16 =>
             case A.State is
                when None =>
-                  A.P := To_Value (B);
-                  A.State := Pattern;
-               when Pattern =>
                   A.T := To_Value (B);
                   A.State := Track;
                when Track =>
+                  A.P := To_Value (B);
+                  A.State := Pattern;
+               when Pattern =>
                   A.S := To_Value (B);
                   A.State := Step;
                when Step =>
@@ -70,38 +70,38 @@ package body WNM.Sequence_Copy is
       end if;
    end Apply;
 
-   ------------------------
-   -- Start_Copy_Pattern --
-   ------------------------
-
-   function Start_Copy_Pattern return Copy_Transaction
-   is (From => Copy_Addr'(State => None, Kind => Pattern, others => <>),
-       To   => Copy_Addr'(State => None, Kind => Pattern, others => <>));
-
    ----------------------
    -- Start_Copy_Track --
    ----------------------
 
-   function Start_Copy_Track (Current_Pattern : Keyboard_Value)
-                              return Copy_Transaction
-   is (From => Copy_Addr'(State => Pattern, Kind => Track,
-                          P => Current_Pattern,
+   function Start_Copy_Track return Copy_Transaction
+   is (From => Copy_Addr'(State => None, Kind => Track, others => <>),
+       To   => Copy_Addr'(State => None, Kind => Track, others => <>));
+
+   ------------------------
+   -- Start_Copy_Pattern --
+   ------------------------
+
+   function Start_Copy_Pattern (Current_Track : Keyboard_Value)
+                                return Copy_Transaction
+   is (From => Copy_Addr'(State => Track, Kind => Pattern,
+                          T => Current_Track,
                           others => <>),
-       To   => Copy_Addr'(State => Pattern, Kind => Track,
-                          P => Current_Pattern,
+       To   => Copy_Addr'(State => Track, Kind => Pattern,
+                          T => Current_Track,
                           others => <>));
 
    ---------------------
    -- Start_Copy_Step --
    ---------------------
 
-   function Start_Copy_Step (Current_Pattern, Current_Track : Keyboard_Value)
+   function Start_Copy_Step (Current_Track, Current_Pattern : Keyboard_Value)
                              return Copy_Transaction
-   is (From => Copy_Addr'(State => Track, Kind => Step,
+   is (From => Copy_Addr'(State => Pattern, Kind => Step,
                           P => Current_Pattern,
                           T => Current_Track,
                           others => <>),
-       To   => Copy_Addr'(State => Track, Kind => Step,
+       To   => Copy_Addr'(State => Pattern, Kind => Step,
                           P => Current_Pattern,
                           T => Current_Track,
                           others => <>));

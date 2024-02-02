@@ -27,14 +27,27 @@ package WNM.GUI.Menu.Chord_Settings is
 
 private
 
-   type Top_Settings is (Chord_Type);
-   function Top_Settings_Count is new Enum_Count (Top_Settings);
+   type Part_Top_Settings is (Part_Main);
+   function Part_Top_Settings_Count is new Enum_Count (Part_Top_Settings);
 
-   subtype Sub_Settings is WNM.Project.User_Chord_Settings;
-   function Sub_Settings_Count is new Enum_Count (Sub_Settings);
+   subtype Part_Sub_Settings is WNM.Project.User_Part_Settings;
+   function Part_Sub_Settings_Count is new Enum_Count (Part_Sub_Settings);
+
+   type Chord_Top_Settings is (Chord_Type);
+   function Chord_Top_Settings_Count is new Enum_Count (Chord_Top_Settings);
+
+   subtype Chord_Sub_Settings is WNM.Project.User_Chord_Settings;
+   function Chord_Sub_Settings_Count is new Enum_Count (Chord_Sub_Settings);
 
    type Pattern_Settings_Menu is new Menu_Window with record
-      Current_Setting : Sub_Settings := Sub_Settings'First;
+
+      --  Song Parts
+      Current_Part_Setting : Part_Sub_Settings := Part_Sub_Settings'First;
+      Selected : Tracks := Tracks'First;
+
+      --  Chord Progression
+      Selected_Chord : Project.Chord_Slot_Id := Project.Chord_Slot_Id'First;
+      Current_Chord_Setting : Chord_Sub_Settings := Chord_Sub_Settings'First;
    end record;
 
    overriding

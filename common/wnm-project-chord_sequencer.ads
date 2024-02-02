@@ -19,15 +19,11 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Gen_Chain_Sequencer;
 with WNM.Chord_Settings; use WNM.Chord_Settings;
 
 package WNM.Project.Chord_Sequencer is
 
-   package Chain is new WNM.Gen_Chain_Sequencer;
-
    procedure Start;
-   procedure Stop;
 
    function Current_Tonic return MIDI.MIDI_Key;
    function Current_Chord_Name return Chord_Name;
