@@ -42,39 +42,43 @@ package body ASFML_Sim.Window is
 
    FFT_Skip_Bins : constant := 2;
 
-   BG_Width : constant := 1236;
-   BG_Height : constant := 804;
+   BG_Width : constant := 1382;
+   BG_Height : constant := 900;
 
    Menu_Size : constant Sf.System.Vector2.sfVector2f := (350.0, 170.0);
 
    LED_Offset : constant array (WNM_Configuration.LED) of sfVector2f :=
      (
-      Menu           => (753.0, 293.0),
-      Chord_Button   => (869.0, 293.0),
-      Pattern_Button => (985.0, 293.0),
-      Func           => (1114.0, 293.0),
+      Menu           => (842.0, 327.0),
+      Chord_Button   => (971.0, 327.0),
+      Pattern_Button => (1101.0, 327.0),
+      Func           => (1245.0, 327.0),
 
-      Track_Button => (45.0, 434.0),
-      B1           => (174.0, 434.0),
-      B2           => (290.0, 434.0),
-      B3           => (406.0, 434.0),
-      B4           => (522.0, 434.0),
-      B5           => (638.0, 434.0),
-      B6           => (753.0, 434.0),
-      B7           => (869.0, 434.0),
-      B8           => (985.0, 434.0),
-      Play         => (1114.0, 434.0),
+      Track_Button => (50.0,   485.0),
+      B1           => (194.0,  485.0),
+      B2           => (324.0,  485.0),
+      B3           => (453.0,  485.0),
+      B4           => (583.0,  485.0),
+      B5           => (712.0,  485.0),
+      B6           => (842.0,  485.0),
+      B7           => (971.0,  485.0),
+      B8           => (1101.0,  485.0),
+      Play         => (1245.0, 485.0),
 
-      Step_Button  => (45.0, 576.0),
-      B9           => (174.0, 576.0),
-      B10          => (290.0, 576.0),
-      B11          => (406.0, 576.0),
-      B12          => (522.0, 576.0),
-      B13          => (638.0, 576.0),
-      B14          => (753.0, 576.0),
-      B15          => (869.0, 576.0),
-      B16          => (985.0, 576.0),
-      Rec          => (1114.0, 576.0));
+      Step_Button  => (50.0, 643.0),
+      B9           => (194.0, 643.0),
+      B10          => (324.0, 643.0),
+      B11          => (453.0, 643.0),
+      B12          => (583.0, 643.0),
+      B13          => (712.0, 643.0),
+      B14          => (842.0, 643.0),
+      B15          => (971.0, 643.0),
+      B16          => (1101.0, 643.0),
+      Rec          => (1245.0, 643.0));
+
+   Button_Rect_Size : constant sfVector2f := (95.0, 95.0);
+   Button_Text_Offset : constant sfVector2f := (Button_Rect_Size.x / 2.0,
+                                                Button_Rect_Size.y / 2.0);
 
    type User_Input_Event (Kind : Input_Event_Kind := Button) is record
       case Kind is
@@ -290,13 +294,14 @@ package body ASFML_Sim.Window is
       Mode   : constant Sf.Window.VideoMode.sfVideoMode :=
         (BG_Width, BG_Height, 32);
 
-      Screen_Scale : constant := 296.0 / Float (Screen_Width);
-      Screen_Offset : constant sfVector2f := (470.0, 36.0);
+      Screen_Offset : constant sfVector2f := (526.0, 41.0);
+      Screen_Scale : constant :=
+        (856.0 - 526.0) / Float (Screen_Width);
 
       Params : constant sfContextSettings := sfDefaultContextSettings;
 
    begin
-      This.Window := create (Mode, "WNM-PS1 Simulator",
+      This.Window := create (Mode, "WNM-PGB1 Simulator",
                              sfResize or sfClose, Params);
       if This.Window = null then
          Put_Line ("Failed to create window");
@@ -314,7 +319,7 @@ package body ASFML_Sim.Window is
 
       --  Sim background
       This.BG_Texture := Sf.Graphics.Texture.createFromFile
-        (ASFML_Sim_Resources.Resource_Path & "/WNM-PS1.png");
+        (ASFML_Sim_Resources.Resource_Path & "/WNM-PGB1-v2.1.png");
 
       This.BG_Sprite := create;
       if This.BG_Sprite = null then
@@ -494,7 +499,7 @@ package body ASFML_Sim.Window is
    begin
       setOutlineColor (This.Rect, Sf.Graphics.Color.sfBlack);
       setOutlineThickness (This.Rect, 1.0);
-      setSize (This.Rect, (85.0, 30.0));
+      setSize (This.Rect, (90.0, 30.0));
 
       for L in SFML_LEDs'Range loop
          setFillColor (This.Rect, SFML_LEDs (L));
@@ -503,6 +508,30 @@ package body ASFML_Sim.Window is
       end loop;
    end Draw_LEDS;
 
+   ---------------------
+   -- Button_Position --
+   ---------------------
+
+   function Button_Position (B : WNM_Configuration.Button) return sfVector2f is
+   begin
+      case B is
+         when LED_Offset'Range =>
+            return LED_Offset (B) + (-4.0, 44.0);
+         when PAD_Up =>
+            return (171.0, 103.0);
+         when PAD_Down =>
+            return (171.0, 285.0);
+         when PAD_Left =>
+            return (78.0, 194.0);
+         when PAD_Right =>
+            return (262.0, 194.0);
+         when PAD_A =>
+            return (1123.0, 148.0);
+         when PAD_B =>
+            return (1031.0, 240.0);
+      end case;
+   end Button_Position;
+
    ------------------
    -- Draw_Buttons --
    ------------------
@@ -510,49 +539,42 @@ package body ASFML_Sim.Window is
    procedure Draw_Buttons (This : in out Instance;
                            W    :        Sf.Graphics.sfRenderTexture_Ptr)
    is
-
-      Rect_Size : constant sfVector2f := (83.0, 83.0);
-      Text_Offset : constant sfVector2f := (Rect_Size.x / 2.0,
-                                            Rect_Size.y / 2.0);
-
-      Pos : sfVector2f;
    begin
       setOutlineColor (This.Rect, Sf.Graphics.Color.sfBlack);
       setOutlineThickness (This.Rect, 1.0);
-      setSize (This.Rect, Rect_Size);
+      setSize (This.Rect, Button_Rect_Size);
 
       for B in SFML_Pressed'Range loop
-
-         case B is
-            when LED_Offset'Range =>
-               Pos := LED_Offset (B);
-            when PAD_Up =>
-               Pos := (77.0, 241.5);
-            when PAD_Down =>
-               Pos := (271.0, 251.5);
-            when PAD_Left =>
-               Pos := (77.0, 261.5);
-            when PAD_Right =>
-               Pos := (271.0, 271.5);
-            when PAD_A =>
-               Pos := (77.0, 281.5);
-            when PAD_B =>
-               Pos := (271.0, 291.5);
-         end case;
-
-         Pos := Pos + (-3.0, 39.0);
-
          if SFML_Pressed (B) or else Force_Pressed (B) then
             setFillColor (This.Rect, Sf.Graphics.Color.sfBlue);
             setOutlineColor (This.Rect, Sf.Graphics.Color.sfTransparent);
-            setPosition (This.Rect, Pos);
+            setPosition (This.Rect, Button_Position (B));
+            if B not in LED_Offset'Range then
+               setRotation (This.Rect, -45.0);
+            end if;
             drawRectangleShape (W, This.Rect);
          end if;
+      end loop;
+      setRotation (This.Rect, 0.0);
+   end Draw_Buttons;
+
+   ------------------------
+   -- Draw_Buttons_Label --
+   ------------------------
+
+   procedure Draw_Buttons_Label (This : in out Instance;
+                                 W    :        Sf.Graphics.sfRenderTexture_Ptr)
+   is
+   begin
+      for B in SFML_Pressed'Range loop
          This.Draw_Text (W,
-                         Pos + Text_Offset,
+                         Button_Position (B) + Button_Text_Offset +
+                         (if B not in LED_Offset'Range
+                            then (20.0, -45.0)
+                            else (0.0, 0.0)),
                          Key_Image (To_SFML_Evt (B)));
       end loop;
-   end Draw_Buttons;
+   end Draw_Buttons_Label;
 
    --------------
    -- To_Color --
@@ -902,10 +924,16 @@ package body ASFML_Sim.Window is
                         x       => 0,
                         y       => 0);
 
+      --  Draw stuff behind the front panel
       This.Draw_LEDS (This.Sim_Panel.Render_Texture);
-      drawSprite (This.Sim_Panel.Render_Texture, This.BG_Sprite);
-      drawSprite (This.Sim_Panel.Render_Texture, This.OLED_Sprite);
       This.Draw_Buttons (This.Sim_Panel.Render_Texture);
+
+      --  Draw front panel
+      drawSprite (This.Sim_Panel.Render_Texture, This.BG_Sprite);
+
+      --  Draw stuff in front of the front panel
+      drawSprite (This.Sim_Panel.Render_Texture, This.OLED_Sprite);
+      This.Draw_Buttons_Label (This.Sim_Panel.Render_Texture);
 
       This.Sim_Panel.Draw (This.Window);
       -----------

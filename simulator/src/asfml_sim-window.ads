@@ -105,4 +105,8 @@ private
    procedure Draw_Buttons (This : in out Instance;
                            W    :        Sf.Graphics.sfRenderTexture_Ptr);
 
+   procedure Draw_Buttons_Label
+     (This : in out Instance;
+      W    :        Sf.Graphics.sfRenderTexture_Ptr);
+
 end ASFML_Sim.Window;
