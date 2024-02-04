@@ -23,10 +23,10 @@ with WNM.Sequence_Copy;
 
 package WNM.UI is
 
-   type Buttton_Event is (On_Press,
-                          On_Long_Press,
-                          On_Release,
-                          Waiting_For_Long_Press);
+   type Button_Event is (On_Press,
+                         On_Long_Press,
+                         On_Release,
+                         Waiting_For_Long_Press);
 
    procedure Update;
 

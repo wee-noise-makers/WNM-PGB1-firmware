@@ -58,6 +58,13 @@ package body WNM_HAL is
       return Buttons_Internal;
    end State;
 
+   -----------------------
+   -- Touch_Strip_State --
+   -----------------------
+
+   function Touch_Strip_State return Touch_Data
+   is (ASFML_Sim.Strip_Touch, ASFML_Sim.Strip_Value);
+
    ---------
    -- Set --
    ---------

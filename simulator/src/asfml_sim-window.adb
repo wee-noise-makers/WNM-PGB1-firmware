@@ -1069,6 +1069,32 @@ package body ASFML_Sim.Window is
         (Sf.Graphics.RenderWindow.pollEvent (This.Window, Event));
    end Poll_Event;
 
+   --------------------------
+   -- To_Touch_Point_Value --
+   --------------------------
+
+   function To_Touch_Point_Value (This  : in out Instance;
+                                  Mouse_Pos_X, Mouse_Pos_Y : sfInt32)
+                                  return Float
+   is
+      Top_Left : constant Sf.System.Vector2.sfVector2f := (407.0, 285.0);
+      Bot_Right : constant Sf.System.Vector2.sfVector2f := (766.0, 399.0);
+
+      Coords : constant sfVector2f :=
+        mapPixelToCoords (This.Window,
+                          (Mouse_Pos_X, Mouse_Pos_Y),
+                          This.Letter_Box_View);
+   begin
+      if Coords.x in Top_Left.x .. Bot_Right.x
+        and then
+          Coords.y in Top_Left.y .. Bot_Right.y
+      then
+         return (Coords.x - Top_Left.x) / (Bot_Right.x - Top_Left.x);
+      else
+         return -1.0;
+      end if;
+   end To_Touch_Point_Value;
+
    -----------
    -- Close --
    -----------

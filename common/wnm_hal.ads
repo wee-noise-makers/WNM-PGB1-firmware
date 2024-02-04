@@ -20,6 +20,18 @@ package WNM_HAL is
    function State return Buttons_State;
    --  Scan buttons and return current state
 
+   -----------------
+   -- Touch Strip --
+   -----------------
+
+   subtype Touch_Value is Float range 0.0 .. 1.0;
+   type Touch_Data is record
+      Touch : Boolean;
+      Value : Touch_Value;
+   end record;
+
+   function Touch_Strip_State return Touch_Data;
+
    ----------
    -- LEDs --
    ----------

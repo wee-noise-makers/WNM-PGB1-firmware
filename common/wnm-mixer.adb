@@ -306,6 +306,16 @@ package body WNM.Mixer is
    end Change_Main_Volume;
 
    ---------------------
+   -- Set_Main_Volume --
+   ---------------------
+
+   procedure Set_Main_Volume (Volume : Audio_Volume) is
+   begin
+      Persistent.Data.Main_Volume := Volume;
+      WNM_HAL.Set_Main_Volume (Persistent.Data.Main_Volume);
+   end Set_Main_Volume;
+
+   ---------------------
    -- Get_Main_Volume --
    ---------------------
 

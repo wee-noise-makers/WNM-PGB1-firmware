@@ -37,7 +37,7 @@ with WNM.GUI.Popup;
 
 package body WNM.UI is
 
-   procedure Signal_Event (B : Button; Evt : Buttton_Event);
+   procedure Signal_Event (B : Button; Evt : Button_Event);
 
    procedure Toggle_FX (B : Keyboard_Button);
    procedure Toggle_Mute (Track : WNM.Tracks);
@@ -92,7 +92,7 @@ package body WNM.UI is
    -- Signal_Event --
    ------------------
 
-   procedure Signal_Event (B : Button; Evt : Buttton_Event) is
+   procedure Signal_Event (B : Button; Evt : Button_Event) is
    begin
       WNM.UI.Logs.Log_Button_Event (B, Evt);
 
@@ -488,7 +488,7 @@ package body WNM.UI is
    Last_State    : WNM_HAL.Buttons_State := (others => Up);
    Long_Press_Deadline : array (Button) of WNM.Time.Time_Microseconds :=
      (others => WNM.Time.Time_Microseconds'Last);
-   Last_Event    : array (Button) of Buttton_Event := (others => On_Release);
+   Last_Event    : array (Button) of Button_Event := (others => On_Release);
 
    ------------
    -- Update --
@@ -503,7 +503,7 @@ package body WNM.UI is
 
       if not Play_Released then
          --  The device starts when holding the play button down. We wait for
-         --  the user to release this button befor doing anyting.
+         --  the user to release this button before doing anything.
          if State (Play) = Up then
             Play_Released := True;
          else
@@ -565,6 +565,20 @@ package body WNM.UI is
 
          Last_State (B) := State (B);
       end loop;
+
+      declare
+         TP : constant WNM_HAL.Touch_Data := WNM_HAL.Touch_Strip_State;
+      begin
+         if TP.Touch then
+            case Current_Input_Mode is
+               when Volume_BPM_Mute | Volume_BPM_Solo =>
+                  WNM.Mixer.Set_Main_Volume
+                    (Audio_Volume (TP.Value * Float (Audio_Volume'Last)));
+               when others =>
+                  null;
+            end case;
+         end if;
+      end;
    end Update;
 
    -----------------

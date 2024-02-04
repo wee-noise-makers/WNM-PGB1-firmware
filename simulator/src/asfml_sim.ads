@@ -161,6 +161,9 @@ package ASFML_Sim is
 
    Button_Scan_Signal : Ada.Synchronous_Task_Control.Suspension_Object;
 
+   Strip_Touch : Boolean := False;
+   Strip_Value : WNM_HAL.Touch_Value := 0.0;
+
    Main_Volume : Interfaces.Integer_16 := Interfaces.Integer_16'Last / 2;
 
    type SFML_LED_Strip is array (WNM_Configuration.LED) of
@@ -178,7 +181,7 @@ package ASFML_Sim is
       case Kind is
          when Button =>
             B : WNM_Configuration.Button;
-            Evt : WNM.UI.Buttton_Event;
+            Evt : WNM.UI.Button_Event;
          when Up_Down | Left_Right =>
             Delt : Integer;
       end case;

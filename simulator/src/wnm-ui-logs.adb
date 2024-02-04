@@ -6,7 +6,7 @@ package body WNM.UI.Logs is
    -- Log_Button_Event --
    ----------------------
 
-   procedure Log_Button_Event (B : Button; Evt : Buttton_Event) is
+   procedure Log_Button_Event (B : Button; Evt : Button_Event) is
    begin
       case B is
          when PAD_Up =>

@@ -53,6 +53,7 @@ package WNM.Mixer is
                              Stereo_Point_Count : out HAL.UInt32);
 
    procedure Change_Main_Volume (Volume_Delta : Integer);
+   procedure Set_Main_Volume (Volume : Audio_Volume);
    function Get_Main_Volume return Audio_Volume;
 
    procedure Change_Internal_Mic_Volume (Volume_Delta : Integer);

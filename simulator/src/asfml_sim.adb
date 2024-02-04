@@ -4,6 +4,7 @@ with Ada.Exceptions;
 with GNAT.OS_Lib;
 with Ada.Text_IO; use Ada.Text_IO;
 with Sf.Window.Event; use Sf.Window.Event;
+with Sf.Window.Mouse;
 with HAL;
 
 with WNM.GUI.Update;
@@ -224,6 +225,27 @@ package body ASFML_Sim is
                         SFML_Pressed (K) := Event.eventType = sfEvtKeyPressed;
                      end if;
                   end loop;
+               end if;
+
+               if Event.eventType = sfEvtMouseMoved then
+                  if Sf.Window.Mouse.isButtonPressed
+                    (Sf.Window.Mouse.sfMouseLeft)
+                  then
+                     declare
+                        Val : constant Float :=
+                          Sim_Window.To_Touch_Point_Value (Event.mouseMove.x,
+                                                           Event.mouseMove.y);
+                     begin
+                        if Val in WNM_HAL.Touch_Value then
+                           Strip_Touch := True;
+                           Strip_Value := Val;
+                        else
+                           Strip_Touch := False;
+                        end if;
+                     end;
+                  else
+                     Strip_Touch := False;
+                  end if;
                end if;
             end if;
          end loop;

@@ -23,6 +23,12 @@ private package ASFML_Sim.Window is
                         Event : in out Sf.Window.Event.sfEvent)
                         return Boolean;
 
+   function To_Touch_Point_Value (This  : in out Instance;
+                                  Mouse_Pos_X, Mouse_Pos_Y : sfInt32)
+                                  return Float;
+   --  Return a value in range 0.0 .. 1.0 if the point is within the touch
+   --  strip.
+
    procedure Close (This : in out Instance);
 
    procedure Screenshot (This : in out Instance;
