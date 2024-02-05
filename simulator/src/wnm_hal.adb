@@ -269,7 +269,6 @@ package body WNM_HAL is
    procedure Start_Sequencer_Tick is
    begin
       null;
-      --  ASFML_Sim.Start_1khz_Tick;
    end Start_Sequencer_Tick;
 
    --------------------

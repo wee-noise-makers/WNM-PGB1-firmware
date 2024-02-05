@@ -7,7 +7,6 @@ with Sf.Window.Event; use Sf.Window.Event;
 with Sf.Window.Mouse;
 with HAL;
 
-with WNM.GUI.Update;
 with WNM.Tasks;
 with ASFML_Sim.Window;
 
@@ -112,8 +111,9 @@ package body ASFML_Sim is
    begin
       accept Start;
 
+      Next_Release := Clock;
       loop
-         Next_Release := Clock + Period;
+         Next_Release := Next_Release + Period;
          delay until Next_Release;
 
          WNM.Tasks.Sequencer_1khz_Tick;
@@ -249,8 +249,6 @@ package body ASFML_Sim is
                end if;
             end if;
          end loop;
-
-         WNM.GUI.Update.Update;
 
          select
             accept Take_Screenshot (Path : String) do
