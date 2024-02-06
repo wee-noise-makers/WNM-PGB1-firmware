@@ -64,6 +64,9 @@ package body WNM.GUI.Menu.Project_Select is
      (This  : in out Project_Select_Window;
       Event : Menu_Event)
    is
+      package Valid_Prj_Index_Next is new Enum_Next (T    => Valid_Prj_Index,
+                                                     Wrap => False);
+      use Valid_Prj_Index_Next;
    begin
       case Event.Kind is
          when A_Press =>
@@ -71,18 +74,15 @@ package body WNM.GUI.Menu.Project_Select is
          when B_Press =>
             Menu.Pop (Exit_Value => Failure);
          when Down_Press =>
-            if This.Index /= Valid_Prj_Index'Last then
-               This.Index := This.Index + 1;
-            end if;
+            Next (This.Index);
          when Up_Press =>
-            if This.Index /= Valid_Prj_Index'First then
-               This.Index := This.Index - 1;
-            end if;
-
+            Prev (This.Index);
          when Right_Press =>
             null;
          when Left_Press =>
             null;
+         when Slider_Touch =>
+            Set (This.Index, Event.Slider_Value);
       end case;
    end On_Event;
 

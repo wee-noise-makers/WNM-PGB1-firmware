@@ -34,11 +34,16 @@ package WNM.GUI.Menu is
                             Left_Press,
                             Right_Press,
                             A_Press,
-                            B_Press);
+                            B_Press,
+                            Slider_Touch);
 
-   type Menu_Event is record
-      Kind : Menu_Event_Kind;
-      A_Is_Pressed, B_Is_Pressed : Boolean;
+   type Menu_Event (Kind : Menu_Event_Kind := Up_Press) is record
+      case Kind is
+         when Slider_Touch =>
+            Slider_Value : WNM_HAL.Touch_Value := 0.0;
+         when others =>
+            null;
+      end case;
    end record;
 
    procedure On_Event (Event : Menu_Event);

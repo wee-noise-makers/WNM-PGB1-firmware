@@ -219,6 +219,8 @@ package body WNM.GUI.Menu.Text_Dialog is
                   C := Valid_Character'First;
                end if;
             end;
+         when Slider_Touch =>
+            null;
       end case;
    end On_Event;
 

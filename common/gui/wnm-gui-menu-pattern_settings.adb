@@ -89,6 +89,8 @@ package body WNM.GUI.Menu.Pattern_Settings is
             null;
          when B_Press =>
             null;
+         when Slider_Touch =>
+            null; --  TODO
       end case;
 
    end On_Event;

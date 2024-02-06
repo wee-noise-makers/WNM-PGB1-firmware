@@ -189,6 +189,7 @@ package WNM.Project is
 
    subtype User_Step_Settings is Step_Settings range Condition .. CC_D;
 
+   procedure Set (S : User_Step_Settings; V : WNM_HAL.Touch_Value);
    procedure Next_Value (S : User_Step_Settings);
    procedure Prev_Value (S : User_Step_Settings);
    procedure Next_Value_Fast (S : User_Step_Settings);
@@ -394,6 +395,10 @@ package WNM.Project is
    subtype User_Track_Settings
      is Track_Settings range Track_Mode .. CC_Label_D;
 
+   procedure Set (T : Tracks;
+                  S : User_Track_Settings;
+                  V : WNM_HAL.Touch_Value);
+
    procedure Next_Value (S : User_Track_Settings);
    procedure Prev_Value (S : User_Track_Settings);
    procedure Next_Value_Fast (S : User_Track_Settings);
@@ -445,6 +450,21 @@ package WNM.Project is
    --------
 
    type Filter_Mode_Kind is (Low_Pass, Band_Pass, High_Pass);
+
+   ------------
+   -- Slider --
+   ------------
+
+   --  "Alt Slider" is controlled by touch slider during Alt/FX mode
+   subtype Alt_Slider_Control is User_Track_Settings;
+   function Alt_Slider_Target return Alt_Slider_Control;
+   function Alt_Slider_Track return Tracks;
+
+   procedure Alt_Slider_Set (Val : WNM_HAL.Touch_Value);
+   procedure Alt_Slider_Target_Next;
+   procedure Alt_Slider_Target_Prev;
+   procedure Alt_Slider_Track_Next;
+   procedure Alt_Slider_Track_Prev;
 
 private
 
@@ -510,11 +530,22 @@ private
                                              Wrap => True);
    use LFO_Target_Next;
 
+   package Alt_Slider_Control_Next is new Enum_Next (T  => Alt_Slider_Control,
+                                                     Wrap => True);
+   use Alt_Slider_Control_Next;
+
+   package Tracks_Next is new Enum_Next (T    => WNM.Tracks,
+                                         Wrap => True);
+   use Tracks_Next;
+
    type CC_Val_Array is array (CC_Id) of MIDI.MIDI_Data;
    type CC_Ena_Array is array (CC_Id) of Boolean;
 
    type Octave_Offset is range -8 .. 8;
    for Octave_Offset'Size use 5;
+   package Octave_Offset_Next is new Enum_Next (T    => Octave_Offset,
+                                                Wrap => False);
+   use Octave_Offset_Next;
 
    type Step_Rec is record
       Trig        : Trigger_Kind;
@@ -765,6 +796,9 @@ private
                              others         => Default_Track);
       Chords : Chord_Arr := (others => Default_Chord);
       FX     : FX_Rec := Default_FX;
+
+      Alt_Slider_Track : WNM.Tracks := Lead_Track;
+      Alt_Slider_Target : Alt_Slider_Control := Engine;
    end record;
 
    G_Project : Project_Rec := (others => <>);

@@ -19,6 +19,8 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with WNM_HAL;
+
 generic
    type T is (<>);
    Wrap : Boolean := True;
@@ -58,4 +60,9 @@ package Enum_Next is
      with Inline_Always;
    procedure Prev_Fast (Elt : in out T; Lim : Limits := Default_Limits)
      with Inline_Always;
+
+   procedure Set (Elt : in out T; V : T; Lim : Limits := Default_Limits);
+   procedure Set (Elt : in out T;
+                  V   : WNM_HAL.Touch_Value;
+                  Lim : Limits := Default_Limits);
 end Enum_Next;

@@ -166,6 +166,7 @@ package body ASFML_Sim is
       Next_Release : Time := Clock + Period;
 
       Sim_Window : ASFML_Sim.Window.Instance;
+      Raw_Touch_Val : Float;
    begin
 
       accept Start;
@@ -228,27 +229,27 @@ package body ASFML_Sim is
                end if;
 
                if Event.eventType = sfEvtMouseMoved then
-                  if Sf.Window.Mouse.isButtonPressed
-                    (Sf.Window.Mouse.sfMouseLeft)
-                  then
-                     declare
-                        Val : constant Float :=
-                          Sim_Window.To_Touch_Point_Value (Event.mouseMove.x,
-                                                           Event.mouseMove.y);
-                     begin
-                        if Val in WNM_HAL.Touch_Value then
-                           Strip_Touch := True;
-                           Strip_Value := Val;
-                        else
-                           Strip_Touch := False;
-                        end if;
-                     end;
-                  else
-                     Strip_Touch := False;
-                  end if;
+                  Raw_Touch_Val :=
+                    Sim_Window.To_Touch_Point_Value (Event.mouseMove.x,
+                                                     Event.mouseMove.y);
                end if;
             end if;
          end loop;
+
+         declare
+            use Sf;
+         begin
+            if Sf.Window.Mouse.isButtonPressed
+              (Sf.Window.Mouse.sfMouseLeft) = True
+              and then
+                Raw_Touch_Val in WNM_HAL.Touch_Value
+            then
+               Strip_Touch := True;
+               Strip_Value := Raw_Touch_Val;
+            else
+               Strip_Touch := False;
+            end if;
+         end;
 
          select
             accept Take_Screenshot (Path : String) do

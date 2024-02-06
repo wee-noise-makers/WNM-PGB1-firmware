@@ -182,6 +182,9 @@ package body WNM.GUI.Menu.Step_Settings is
                when CC_D => Project.CC_Toggle (Step, D);
                when others => null;
             end case;
+
+         when Slider_Touch =>
+            Project.Set (This.Current_Setting, Event.Slider_Value);
       end case;
 
    end On_Event;

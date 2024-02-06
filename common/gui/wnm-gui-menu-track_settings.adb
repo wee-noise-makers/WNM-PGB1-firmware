@@ -399,6 +399,11 @@ package body WNM.GUI.Menu.Track_Settings is
             end case;
          when B_Press =>
             null;
+
+         when Slider_Touch =>
+            Project.Set (Project.Editing_Track,
+                         This.Current_Setting,
+                         Event.Slider_Value);
       end case;
    end On_Event;
 

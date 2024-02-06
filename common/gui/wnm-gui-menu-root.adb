@@ -150,6 +150,9 @@ package body WNM.GUI.Menu.Root is
             else
                This.Item := Menu_Items'Last;
             end if;
+
+         when Slider_Touch =>
+            null;
       end case;
    end On_Event;
 

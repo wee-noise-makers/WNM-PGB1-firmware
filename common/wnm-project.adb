@@ -386,9 +386,7 @@ package body WNM.Project is
             end if;
 
          when Chord | Arp =>
-            if S.Oct /= Octave_Offset'Last then
-               S.Oct := S.Oct + 1;
-            end if;
+            Next (S.Oct);
       end case;
 
    end Note_Next;
@@ -421,11 +419,39 @@ package body WNM.Project is
             end if;
 
          when Chord | Arp =>
-            if S.Oct /= Octave_Offset'First then
-               S.Oct := S.Oct - 1;
-            end if;
+            Prev (S.Oct);
       end case;
    end Note_Prev;
+
+   --------------
+   -- Note_Set --
+   --------------
+
+   procedure Note_Set (Step : Sequencer_Steps; V : WNM_HAL.Touch_Value) is
+      use MIDI;
+
+      S : Step_Rec renames G_Project.Seqs
+        (Editing_Pattern)
+        (Editing_Track)
+        (Step);
+   begin
+      case S.Note_Mode is
+         when Note =>
+            Set (S.Note, V);
+
+         when Note_In_Chord =>
+            declare
+               Limits : constant MIDI_Data_Next.Limits :=
+                 (MIDI_Key (Chord_Settings.Chord_Index_Range'First),
+                  MIDI_Key (Chord_Settings.Chord_Index_Range'Last));
+            begin
+               Set (S.Note, V, Limits);
+            end;
+
+         when Chord | Arp =>
+            Set (S.Oct, V);
+      end case;
+   end Note_Set;
 
    ------------------
    -- CC_Value_Inc --
@@ -484,6 +510,39 @@ package body WNM.Project is
         (Editing_Track)
         (Step).CC_Ena (Id) := True;
    end CC_Value_Dec;
+
+   ---------
+   -- Set --
+   ---------
+
+   procedure Set (S : User_Step_Settings; V : WNM_HAL.Touch_Value) is
+      Step : Step_Rec renames G_Project.Seqs
+        (Editing_Pattern)
+        (Editing_Track)
+        (Editing_Step);
+   begin
+      case S is
+         when Condition    => Set (Step.Trig, V);
+         when Note         => Note_Set (Editing_Step, V);
+         when Duration     => Set (Step.Duration, V);
+         when Velo         => Set (Step.Velo, V);
+         when Repeat       => Set (Step.Repeat, V);
+         when Repeat_Rate  => Set (Step.Repeat_Rate, V);
+         when CC_A         =>
+            Set (Step.CC_Val (A), V);
+            Step.CC_Ena (A) := True;
+         when CC_B         =>
+            Set (Step.CC_Val (B), V);
+            Step.CC_Ena (B) := True;
+         when CC_C         =>
+            Set (Step.CC_Val (C), V);
+            Step.CC_Ena (C) := True;
+         when CC_D         =>
+            Set (Step.CC_Val (D), V);
+            Step.CC_Ena (D) := True;
+      end case;
+
+   end Set;
 
    ----------------
    -- Next_Value --
@@ -1105,6 +1164,51 @@ package body WNM.Project is
       end if;
    end Synchronize_Synth_Setting;
 
+   ---------
+   -- Set --
+   ---------
+
+   procedure Set (T : Tracks;
+                  S : User_Track_Settings;
+                  V : WNM_HAL.Touch_Value)
+   is
+      Track : Track_Rec renames G_Project.Tracks (T);
+   begin
+      case S is
+         when Track_Mode      => Set (Track.MIDI_Enabled, V);
+            --  Switching from MIDI to synth, update all settings
+            if not Track.MIDI_Enabled then
+               Synchronize_Synth_Settings (Editing_Track);
+            end if;
+
+         when Engine          => Set (Track.Engine, V, Engine_Limits);
+         when Volume          => Set (Track.Volume, V);
+         when Pan             => Set (Track.Pan, V);
+         when Master_FX       => Set (Track.FX, V);
+         when LFO_Rate        => Set (Track.LFO_Rate, V);
+         when LFO_Amplitude   => Set (Track.LFO_Amp, V);
+         when LFO_Shape       => Set (Track.LFO_Shape, V);
+         when LFO_Target      => Set (Track.LFO_Target, V);
+         when Arp_Mode        => Set (Track.Arp_Mode, V);
+         when Arp_Notes       => Set (Track.Arp_Notes, V);
+         when Notes_Per_Chord => Set (Track.Notes_Per_Chord, V);
+         when MIDI_Chan       => Set (Track.Chan, V);
+         when MIDI_Instrument => null;
+         when CC_Default_A    => Set (Track.CC (A).Value, V, CC_Limits (A));
+         when CC_Default_B    => Set (Track.CC (B).Value, V, CC_Limits (B));
+         when CC_Default_C    => Set (Track.CC (C).Value, V, CC_Limits (C));
+         when CC_Default_D    => Set (Track.CC (D).Value, V, CC_Limits (D));
+         when CC_Ctrl_A       => Set (Track.CC (A).Controller, V);
+         when CC_Ctrl_B       => Set (Track.CC (B).Controller, V);
+         when CC_Ctrl_C       => Set (Track.CC (C).Controller, V);
+         when CC_Ctrl_D       => Set (Track.CC (D).Controller, V);
+         when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D => null;
+      end case;
+
+      Synchronize_Synth_Setting (Editing_Track, S);
+
+   end Set;
+
    ----------------
    -- Next_Value --
    ----------------
@@ -1415,6 +1519,69 @@ package body WNM.Project is
       --  https://github.com/ldrolez/free-midi-chords
       null; -- TODO..
    end Randomly_Pick_A_Progression;
+
+   -----------------------
+   -- Alt_Slider_Target --
+   -----------------------
+
+   function Alt_Slider_Target return Alt_Slider_Control
+   is (G_Project.Alt_Slider_Target);
+
+   ----------------------
+   -- Alt_Slider_Track --
+   ----------------------
+
+   function Alt_Slider_Track return Tracks
+   is (G_Project.Alt_Slider_Track);
+
+   --------------------
+   -- Alt_Slider_Set --
+   --------------------
+
+   procedure Alt_Slider_Set (Val : WNM_HAL.Touch_Value) is
+   begin
+      Set (G_Project.Alt_Slider_Track,
+           G_Project.Alt_Slider_Target,
+           Val);
+
+      Synchronize_Synth_Setting (G_Project.Alt_Slider_Track, CC_Default_A);
+   end Alt_Slider_Set;
+
+   ----------------------------
+   -- Alt_Slider_Target_Next --
+   ----------------------------
+
+   procedure Alt_Slider_Target_Next is
+   begin
+      Next (G_Project.Alt_Slider_Target);
+   end Alt_Slider_Target_Next;
+
+   ----------------------------
+   -- Alt_Slider_Target_Prev --
+   ----------------------------
+
+   procedure Alt_Slider_Target_Prev is
+   begin
+      Prev (G_Project.Alt_Slider_Target);
+   end Alt_Slider_Target_Prev;
+
+   ---------------------------
+   -- Alt_Slider_Track_Next --
+   ---------------------------
+
+   procedure Alt_Slider_Track_Next is
+   begin
+      Next (G_Project.Alt_Slider_Track);
+   end Alt_Slider_Track_Next;
+
+   ---------------------------
+   -- Alt_Slider_Track_Prev --
+   ---------------------------
+
+   procedure Alt_Slider_Track_Prev is
+   begin
+      Prev (G_Project.Alt_Slider_Track);
+   end Alt_Slider_Track_Prev;
 
    --------------------------------
    -- Synchronize_Synth_Settings --

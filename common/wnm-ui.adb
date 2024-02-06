@@ -100,7 +100,7 @@ package body WNM.UI is
         and then
           Evt = On_Press
       then
-            case Current_Input_Mode is
+         case Current_Input_Mode is
             when Volume_BPM_Mute | Volume_BPM_Solo =>
                case B is
                   when PAD_Up =>
@@ -116,24 +116,20 @@ package body WNM.UI is
                end case;
             when others =>
                declare
-                  Menu_Evt : GUI.Menu.Menu_Event;
+                  Kind : constant GUI.Menu.Menu_Event_Kind :=
+                    (case B is
+                        when PAD_Up => GUI.Menu.Up_Press,
+                        when PAD_Down => GUI.Menu.Down_Press,
+                        when PAD_Left => GUI.Menu.Left_Press,
+                        when PAD_Right => GUI.Menu.Right_Press,
+                        when PAD_A => GUI.Menu.A_Press,
+                        when PAD_B => GUI.Menu.B_Press,
+                        when others => raise Program_Error);
+                  Menu_Evt : GUI.Menu.Menu_Event (Kind => Kind);
                begin
-                  --  TODO...
-                  Menu_Evt.A_Is_Pressed := False;
-                  Menu_Evt.B_Is_Pressed := False;
-
-                  Menu_Evt.Kind := (case B is
-                                       when PAD_Up => GUI.Menu.Up_Press,
-                                       when PAD_Down => GUI.Menu.Down_Press,
-                                       when PAD_Left => GUI.Menu.Left_Press,
-                                       when PAD_Right => GUI.Menu.Right_Press,
-                                       when PAD_A => GUI.Menu.A_Press,
-                                       when PAD_B => GUI.Menu.B_Press,
-                                       when others => raise Program_Error);
-
                   GUI.Menu.On_Event (Menu_Evt);
                end;
-            end case;
+         end case;
          return;
       end if;
 
@@ -574,8 +570,11 @@ package body WNM.UI is
                when Volume_BPM_Mute | Volume_BPM_Solo =>
                   WNM.Mixer.Set_Main_Volume
                     (Audio_Volume (TP.Value * Float (Audio_Volume'Last)));
+               when FX_Alt =>
+                  Project.Alt_Slider_Set (TP.Value);
                when others =>
-                  null;
+                  GUI.Menu.On_Event ((Kind => GUI.Menu.Slider_Touch,
+                                      Slider_Value => TP.Value));
             end case;
          end if;
       end;

@@ -133,4 +133,32 @@ package body Enum_Next is
    begin
       Elt := Prev_Fast (Elt, Lim);
    end Prev_Fast;
+
+   ---------
+   -- Set --
+   ---------
+
+   procedure Set (Elt : in out T; V : T; Lim : Limits := Default_Limits) is
+   begin
+      Elt := Clamp (V, Lim);
+   end Set;
+
+   ---------
+   -- Set --
+   ---------
+
+   procedure Set (Elt : in out T;
+                  V   : WNM_HAL.Touch_Value;
+                  Lim : Limits := Default_Limits)
+   is
+      Min : constant Integer := T'Pos (Lim.Min);
+      Max : constant Integer := T'Pos (Lim.Max);
+      Span : constant Integer := Max - Min;
+
+      New_Value : constant Integer :=
+        Min + Integer (Float (Span) * V);
+   begin
+      Set (Elt, T'Val (New_Value), Lim);
+   end Set;
+
 end Enum_Next;
