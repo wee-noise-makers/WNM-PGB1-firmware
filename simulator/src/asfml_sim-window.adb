@@ -50,7 +50,7 @@ package body ASFML_Sim.Window is
    LED_Offset : constant array (WNM_Configuration.LED) of sfVector2f :=
      (
       Menu           => (842.0, 327.0),
-      Chord_Button   => (971.0, 327.0),
+      Song_Button   => (971.0, 327.0),
       Pattern_Button => (1101.0, 327.0),
       Func           => (1245.0, 327.0),
 
@@ -601,7 +601,7 @@ package body ASFML_Sim.Window is
          when Step_Button => return To_Color (Hue_To_RGB (Step));
          when Track_Button => return To_Color (Hue_To_RGB (Track));
          when Pattern_Button => return To_Color (Hue_To_RGB (Pattern));
-         when Chord_Button => return To_Color (Hue_To_RGB (Chord));
+         when Song_Button => return To_Color (Hue_To_RGB (Chord));
          when Func => return To_Color (Hue_To_RGB (FX));
          when others =>
             return Sf.Graphics.Color.sfWhite;
@@ -624,7 +624,7 @@ package body ASFML_Sim.Window is
              when Step_Button    => "Step",
              when Track_Button   => "Track",
              when Pattern_Button => "Pattern",
-             when Chord_Button   => "Chord",
+             when Song_Button   => "Song",
              when Func           => "FX/Copy",
              when PAD_Up         => "Up",
              when PAD_Down       => "Down",

@@ -12,10 +12,10 @@ package WNM_Configuration is
                    B9, B10, B11, B12, B13, B14, B15, B16,
                    Rec, Play,
                    Menu, Func, Step_Button, Track_Button, Pattern_Button,
-                   Chord_Button,
+                   Song_Button,
                    PAD_Up, PAD_Down, PAD_Left, PAD_Right, PAD_A, PAD_B);
 
-   subtype LED is Button range B1 .. Chord_Button;
+   subtype LED is Button range B1 .. Song_Button;
 
    LED_Position : constant array (LED) of Positive :=
      (B1             => 6,
@@ -41,7 +41,7 @@ package WNM_Configuration is
       Step_Button    => 15,
       Track_Button   => 5,
       Pattern_Button => 3,
-      Chord_Button   => 2);
+      Song_Button   => 2);
 
    package Audio is
       Sample_Frequency            : constant := Tresses.Resources.SAMPLE_RATE;

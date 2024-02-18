@@ -147,7 +147,7 @@ package body WNM.UI is
                   when Step_Button =>
                      Current_Input_Mode := Step_Select;
                      Select_Done := False;
-                  when Chord_Button =>
+                  when Song_Button =>
                      Current_Input_Mode := Song_Select;
                      Select_Done := False;
 
@@ -293,7 +293,7 @@ package body WNM.UI is
                   Project.Editing_Song_Elt := To_Value (B);
                   Select_Done := True;
 
-               when Chord_Button =>
+               when Song_Button =>
                   if Evt = On_Release then
                      if Select_Done then
                         --  Go back a main mode
@@ -477,7 +477,7 @@ package body WNM.UI is
           when Step_Button    => False,
           when Track_Button   => False,
           when Pattern_Button => False,
-          when Chord_Button   => False,
+          when Song_Button   => False,
           when Menu           => False,
           when PAD_Up         => True,
           when PAD_Down       => True,
@@ -687,7 +687,7 @@ package body WNM.UI is
                   LEDs.Set_Hue (LEDs.Chord);
                end case;
 
-               LEDs.Turn_On (Chord_Button);
+               LEDs.Turn_On (Song_Button);
                LEDs.Turn_On (To_Button (Project.Editing_Song_Elt));
 
                --  Blinking playing Chord
