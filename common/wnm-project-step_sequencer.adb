@@ -334,7 +334,7 @@ package body WNM.Project.Step_Sequencer is
       Process_CC_Values (Editing_Pattern, T, 1);
       Play_Now (Time.Clock,
                 T,
-                MIDI.C4,
+                Offset (MIDI.C4, G_Project.Tracks (T).Offset),
                 MIDI.MIDI_Data'Last,
                 Microseconds_Per_Beat);
    end Do_Preview_Trigger;
@@ -436,6 +436,7 @@ package body WNM.Project.Step_Sequencer is
       use MIDI;
 
       Step : Step_Rec renames G_Project.Steps (T)(P)(S);
+      Track : Track_Rec renames G_Project.Tracks (T);
 
       Note_Duration : constant Time.Time_Microseconds :=
         (case Step.Duration
@@ -469,11 +470,12 @@ package body WNM.Project.Step_Sequencer is
          then Repeat_Span
          else Note_Duration);
 
+      Octave : constant Octave_Offset := Add_Sat (Step.Oct, Track.Offset);
    begin
 
       case Step.Note_Mode is
          when Note =>
-            Play_Note (T, Step.Note,
+            Play_Note (T, Offset (Step.Note, Octave),
                        Step.Velo, Step.Repeat,
                        Now, Repeat_Duration, Repeat_Span);
 
@@ -482,14 +484,14 @@ package body WNM.Project.Step_Sequencer is
             Play_Note (T,
                        Offset
                          (Current_Chord (Chord_Index_Range (Step.Note)),
-                          Step.Oct),
+                          Octave),
                        Step.Velo, Step.Repeat,
                        Now, Repeat_Duration, Repeat_Span);
 
          when Arp =>
 
             Play_Arp (T,
-                      Step.Velo, Step.Oct, Step.Repeat,
+                      Step.Velo, Octave, Step.Repeat,
                       Now, Repeat_Duration, Repeat_Span);
 
          when Chord =>
@@ -497,7 +499,7 @@ package body WNM.Project.Step_Sequencer is
             Play_Chord
               (T, Current_Chord,
                G_Project.Tracks (T).Notes_Per_Chord,
-               Step.Oct,
+               Octave,
                Step.Velo, Step.Repeat,
                Now, Repeat_Duration, Repeat_Span);
       end case;

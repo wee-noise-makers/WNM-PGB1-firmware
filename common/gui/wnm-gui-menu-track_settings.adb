@@ -49,6 +49,7 @@ package body WNM.GUI.Menu.Track_Settings is
        when Project.Volume => Volume,
        when Project.Pan => Pan,
        when Project.Master_FX => Master_FX,
+       when Project.Track_Octave_Offset => Octave_Offset,
        when Project.LFO_Rate => LFO,
        when Project.LFO_Amplitude => LFO,
        when Project.LFO_Shape => LFO,
@@ -208,6 +209,10 @@ package body WNM.GUI.Menu.Track_Settings is
          when Master_FX =>
             Draw_Title ("FX send:", "");
             Draw_Value (Img (Project.Master_FX));
+
+         when Octave_Offset =>
+            Draw_Title ("Octave offset:", "");
+            Draw_Value (Project.Track_Offset'Img);
 
          when Arp_Mode =>
             Draw_Title ("Arpeggiator mode:", "");

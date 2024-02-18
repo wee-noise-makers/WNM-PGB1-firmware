@@ -307,6 +307,10 @@ package body WNM.Project.Storage is
                   when Master_FX =>
                      Output.Push (Out_UInt (Track.FX'Enum_Rep));
 
+                  when Track_Octave_Offset =>
+                     Output.Push
+                       (Out_UInt (Integer (Track.Offset) -
+                          Integer (Octave_Offset'First)));
                   when LFO_Rate =>
                      Output.Push (Out_UInt (Track.LFO_Rate));
 
@@ -607,6 +611,21 @@ package body WNM.Project.Storage is
                when Volume      => Read (Input, Track.Volume);
                when Pan         => Read (Input, Track.Pan);
                when Master_FX   => Read (Input, Track.FX);
+               when Track_Octave_Offset =>
+                  --  TODO: Implement generic read and write for signed int
+                  Input.Read (Raw);
+                  declare
+                     Tmp : constant Integer :=
+                       Integer (Raw) + Integer (Octave_Offset'First);
+                  begin
+                     if Tmp in Integer (Octave_Offset'First) ..
+                       Integer (Octave_Offset'Last)
+                     then
+                        Track.Offset := Octave_Offset (Tmp);
+                     else
+                        Input.Set_Format_Error;
+                     end if;
+                  end;
                when LFO_Rate    => Read (Input, Track.LFO_Rate);
                when LFO_Amplitude => Read (Input, Track.LFO_Amp);
                when LFO_Shape => Read (Input, Track.LFO_Shape);

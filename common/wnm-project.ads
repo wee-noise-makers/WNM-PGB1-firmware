@@ -269,12 +269,16 @@ package WNM.Project is
    is (case N is
           when Chord => "Notes of chord");
 
+   type Octave_Offset is range -8 .. 8;
+   function Add_Sat (A, B : Octave_Offset) return Octave_Offset;
+
    -- Track Getters --
    function Mode (T : Tracks := Editing_Track) return Track_Mode_Kind;
    function MIDI_Chan (T : Tracks := Editing_Track) return MIDI.MIDI_Channel;
    function Track_Name (T : Tracks := Editing_Track) return String;
    function Track_Volume (T : Tracks := Editing_Track) return Audio_Volume;
    function Track_Pan (T : Tracks := Editing_Track) return Audio_Pan;
+   function Track_Offset (T : Tracks := Editing_Track) return Octave_Offset;
    function CC_Default (T : Tracks := Editing_Track;
                         Id : CC_Id)
                         return MIDI.MIDI_Data;
@@ -352,6 +356,7 @@ package WNM.Project is
                            Volume,
                            Pan,
                            Master_FX,
+                           Track_Octave_Offset,
                            Arp_Mode,
                            Arp_Notes,
                            Notes_Per_Chord,
@@ -368,35 +373,36 @@ package WNM.Project is
                            LFO_Sync);
 
    for Track_Settings'Size use 8;
-   for Track_Settings use (Engine          => 1,
-                           CC_Default_A    => 2,
-                           CC_Default_B    => 3,
-                           CC_Default_C    => 4,
-                           CC_Default_D    => 5,
-                           LFO_Rate        => 6,
-                           LFO_Amplitude   => 7,
-                           LFO_Shape       => 8,
-                           LFO_Target      => 9,
-                           Volume          => 10,
-                           Pan             => 11,
-                           Master_FX       => 12,
-                           Arp_Mode        => 13,
-                           Arp_Notes       => 14,
-                           Notes_Per_Chord => 15,
-                           MIDI_Chan       => 16,
-                           MIDI_Instrument => 17,
-                           CC_Ctrl_A       => 18,
-                           CC_Label_A      => 19,
-                           CC_Ctrl_B       => 20,
-                           CC_Label_B      => 21,
-                           CC_Ctrl_C       => 22,
-                           CC_Label_C      => 23,
-                           CC_Ctrl_D       => 24,
-                           CC_Label_D      => 25,
-                           Track_Mode      => 26,
-                           LFO_Amp_Mode    => 27,
-                           LFO_Loop        => 28,
-                           LFO_Sync        => 29);
+   for Track_Settings use (Engine              => 1,
+                           CC_Default_A        => 2,
+                           CC_Default_B        => 3,
+                           CC_Default_C        => 4,
+                           CC_Default_D        => 5,
+                           LFO_Rate            => 6,
+                           LFO_Amplitude       => 7,
+                           LFO_Shape           => 8,
+                           LFO_Target          => 9,
+                           Volume              => 10,
+                           Pan                 => 11,
+                           Master_FX           => 12,
+                           Track_Octave_Offset => 13,
+                           Arp_Mode            => 14,
+                           Arp_Notes           => 15,
+                           Notes_Per_Chord     => 16,
+                           MIDI_Chan           => 17,
+                           MIDI_Instrument     => 18,
+                           CC_Ctrl_A           => 19,
+                           CC_Label_A          => 20,
+                           CC_Ctrl_B           => 21,
+                           CC_Label_B          => 22,
+                           CC_Ctrl_C           => 23,
+                           CC_Label_C          => 24,
+                           CC_Ctrl_D           => 25,
+                           CC_Label_D          => 26,
+                           Track_Mode          => 27,
+                           LFO_Amp_Mode        => 28,
+                           LFO_Loop            => 29,
+                           LFO_Sync            => 30);
 
    subtype User_Track_Settings
      is Track_Settings range Engine .. Track_Mode;
@@ -651,7 +657,6 @@ private
    type CC_Val_Array is array (CC_Id) of MIDI.MIDI_Data;
    type CC_Ena_Array is array (CC_Id) of Boolean;
 
-   type Octave_Offset is range -8 .. 8;
    for Octave_Offset'Size use 5;
    package Octave_Offset_Next is new Enum_Next (T    => Octave_Offset,
                                                 Wrap => False);
@@ -748,6 +753,7 @@ private
       Chan : MIDI.MIDI_Channel := 0;
       Volume : Audio_Volume := Init_Volume;
       Pan : Audio_Pan := Init_Pan;
+      Offset : Octave_Offset := 0;
       FX  : FX_Kind := Bypass;
       LFO_Rate : MIDI.MIDI_Data := 0;
       LFO_Amp : MIDI.MIDI_Data := 0;
@@ -785,6 +791,7 @@ private
       Chan => 0,
       Volume => Init_Volume,
       Pan => Init_Pan,
+      Offset => 0,
       FX  => Bypass,
       LFO_Rate => 63,
       LFO_Amp => 63,
@@ -805,14 +812,16 @@ private
      );
 
    Default_Kick_Track : constant Track_Rec :=
-     (Default_Track with delta CC => ((0, 63, "CC0              "),
+     (Default_Track with delta Offset => -4,
+                               CC => ((0, 63, "CC0              "),
                                       (1, 63, "CC1              "),
                                       (2, 63, "CC2              "),
                                       (3, 63, "CC3              ")
                                      ));
 
    Default_Snare_Track : constant Track_Rec :=
-     (Default_Track with delta CC => ((0, 63, "CC0              "),
+     (Default_Track with delta Offset => -1,
+                               CC => ((0, 63, "CC0              "),
                                       (1, 63, "CC1              "),
                                       (2, 63, "CC2              "),
                                       (3, 63, "CC3              ")
@@ -827,6 +836,7 @@ private
 
    Default_Bass_Track : constant Track_Rec :=
      (Default_Track with delta Engine => 7,
+                               Offset => -3,
                                FX => Reverb,
                                CC => ((0, 63, "CC0              "),
                                       (1, 63, "CC1              "),
