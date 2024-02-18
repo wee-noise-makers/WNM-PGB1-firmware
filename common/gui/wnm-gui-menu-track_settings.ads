@@ -29,8 +29,7 @@ package WNM.GUI.Menu.Track_Settings is
 
 private
 
-   type Top_Settings is (Track_Mode,
-                         Engine,
+   type Top_Settings is (Engine,
                          CC_Default,
                          LFO,
                          Volume,
@@ -44,7 +43,8 @@ private
                          CC_Ctrl_A, CC_Label_A,
                          CC_Ctrl_B, CC_Label_B,
                          CC_Ctrl_C, CC_Label_C,
-                         CC_Ctrl_D, CC_Label_D);
+                         CC_Ctrl_D, CC_Label_D,
+                         Track_Mode);
 
    subtype Sub_Settings is Project.User_Track_Settings;
 
