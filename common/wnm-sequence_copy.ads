@@ -75,9 +75,9 @@ package WNM.Sequence_Copy is
    function Start_Copy_Track return Copy_Transaction;
 
    function Start_Copy_Pattern (Current_Track : Tracks)
-                               return Copy_Transaction;
+                                return Copy_Transaction;
 
-   function Start_Copy_Step (Current_Track : Tracks;
+   function Start_Copy_Step (Current_Track   : Tracks;
                              Current_Pattern : Patterns)
                              return Copy_Transaction;
 end WNM.Sequence_Copy;

@@ -21,26 +21,23 @@
 
 with MIDI; use MIDI;
 with WNM.Step_Event_Broadcast;
+with WNM.Song_Start_Broadcast;
 with WNM.Project.Song_Part_Sequencer;
 
 package body WNM.Project.Chord_Sequencer is
 
    procedure Step_Callback;
+   package Step_Listener
+   is new Step_Event_Broadcast.Register (Step_Callback'Access);
+   pragma Unreferenced (Step_Listener);
 
-   Step_Listener : aliased Step_Event_Broadcast.Listener
-     (Step_Callback'Access);
+   procedure Song_Start_Callback;
+   package Song_Start_Listener
+   is new Song_Start_Broadcast.Register (Song_Start_Callback'Access);
+   pragma Unreferenced (Song_Start_Listener);
 
    procedure Update_Current;
    --  Update the current tonic, name, and chord notes
-
-   C_Tonic : MIDI_Key := MIDI.C4;
-   C_Chord_Name : Chord_Name := Chord_Name'First;
-   C_Chord : Chord_Notes := (others => 1);
-
-   G_Steps_Count : Natural := 0;
-
-   C_Progression : WNM.Chord_Progressions := WNM.Chord_Progressions'First;
-   C_Chord_Id    : Chord_Slot_Id := Chord_Slot_Id'First;
 
    --  Init_Scale_Root : constant MIDI.MIDI_Key := MIDI.C4;
    --  Init_Scale      : constant Scale_Name := Minor_Scale;
@@ -110,20 +107,21 @@ package body WNM.Project.Chord_Sequencer is
    --            Default_Chord.Duration)
    --    );
 
-   -----------
-   -- Start --
-   -----------
+   -------------------------
+   -- Song_Start_Callback --
+   -------------------------
 
-   procedure Start is
+   procedure Song_Start_Callback is
       Part : constant Parts := Project.Song_Part_Sequencer.Playing;
       Prog : constant WNM.Chord_Progressions :=
         G_Project.Parts (Part).Progression;
    begin
-      C_Progression := Prog;
-      C_Chord_Id := Chord_Slot_Id'First;
+      G_Play_State.Progression := Prog;
+      G_Play_State.Chord_Id := Chord_Slot_Id'First;
+      G_Play_State.Chord_Steps_Count := 0;
 
       Update_Current;
-   end Start;
+   end Song_Start_Callback;
 
    -------------------
    -- Step_Callback --
@@ -137,35 +135,40 @@ package body WNM.Project.Chord_Sequencer is
 
       --  Ada.Text_IO.Put_Line ("--------------------------------");
       --  Ada.Text_IO.Put_Line ("Step callback");
-      if New_Prog /= C_Progression then
+      if New_Prog /= G_Play_State.Progression then
          --  Ada.Text_IO.Put_Line ("New PROGRESSION");
          --  There's a new progression in town
-         G_Steps_Count := 0;
-         C_Progression := New_Prog;
-         C_Chord_Id := Chord_Slot_Id'First;
+         G_Play_State.Chord_Steps_Count := 1;
+         G_Play_State.Progression := New_Prog;
+         G_Play_State.Chord_Id := Chord_Slot_Id'First;
          Update_Current;
       else
 
+         --  The Step we're about to play
+         G_Play_State.Chord_Steps_Count := @ + 1;
+
          declare
             Prog : Chord_Progression_Rec renames
-              G_Project.Progressions (C_Progression);
-            Chord : Chord_Rec renames Prog.Chords (C_Chord_Id);
+              G_Project.Progressions (G_Play_State.Progression);
+            Chord : Chord_Rec renames Prog.Chords (G_Play_State.Chord_Id);
          begin
             --  Ada.Text_IO.Put_Line ("G_Steps_Count:" & G_Steps_Count'Img);
             --  Ada.Text_IO.Put_Line ("Chord_Duration:" & Chord.Duration'Img);
-            if G_Steps_Count >= Natural (Chord.Duration) then
+            if G_Play_State.Chord_Steps_Count > Natural (Chord.Duration) then
                --  End of this chord, going to the next one
 
-               if C_Chord_Id >= Prog.Len then
-                  C_Chord_Id := Chord_Slot_Id'First;
+               if G_Play_State.Chord_Id >= Prog.Len then
+                  G_Play_State.Chord_Id := Chord_Slot_Id'First;
                else
-                  C_Chord_Id := @ + 1;
+                  G_Play_State.Chord_Id := @ + 1;
                end if;
 
-               G_Steps_Count := 0;
+               --  We're about to play the first step of the new chord
+               G_Play_State.Chord_Steps_Count := 1;
+
                Update_Current;
             else
-               G_Steps_Count := @ + 1;
+               G_Play_State.Chord_Steps_Count := @ + 1;
             end if;
          end;
       end if;
@@ -176,14 +179,14 @@ package body WNM.Project.Chord_Sequencer is
    -------------------
 
    function Current_Tonic return MIDI.MIDI_Key
-   is (C_Tonic);
+   is (G_Play_State.Tonic);
 
    ------------------------
    -- Current_Chord_Name --
    ------------------------
 
    function Current_Chord_Name return Chord_Name
-   is (C_Chord_Name);
+   is (G_Play_State.Chord_Name);
 
    -----------------------------
    -- Current_Chord_Intervals --
@@ -199,7 +202,7 @@ package body WNM.Project.Chord_Sequencer is
    -------------------
 
    function Current_Chord return Chord_Notes
-   is (C_Chord);
+   is (G_Play_State.Chord);
 
    --------------------
    -- Update_Current --
@@ -207,18 +210,16 @@ package body WNM.Project.Chord_Sequencer is
 
    procedure Update_Current is
    begin
-      C_Tonic :=
-        G_Project.Progressions (C_Progression).Chords (C_Chord_Id).Tonic;
+      G_Play_State.Tonic :=
+        G_Project.Progressions (G_Play_State.Progression)
+        .Chords (G_Play_State.Chord_Id).Tonic;
 
-      C_Chord_Name :=
-        G_Project.Progressions (C_Progression).Chords (C_Chord_Id).Name;
+      G_Play_State.Chord_Name :=
+        G_Project.Progressions (G_Play_State.Progression)
+        .Chords (G_Play_State.Chord_Id).Name;
 
-      C_Chord := C_Tonic + WNM.Chord_Settings.Chords (C_Chord_Name);
+      G_Play_State.Chord := G_Play_State.Tonic +
+        WNM.Chord_Settings.Chords (G_Play_State.Chord_Name);
    end Update_Current;
 
-begin
-   --  Set default values for chords
-   --  G_Project.Chords := Init_Chords;
-
-   Step_Event_Broadcast.Register (Step_Listener'Access);
 end WNM.Project.Chord_Sequencer;

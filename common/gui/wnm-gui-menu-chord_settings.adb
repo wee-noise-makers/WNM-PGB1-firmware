@@ -25,7 +25,6 @@ with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
 with WNM.GUI.Bitmap_Fonts;
 with WNM.Chord_Settings;
 with WNM.Screen;
-with WNM.Utils;
 
 package body WNM.GUI.Menu.Chord_Settings is
 
@@ -65,6 +64,7 @@ package body WNM.GUI.Menu.Chord_Settings is
    function To_Top (S : Part_Sub_Settings) return Part_Top_Settings
    is (case S is
           when WNM.Project.Part_Patterns    => Part_Main,
+          when WNM.Project.Part_Length      => Part_Main,
           when WNM.Project.Part_Progression => Part_Main,
           when WNM.Project.Part_Link        => Part_Main);
 
@@ -186,12 +186,20 @@ package body WNM.GUI.Menu.Chord_Settings is
                      Count => Part_Top_Settings_Count,
                      Index => Part_Top_Settings'Pos (Top));
 
+      Draw_Step_Duration (Box_Left + 5,
+                          Project.Part_Length (Part),
+                          Sub = Project.Part_Length);
+
       Draw_Value_Pos ("Chords:" & Project.Part_Chords (Part)'Img,
-                      Box_Left + 2,
+                      Box_Left + 40,
                       Sub = Project.Part_Progression);
-      Draw_Value_Pos ("Link:" & Project.Part_Link (Part)'Img,
-                      60,
+
+      Draw_Value_Pos ((if Project.Part_Link (Part)
+                      then "->"
+                      else "X"),
+                      Box_Left + 110,
                       Sub = Project.Part_Link);
+
    end Draw_Song_Part;
 
    ---------------------
@@ -207,56 +215,71 @@ package body WNM.GUI.Menu.Chord_Settings is
       Sub : constant Chord_Sub_Settings := This.Current_Chord_Setting;
       Top : constant Chord_Top_Settings := To_Top (Sub);
 
-      Id    : constant Project.Chord_Slot_Id := This.Selected_Chord;
-      Len   : constant Project.Chord_Slot_Id :=
+      Len      : constant Project.Chord_Slot_Id :=
         WNM.Project.Progression_Length (Prog);
-
-      Tonic : constant MIDI.MIDI_Key :=
-        WNM.Project.Selected_Tonic (Prog, Id);
-      Name : constant WNM.Chord_Settings.Chord_Name :=
-        WNM.Project.Selected_Name (Prog, Id);
-      Duration : constant WNM.Project.Chord_Step_Duration :=
-        WNM.Project.Selected_Duration (Prog, Id);
-
-      Notes : constant WNM.Chord_Settings.Chord_Notes :=
-        Tonic + WNM.Chord_Settings.Chords (Name);
+      Id : constant Chord_Slot_Id := This.Selected_Chord;
+      Add_Remove_View : constant Boolean := This.Add_Remove_View;
    begin
 
       Draw_Menu_Box ("Chord settings",
                      Count => Natural (Len) + 1,
-                     Index => Natural (Id) - 1);
+                     Index =>
+                       (if Add_Remove_View
+                        then Natural (Len)
+                        else Natural (Id) - 1));
 
-      if Id > Len then
-         Draw_Title ("A: add a chord",
-                     "B: remove a chord");
-      else
-
-         case Top is
-         when Chord_Type =>
-            Draw_MIDI_Note (Tonic,
-                            Sub = WNM.Project.Tonic);
-
-            Draw_Value_Pos (WNM.Chord_Settings.Img (Name),
-                            WNM.GUI.Menu.Drawing.Box_Center.X - 32,
-                            Sub = WNM.Project.Name);
-
-            Draw_Value_Pos (Utils.Trim (Duration'Img) & "Stps",
-                            WNM.GUI.Menu.Drawing.Box_Center.X + 21,
-                            Sub = WNM.Project.Duration);
-
-            declare
-               X : Natural := Menu.Drawing.Box_Left + 5;
-            begin
-               for K of Notes loop
-                  GUI.Bitmap_Fonts.Print (X,
-                                          Menu.Drawing.Box_Top + 10,
-                                          Key_Img (K));
-                  GUI.Bitmap_Fonts.Print (X,
-                                          Menu.Drawing.Box_Top + 10,
-                                          " ");
-               end loop;
-            end;
+      if This.Add_Remove_View then
+         case Len is
+            when Chord_Slot_Id'First =>
+               Draw_Title ("A: add a chord",
+                           "");
+            when Chord_Slot_Id'Last =>
+               Draw_Title ("",
+                           "B: remove a chord");
+            when others =>
+               Draw_Title ("A: add a chord",
+                           "B: remove a chord");
          end case;
+      else
+         declare
+            Tonic : constant MIDI.MIDI_Key :=
+              WNM.Project.Selected_Tonic (Prog, Id);
+            Name : constant WNM.Chord_Settings.Chord_Name :=
+              WNM.Project.Selected_Name (Prog, Id);
+            Duration : constant WNM.Duration_In_Steps :=
+              WNM.Project.Selected_Duration (Prog, Id);
+
+            Notes : constant WNM.Chord_Settings.Chord_Notes :=
+              Tonic + WNM.Chord_Settings.Chords (Name);
+         begin
+
+            case Top is
+            when Chord_Type =>
+               Draw_MIDI_Note (Tonic,
+                               Sub = WNM.Project.Tonic);
+
+               Draw_Value_Pos (WNM.Chord_Settings.Img (Name),
+                               WNM.GUI.Menu.Drawing.Box_Center.X - 32,
+                               Sub = WNM.Project.Name);
+
+               Draw_Step_Duration (WNM.GUI.Menu.Drawing.Box_Center.X + 21,
+                                   Duration,
+                                   Sub = WNM.Project.Duration);
+
+               declare
+                  X : Natural := Menu.Drawing.Box_Left + 5;
+               begin
+                  for K of Notes loop
+                     GUI.Bitmap_Fonts.Print (X,
+                                             Menu.Drawing.Box_Top + 10,
+                                             Key_Img (K));
+                     GUI.Bitmap_Fonts.Print (X,
+                                             Menu.Drawing.Box_Top + 10,
+                                             " ");
+                  end loop;
+               end;
+            end case;
+         end;
       end if;
 
    end Draw_Song_Chord;
@@ -286,6 +309,7 @@ package body WNM.GUI.Menu.Chord_Settings is
                             Event : Menu_Event;
                             Part  : Parts)
    is
+      use type Project.Part_Settings;
    begin
       case This.Current_Part_Setting is
          when Project.Part_Patterns =>
@@ -306,7 +330,7 @@ package body WNM.GUI.Menu.Chord_Settings is
                   This.Selected := @ + 1;
                end case;
 
-            when Up_Press =>
+            when A_Press =>
                case This.Selected is
                when 1 .. 8 =>
                   null;
@@ -314,7 +338,7 @@ package body WNM.GUI.Menu.Chord_Settings is
                   This.Selected := @ - 8;
                end case;
 
-            when Down_Press =>
+            when B_Press =>
                case This.Selected is
                when 1 .. 8 =>
                   This.Selected := @ + 8;
@@ -322,36 +346,44 @@ package body WNM.GUI.Menu.Chord_Settings is
                   Next (This.Current_Part_Setting);
                end case;
 
-            when A_Press =>
+            when Up_Press =>
                Project.Pattern_Next (Part, This.Selected);
 
-            when B_Press =>
+            when Down_Press =>
                Project.Pattern_Prev (Part, This.Selected);
 
             when Slider_Touch =>
                null;
             end case;
 
-         when Project.Part_Progression .. Project.Part_Link =>
+         when Project.Part_Length .. Project.Part_Link =>
             case Event.Kind is
-               when Up_Press =>
-                  Prev (This.Current_Part_Setting);
-               when Down_Press =>
-                  Next (This.Current_Part_Setting);
                when A_Press =>
+                  This.Current_Part_Setting := Project.Part_Patterns;
+               when Left_Press =>
+                  if This.Current_Part_Setting /= Project.Part_Length then
+                     Prev (This.Current_Part_Setting);
+                  end if;
+               when Right_Press =>
+                  Next (This.Current_Part_Setting);
+               when Up_Press =>
                   case This.Current_Part_Setting is
                      when Project.Part_Progression =>
                         Project.Part_Chords_Next (Part);
                      when Project.Part_Link =>
                         Project.Toggle_Link (Part);
+                     when Project.Part_Length =>
+                        Project.Part_Len_Next (Part);
                      when others => null;
                   end case;
-               when B_Press =>
+               when Down_Press =>
                   case This.Current_Part_Setting is
                      when Project.Part_Progression =>
                         Project.Part_Chords_Prev (Part);
                      when Project.Part_Link =>
                         Project.Toggle_Link (Part);
+                     when Project.Part_Length =>
+                        Project.Part_Len_Prev (Part);
                      when others => null;
                   end case;
                when others => null;
@@ -368,29 +400,46 @@ package body WNM.GUI.Menu.Chord_Settings is
                              Prog  : Chord_Progressions)
    is
       use WNM.Project;
-      Id    : constant Project.Chord_Slot_Id := This.Selected_Chord;
       Len   : constant Project.Chord_Slot_Id :=
         WNM.Project.Progression_Length (Prog);
    begin
+
+      This.Selected_Chord := Chord_Slot_Id'Min (This.Selected_Chord, Len);
+
       case Event.Kind is
          when Left_Press =>
-            if This.Current_Chord_Setting = Chord_Sub_Settings'First then
-               if Id > Project.Chord_Slot_Id'First then
-                  This.Selected_Chord := @ - 1;
-                  This.Current_Chord_Setting := Chord_Sub_Settings'Last;
-               end if;
+
+            if This.Add_Remove_View then
+               --  If we are in the add/remove view, go to the last chord of
+               --  the progression.
+               This.Selected_Chord := Len;
+               This.Add_Remove_View := False;
+               This.Current_Chord_Setting := Chord_Sub_Settings'Last;
             else
+               if This.Current_Chord_Setting = Chord_Sub_Settings'First
+                 and then
+                   This.Selected_Chord /= Chord_Slot_Id'First
+               then
+                  This.Selected_Chord := @ - 1;
+               end if;
+
                Prev (This.Current_Chord_Setting);
             end if;
-
          when Right_Press =>
-            if This.Current_Chord_Setting = Chord_Sub_Settings'Last then
-               if Id <= Len then
-                  This.Selected_Chord := @ + 1;
-                  This.Current_Chord_Setting := Chord_Sub_Settings'First;
-               end if;
+            if This.Add_Remove_View then
+               null;
             else
-               Next (This.Current_Chord_Setting);
+               if This.Current_Chord_Setting = Chord_Sub_Settings'Last then
+
+                  if This.Selected_Chord = Len then
+                     This.Add_Remove_View := True;
+                  else
+                     This.Selected_Chord := @ + 1;
+                     This.Current_Chord_Setting := Chord_Sub_Settings'First;
+                  end if;
+               else
+                  Next (This.Current_Chord_Setting);
+               end if;
             end if;
 
          when Up_Press =>
@@ -404,14 +453,22 @@ package body WNM.GUI.Menu.Chord_Settings is
                                     This.Current_Chord_Setting);
 
          when A_Press =>
-            if Id > Len then
+            if This.Add_Remove_View
+              and then
+                Len /= Chord_Slot_Id'Last
+            then
                WNM.Project.Increase_Progession_Length (Prog);
+               This.Selected_Chord := WNM.Project.Progression_Length (Prog);
+               This.Add_Remove_View := False;
             end if;
 
          when B_Press =>
-            if Id > Len then
+            if This.Add_Remove_View
+              and then
+                Len /= Chord_Slot_Id'First
+            then
                WNM.Project.Decrease_Progession_Length (Prog);
-               This.Selected_Chord := @ - 1;
+               This.Selected_Chord := WNM.Project.Progression_Length (Prog);
             end if;
 
          when Slider_Touch =>

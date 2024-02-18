@@ -82,7 +82,7 @@ package body WNM.Sequence_Copy is
    -- Start_Copy_Pattern --
    ------------------------
 
-   function Start_Copy_Pattern (Current_Track : Keyboard_Value)
+   function Start_Copy_Pattern (Current_Track : Tracks)
                                 return Copy_Transaction
    is (From => Copy_Addr'(State => Track, Kind => Pattern,
                           T => Current_Track,
@@ -95,7 +95,8 @@ package body WNM.Sequence_Copy is
    -- Start_Copy_Step --
    ---------------------
 
-   function Start_Copy_Step (Current_Track, Current_Pattern : Keyboard_Value)
+   function Start_Copy_Step (Current_Track   : Tracks;
+                             Current_Pattern : Patterns)
                              return Copy_Transaction
    is (From => Copy_Addr'(State => Pattern, Kind => Step,
                           P => Current_Pattern,

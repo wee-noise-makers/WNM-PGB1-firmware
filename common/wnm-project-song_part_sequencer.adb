@@ -20,56 +20,69 @@
 -------------------------------------------------------------------------------
 
 with WNM.Step_Event_Broadcast;
-
-with Ada.Text_IO;
+with WNM.Part_Event_Broadcast;
+with WNM.Song_Start_Broadcast;
 
 package body WNM.Project.Song_Part_Sequencer is
 
-   Playing_Part : WNM.Parts := WNM.Parts'First;
-   Origin       : WNM.Parts := WNM.Parts'First;
-
    procedure Step_Callback;
+   package Step_Listener
+   is new Step_Event_Broadcast.Register (Step_Callback'Access);
+   pragma Unreferenced (Step_Listener);
 
-   Step_Listener : aliased Step_Event_Broadcast.Listener
-     (Step_Callback'Access);
+   procedure Song_Start_Callback;
+   package Song_Start_Listener
+   is new Song_Start_Broadcast.Register (Song_Start_Callback'Access);
+   pragma Unreferenced (Song_Start_Listener);
 
-   G_Steps_Count : Natural := 0;
+   -------------------------
+   -- Song_Start_Callback --
+   -------------------------
 
-   -----------
-   -- Start --
-   -----------
-
-   procedure Start is
+   procedure Song_Start_Callback is
    begin
-      Origin := G_Project.Part_Origin;
-      Playing_Part := Origin;
-      G_Steps_Count := 0;
-   end Start;
+      G_Play_State.Origin := G_Project.Part_Origin;
+      G_Play_State.Playing_Part := G_Play_State.Origin;
+      G_Play_State.Part_Steps_Count := 0;
+
+      --  Broadcast the change of part
+      WNM.Part_Event_Broadcast.Broadcast;
+   end Song_Start_Callback;
 
    -------------------
    -- Step_Callback --
    -------------------
 
    procedure Step_Callback is
+      Current_Part : constant Parts := G_Play_State.Playing_Part;
+      New_Part : Parts;
    begin
-      G_Steps_Count := G_Steps_Count + 1;
+      G_Play_State.Part_Steps_Count := @ + 1; -- The Step we're about to play
 
-      if G_Steps_Count >= 16 then
-         if G_Project.Part_Origin /= Origin then
-            --  New origin, play this next
-            Origin := G_Project.Part_Origin;
-            Playing_Part := Origin;
+      if G_Play_State.Part_Steps_Count >
+        Natural (G_Project.Parts (G_Play_State.Playing_Part).Len)
+      then
+         if G_Project.Part_Origin /= G_Play_State.Origin then
+            --  New origin part, play this next
+            G_Play_State.Origin := G_Project.Part_Origin;
+            New_Part := G_Play_State.Origin;
 
-         elsif G_Project.Parts (Playing_Part).Link then
-            --  There's link
-            Playing_Part := @ + 1;
+         elsif G_Project.Parts (G_Play_State.Playing_Part).Link then
+            --  There's a link to the next part
+            New_Part := G_Play_State.Playing_Part + 1;
          else
-            --  Start back to origin
-            Playing_Part := G_Project.Part_Origin;
+            --  Start back to origin part
+            New_Part := G_Project.Part_Origin;
          end if;
 
-         Ada.Text_IO.Put_Line ("Going to Part" & Playing_Part'Img);
-         G_Steps_Count := 0;
+         --  We're going to play the first step of the new part
+         G_Play_State.Part_Steps_Count := 1;
+
+         if New_Part /= Current_Part then
+            G_Play_State.Playing_Part := New_Part;
+            --  Broadcast the change of part
+            WNM.Part_Event_Broadcast.Broadcast;
+         end if;
       end if;
    end Step_Callback;
 
@@ -78,8 +91,13 @@ package body WNM.Project.Song_Part_Sequencer is
    -------------
 
    function Playing return Parts
-   is (Playing_Part);
+   is (G_Play_State.Playing_Part);
 
-begin
-   Step_Event_Broadcast.Register (Step_Listener'Access);
+   -----------
+   -- Muted --
+   -----------
+
+   function Muted (T : Tracks) return Boolean
+   is (G_Project.Parts (G_Play_State.Playing_Part).Track_Mute (T));
+
 end WNM.Project.Song_Part_Sequencer;

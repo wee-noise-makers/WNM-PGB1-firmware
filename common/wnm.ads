@@ -36,11 +36,14 @@ package WNM is
    function To_Value (B : Keyboard_Button) return Keyboard_Value;
    function To_Button (V : Keyboard_Value) return Keyboard_Button;
 
-   subtype Tracks is Keyboard_Value;
-   subtype Patterns is Keyboard_Value;
-   subtype Song_Element is Keyboard_Value;
-   subtype Parts is Song_Element range 1 .. 8;
-   subtype Chord_Progressions is Song_Element range 9 .. 16;
+   type Tracks is new Keyboard_Value;
+   type Patterns is new Keyboard_Value;
+   type Song_Element is new Keyboard_Value;
+
+   subtype Parts is Song_Element range Song_Element'First .. 12;
+
+   subtype Chord_Progressions
+   is Song_Element range Parts'Last + 1 .. Song_Element'Last;
 
    -- Mixer --
    type FX_Kind is (Bypass, Overdrive, Reverb, Filter, Bitcrusher);
@@ -59,8 +62,12 @@ package WNM is
    subtype Beat_Per_Minute is Positive range 50 .. 200;
    subtype Sequencer_Steps is Keyboard_Value;
 
-   Steps_Per_Beat      : constant := 4;
-   Max_Events_Per_Step : constant := 6;
+   Steps_Per_Beat : constant := 4;
+   Beats_Per_Bar  : constant := 4;
+   Steps_Per_Bar  : constant := Steps_Per_Beat * Beats_Per_Bar;
+
+   type Duration_In_Steps is range 1 .. 16 * 999; -- 999 Bars max
+   type Pattern_Length is range 1 .. Steps_Per_Bar;
 
    Long_Press_Time_Span_Microseconds : constant := 300 * 1_000;
    --  How much time (in microseconds) users have to press a button to get the
@@ -89,6 +96,15 @@ package WNM is
           when 15 => "15",
           when 16 => "16")
    with Inline_Always;
+
+   function Img (T : Tracks) return String
+   is (Img (Keyboard_Value (T)));
+
+   function Img (P : Patterns) return String
+   is (Img (Keyboard_Value (P)));
+
+   function Img (E : Song_Element) return String
+   is (Img (Keyboard_Value (E)));
 
    type Rand_Percent is range 0 .. 100;
    function Random return Rand_Percent;

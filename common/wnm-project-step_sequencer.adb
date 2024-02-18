@@ -30,6 +30,10 @@ with WNM.Coproc;
 with WNM.Project.Song_Part_Sequencer;
 with WNM.Project.Chord_Sequencer;
 with WNM.Step_Event_Broadcast;
+with WNM.Part_Event_Broadcast;
+with WNM.Song_Start_Broadcast;
+with WNM.Song_Stop_Broadcast;
+with WNM.Song_Continue_Broadcast;
 with WNM.MIDI_Clock;
 with HAL;                   use HAL;
 
@@ -47,7 +51,26 @@ package body WNM.Project.Step_Sequencer is
                         Now : Time.Time_Microseconds := Time.Clock);
 
    Playing : Boolean := False;
-   Playheads : array (Tracks) of Playhead;
+
+   procedure Part_Callback;
+   package Part_Listener
+   is new Part_Event_Broadcast.Register (Part_Callback'Access);
+   pragma Unreferenced (Part_Listener);
+
+   procedure Song_Start_Callback;
+   package Song_Start_Listener
+   is new Song_Start_Broadcast.Register (Song_Start_Callback'Access);
+   pragma Unreferenced (Song_Start_Listener);
+
+   procedure Song_Stop_Callback;
+   package Song_Stop_Listener
+   is new Song_Stop_Broadcast.Register (Song_Stop_Callback'Access);
+   pragma Unreferenced (Song_Stop_Listener);
+
+   procedure Song_Continue_Callback;
+   package Song_Continue_Listener
+   is new Song_Continue_Broadcast.Register (Song_Continue_Callback'Access);
+   pragma Unreferenced (Song_Continue_Listener);
 
    ------------
    -- Offset --
@@ -85,7 +108,7 @@ package body WNM.Project.Step_Sequencer is
    -------------
 
    function Playing_Step (T : Tracks) return Playhead
-   is (Playheads (T));
+   is (G_Play_State.Playheads (T));
 
    ----------------
    -- Play_Pause --
@@ -111,18 +134,22 @@ package body WNM.Project.Step_Sequencer is
    begin
       case Mode is
          when UI.Pattern_Mode =>
-            Editing_Pattern := V;
+            Editing_Pattern := Patterns (V);
 
          when UI.Song_Mode =>
-            if V in WNM.Parts then
-               G_Project.Part_Origin := V;
+            pragma Warnings (Off, "lower bound test optimized");
+            if V in
+              Keyboard_Value (WNM.Parts'First) ..
+              Keyboard_Value (WNM.Parts'Last)
+            then
+               G_Project.Part_Origin := Parts (V);
             end if;
-            Editing_Song_Elt := V;
+            Editing_Song_Elt := Song_Element (V);
 
          when UI.Track_Mode | UI.Step_Mode =>
 
             if Mode = UI.Track_Mode and then not UI.Recording then
-               Editing_Track := V;
+               Editing_Track := Tracks (V);
             else
                Editing_Step := V;
             end if;
@@ -143,10 +170,9 @@ package body WNM.Project.Step_Sequencer is
 
             if UI.Recording then
                declare
-                  S : Step_Rec renames G_Project.Tracks
-                    (Editing_Pattern).Patts
-                    (Editing_Track).Seq
-                    (To_Value (Button));
+                  S : Step_Rec renames
+                    G_Project.Steps
+                      (Editing_Track)(Editing_Pattern)(To_Value (Button));
                begin
                   if S.Trig /= None then
                      S.Trig := None;
@@ -160,7 +186,7 @@ package body WNM.Project.Step_Sequencer is
                              Editing_Track,
                              To_Value (Button));
                else
-                  Do_Preview_Trigger (V);
+                  Do_Preview_Trigger (Tracks (V));
 
                end if;
             end if;
@@ -409,7 +435,7 @@ package body WNM.Project.Step_Sequencer is
       use WNM.Project.Chord_Sequencer;
       use MIDI;
 
-      Step : Step_Rec renames G_Project.Tracks (P).Patts (T).Seq (S);
+      Step : Step_Rec renames G_Project.Steps (T)(P)(S);
 
       Note_Duration : constant Time.Time_Microseconds :=
         (case Step.Duration
@@ -497,12 +523,15 @@ package body WNM.Project.Step_Sequencer is
 
       declare
          S : Step_Rec renames
-           G_Project.Tracks (Pattern).Patts (Track).Seq (Step);
+           G_Project.Steps (Track)(Pattern)(Step);
       begin
          --  Send CC first
          Process_CC_Values (Pattern, Track, Step);
 
-         if not UI.Muted (Track) then
+         if not UI.Muted (Track)
+           and then
+            not Song_Part_Sequencer.Muted (Track)
+         then
             case S.Trig is
                when None =>
                   Condition := False;
@@ -536,53 +565,6 @@ package body WNM.Project.Step_Sequencer is
       end;
    end Process_Step;
 
-   ------------------
-   -- Execute_Step --
-   ------------------
-
-   procedure Execute_Step is
-   begin
-
-      if Playing then
-
-         for Track in Tracks loop
-            Process_Step (Track, Playheads (Track).P, Playheads (Track).S);
-
-         end loop;
-
-         WNM.Step_Event_Broadcast.Broadcast;
-
-         if (WNM.UI.FX_On (B2) or else WNM.UI.FX_On (B3))
-           or else
-            (Current_Playing_Step >= 2 and then WNM.UI.FX_On (B4))
-           or else
-            (Current_Playing_Step >= 4 and then WNM.UI.FX_On (B5))
-         then
-            Current_Playing_Step := 1;
-
-         elsif Current_Playing_Step /= Sequencer_Steps'Last then
-            Current_Playing_Step := Current_Playing_Step + 1;
-
-         else
-            Current_Playing_Step := Sequencer_Steps'First;
-         end if;
-      end if;
-
-   end Execute_Step;
-
-   ---------------------
-   -- Start_Playheads --
-   ---------------------
-
-   procedure Start_Playheads is
-   begin
-      for Track_Id in Tracks loop
-         Playheads (Track_Id).P := Patterns'First;
-         Playheads (Track_Id).S := Sequencer_Steps'First;
-         Arpeggiator.Signal_Start_Of_Pattern (Track_Id);
-      end loop;
-   end Start_Playheads;
-
    --------------------
    -- Move_Playheads --
    --------------------
@@ -593,36 +575,116 @@ package body WNM.Project.Step_Sequencer is
       --  Put_Line ("Move Playheads!");
       for Track_Id in Tracks loop
          declare
-            PH    : Playhead renames Playheads (Track_Id);
-            Track : Track_Rec renames G_Project.Tracks (Track_Id);
-            Pat   : Pattern_Rec renames
-              G_Project.Tracks (Track_Id).Patts (PH.P);
+            PH    : Playhead renames G_Play_State.Playheads (Track_Id);
+            Pat   : Pattern_Rec renames G_Project.Patterns (Track_Id)(PH.P);
          begin
-            if PH.S >= Pat.Length then
-               PH.S := Sequencer_Steps'First;
-               Arpeggiator.Signal_Start_Of_Pattern (Track_Id);
+            --  The Step we're about to play
+            PH.Steps_Count := @ + 1;
 
+            if PH.Steps_Count > Natural (Pat.Length) then
                --  We are at the end of the pattern, what do we do next?
+               --  First, find the next pattern to play.
 
                --  Check if there's a pattern link
                if PH.P /= Patterns'Last
                  and then
-                  Track.Patts (PH.P).Has_Link
+                  Pat.Has_Link
                then
                   --  Use pattern link
                   PH.P := @ + 1;
                else
-                  --  Look at song part to pick which pattern to play for this
-                  --  track.
+                  --  No link, look at song part to pick which pattern to play
+                  --  for this track.
                   PH.P :=
                     G_Project.Parts (Current_Part).Pattern_Select (Track_Id);
                end if;
-            else
-               PH.S := @ + 1;
+
+               --  We're about to play the first step of this new pattern
+               PH.Steps_Count := 1;
+               Arpeggiator.Signal_Start_Of_Pattern (Track_Id);
             end if;
          end;
       end loop;
    end Move_Playheads;
+
+   ------------------
+   -- Execute_Step --
+   ------------------
+
+   procedure Execute_Step is
+   begin
+
+      if Playing then
+
+         if G_Roll_State /= Off then
+            if (G_Roll_State in Quarter | Eighth)
+              or else
+                (G_Roll_State = Half and then G_Roll_Step_Count >= 2)
+              or else
+                (G_Roll_State = Beat and then G_Roll_Step_Count >= 4)
+            then
+               Restore_Play_State;
+               G_Roll_Step_Count := 1;
+            else
+               G_Roll_Step_Count := @ + 1;
+               WNM.Step_Event_Broadcast.Broadcast;
+               Move_Playheads;
+            end if;
+         else
+            WNM.Step_Event_Broadcast.Broadcast;
+            Move_Playheads;
+         end if;
+
+         --  if (for some B in B2 .. B5 => WNM.UI.FX_On (B)) then
+         --     if (WNM.UI.FX_On (B2) or else WNM.UI.FX_On (B3))
+         --       or else
+         --         (G_Roll_Step_Count >= 2 and then WNM.UI.FX_On (B4))
+         --         or else
+         --           (G_Roll_Step_Count >= 4 and then WNM.UI.FX_On (B5))
+         --     then
+         --        Restore_Play_State;
+         --        G_Roll_Step_Count := 1;
+         --     else
+         --        G_Roll_Step_Count := @ + 1;
+         --        WNM.Step_Event_Broadcast.Broadcast;
+         --        Move_Playheads;
+         --     end if;
+         --  else
+         --     WNM.Step_Event_Broadcast.Broadcast;
+         --     Move_Playheads;
+         --  end if;
+
+         for Track in Tracks loop
+            Process_Step (Track,
+                          G_Play_State.Playheads (Track).P,
+                          Sequencer_Steps
+                            (G_Play_State.Playheads (Track).Steps_Count));
+         end loop;
+      end if;
+
+   end Execute_Step;
+
+   -------------------
+   -- Part_Callback --
+   -------------------
+
+   procedure Part_Callback is
+      Current_Part : constant Parts := Song_Part_Sequencer.Playing;
+   begin
+      --  There's a new part
+
+      for Track_Id in Tracks loop
+         declare
+            Pattern : constant Patterns :=
+              G_Project.Parts (Current_Part).Pattern_Select (Track_Id);
+            PH    : Playhead renames G_Play_State.Playheads (Track_Id);
+         begin
+            PH.Steps_Count := 0;
+            PH.P := Pattern;
+            Arpeggiator.Signal_Start_Of_Pattern (Track_Id);
+         end;
+      end loop;
+   end Part_Callback;
 
    ---------------------
    -- MIDI_Clock_Tick --
@@ -632,54 +694,46 @@ package body WNM.Project.Step_Sequencer is
       use MIDI.Time;
 
       Clock_Div : constant MIDI.Time.Step_Count :=
-        (if WNM.UI.FX_On (B2) then 3 else 6);
+        (if G_Roll_State = Eighth then 3 else 6);
 
       S : constant MIDI.Time.Step_Count := Step mod Clock_Div;
    begin
       if S = 0 then
          Execute_Step;
-      elsif S = (Clock_Div - 1) then
-         Move_Playheads;
       end if;
-
    end MIDI_Clock_Tick;
 
-   ---------------------
-   -- MIDI_Song_Start --
-   ---------------------
+   -------------------------
+   -- Song_Start_Callback --
+   -------------------------
 
-   procedure MIDI_Song_Start is
+   procedure Song_Start_Callback is
    begin
       Playing := True;
-
-      Start_Playheads;
-
-      Current_Playing_Step := Sequencer_Steps'First;
-
-      WNM.Project.Chord_Sequencer.Start;
-   end MIDI_Song_Start;
-
-   --------------------
-   -- MIDI_Song_Stop --
-   --------------------
-
-   procedure MIDI_Song_Stop is
-   begin
-      WNM.Project.Song_Part_Sequencer.Start;
 
       --  Clear counters
       Pattern_Counter := (others => (others => 0));
 
-      Playing := False;
-   end MIDI_Song_Stop;
+      Current_Playing_Step := Sequencer_Steps'First;
+   end Song_Start_Callback;
 
    ------------------------
-   -- MIDI_Song_Continue --
+   -- Song_Stop_Callback --
    ------------------------
 
-   procedure MIDI_Song_Continue is
+   procedure Song_Stop_Callback is
    begin
-      null;
-   end MIDI_Song_Continue;
+      Playing := False;
+      G_Roll_State := Off;
+   end Song_Stop_Callback;
+
+   ----------------------------
+   -- Song_Continue_Callback --
+   ----------------------------
+
+   procedure Song_Continue_Callback is
+   begin
+      Playing := True;
+   end Song_Continue_Callback;
 
 end WNM.Project.Step_Sequencer;

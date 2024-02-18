@@ -72,16 +72,15 @@ package body WNM.GUI.Menu.Pattern_Settings is
                   Draw_Title ("Link", "");
             end case;
 
-            Draw_Value_Pos (Project.Pattern_Length'Img & " steps",
-                            4,
-                            Selected => Sub = Length);
+            Draw_Pattern_Length (6,
+                                 Project.Pattern_Length,
+                                 Selected => Sub = Length);
 
-            Draw_Value_Pos
-              ((if Project.Link
-                then "Link"
-                else "X"),
-               70,
-               Selected => Sub = Has_Link);
+            Draw_Value_Pos ((if Project.Link
+                            then "->"
+                            else "X"),
+                            70,
+                            Selected => Sub = Has_Link);
       end case;
 
    end Draw;

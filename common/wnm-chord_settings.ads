@@ -67,6 +67,7 @@ package WNM.Chord_Settings is
 
    type Chord_Name is (Maj_Triad, Min_Triad, Dim_Triad,
                        Maj_7th, Min_7th, Dim_7th,
+                       Min6,
                        Sus2, Sus4,
                        Maj_Inv1, Maj_Inv2,
                        Min_Inv1, Min_Inv2);
@@ -96,6 +97,7 @@ package WNM.Chord_Settings is
       Maj_7th   => (P1, Maj3, P5, Maj7),
       Min_7th   => (P1, min3, P5, min7),
       Dim_7th   => (P1, min3, d5, d7),
+      Min6      => (P1, min3, P5, d7),
       Sus2      => (P1, Maj2, P5, Octave),
       Sus4      => (P1, P4, P5, Octave),
       Maj_Inv1  => (Maj3, P5, Octave, Maj10),
@@ -162,6 +164,7 @@ package WNM.Chord_Settings is
           when Maj_7th   => "Major7",
           when Min_7th   => "Minor7",
           when Dim_7th   => "Dim7",
+          when Min6      => "Minor6",
           when Sus2      => "Sus2",
           when Sus4      => "Sus4",
           when Maj_Inv1  => "Maj/inv1",

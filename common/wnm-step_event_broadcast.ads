@@ -19,23 +19,6 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-package WNM.Step_Event_Broadcast is
+with WNM.Generic_Event_Broadcast;
 
-   type Callback is access procedure;
-
-   type Listener (CB : not null Callback) is private;
-   type Listener_Acess is access all Listener;
-
-   procedure Register (Acc : not null Listener_Acess);
-
-   procedure Broadcast;
-
-private
-
-   type Listener (CB : not null Callback) is record
-      Next : Listener_Acess := null;
-   end record;
-
-   Head : Listener_Acess := null;
-
-end WNM.Step_Event_Broadcast;
+package WNM.Step_Event_Broadcast is new WNM.Generic_Event_Broadcast;

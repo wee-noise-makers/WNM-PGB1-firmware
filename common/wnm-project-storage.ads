@@ -37,12 +37,12 @@ private
 
    type Token_Kind is (Global_Section,
                        Track_Section,
-                       Chord_Section,
                        Step_Section,
                        Sequence_Section,
-
-                       Chord_Chain_Section,
-                       Pattern_Chain_Section,
+                       Pattern_Section,
+                       Part_Section,
+                       Chord_Progression_Section,
+                       Chord_Section,
 
                        Seq_Change_Pattern,
                        Seq_Change_Track,
@@ -50,16 +50,17 @@ private
                        End_Of_File,
                        End_Of_Section);
 
-   for Token_Kind use (Global_Section        => 0,
-                       Track_Section         => 1,
-                       Chord_Section         => 2,
-                       Step_Section          => 4,
-                       Sequence_Section      => 5,
-                       Chord_Chain_Section   => 6,
-                       Pattern_Chain_Section => 7,
-                       Seq_Change_Pattern    => 8,
-                       Seq_Change_Track      => 9,
-                       End_Of_File           => 10,
-                       End_Of_Section        => End_Of_Section_Value);
+   for Token_Kind use (Global_Section            => 0,
+                       Track_Section             => 1,
+                       Step_Section              => 2,
+                       Sequence_Section          => 3,
+                       Pattern_Section           => 4,
+                       Part_Section              => 5,
+                       Chord_Progression_Section => 6,
+                       Chord_Section             => 7,
+                       Seq_Change_Pattern        => 8,
+                       Seq_Change_Track          => 9,
+                       End_Of_File               => End_Of_Section_Value - 1,
+                       End_Of_Section            => End_Of_Section_Value);
 
 end WNM.Project.Storage;
