@@ -340,8 +340,7 @@ package WNM.Project is
    function Notes_Per_Chord (T : Tracks := Editing_Track)
                              return Natural;
 
-   type Track_Settings is (Track_Mode,
-                           Engine,
+   type Track_Settings is (Engine,
                            CC_Default_A,
                            CC_Default_B,
                            CC_Default_C,
@@ -362,14 +361,14 @@ package WNM.Project is
                            CC_Ctrl_B, CC_Label_B,
                            CC_Ctrl_C, CC_Label_C,
                            CC_Ctrl_D, CC_Label_D,
+                           Track_Mode,
 
                            LFO_Amp_Mode,
                            LFO_Loop,
                            LFO_Sync);
 
    for Track_Settings'Size use 8;
-   for Track_Settings use (Track_Mode      => 0,
-                           Engine          => 1,
+   for Track_Settings use (Engine          => 1,
                            CC_Default_A    => 2,
                            CC_Default_B    => 3,
                            CC_Default_C    => 4,
@@ -394,13 +393,13 @@ package WNM.Project is
                            CC_Label_C      => 23,
                            CC_Ctrl_D       => 24,
                            CC_Label_D      => 25,
-
-                           LFO_Amp_Mode    => 26,
-                           LFO_Loop        => 27,
-                           LFO_Sync        => 28);
+                           Track_Mode      => 26,
+                           LFO_Amp_Mode    => 27,
+                           LFO_Loop        => 28,
+                           LFO_Sync        => 29);
 
    subtype User_Track_Settings
-     is Track_Settings range Track_Mode .. CC_Label_D;
+     is Track_Settings range Engine .. Track_Mode;
 
    procedure Set (T : Tracks;
                   S : User_Track_Settings;

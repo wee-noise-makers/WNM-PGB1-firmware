@@ -80,6 +80,9 @@ package body WNM.GUI.Menu.Track_Settings is
       if not Valid_Setting (Mode (Editing_Track), This.Current_Setting) then
          Prev_Valid_Setting (Mode (Editing_Track), This.Current_Setting);
       end if;
+      if not Valid_Setting (Mode (Editing_Track), This.Current_Setting) then
+         Next_Valid_Setting (Mode (Editing_Track), This.Current_Setting);
+      end if;
    end Fix_Current_Setting;
 
    ------------------------
