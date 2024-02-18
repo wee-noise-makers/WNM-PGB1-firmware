@@ -81,21 +81,6 @@ package body WNM.Synth is
    subtype Tresses_Channels
      is MIDI.MIDI_Channel range Kick_Channel .. Speech_Channel;
 
-   Synth_Oct_Offset : constant array (Tresses_Channels) of Integer :=
-     (Speech_Channel     => 0,
-      Sample1_Channel    => 0,
-      Sample2_Channel    => 0,
-      Kick_Channel       => -4,
-      Snare_Channel      => -1,
-      Cymbal_Channel     => 0,
-      Lead_Channel       => 0,
-      Bass_Channel       => -3,
-      Chord_Channel      => 0,
-      Reverb_Channel     => 0,
-      Filter_Channel     => 0,
-      Drive_Channel      => 0,
-      Bitcrusher_Channel => 0);
-
    Synth_Voices : constant array (Tresses_Channels) of
      Voice_Access :=
        (Speech_Channel     => Speech'Access,
@@ -168,9 +153,6 @@ package body WNM.Synth is
                     return WNM_HAL.Audio_Pan
      with Inline_Always;
 
-   function Add_Sat (K : MIDI.MIDI_Key; O : Integer) return MIDI.MIDI_Key
-     with Inline_Always;
-
    function To_Shape (V : MIDI.MIDI_Data)
                       return Tresses.LFO.Shape_Kind
      with Inline_Always;
@@ -202,22 +184,6 @@ package body WNM.Synth is
    function To_Pan (V : Tresses.Param_Range)
                     return WNM_HAL.Audio_Pan
    is (WNM_HAL.Audio_Pan (V / 328));
-
-   -------------
-   -- Add_Sat --
-   -------------
-
-   function Add_Sat (K : MIDI.MIDI_Key; O : Integer) return MIDI.MIDI_Key is
-      Result : constant Integer := Integer (K) + O;
-   begin
-      if Result > Integer (MIDI.MIDI_Key'Last) then
-         return MIDI.MIDI_Key'Last;
-      elsif Result < Integer (MIDI.MIDI_Key'First) then
-         return MIDI.MIDI_Key'First;
-      else
-         return MIDI.MIDI_Key (Result);
-      end if;
-   end Add_Sat;
 
    --------------
    -- To_Shape --
@@ -326,11 +292,7 @@ package body WNM.Synth is
 
                         Set_Indicator_IO (GP16);
                         declare
-                           Offset : constant Integer :=
-                             Synth_Oct_Offset (Msg.MIDI_Evt.Chan) * 12;
-
-                           Key : constant MIDI_Key :=
-                             Add_Sat (Msg.MIDI_Evt.Key, Offset);
+                           Key : constant MIDI_Key := Msg.MIDI_Evt.Key;
                         begin
                            if Msg.MIDI_Evt.Chan = Sample1_Channel then
                               Sampler1.Set_MIDI_Pitch (Key);
@@ -364,11 +326,7 @@ package body WNM.Synth is
                      when MIDI.Note_Off =>
 
                         declare
-                           Offset : constant Integer :=
-                             Synth_Oct_Offset (Msg.MIDI_Evt.Chan) * 12;
-
-                           Key : constant MIDI_Key :=
-                             Add_Sat (Msg.MIDI_Evt.Key, Offset);
+                           Key : constant MIDI_Key := Msg.MIDI_Evt.Key;
                         begin
                            if Msg.MIDI_Evt.Chan = Chord_Channel then
                               Chord.Key_Off (Msg.MIDI_Evt.Key);

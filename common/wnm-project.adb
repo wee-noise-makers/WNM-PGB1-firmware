@@ -362,8 +362,9 @@ package body WNM.Project is
             S.Note := MIDI.C4;
          when Chord | Note_In_Chord | Arp =>
             S.Note := 0;
-            S.Oct := 0;
       end case;
+
+      S.Oct := 0;
    end Note_Mode_Next;
 
    ---------------
@@ -705,6 +706,13 @@ package body WNM.Project is
 
    function Track_Pan (T : Tracks := Editing_Track) return Audio_Pan
    is (G_Project.Tracks (T).Pan);
+
+   ------------------
+   -- Track_Offset --
+   ------------------
+
+   function Track_Offset (T : Tracks := Editing_Track) return Octave_Offset
+   is (G_Project.Tracks (T).Offset);
 
    -------------------
    -- CC_Controller --
@@ -1180,6 +1188,7 @@ package body WNM.Project is
          when Volume          => Set (Track.Volume, V);
          when Pan             => Set (Track.Pan, V);
          when Master_FX       => Set (Track.FX, V);
+         when Track_Octave_Offset => Set (Track.Offset, V);
          when LFO_Rate        => Set (Track.LFO_Rate, V);
          when LFO_Amplitude   => Set (Track.LFO_Amp, V);
          when LFO_Shape       => Set (Track.LFO_Shape, V);
@@ -1223,6 +1232,7 @@ package body WNM.Project is
          when Volume          => Next (Track.Volume);
          when Pan             => Next (Track.Pan);
          when Master_FX       => Next (Track.FX);
+         when Track_Octave_Offset => Next (Track.Offset);
          when LFO_Rate        => Next (Track.LFO_Rate);
 
          when LFO_Amplitude   =>
@@ -1274,6 +1284,7 @@ package body WNM.Project is
          when Volume          => Prev (Track.Volume);
          when Pan             => Prev (Track.Pan);
          when Master_FX       => Prev (Track.FX);
+         when Track_Octave_Offset => Prev (Track.Offset);
          when LFO_Rate        => Prev (Track.LFO_Rate);
          when LFO_Amplitude   =>
             Prev (Track.LFO_Amp, Track.LFO_Amp_Mode, 1);
@@ -1323,6 +1334,7 @@ package body WNM.Project is
          when Volume          => Next_Fast (Track.Volume);
          when Pan             => Next_Fast (Track.Pan);
          when Master_FX       => Next_Fast (Track.FX);
+         when Track_Octave_Offset => Next_Fast (Track.Offset);
          when LFO_Rate        => Next_Fast (Track.LFO_Rate);
 
          when LFO_Amplitude   =>
@@ -1373,6 +1385,7 @@ package body WNM.Project is
          when Volume          => Prev_Fast (Track.Volume);
          when Pan             => Prev_Fast (Track.Pan);
          when Master_FX       => Prev_Fast (Track.FX);
+         when Track_Octave_Offset => Prev_Fast (Track.Offset);
          when LFO_Rate        => Prev_Fast (Track.LFO_Rate);
 
          when LFO_Amplitude   =>
@@ -1985,5 +1998,21 @@ package body WNM.Project is
    begin
       G_Play_State := G_Play_State_Save;
    end Restore_Play_State;
+
+   -------------
+   -- Add_Sat --
+   -------------
+
+   function Add_Sat (A, B : Octave_Offset) return Octave_Offset is
+      Sum : constant Integer := Integer (A) + Integer (B);
+   begin
+      if Sum < Integer (Octave_Offset'First) then
+         return Octave_Offset'First;
+      elsif Sum > Integer (Octave_Offset'Last) then
+         return Octave_Offset'Last;
+      else
+         return Octave_Offset (Sum);
+      end if;
+   end Add_Sat;
 
 end WNM.Project;
