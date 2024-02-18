@@ -42,7 +42,6 @@ private package WNM.Project.Storage.File_In is
    procedure Read_Gen_Enum (This : in out Instance; A : out T);
 
    procedure Read (This : in out Instance; A : out Token_Kind);
-   procedure Read (This : in out Instance; A : out Keyboard_Value);
 
 private
 

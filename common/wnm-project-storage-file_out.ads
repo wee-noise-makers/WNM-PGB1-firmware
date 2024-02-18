@@ -30,13 +30,17 @@ private package WNM.Project.Storage.File_Out is
 
    procedure Start_Global (This : in out Instance);
 
-   procedure Start_Chord_Chain (This : in out Instance);
-   procedure Start_Pattern_Chain (This : in out Instance);
-
-   procedure Start_Chord_Settings (This : in out Instance;
-                                   C : Chord_Progressions);
    procedure Start_Track_Settings (This : in out Instance;
                                    T : Tracks);
+   procedure Start_Pattern_Settings (This : in out Instance;
+                                     T : Tracks; P : Patterns);
+
+   procedure Start_Part_Settings (This : in out Instance;
+                                  P : Parts);
+
+   procedure Start_Chord_Progression (This : in out Instance;
+                                      P : Chord_Progressions);
+   procedure Start_Chord_Settings (This : in out Instance);
 
    procedure Start_Sequence (This : in out Instance);
    procedure Start_Step_Settings (This : in out Instance;
@@ -49,8 +53,13 @@ private package WNM.Project.Storage.File_Out is
    procedure Push (This : in out Instance; A : Beat_Per_Minute);
    procedure Push (This : in out Instance; A : Step_Settings);
    procedure Push (This : in out Instance; A : Track_Settings);
+   procedure Push (This : in out Instance; A : Pattern_Settings);
+   procedure Push (This : in out Instance; A : Part_Settings);
    procedure Push (This : in out Instance; A : Chord_Setting_Kind);
    procedure Push (This : in out Instance; A : MIDI.MIDI_Data);
+   procedure Push (This : in out Instance; A : WNM.Duration_In_Steps);
+   procedure Push (This : in out Instance; A : WNM.Pattern_Length);
+   procedure Push (This : in out Instance; A : Boolean);
 
 private
 

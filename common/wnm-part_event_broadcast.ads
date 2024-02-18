@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2022 Fabien Chouteau                    --
+--                     Copyright (C) 2024 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,11 +19,6 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-package WNM.Project.Song_Part_Sequencer is
+with WNM.Generic_Event_Broadcast;
 
-   function Playing return Parts;
-
-   function Muted (T : Tracks) return Boolean;
-   --  Is this track muted in the playing part?
-
-end WNM.Project.Song_Part_Sequencer;
+package WNM.Part_Event_Broadcast is new WNM.Generic_Event_Broadcast;

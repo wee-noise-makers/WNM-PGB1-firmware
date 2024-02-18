@@ -47,11 +47,10 @@ package body WNM.GUI.Menu.Drawing is
    Scroll_Bar_Y_Offset : constant := 19;
 
    Value_Text_Y : constant := Box_Bottom - 11;
+   Select_Line_Y : constant := Box_Bottom - 3;
    Title_Text_Y : constant := Box_Top + 4;
 
    Arrow_Y_Offset : constant := Box_Top - Bitmap_Fonts.Height - 2;
-
-   Select_Line_Y : constant := Box_Bottom - 3;
 
    -------------------
    -- Draw_Menu_Box --
@@ -64,7 +63,6 @@ package body WNM.GUI.Menu.Drawing is
    is
       X : Integer;
    begin
-
       X := (Screen.Width - Title'Length * Bitmap_Fonts.Width) / 2;
       Print (X_Offset    => X,
              Y_Offset    => Title_Y_Offset,
@@ -1051,6 +1049,100 @@ package body WNM.GUI.Menu.Drawing is
                 Str      => Display_Text (Word + 1));
       end if;
    end Draw_Word_Select;
+
+   ------------------------
+   -- Draw_Step_Duration --
+   ------------------------
+
+   procedure Draw_Step_Duration (Pos      : Natural;
+                                 D        : Duration_In_Steps;
+                                 Selected : Boolean)
+   is
+      use WNM.Utils;
+
+      Pt    : constant WNM.Screen.Point := (Pos, Value_Text_Y);
+      Bar   : constant Natural := Natural (D) / 16;
+      Beat  : constant Natural := (Natural (D) mod 16) / 4;
+      Step  : constant Natural := Natural (D) mod 4;
+      X_Str : Natural;
+
+   begin
+      --  BAR:BEAT:STEP
+      X_Str := Pt.X;
+      Print (X_Str, Pt.Y, Trim (Bar'Img));
+
+      Set_Pixel (Pix_X (X_Str), Pix_Y (Pt.Y + 1));
+      Set_Pixel (Pix_X (X_Str), Pix_Y (Pt.Y + 5));
+
+      X_Str := @ + 2;
+      Print (X_Str, Pt.Y, Trim (Beat'Img));
+
+      Set_Pixel (Pix_X (X_Str), Pix_Y (Pt.Y + 1));
+      Set_Pixel (Pix_X (X_Str), Pix_Y (Pt.Y + 5));
+
+      X_Str := @ + 2;
+      Print (X_Str, Pt.Y, Trim (Step'Img));
+
+      if Selected then
+         declare
+            Len : constant Natural := (if Bar < 10
+                                       then 20
+                                       else 25);
+         begin
+            Screen.Draw_Line ((Pos, Select_Line_Y),
+                              (Pos + Len, Select_Line_Y));
+         end;
+      end if;
+
+      --  Commented below are alternative step duration drawings
+
+      --  --  BAR and steps as dots in a 4x4 grid
+      --  declare
+      --     Cnt : Natural := Natural (D) mod 16;
+      --  begin
+      --     X_Str := Pt.X;
+      --     Print (X_Str, Pt.Y, Trim (Natural'Image (D / 16)));
+      --     for Y in 0 .. 3 loop
+      --        for X in 0 .. 3 loop
+      --           exit when Cnt = 0;
+      --           Set_Pixel (Pix_X (X_Str + X * 2),
+      --                      Pix_Y (Pt.Y + Y * 2));
+      --           Cnt := @ - 1;
+      --        end loop;
+      --     end loop;
+      --  end;
+      --
+      --  --  BAR and steps as dots in a 8x2 grid
+      --  declare
+      --     Cnt : Natural := Natural (D) mod 16;
+      --  begin
+      --     X_Str := Pt.X;
+      --     Print (X_Str, Pt.Y, Trim (Natural'Image (D / 16)));
+      --     Cnt := D mod 16;
+      --     for Y in 0 .. 1 loop
+      --        for X in 0 .. 7 loop
+      --           exit when Cnt = 0;
+      --           for H in 0 .. 2 loop
+      --              Set_Pixel (Pix_X (X_Str + X * 2),
+      --                         Pix_Y (Pt.Y + Y * 4 + H));
+      --           end loop;
+      --           Cnt := @ - 1;
+      --        end loop;
+      --     end loop;
+      --  end;
+   end Draw_Step_Duration;
+
+   -------------------------
+   -- Draw_Pattern_Length --
+   -------------------------
+
+   procedure Draw_Pattern_Length (Pos      : Natural;
+                                  D        : Pattern_Length;
+                                  Selected : Boolean)
+   is
+   begin
+      Draw_Step_Duration (Pos, Duration_In_Steps (D), Selected);
+   end Draw_Pattern_Length;
 
    -------------------
    -- Draw_Waveform --

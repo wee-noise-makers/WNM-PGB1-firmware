@@ -38,24 +38,34 @@ package body WNM.Project is
    begin
       case T.From.Kind is
          when Track =>
-            G_Project.Tracks (T.To.T).Patts :=
-              G_Project.Tracks (T.From.T).Patts;
+            --  Copy all steps from all patterns for the track
+            G_Project.Steps (T.To.T) :=
+              G_Project.Steps (T.From.T);
+
+            --  Also copy all the pattern settings
+            G_Project.Patterns (T.To.T) :=
+              G_Project.Patterns (T.From.T);
 
             --  Step back in destination address to allow for a new copy
             --  imediately.
             T.To.State := Sequence_Copy.None;
 
          when WNM.Sequence_Copy.Pattern =>
-            G_Project.Tracks (T.To.T).Patts (T.To.P) :=
-              G_Project.Tracks (T.From.T).Patts (T.From.P);
+            --  Copy all steps from for the pattern
+            G_Project.Steps (T.To.T)(T.To.P) :=
+              G_Project.Steps (T.From.T)(T.From.P);
+
+            --  Also copy the pattern settings
+            G_Project.Patterns (T.To.T)(T.To.P) :=
+              G_Project.Patterns (T.From.T)(T.From.P);
 
             --  Step back in destination address to allow for a new copy
             --  imediately.
             T.To.State := Sequence_Copy.Track;
 
          when Step =>
-            G_Project.Tracks (T.To.T).Patts (T.To.P).Seq (T.To.S) :=
-              G_Project.Tracks (T.From.T).Patts (T.From.P).Seq (T.From.S);
+            G_Project.Steps (T.To.T)(T.To.P)(T.To.S) :=
+              G_Project.Steps (T.From.T)(T.From.P)(T.From.S);
 
             --  Step back in destination address to allow for a new copy
             --  imediately.
@@ -118,8 +128,17 @@ package body WNM.Project is
    -- Set --
    ---------
 
-   function Set (Track : Tracks; PH : Playhead) return Boolean
-   is (G_Project.Tracks (Track).Patts (PH.P).Seq (PH.S).Trig /= None);
+   function Set (Track : Tracks; PH : Playhead) return Boolean is
+   begin
+      if PH.Steps_Count in
+        Natural (Sequencer_Steps'First) .. Natural (Sequencer_Steps'Last)
+      then
+         return G_Project.Steps
+           (Track)(PH.P)(Sequencer_Steps (PH.Steps_Count)).Trig /= None;
+      else
+         return False;
+      end if;
+   end Set;
 
    ---------
    -- Set --
@@ -129,7 +148,7 @@ package body WNM.Project is
                  Pattern : Patterns       := Editing_Pattern;
                  Step    : Sequencer_Steps)
                  return Boolean
-   is (G_Project.Tracks (Track).Patts (Pattern).Seq (Step).Trig /= None);
+   is (G_Project.Steps (Track)(Pattern)(Step).Trig /= None);
 
    -------------
    -- Trigger --
@@ -137,8 +156,7 @@ package body WNM.Project is
 
    function Trigger (Step : Sequencer_Steps := Editing_Step)
                      return Trigger_Kind
-   is (G_Project.Tracks
-       (Editing_Pattern).Patts (Editing_Track).Seq (Step).Trig);
+   is (G_Project.Steps (Editing_Track)(Editing_Pattern)(Step).Trig);
 
    ------------
    -- Repeat --
@@ -146,8 +164,7 @@ package body WNM.Project is
 
    function Repeat (Step : Sequencer_Steps := Editing_Step)
                     return Repeat_Cnt
-   is (G_Project.Tracks
-       (Editing_Pattern).Patts (Editing_Track).Seq (Step).Repeat);
+   is (G_Project.Steps (Editing_Track)(Editing_Pattern)(Step).Repeat);
 
    -----------------
    -- Repeat_Rate --
@@ -155,8 +172,7 @@ package body WNM.Project is
 
    function Repeat_Rate (Step : Sequencer_Steps := Editing_Step)
                          return Repeat_Rate_Kind
-   is (G_Project.Tracks
-       (Editing_Pattern).Patts (Editing_Track).Seq (Step).Repeat_Rate);
+   is (G_Project.Steps (Editing_Track)(Editing_Pattern)(Step).Repeat_Rate);
 
    ---------------
    -- Note_Mode --
@@ -164,8 +180,7 @@ package body WNM.Project is
 
    function Note_Mode (Step : Sequencer_Steps := Editing_Step)
                        return Note_Mode_Kind
-   is (G_Project.Tracks
-       (Editing_Pattern).Patts (Editing_Track).Seq (Step).Note_Mode);
+   is (G_Project.Steps (Editing_Track)(Editing_Pattern)(Step).Note_Mode);
 
    --------------
    -- Note_Img --
@@ -176,8 +191,8 @@ package body WNM.Project is
    is
       use MIDI;
 
-      S : Step_Rec renames G_Project.Tracks
-        (Editing_Pattern).Patts (Editing_Track).Seq (Step);
+      S : Step_Rec renames
+        G_Project.Steps (Editing_Track)(Editing_Pattern)(Step);
 
       Chord_Len : constant MIDI.MIDI_Key :=
         MIDI.MIDI_Key (Chord_Settings.Chord_Index_Range'Last) + 1;
@@ -228,8 +243,7 @@ package body WNM.Project is
 
    function Duration (Step : Sequencer_Steps := Editing_Step)
                       return Note_Duration
-   is (G_Project.Tracks
-       (Editing_Pattern).Patts (Editing_Track).Seq (Step).Duration);
+   is (G_Project.Steps (Editing_Track)(Editing_Pattern)(Step).Duration);
 
    --------------
    -- Velocity --
@@ -237,8 +251,7 @@ package body WNM.Project is
 
    function Velocity (Step : Sequencer_Steps := Editing_Step)
                       return MIDI.MIDI_Data
-   is (G_Project.Tracks
-       (Editing_Pattern).Patts (Editing_Track).Seq (Step).Velo);
+   is (G_Project.Steps (Editing_Track)(Editing_Pattern)(Step).Velo);
 
    ----------------
    -- CC_Enabled --
@@ -246,8 +259,7 @@ package body WNM.Project is
 
    function CC_Enabled (Step : Sequencer_Steps := Editing_Step;
                         Id : CC_Id) return Boolean
-   is (G_Project.Tracks
-       (Editing_Pattern).Patts (Editing_Track).Seq (Step).CC_Ena (Id));
+   is (G_Project.Steps (Editing_Track)(Editing_Pattern)(Step).CC_Ena (Id));
 
    --------------
    -- CC_Value --
@@ -256,8 +268,7 @@ package body WNM.Project is
    function CC_Value (Step : Sequencer_Steps := Editing_Step;
                       Id : CC_Id)
                       return MIDI.MIDI_Data
-   is (G_Project.Tracks
-       (Editing_Pattern).Patts (Editing_Track).Seq (Step).CC_Val (Id));
+   is (G_Project.Steps (Editing_Track)(Editing_Pattern)(Step).CC_Val (Id));
 
    ---------------
    -- CC_Limits --
@@ -341,8 +352,8 @@ package body WNM.Project is
    --------------------
 
    procedure Note_Mode_Next (Step : Sequencer_Steps := Editing_Step) is
-      S : Step_Rec renames G_Project.Tracks
-        (Editing_Pattern).Patts (Editing_Track).Seq (Step);
+      S : Step_Rec renames
+        G_Project.Steps (Editing_Track)(Editing_Pattern)(Step);
    begin
       S.Note_Mode := Next (S.Note_Mode);
 
@@ -360,8 +371,8 @@ package body WNM.Project is
    ---------------
 
    procedure CC_Toggle (Step : Sequencer_Steps; Id : CC_Id) is
-      CC : Boolean renames G_Project.Tracks
-        (Editing_Pattern).Patts (Editing_Track).Seq (Step).CC_Ena (Id);
+      CC : Boolean renames
+        G_Project.Steps (Editing_Track)(Editing_Pattern)(Step).CC_Ena (Id);
    begin
       CC := not CC;
    end CC_Toggle;
@@ -373,8 +384,8 @@ package body WNM.Project is
    procedure Note_Next (Step : Sequencer_Steps) is
       use MIDI;
 
-      S : Step_Rec renames G_Project.Tracks
-        (Editing_Pattern).Patts (Editing_Track).Seq (Step);
+      S : Step_Rec renames
+        G_Project.Steps (Editing_Track)(Editing_Pattern)(Step);
    begin
       case S.Note_Mode is
          when Note =>
@@ -404,8 +415,8 @@ package body WNM.Project is
    procedure Note_Prev (Step : Sequencer_Steps) is
       use MIDI;
 
-      S : Step_Rec renames G_Project.Tracks
-       (Editing_Pattern).Patts (Editing_Track).Seq (Step);
+      S : Step_Rec renames
+        G_Project.Steps (Editing_Track)(Editing_Pattern)(Step);
    begin
       case S.Note_Mode is
          when Note =>
@@ -435,7 +446,7 @@ package body WNM.Project is
       use MIDI;
 
       S : Step_Rec renames
-        G_Project.Tracks (Editing_Track).Patts (Editing_Pattern).Seq (Step);
+        G_Project.Steps (Editing_Track)(Editing_Pattern)(Step);
    begin
       case S.Note_Mode is
          when Note =>
@@ -465,8 +476,8 @@ package body WNM.Project is
    is
       use MIDI;
 
-      CC : MIDI.MIDI_Data renames G_Project.Tracks
-       (Editing_Pattern).Patts (Editing_Track).Seq (Step).CC_Val (Id);
+      CC : MIDI.MIDI_Data renames
+        G_Project.Steps (Editing_Track)(Editing_Pattern)(Step).CC_Val (Id);
 
    begin
 
@@ -477,8 +488,8 @@ package body WNM.Project is
       end if;
 
       --  Enable when the value is changed
-      G_Project.Tracks
-       (Editing_Pattern).Patts (Editing_Track).Seq (Step).CC_Ena (Id) := True;
+      G_Project.Steps
+        (Editing_Track)(Editing_Pattern)(Step).CC_Ena (Id) := True;
    end CC_Value_Inc;
 
    ------------------
@@ -491,8 +502,8 @@ package body WNM.Project is
    is
       use MIDI;
 
-      CC : MIDI.MIDI_Data renames G_Project.Tracks
-       (Editing_Pattern).Patts (Editing_Track).Seq (Step).CC_Val (Id);
+      CC : MIDI.MIDI_Data renames
+        G_Project.Steps (Editing_Track)(Editing_Pattern)(Step).CC_Val (Id);
    begin
       if Fast then
          Prev_Fast (CC, CC_Limits (Id));
@@ -501,8 +512,8 @@ package body WNM.Project is
       end if;
 
       --  Enable when the value is changed
-      G_Project.Tracks
-       (Editing_Pattern).Patts (Editing_Track).Seq (Step).CC_Ena (Id) := True;
+      G_Project.Steps
+        (Editing_Track)(Editing_Pattern)(Step).CC_Ena (Id) := True;
    end CC_Value_Dec;
 
    ---------
@@ -511,8 +522,7 @@ package body WNM.Project is
 
    procedure Set (S : User_Step_Settings; V : WNM_HAL.Touch_Value) is
       Step : Step_Rec renames
-        G_Project.Tracks
-          (Editing_Pattern).Patts (Editing_Track).Seq (Editing_Step);
+        G_Project.Steps (Editing_Track)(Editing_Pattern)(Editing_Step);
    begin
       case S is
          when Condition    => Set (Step.Trig, V);
@@ -542,8 +552,8 @@ package body WNM.Project is
    ----------------
 
    procedure Next_Value (S : User_Step_Settings) is
-      Step : Step_Rec renames G_Project.Tracks
-        (Editing_Pattern).Patts (Editing_Track).Seq (Editing_Step);
+      Step : Step_Rec renames
+        G_Project.Steps (Editing_Track)(Editing_Pattern)(Editing_Step);
    begin
       case S is
          when Condition    => Next (Step.Trig);
@@ -567,8 +577,8 @@ package body WNM.Project is
    ----------------
 
    procedure Prev_Value (S : User_Step_Settings) is
-      Step : Step_Rec renames G_Project.Tracks
-        (Editing_Pattern).Patts (Editing_Track).Seq (Editing_Step);
+      Step : Step_Rec renames
+        G_Project.Steps (Editing_Track)(Editing_Pattern)(Editing_Step);
    begin
       case S is
          when Condition    => Prev (Step.Trig);
@@ -592,8 +602,8 @@ package body WNM.Project is
    ---------------------
 
    procedure Next_Value_Fast (S : User_Step_Settings) is
-      Step : Step_Rec renames G_Project.Tracks
-        (Editing_Pattern).Patts (Editing_Track).Seq (Editing_Step);
+      Step : Step_Rec renames
+        G_Project.Steps (Editing_Track)(Editing_Pattern)(Editing_Step);
    begin
       case S is
          when Condition    => Next_Fast (Step.Trig);
@@ -618,8 +628,8 @@ package body WNM.Project is
    ---------------------
 
    procedure Prev_Value_Fast (S : User_Step_Settings) is
-      Step : Step_Rec renames G_Project.Tracks
-        (Editing_Pattern).Patts (Editing_Track).Seq (Editing_Step);
+      Step : Step_Rec renames
+        G_Project.Steps (Editing_Track)(Editing_Pattern)(Editing_Step);
    begin
       case S is
          when Condition    => Prev_Fast (Step.Trig);
@@ -778,7 +788,7 @@ package body WNM.Project is
                              Id : CC_Id)
                              return MIDI.MIDI_Data
    is
-      Step : Step_Rec renames G_Project.Tracks (T).Patts (P).Seq (S);
+      Step : Step_Rec renames G_Project.Steps (T)(P)(S);
    begin
       if Step.CC_Ena (Id) then
          return Step.CC_Val (Id);
@@ -1422,7 +1432,7 @@ package body WNM.Project is
    function Link (T : Tracks := Editing_Track;
                       P : Patterns := Editing_Pattern)
                       return Boolean
-   is (G_Project.Tracks (T).Patts (P).Has_Link);
+   is (G_Project.Patterns (T)(P).Has_Link);
 
    --------------------
    -- Pattern_Length --
@@ -1430,8 +1440,8 @@ package body WNM.Project is
 
    function Pattern_Length (T : Tracks := Editing_Track;
                             P : Patterns := Editing_Pattern)
-                            return Sequencer_Steps
-   is (G_Project.Tracks (T).Patts (P).Length);
+                            return WNM.Pattern_Length
+   is (G_Project.Patterns (T)(P).Length);
 
    ---------
    -- Set --
@@ -1439,11 +1449,11 @@ package body WNM.Project is
 
    procedure Set (S : User_Pattern_Settings; V : WNM_HAL.Touch_Value) is
       P : Pattern_Rec renames
-        G_Project.Tracks (Editing_Track).Patts (Editing_Pattern);
+        G_Project.Patterns (Editing_Track)(Editing_Pattern);
    begin
       case S is
          when Length =>
-            Set (P.Length, V);
+            Pattern_Length_Next.Set (P.Length, V);
          when Has_Link =>
             if Editing_Pattern /= Patterns'Last then
                Set (P.Has_Link, V);
@@ -1460,7 +1470,7 @@ package body WNM.Project is
 
    procedure Next_Value (S : User_Pattern_Settings) is
       P : Pattern_Rec renames
-        G_Project.Tracks (Editing_Track).Patts (Editing_Pattern);
+        G_Project.Patterns (Editing_Track)(Editing_Pattern);
    begin
       case S is
          when Length =>
@@ -1481,7 +1491,7 @@ package body WNM.Project is
 
    procedure Prev_Value (S : User_Pattern_Settings) is
       P : Pattern_Rec renames
-        G_Project.Tracks (Editing_Track).Patts (Editing_Pattern);
+        G_Project.Patterns (Editing_Track)(Editing_Pattern);
    begin
       case S is
          when Length =>
@@ -1528,7 +1538,7 @@ package body WNM.Project is
 
    function Selected_Duration (C  : WNM.Chord_Progressions;
                                Id : Chord_Slot_Id)
-                               return Chord_Step_Duration
+                               return Duration_In_Steps
    is (G_Project.Progressions (C).Chords (Id).Duration);
 
    --------------------------------
@@ -1718,7 +1728,7 @@ package body WNM.Project is
 
    function Part_Pattern (P : Parts;
                           T : Tracks)
-                          return Tracks
+                          return Patterns
    is
    begin
       return G_Project.Parts (P).Pattern_Select (T);
@@ -1751,6 +1761,13 @@ package body WNM.Project is
    is (G_Project.Parts (P).Link);
 
    -----------------
+   -- Part_Length --
+   -----------------
+
+   function Part_Length (P : Parts) return Duration_In_Steps
+   is (G_Project.Parts (P).Len);
+
+   -----------------
    -- Toggle_Mute --
    -----------------
 
@@ -1767,8 +1784,8 @@ package body WNM.Project is
    begin
       if G_Project.Parts (P).Track_Mute (T) then
          G_Project.Parts (P).Track_Mute (T) := False;
-         G_Project.Parts (P).Pattern_Select (T) := Tracks'First;
-      elsif G_Project.Parts (P).Pattern_Select (T) /= Tracks'Last then
+         G_Project.Parts (P).Pattern_Select (T) := Patterns'First;
+      elsif G_Project.Parts (P).Pattern_Select (T) /= Patterns'Last then
          G_Project.Parts (P).Pattern_Select (T) := @ + 1;
       end if;
    end Pattern_Next;
@@ -1779,7 +1796,7 @@ package body WNM.Project is
 
    procedure Pattern_Prev (P : Parts; T : Tracks) is
    begin
-      if G_Project.Parts (P).Pattern_Select (T) /= Tracks'First then
+      if G_Project.Parts (P).Pattern_Select (T) /= Patterns'First then
          G_Project.Parts (P).Pattern_Select (T) := @ - 1;
       else
          G_Project.Parts (P).Track_Mute (T) := True;
@@ -1816,6 +1833,24 @@ package body WNM.Project is
    begin
       G_Project.Parts (P).Link := not @;
    end Toggle_Link;
+
+   -------------------
+   -- Part_Len_Next --
+   -------------------
+
+   procedure Part_Len_Next (P : Parts) is
+   begin
+      Next (G_Project.Parts (P).Len);
+   end Part_Len_Next;
+
+   -------------------
+   -- Part_Len_Prev --
+   -------------------
+
+   procedure Part_Len_Prev (P : Parts) is
+   begin
+      Prev (G_Project.Parts (P).Len);
+   end Part_Len_Prev;
 
    ----------------
    -- Set_Origin --
@@ -1882,8 +1917,8 @@ package body WNM.Project is
          when Note_On =>
             if WNM.UI.Input_Mode = WNM.UI.Step_Mode then
                declare
-                  Ed_Step : Step_Rec renames G_Project.Tracks
-                    (Editing_Track).Patts (Editing_Pattern).Seq (Editing_Step);
+                  Ed_Step : Step_Rec renames G_Project.Steps
+                    (Editing_Track)(Editing_Pattern)(Editing_Step);
                begin
                   Ed_Step.Note_Mode := Note;
                   Ed_Step.Note := Msg.Key;
@@ -1912,5 +1947,43 @@ package body WNM.Project is
             null;
       end case;
    end Handle_MIDI;
+
+   ----------
+   -- Roll --
+   ----------
+
+   procedure Roll (Kind : Roll_Kind) is
+   begin
+      if Kind /= Off and then G_Roll_State = Off then
+         Save_Play_State;
+         G_Roll_Step_Count := 1;
+      end if;
+      G_Roll_State := Kind;
+   end Roll;
+
+   ----------------
+   -- Roll_State --
+   ----------------
+
+   function Roll_State return Roll_Kind
+   is (G_Roll_State);
+
+   ---------------------
+   -- Save_Play_State --
+   ---------------------
+
+   procedure Save_Play_State is
+   begin
+      G_Play_State_Save := G_Play_State;
+   end Save_Play_State;
+
+   ------------------------
+   -- Restore_Play_State --
+   ------------------------
+
+   procedure Restore_Play_State is
+   begin
+      G_Play_State := G_Play_State_Save;
+   end Restore_Play_State;
 
 end WNM.Project;

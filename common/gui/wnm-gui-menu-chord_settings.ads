@@ -48,6 +48,7 @@ private
       --  Chord Progression
       Selected_Chord : Project.Chord_Slot_Id := Project.Chord_Slot_Id'First;
       Current_Chord_Setting : Chord_Sub_Settings := Chord_Sub_Settings'First;
+      Add_Remove_View : Boolean := False;
    end record;
 
    overriding

@@ -23,8 +23,6 @@ with WNM.Chord_Settings; use WNM.Chord_Settings;
 
 package WNM.Project.Chord_Sequencer is
 
-   procedure Start;
-
    function Current_Tonic return MIDI.MIDI_Key;
    function Current_Chord_Name return Chord_Name;
    function Current_Chord_Intervals return Chord_Intervals;

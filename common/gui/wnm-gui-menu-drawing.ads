@@ -41,7 +41,8 @@ package WNM.GUI.Menu.Drawing is
 
    procedure Draw_Menu_Box (Title : String;
                             Count : Natural;
-                            Index : Natural);
+                            Index : Natural)
+     with Pre => Index in 0 .. Count - 1;
 
    procedure Draw_Volume (Title : String;
                           Val : WNM_HAL.Audio_Volume);
@@ -118,6 +119,14 @@ package WNM.GUI.Menu.Drawing is
    procedure Draw_Project_Select (Val : Project.Library.Valid_Prj_Index);
 
    procedure Draw_Word_Select (Word : Speech.Word);
+
+   procedure Draw_Step_Duration (Pos      : Natural;
+                                 D        : Duration_In_Steps;
+                                 Selected : Boolean);
+
+   procedure Draw_Pattern_Length (Pos      : Natural;
+                                  D        : Pattern_Length;
+                                  Selected : Boolean);
 
    procedure Draw_Waveform;
 

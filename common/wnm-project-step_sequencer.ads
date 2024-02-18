@@ -37,10 +37,6 @@ package WNM.Project.Step_Sequencer is
 
    procedure MIDI_Clock_Tick (Step : MIDI.Time.Step_Count);
 
-   procedure MIDI_Song_Start;
-   procedure MIDI_Song_Stop;
-   procedure MIDI_Song_Continue;
-
 private
 
    Current_Playing_Step : Sequencer_Steps := Sequencer_Steps'First with Atomic;

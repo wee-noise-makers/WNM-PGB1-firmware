@@ -407,16 +407,39 @@ package body WNM.UI is
    procedure Toggle_FX (B : Keyboard_Button) is
    begin
 
-      --  Mutually exlusive effects
       if B in B2 .. B5 then
-         if not FX_Is_On (B) then
+         declare
+            use Project;
+            Kind : constant Roll_Kind :=
+              (case B is
+                  when B2 => Eighth,
+                  when B3 => Quarter,
+                  when B4 => Half,
+                  when B5 => Beat,
+                  when others => Off);
+
+         begin
+            if Kind = Roll_State then
+               Roll (Project.Off);
+            else
+               Roll (Kind);
+            end if;
+
             for X in B2 .. B5 loop
                FX_Is_On (X) := False;
             end loop;
-         end if;
-      end if;
+            case Roll_State is
+               when Off => null;
+               when Beat => FX_Is_On (B5) := True;
+               when Half => FX_Is_On (B4) := True;
+               when Quarter => FX_Is_On (B3) := True;
+               when Eighth => FX_Is_On (B2) := True;
+            end case;
+         end;
 
-      FX_Is_On (B) := not FX_Is_On (B);
+      else
+         FX_Is_On (B) := not FX_Is_On (B);
+      end if;
    end Toggle_FX;
 
    -----------

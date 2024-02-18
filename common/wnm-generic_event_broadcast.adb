@@ -19,13 +19,13 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-package body WNM.Step_Event_Broadcast is
+package body WNM.Generic_Event_Broadcast is
 
-   --------------
-   -- Register --
-   --------------
+   -----------------------
+   -- Register_Listener --
+   -----------------------
 
-   procedure Register (Acc : not null Listener_Acess) is
+   procedure Register_Listener (Acc : not null Listener_Acess) is
       Ptr : Listener_Acess := Head;
    begin
 
@@ -40,7 +40,7 @@ package body WNM.Step_Event_Broadcast is
 
       Acc.Next := Head;
       Head := Acc;
-   end Register;
+   end Register_Listener;
 
    ---------------
    -- Broadcast --
@@ -49,12 +49,20 @@ package body WNM.Step_Event_Broadcast is
    procedure Broadcast is
       Ptr : Listener_Acess := Head;
    begin
-
-      --  Check if node is already in the list
       while Ptr /= null loop
          Ptr.CB.all;
          Ptr := Ptr.Next;
       end loop;
    end Broadcast;
 
-end WNM.Step_Event_Broadcast;
+   --------------
+   -- Register --
+   --------------
+
+   package body Register is
+      Lis : aliased Listener (CB);
+   begin
+      Register_Listener (Lis'Access);
+   end Register;
+
+end WNM.Generic_Event_Broadcast;

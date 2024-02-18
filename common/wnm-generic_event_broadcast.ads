@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2022 Fabien Chouteau                    --
+--                     Copyright (C) 2023 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,11 +19,29 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-package WNM.Project.Song_Part_Sequencer is
+generic
+package WNM.Generic_Event_Broadcast is
 
-   function Playing return Parts;
+   type Callback is access procedure;
 
-   function Muted (T : Tracks) return Boolean;
-   --  Is this track muted in the playing part?
+   generic
+      CB : not null Callback;
+   package Register is
+   end Register;
 
-end WNM.Project.Song_Part_Sequencer;
+   procedure Broadcast;
+
+private
+
+   type Listener (CB : not null Callback);
+   type Listener_Acess is access all Listener;
+
+   procedure Register_Listener (Acc : not null Listener_Acess);
+
+   type Listener (CB : not null Callback) is record
+      Next : Listener_Acess := null;
+   end record;
+
+   Head : Listener_Acess := null;
+
+end WNM.Generic_Event_Broadcast;

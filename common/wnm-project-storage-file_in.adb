@@ -63,14 +63,4 @@ package body WNM.Project.Storage.File_In is
       Read_G (This, A);
    end Read;
 
-   ----------
-   -- Read --
-   ----------
-
-   procedure Read (This : in out Instance; A : out Keyboard_Value) is
-      procedure Read_G is new Read_Gen_Int (Keyboard_Value);
-   begin
-      Read_G (This, A);
-   end Read;
-
 end WNM.Project.Storage.File_In;
