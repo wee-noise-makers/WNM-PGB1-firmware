@@ -49,6 +49,11 @@ package body WNM.Synth is
    Sampler1    : aliased WNM.Voices.Sampler_Voice.Instance;
    Sampler2    : aliased WNM.Voices.Sampler_Voice.Instance;
 
+   Sample_Rec_Playback :
+   WNM.Voices.Sampler_Voice.Sample_Rec_Playback_Instance;
+   --  This voice is only used when playing the freshly recorded sample from
+   --  RAM.
+
    subtype Voice_Class is Tresses.Interfaces.Four_Params_Voice'Class;
    type Voice_Access is access all Voice_Class;
 
@@ -440,6 +445,14 @@ package body WNM.Synth is
                         null;
                      end case;
                   end;
+
+               elsif Msg.MIDI_Evt.Chan = Sample_Rec_Playback_Channel then
+                  case Msg.MIDI_Evt.Kind is
+                     when Note_On =>
+                        Sample_Rec_Playback.Note_On (Msg.MIDI_Evt.Key);
+                     when others =>
+                        null;
+                  end case;
                end if;
 
             when Synth_CPU_Crash =>
@@ -518,8 +531,16 @@ package body WNM.Synth is
       Output.Parameters (Filter) := Out_Voice_Parameters (Filter_Channel);
       Output.Parameters (Reverb) := Out_Voice_Parameters (Reverb_Channel);
 
-      declare
-      begin
+      if WNM.Mixer.Get_Sample_Rec_Mode in WNM.Mixer.Play then
+         --  We are in sample record playback mode, the synth CPU is now in
+         --  charge of playing the recorded sample.
+
+         Sample_Rec_Playback.Render (Output.R (Bypass));
+         Output.L (Bypass) := Output.R (Bypass);
+      else
+
+         --  Regular synthesis of all channels
+
          TK.Render (Buffer);
          WNM_HAL.Mix (Output.L (FX_Send (Kick_Channel)),
                       Output.R (FX_Send (Kick_Channel)),
@@ -582,7 +603,7 @@ package body WNM.Synth is
          --               Input => Buffer,
          --               Volume => Volume_For_Chan (Speech_Channel),
          --               Pan => Pan_For_Chan (Speech_Channel));
-      end;
+      end if;
 
       declare
          Synthesis_End      : constant WNM_HAL.Time_Microseconds :=

@@ -32,19 +32,20 @@ with Tresses.LFO;
 
 package WNM.Synth is
 
-   Kick_Channel       : constant MIDI.MIDI_Channel := 1;
-   Snare_Channel      : constant MIDI.MIDI_Channel := 2;
-   Cymbal_Channel     : constant MIDI.MIDI_Channel := 3;
-   Bass_Channel       : constant MIDI.MIDI_Channel := 4;
-   Lead_Channel       : constant MIDI.MIDI_Channel := 5;
-   Chord_Channel      : constant MIDI.MIDI_Channel := 6;
-   Sample1_Channel    : constant MIDI.MIDI_Channel := 7;
-   Sample2_Channel    : constant MIDI.MIDI_Channel := 8;
-   Reverb_Channel     : constant MIDI.MIDI_Channel := 9;
-   Filter_Channel     : constant MIDI.MIDI_Channel := 10;
-   Drive_Channel      : constant MIDI.MIDI_Channel := 11;
-   Bitcrusher_Channel : constant MIDI.MIDI_Channel := 12;
-   Speech_Channel     : constant MIDI.MIDI_Channel := 13;
+   Kick_Channel                : constant MIDI.MIDI_Channel := 1;
+   Snare_Channel               : constant MIDI.MIDI_Channel := 2;
+   Cymbal_Channel              : constant MIDI.MIDI_Channel := 3;
+   Bass_Channel                : constant MIDI.MIDI_Channel := 4;
+   Lead_Channel                : constant MIDI.MIDI_Channel := 5;
+   Chord_Channel               : constant MIDI.MIDI_Channel := 6;
+   Sample1_Channel             : constant MIDI.MIDI_Channel := 7;
+   Sample2_Channel             : constant MIDI.MIDI_Channel := 8;
+   Reverb_Channel              : constant MIDI.MIDI_Channel := 9;
+   Filter_Channel              : constant MIDI.MIDI_Channel := 10;
+   Drive_Channel               : constant MIDI.MIDI_Channel := 11;
+   Bitcrusher_Channel          : constant MIDI.MIDI_Channel := 12;
+   Speech_Channel              : constant MIDI.MIDI_Channel := 13;
+   Sample_Rec_Playback_Channel : constant MIDI.MIDI_Channel := 14;
 
    Voice_Param_1_CC      : constant MIDI.MIDI_Data := 0;
    Voice_Param_2_CC      : constant MIDI.MIDI_Data := 1;

@@ -25,6 +25,7 @@ with Tresses.Interfaces; use Tresses.Interfaces;
 with Tresses.Resources;
 
 private with Tresses.FX.Reverb;
+private with WNM.Shared_Buffers;
 
 package WNM.Voices.Reverb_Voice is
 
@@ -61,6 +62,7 @@ package WNM.Voices.Reverb_Voice is
           when P_Cutoff    => "CTF");
 
 private
+
    pragma Style_Checks ("M120");
    package Reverb_Pck is new Tresses.FX.Reverb
      (
@@ -76,10 +78,19 @@ private
       Del2_Len  => Tresses.U16 ((4782.0 / 32_000.0 / 1.0) * Tresses.Resources.SAMPLE_RATE_REAL)
      );
 
+   --  The reveb buffer is mapped on the sample recording buffer to save
+   --  memory space. These two features are not used together.
+   pragma Compile_Time_Error
+     (WNM.Shared_Buffers.Sample_Rec_Buffer'Length < Reverb_Pck.Reverb_Buffer'Length,
+      "Shared buffer too small");
+   Buffer : aliased Reverb_Pck.Reverb_Buffer
+   --  with Address => WNM.Shared_Buffers.Sample_Rec_Buffer'Address
+   ;
+
    type Instance
    is new Four_Params_Voice
    with record
-      Rev : Reverb_Pck.Instance;
+      Rev : Reverb_Pck.Instance (Buffer'Access);
    end record;
 
 end WNM.Voices.Reverb_Voice;

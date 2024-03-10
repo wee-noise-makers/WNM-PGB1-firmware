@@ -23,8 +23,12 @@ with WNM.GUI.Menu.Sample_Select;
 with WNM.GUI.Menu.Sample_Trim;
 with WNM.GUI.Menu.Text_Dialog;
 with WNM.GUI.Menu.Yes_No_Dialog;
+with WNM.GUI.Menu.Audio_Input_Select;
+with WNM.GUI.Menu.Recording;
+with WNM.GUI.Menu.Drawing;
 
-with WNM.Sample_Edit;
+with WNM.Mixer;
+with WNM.Shared_Buffers;
 
 package body WNM.GUI.Menu.Sample_Edit is
 
@@ -39,6 +43,45 @@ package body WNM.GUI.Menu.Sample_Edit is
       Push (Edit_Sample_Singleton'Access);
    end Push_Window;
 
+   ----------
+   -- Draw --
+   ----------
+
+   overriding
+   procedure Draw (This : in out Edit_Sample_Menu) is
+   begin
+      Drawing.Draw_Title ("Select Mode", This.Mode'Img);
+   end Draw;
+
+   --------------
+   -- On_Event --
+   --------------
+
+   overriding
+   procedure On_Event (This  : in out Edit_Sample_Menu;
+                       Event :        Menu_Event)
+   is
+   begin
+      case Event.Kind is
+         when A_Press =>
+            case This.Mode is
+            when New_Sample =>
+               This.State := Select_Input;
+               Audio_Input_Select.Push_Window;
+            when Edit_Sample =>
+               This.State := Select_Sample;
+               This.Sample_Entry := Invalid_Sample_Entry;
+               Sample_Select.Push_Window ("Sample to edit");
+            end case;
+
+         when Left_Press | Right_Press | Up_Press | Down_Press =>
+            Next (This.Mode);
+
+         when others =>
+            null;
+      end case;
+   end On_Event;
+
    ---------------
    -- On_Pushed --
    ---------------
@@ -48,11 +91,20 @@ package body WNM.GUI.Menu.Sample_Edit is
      (This  : in out Edit_Sample_Menu)
    is
    begin
-      This.State := Select_Sample;
-      This.Sample_Entry := Invalid_Sample_Entry;
-
-      Sample_Select.Push_Window;
+      null;
    end On_Pushed;
+
+   ---------------
+   -- Exit_Edit --
+   ---------------
+
+   procedure Exit_Edit (This       : in out Edit_Sample_Menu;
+                        Exit_Value :        Window_Exit_Value)
+   is
+      pragma Unreferenced (This);
+   begin
+      Menu.Pop (Exit_Value);
+   end Exit_Edit;
 
    --------------
    -- On_Focus --
@@ -68,17 +120,35 @@ package body WNM.GUI.Menu.Sample_Edit is
 
       --  Transition to the new state
       case This.State is
+         when Select_Mode =>
+            New_State := Select_Mode;
+
+         when Select_Input =>
+
+            if Exit_Value = Success then
+               New_State := Record_Sample;
+            else
+               Mixer.Enter_Sample_Rec_Mode (Mixer.None);
+               New_State := Select_Mode;
+            end if;
+
+         when Record_Sample =>
+
+            if Exit_Value = Success then
+               New_State := Trim;
+            else
+               New_State := Select_Input;
+            end if;
+
          when Select_Sample =>
 
             if Exit_Value = Success then
-               WNM.Sample_Edit.Load (Menu.Sample_Select.Selected,
-                                     Sample_Point_Index'First,
-                                     Sample_Point_Index'Last);
+               Shared_Buffers.Init_From_Sample (Menu.Sample_Select.Selected);
                New_State := Trim;
 
             else
-               Menu.Pop (Exit_Value);
-               return;
+               Mixer.Enter_Sample_Rec_Mode (Mixer.None);
+               New_State := Select_Mode;
             end if;
 
          when Trim =>
@@ -86,13 +156,18 @@ package body WNM.GUI.Menu.Sample_Edit is
             if Exit_Value = Success then
                New_State := Enter_Name;
             else
-               New_State := Select_Sample;
+               case This.Mode is
+                  when New_Sample =>
+                     New_State := Record_Sample;
+                  when Edit_Sample =>
+                     New_State := Select_Sample;
+               end case;
             end if;
 
          when Enter_Name =>
 
             if Exit_Value = Success then
-               New_State := Confirm;
+               New_State := Select_Index;
             else
                New_State := Trim;
             end if;
@@ -107,8 +182,12 @@ package body WNM.GUI.Menu.Sample_Edit is
          when Confirm =>
 
             if Exit_Value = Success then
-               Menu.Exit_Menu;
-               return;
+               New_State := Select_Mode;
+
+               Shared_Buffers.Save_Sample
+                 (Sample_Select.Selected,
+                  Text_Dialog.Value);
+
             else
                New_State := Select_Index;
             end if;
@@ -119,17 +198,42 @@ package body WNM.GUI.Menu.Sample_Edit is
 
       --  Push the next window
       case New_State is
+         when Select_Mode =>
+            null; -- Stay on the current window
+
+         when Select_Input =>
+            Audio_Input_Select.Push_Window;
+            Mixer.Enter_Sample_Rec_Mode (Mixer.Preview);
+
+         when Record_Sample =>
+            Recording.Push_Window;
+            Shared_Buffers.Init;
+            Mixer.Enter_Sample_Rec_Mode (Mixer.Rec);
+
          when Select_Sample =>
-            Sample_Select.Push_Window;
+            Sample_Select.Push_Window ("Sample to edit");
+            Mixer.Enter_Sample_Rec_Mode (Mixer.Preview);
+
          when Trim =>
             Sample_Trim.Push_Window;
+            Mixer.Enter_Sample_Rec_Mode (Mixer.Play);
+
          when Confirm =>
+            Yes_No_Dialog.Set_Title ("Save Sample?");
             Yes_No_Dialog.Push_Window;
+
          when Enter_Name =>
             Text_Dialog.Set_Title ("Sample name?");
-            Text_Dialog.Push_Window;
+            case This.Mode is
+               when New_Sample =>
+                  Text_Dialog.Push_Window;
+               when Edit_Sample =>
+                  Text_Dialog.Push_Window
+                    (Sample_Library.Entry_Name (Sample_Select.Selected));
+            end case;
+
          when Select_Index =>
-            Sample_Select.Push_Window;
+            Sample_Select.Push_Window ("Sample location");
       end case;
 
    end On_Focus;

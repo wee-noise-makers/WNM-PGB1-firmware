@@ -111,7 +111,8 @@ package body WNM.GUI.Update is
               WNM.UI.Track_Mode |
               WNM.UI.Step_Mode |
               WNM.UI.Song_Mode |
-              WNM.UI.FX_Mode =>
+              WNM.UI.FX_Mode |
+              WNM.UI.Sample_Edit_Mode =>
 
             Menu.Draw;
 

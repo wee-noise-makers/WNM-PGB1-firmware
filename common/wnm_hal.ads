@@ -129,6 +129,15 @@ package WNM_HAL is
 
    function Sample_Data_Base return System.Address;
 
+   type Storage_Sector_Data
+   is array (1 .. WNM_Configuration.Storage.Sector_Byte_Size) of HAL.UInt8;
+
+   type Sample_Sector_Id
+   is range 0 .. WNM_Configuration.Storage.Sample_Library_Sectors - 1;
+
+   procedure Write_To_Storage (Id   : Sample_Sector_Id;
+                               Data : Storage_Sector_Data);
+
    ---------------------
    -- Coproc Messages --
    ---------------------

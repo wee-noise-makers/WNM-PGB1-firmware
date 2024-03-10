@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                  Copyright (C) 2016-2017 Fabien Chouteau                  --
+--                  Copyright (C) 2016-2024 Fabien Chouteau                  --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,36 +19,25 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Utils;
-
+with WNM.Mixer;
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
-with WNM.GUI.Bitmap_Fonts; use WNM.GUI.Bitmap_Fonts;
 
---------------------------------
--- WNM.GUI.Menu.Sample_Select --
---------------------------------
+package body WNM.GUI.Menu.Audio_Input_Select is
 
-package body WNM.GUI.Menu.Sample_Select is
+   package Sample_Rec_Inputs_Next
+   is new Enum_Next (WNM.Mixer.Sample_Rec_Inputs);
+   use Sample_Rec_Inputs_Next;
 
-   Sample_Select : aliased Sample_Select_Window;
-   Dialog_Title : String (1 .. Title_Max_Len) := (others => ' ');
+   Input_Select : aliased Input_Select_Window;
 
    -----------------
    -- Push_Window --
    -----------------
 
-   procedure Push_Window (Title : String) is
+   procedure Push_Window is
    begin
-      WNM.Utils.Copy_Str (Title, Dialog_Title);
-      Push (Sample_Select'Access);
+      Push (Input_Select'Access);
    end Push_Window;
-
-   --------------
-   -- Selected --
-   --------------
-
-   function Selected return Valid_Sample_Index
-   is (Sample_Select.Index);
 
    ----------
    -- Draw --
@@ -56,15 +45,10 @@ package body WNM.GUI.Menu.Sample_Select is
 
    overriding
    procedure Draw
-     (This : in out Sample_Select_Window)
+     (This : in out Input_Select_Window)
    is
-      X : Integer := 5;
    begin
-      Print (X_Offset    => X,
-             Y_Offset    => Drawing.Box_Top - 5,
-             Str         => Dialog_Title);
-
-      Draw_Sample_Select (This.Index);
+      Draw_Title ("Input Select", WNM.Mixer.Sample_Rec_Input'Img);
    end Draw;
 
    --------------
@@ -73,8 +57,8 @@ package body WNM.GUI.Menu.Sample_Select is
 
    overriding
    procedure On_Event
-     (This  : in out Sample_Select_Window;
-      Event :        Menu_Event)
+     (This  : in out Input_Select_Window;
+      Event : Menu_Event)
    is
    begin
       case Event.Kind is
@@ -83,15 +67,36 @@ package body WNM.GUI.Menu.Sample_Select is
          when B_Press =>
             Menu.Pop (Exit_Value => Failure);
          when Up_Press =>
-            if This.Index /= Valid_Sample_Index'Last then
-               This.Index := This.Index + 1;
-            end if;
+            Next (WNM.Mixer.Sample_Rec_Input);
          when Down_Press =>
-            if This.Index /= Valid_Sample_Index'First then
-               This.Index := This.Index - 1;
-            end if;
-         when others => null;
+            Prev (WNM.Mixer.Sample_Rec_Input);
+         when others =>
+            null;
       end case;
    end On_Event;
 
-end WNM.GUI.Menu.Sample_Select;
+   ---------------
+   -- On_Pushed --
+   ---------------
+
+   overriding
+   procedure On_Pushed
+     (This  : in out Input_Select_Window)
+   is
+   begin
+      null;
+   end On_Pushed;
+
+   --------------
+   -- On_Focus --
+   --------------
+
+   overriding procedure On_Focus
+     (This       : in out Input_Select_Window;
+      Exit_Value : Window_Exit_Value)
+   is
+   begin
+      null;
+   end On_Focus;
+
+end WNM.GUI.Menu.Audio_Input_Select;

@@ -23,6 +23,7 @@ with WNM.GUI.Menu.Track_Settings;
 with WNM.GUI.Menu.Pattern_Settings;
 with WNM.GUI.Menu.Step_Settings;
 with WNM.GUI.Menu.Chord_Settings;
+with WNM.GUI.Menu.Sample_Edit;
 
 package body WNM.GUI.Menu is
 
@@ -43,6 +44,8 @@ package body WNM.GUI.Menu is
             GUI.Menu.Pattern_Settings.Push_Window;
          when Chord_Menu =>
             GUI.Menu.Chord_Settings.Push_Window;
+         when Sample_Edit_Menu =>
+            GUI.Menu.Sample_Edit.Push_Window;
       end case;
    end Open;
 
@@ -115,7 +118,7 @@ package body WNM.GUI.Menu is
    procedure Exit_Menu is
    begin
       while Stack_Cnt /= 0 loop
-         Pop (None);
+         Pop (Failure);
       end loop;
    end Exit_Menu;
 

@@ -62,7 +62,7 @@ is
      WNM_Configuration.Storage.Sample_Library_Byte_Size / Samples;
 
    Sample_Metadata_Byte_Size : constant :=
-     WNM_Configuration.Storage.Sample_Name_Lenght
+     WNM_Configuration.Storage.Sample_Name_Length
        + Sample_Storage_Len'Size / 8;
 
    Sample_Audio_Byte_Size : constant :=
@@ -84,7 +84,7 @@ is
    Invalid_Sample_Entry : constant Sample_Index := Sample_Index'First;
 
    subtype Sample_Entry_Name
-     is String (1 .. WNM_Configuration.Storage.Sample_Name_Lenght);
+     is String (1 .. WNM_Configuration.Storage.Sample_Name_Length);
 
    type Single_Sample_Data is record
       Audio    : Sample_Audio_Data;
@@ -111,12 +111,12 @@ is
                                   return HAL.UInt32;
    --  Return the base address of an sample entry in the device memory space
 
+   procedure Load (Id : Valid_Sample_Index);
    procedure Load;
 
-   type Sample_Time is delta 0.001 range 0.0 .. 3.0;
+   type Sample_Time is delta 0.01 range 0.0 .. 3.0;
 
-   function Point_Index_To_Seconds (Index : Sample_Point_Index)
-                                    return Sample_Time;
+   function To_Seconds (Index : Sample_Point_Count) return Sample_Time;
 
 private
 

@@ -67,6 +67,16 @@ package WNM.Voices.Sampler_Voice is
           when P_Release => "REL",
           when P_Drive   => "DRV");
 
+   --  Special type to play the recorded sample in sample rec/edit mode
+   type Sample_Rec_Playback_Instance
+   is tagged private;
+
+   procedure Note_On (This : in out Sample_Rec_Playback_Instance;
+                      Key  :        MIDI.MIDI_Key);
+
+   procedure Render (This   : in out Sample_Rec_Playback_Instance;
+                     Buffer :    out Tresses.Mono_Buffer);
+
 private
 
    subtype Sample_Phase is Standard.Interfaces.Unsigned_32;
@@ -91,4 +101,11 @@ private
       Do_Init : Boolean := True;
    end record;
 
+   type Sample_Rec_Playback_Instance
+   is tagged
+           record
+              On : Boolean := False;
+              Phase : Sample_Phase := 0;
+              Phase_Increment : Sample_Phase := 0;
+           end record;
 end WNM.Voices.Sampler_Voice;

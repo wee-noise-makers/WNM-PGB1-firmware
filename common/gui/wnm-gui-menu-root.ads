@@ -27,7 +27,6 @@ private
 
    type Menu_Items is (Projects,
                        Inputs,
-                       --  Edit_Sample,
                        --  Create_Sample,
                        --  Change_Sample,
                        --  Set_Passthrough,

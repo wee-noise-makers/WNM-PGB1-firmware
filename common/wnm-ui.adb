@@ -341,8 +341,15 @@ package body WNM.UI is
                         Current_Input_Mode := Copy;
                         Select_Done := True;
 
+                     when Rec =>
+                        --  Switch to sample edit mode
+                        Current_Input_Mode := Sample_Edit_Mode;
+                        GUI.Menu.Open (GUI.Menu.Sample_Edit_Menu);
+                        Last_Main_Mode := Current_Input_Mode;
+
                      when others =>
                         null;
+
                   end case;
                when On_Release =>
                   if B = Func then
@@ -596,7 +603,6 @@ package body WNM.UI is
 
    procedure Update_LEDs is
    begin
-
       LEDs.Turn_Off_All;
 
       -- Rec LED --
@@ -756,6 +762,43 @@ package body WNM.UI is
 
                LEDs.Turn_On (Func);
                null;
+
+            when Sample_Edit_Mode =>
+
+               declare
+                  use type WNM.Project.Octave_Offset;
+                  Octave : constant WNM.Project.Octave_Offset :=
+                    WNM.Project.Step_Sequencer.Keyboard_Octave;
+
+                  Oct_Hue : constant WNM.LEDs.Hue :=
+                    (case abs Octave is
+                        when      1 => LEDs.Spring_Green,
+                        when      2 => LEDs.Cyan,
+                        when      3 => LEDs.Azure,
+                        when      4 => LEDs.Blue,
+                        when      5 => LEDs.Violet,
+                        when      6 => LEDs.Magenta,
+                        when      7 => LEDs.Rose,
+                        when others => LEDs.Red);
+               begin
+                  LEDs.Set_Hue (Oct_Hue);
+                  if Octave < 0 then
+                     LEDs.Turn_On (B1);
+                  elsif Octave > 0 then
+                     LEDs.Turn_On (B8);
+                  end if;
+               end;
+
+               LEDs.Set_Hue (LEDs.Yellow);
+
+               for B in B9 .. B16 loop
+                  LEDs.Turn_On (B);
+               end loop;
+               LEDs.Turn_On (B2);
+               LEDs.Turn_On (B3);
+               LEDs.Turn_On (B5);
+               LEDs.Turn_On (B6);
+               LEDs.Turn_On (B7);
             end case;
       end case;
 

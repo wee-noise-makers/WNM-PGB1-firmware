@@ -285,6 +285,17 @@ package body WNM_HAL is
    function Sample_Data_Base return System.Address
    is (ASFML_SIM_Storage.Sample_Data_Base);
 
+   ----------------------
+   -- Write_To_Storage --
+   ----------------------
+
+   procedure Write_To_Storage (Id   : Sample_Sector_Id;
+                               Data : Storage_Sector_Data)
+   is
+   begin
+      ASFML_SIM_Storage.Write_To_Sample_Data (Id, Data);
+   end Write_To_Storage;
+
    ----------
    -- Push --
    ----------

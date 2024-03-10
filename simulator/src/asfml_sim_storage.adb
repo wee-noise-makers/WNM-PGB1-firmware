@@ -282,6 +282,23 @@ package body ASFML_SIM_Storage is
       return Sample_Data'Address;
    end Sample_Data_Base;
 
+   --------------------------
+   -- Write_To_Sample_Data --
+   --------------------------
+
+   procedure Write_To_Sample_Data (Id   : WNM_HAL.Sample_Sector_Id;
+                                   Data : WNM_HAL.Storage_Sector_Data)
+   is
+      Addr : constant Integer_Address :=
+        To_Integer (Sample_Data'Address) +
+        Integer_Address (Id) * WNM_Configuration.Storage.Sector_Byte_Size;
+
+      Dst : WNM_HAL.Storage_Sector_Data
+        with Address => To_Address (Addr);
+   begin
+      Dst := Data;
+   end Write_To_Sample_Data;
+
    ----------------------
    -- Load_Sample_Data --
    ----------------------

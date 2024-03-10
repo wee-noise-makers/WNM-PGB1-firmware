@@ -39,6 +39,8 @@ with HAL;                   use HAL;
 
 package body WNM.Project.Step_Sequencer is
 
+   G_Keyboard_Octave : Octave_Offset := 0;
+
    Pattern_Counter : array (Tracks, Patterns) of UInt32;
    --  Count how many times a pattern has played
 
@@ -193,6 +195,43 @@ package body WNM.Project.Step_Sequencer is
 
          when UI.FX_Mode =>
             null;
+
+         when UI.Sample_Edit_Mode =>
+            case Button is
+               when B1 =>
+                  Prev (G_Keyboard_Octave);
+               when B8 =>
+                  Next (G_Keyboard_Octave);
+               when B4 =>
+                  G_Keyboard_Octave := 0;
+               when others =>
+                  declare
+                     Key : constant MIDI.MIDI_Key :=
+                       Offset ((case Button is
+                                  when B9  => MIDI.C4,
+                                  when B2  => MIDI.Cs4,
+                                  when B10 => MIDI.D4,
+                                  when B3  => MIDI.Ds4,
+                                  when B11 => MIDI.E4,
+                                  when B12 => MIDI.F4,
+                                  when B5  => MIDI.Fs4,
+                                  when B13 => MIDI.G4,
+                                  when B6  => MIDI.Gs4,
+                                  when B14 => MIDI.A4,
+                                  when B7  => MIDI.As4,
+                                  when B15 => MIDI.B4,
+                                  when B16 => MIDI.C5,
+                                  when others => MIDI.C4),
+                               G_Keyboard_Octave);
+                  begin
+                     WNM.Coproc.Push_To_Synth
+                       ((WNM.Coproc.MIDI_Event,
+                        (MIDI.Note_On,
+                         WNM.Synth.Sample_Rec_Playback_Channel,
+                         Key,
+                         127)));
+                  end;
+            end case;
       end case;
    end On_Press;
 
@@ -209,7 +248,8 @@ package body WNM.Project.Step_Sequencer is
          when UI.Song_Mode =>
             null;
 
-         when UI.Track_Mode | UI.Step_Mode | UI.FX_Mode | UI.Pattern_Mode =>
+         when UI.Track_Mode | UI.Step_Mode | UI.FX_Mode | UI.Pattern_Mode |
+              UI.Sample_Edit_Mode =>
             null;
       end case;
    end On_Release;
@@ -704,6 +744,13 @@ package body WNM.Project.Step_Sequencer is
          Execute_Step;
       end if;
    end MIDI_Clock_Tick;
+
+   ---------------------
+   -- Keyboard_Octave --
+   ---------------------
+
+   function Keyboard_Octave return Octave_Offset
+   is (G_Keyboard_Octave);
 
    -------------------------
    -- Song_Start_Callback --

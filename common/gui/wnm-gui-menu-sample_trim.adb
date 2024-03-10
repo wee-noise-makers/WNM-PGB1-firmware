@@ -19,8 +19,13 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with WNM.Shared_Buffers;
+with WNM.Sample_Library;
 with WNM.Sample_Edit;
 with WNM.GUI.Menu.Drawing;
+with WNM.GUI.Bitmap_Fonts;     use WNM.GUI.Bitmap_Fonts;
+
+with Tresses.Resources;
 
 package body WNM.GUI.Menu.Sample_Trim is
 
@@ -52,8 +57,25 @@ package body WNM.GUI.Menu.Sample_Trim is
    procedure Draw
      (This : in out Trim_Window)
    is
+      use Sample_Library;
+      use Shared_Buffers;
+      X : Integer;
+
+      Length : constant Sample_Point_Count := End_Point - Start_Point;
+
+      Text_Top : constant Integer := Screen_Height - Bitmap_Fonts.Height - 2;
+
+      Start_Img : constant String := To_Seconds (Start_Point)'Img;
+      End_Img : constant String := To_Seconds (End_Point)'Img;
+      Len_Img : constant String := To_Seconds (Length)'Img;
    begin
-      WNM.GUI.Menu.Drawing.Draw_Waveform;
+      WNM.GUI.Menu.Drawing.Draw_Waveform (15,
+                                          Show_Cut => True,
+                                          Show_Playhead => True);
+      X := 0;
+      Print (X_Offset => X,
+             Y_Offset => Text_Top,
+             Str      => Start_Img & " <-" & Len_Img & " ->" & End_Img);
    end Draw;
 
    --------------
@@ -65,32 +87,23 @@ package body WNM.GUI.Menu.Sample_Trim is
      (This  : in out Trim_Window;
       Event : Menu_Event)
    is
+      Move_Step : constant := Tresses.Resources.SAMPLE_RATE / 100;
    begin
       case Event.Kind is
-         when Left_Press =>
+         when A_Press =>
             Pop (Exit_Value => Success);
+         when B_Press =>
+            Pop (Exit_Value => Failure);
+         when Up_Press =>
+            Shared_Buffers.Move_End_Point (Move_Step);
+         when Down_Press =>
+            Shared_Buffers.Move_End_Point (-Move_Step);
          when Right_Press =>
-            This.Preview_Sample;
-         when Encoder_Right =>
-            if Event.Value > 0 then
-               WNM.Sample_Edit.Inc_Stop;
-            elsif Event.Value < 0 then
-               WNM.Sample_Edit.Dec_Stop;
-            end if;
-
-            WNM.Sample_Edit.Update_Waveform;
-            This.Preview_Sample;
-
-         when Encoder_Left =>
-
-            if Event.Value > 0 then
-               WNM.Sample_Edit.Inc_Start;
-            elsif Event.Value < 0 then
-               WNM.Sample_Edit.Dec_Start;
-            end if;
-
-            WNM.Sample_Edit.Update_Waveform;
-            This.Preview_Sample;
+            Shared_Buffers.Move_Start_Point (Move_Step);
+         when Left_Press =>
+            Shared_Buffers.Move_Start_Point (-Move_Step);
+         when others =>
+            null;
       end case;
    end On_Event;
 

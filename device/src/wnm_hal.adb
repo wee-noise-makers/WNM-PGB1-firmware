@@ -53,6 +53,7 @@ with Cortex_M.Systick;
 with Cortex_M.Debug;
 
 with WNM_HAL.File_System;
+with RP.Flash;
 
 package body WNM_HAL is
 
@@ -467,6 +468,28 @@ package body WNM_HAL is
    function Sample_Data_Base return System.Address
    is (System.Storage_Elements.To_Address
        (WNM_Configuration.Storage.Sample_Library_Base_Addr));
+
+   ----------------------
+   -- Write_To_Stroage --
+   ----------------------
+
+   procedure Write_To_Storage (Id   : Sample_Sector_Id;
+                               Data : Storage_Sector_Data)
+   is
+      use RP.Flash;
+
+      Offset : constant Flash_Offset :=
+        Flash_Offset
+          (WNM_Configuration.Storage.Sample_Library_Offset
+           + Flash_Offset (Id) * WNM_Configuration.Storage.Sector_Byte_Size);
+   begin
+      WNM_HAL.Wait_Synth_CPU_Hold;
+
+      RP.Flash.Erase (Offset, Data'Length);
+      RP.Flash.Program (Offset, Data'Address, Data'Length);
+
+      WNM_HAL.Release_Synth_CPU_Hold;
+   end Write_To_Storage;
 
    ----------
    -- Push --

@@ -28,6 +28,7 @@ with WNM.Coproc;
 with WNM.Synth; use WNM.Synth;
 with WNM.Generic_Queue;
 with WNM.Persistent;
+with WNM.Shared_Buffers;
 with BBqueue;
 
 package body WNM.Mixer is
@@ -62,6 +63,11 @@ package body WNM.Mixer is
 
    Count_Missed_DAC_Deadlines : HAL.UInt32 := 0 with Volatile, Atomic;
    Count_Missed_Input_Deadlines : HAL.UInt32 := 0 with Volatile, Atomic;
+
+   --  Sample recording
+
+   Sample_Rec_State : Sample_Rec_Mode := None
+     with Atomic, Volatile;
 
    --------------------------
    -- Missed_DAC_Deadlines --
@@ -108,24 +114,20 @@ package body WNM.Mixer is
       end loop;
    end Start_Mixer;
 
-   -----------------
-   -- Push_To_Mix --
-   -----------------
+   -------------------
+   -- Process_Input --
+   -------------------
 
-   procedure Push_To_Mix (Id : Mixer_Buffer_Index) is
+   procedure Process_Input (Input : in out FX_Send_Buffers;
+                            FX    :        FX_Kind)
+   is
       use Tresses;
       use Tresses.DSP;
       use Interfaces;
-         use BBqueue;
-
-      L, R : S32;
-
-      Input : FX_Send_Buffers renames Mixer_Buffers (Id);
-      Output : WNM_HAL.Stereo_Buffer renames Output_Audio_Buffers (Id);
+      use BBqueue;
 
       Input_RG : BBqueue.Read_Grant;
    begin
-
       --  Handle audio input
       Read (Input_Queue, Input_RG, 1);
       if State (Input_RG) = Valid then
@@ -134,9 +136,8 @@ package body WNM.Mixer is
             Offset : constant Storage_Offset := Slice (Input_RG).From;
             In_Buffer : Stereo_Buffer renames
               Input_Audio_Buffers (Input_Audio_Buffers'First + Offset);
-
-            FX : constant FX_Kind := Persistent.Data.Input_FX;
          begin
+
             for Index in In_Buffer'Range loop
                Input.L (FX)(Index) :=
                  S16 (Clip_S16 (S32 (@) + S32 (In_Buffer (Index).L)));
@@ -147,6 +148,24 @@ package body WNM.Mixer is
 
          Release (Input_Queue, Input_RG, 1);
       end if;
+   end Process_Input;
+
+   -----------------
+   -- Mix_Regular --
+   -----------------
+
+   procedure Mix_Regular (Input  : in out FX_Send_Buffers;
+                          Output : in out WNM_HAL.Stereo_Buffer)
+   is
+      use Tresses;
+      use Tresses.DSP;
+      use Interfaces;
+
+      L, R : S32;
+
+   begin
+
+      Process_Input (Input, Persistent.Data.Input_FX);
 
       --  Overdrive
       FX_Drive.Set_Param (1, Input.Parameters (Overdrive)(Voice_Param_1_CC));
@@ -196,6 +215,77 @@ package body WNM.Mixer is
          Output (Index).L := S16 (Clip_S16 (L));
          Output (Index).R := S16 (Clip_S16 (R));
       end loop;
+   end Mix_Regular;
+
+   ------------------
+   -- Mix_Sampling --
+   ------------------
+
+   procedure Mix_Sampling (Input  : in out FX_Send_Buffers;
+                           Output : in out WNM_HAL.Stereo_Buffer)
+   is
+      use Tresses;
+      use Tresses.DSP;
+      use Interfaces;
+   begin
+      --  Handle Audio Input
+
+      case Sample_Rec_State is
+         when Preview | Rec =>
+
+            --  Discard audio comming from the synth CPU
+            Input.L (Bypass) := (others => 0);
+            Input.R (Bypass) := (others => 0);
+
+            --  Pass the input to the output for preview of what we recording
+            --  input.
+            Process_Input (Input, Bypass);
+
+            --  If in rec mode, save incoming data
+            if Sample_Rec_State = Rec then
+               declare
+                  Mono : WNM_HAL.Mono_Buffer;
+               begin
+                  for Index in Output'Range loop
+                     Mono (Index) :=
+                       S16 (Clip_S16
+                            (S32 (Input.L (Bypass)(Index)) +
+                                   S32 (Input.R (Bypass)(Index))));
+                  end loop;
+                  WNM.Shared_Buffers.Record_Buffer (Mono);
+               end;
+            end if;
+
+         when None | Play =>
+            --  We don't use the input in this stage, but we still want to
+            --  consume the buffer. So the input is read into the overdrive
+            --  channel that is not used in this mode. We cannot use the
+            --  bypass channel as it contains sample playback from synth CPU.
+            Process_Input (Input, Overdrive);
+      end case;
+
+      --  Input.[L|R] (Bypass) contains either the input audio or playback
+      --  from synth CPU.
+      for Index in Output'Range loop
+         Output (Index).L := Input.L (Bypass)(Index);
+         Output (Index).R := Input.R (Bypass)(Index);
+      end loop;
+   end Mix_Sampling;
+
+   -----------------
+   -- Push_To_Mix --
+   -----------------
+
+   procedure Push_To_Mix (Id : Mixer_Buffer_Index) is
+      Input : FX_Send_Buffers renames Mixer_Buffers (Id);
+      Output : WNM_HAL.Stereo_Buffer renames Output_Audio_Buffers (Id);
+   begin
+      case Sample_Rec_State is
+         when None =>
+            Mix_Regular (Input, Output);
+         when Preview | Rec | Play =>
+            Mix_Sampling (Input, Output);
+      end case;
 
       --  Push the mixed output buffer in ready queue
       Buffer_Id_Queues.Push (Output_Id_Queue, Id);
@@ -399,5 +489,21 @@ package body WNM.Mixer is
 
    function Input_FX return FX_Kind
    is (WNM.Persistent.Data.Input_FX);
+
+   ---------------------------
+   -- Enter_Sample_Rec_Mode --
+   ---------------------------
+
+   procedure Enter_Sample_Rec_Mode (Mode : Sample_Rec_Mode) is
+   begin
+      Sample_Rec_State := Mode;
+   end Enter_Sample_Rec_Mode;
+
+   -------------------------
+   -- Get_Sample_Rec_Mode --
+   -------------------------
+
+   function Get_Sample_Rec_Mode return Sample_Rec_Mode
+   is (Sample_Rec_State);
 
 end WNM.Mixer;

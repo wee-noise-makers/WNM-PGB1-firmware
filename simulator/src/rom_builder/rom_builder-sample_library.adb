@@ -47,16 +47,16 @@ package body ROM_Builder.Sample_Library is
                        Index :        Valid_Sample_Index;
                        Name  :        String)
    is
-      Len : constant Natural := Natural'Min (Name'Length, Sample_Name_Lenght);
+      Len : constant Natural := Natural'Min (Name'Length, Sample_Name_Length);
    begin
-      if Name'Length > Sample_Name_Lenght then
+      if Name'Length > Sample_Name_Length then
          Simple_Logging.Warning ("Sample name too long: '" & Name  & "'");
       end if;
 
       This.Data (Index).Name (1 .. Len) :=
         Name (Name'First .. Name'First + Len - 1);
 
-      This.Data (Index).Name (Len + 1 .. Sample_Name_Lenght) :=
+      This.Data (Index).Name (Len + 1 .. Sample_Name_Length) :=
         (others => ' ');
    end Set_Name;
 

@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                  Copyright (C) 2016-2017 Fabien Chouteau                  --
+--                  Copyright (C) 2016-2024 Fabien Chouteau                  --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,38 +19,26 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Sample_Library; use WNM.Sample_Library;
+package WNM.GUI.Menu.Audio_Input_Select is
 
-package WNM.GUI.Menu.Sample_Select is
-
-   Title_Max_Len : constant := 15;
-
-   procedure Push_Window (Title : String)
-     with Pre => Title'Length <= Title_Max_Len;
-
-   function Selected return Valid_Sample_Index;
+   procedure Push_Window;
 
 private
 
-   type Sample_Select_Window is new Menu_Window with record
-      Index  : WNM.Sample_Library.Valid_Sample_Index :=
-        WNM.Sample_Library.Valid_Sample_Index'First;
-   end record;
+   type Input_Select_Window is new Menu_Window with null record;
 
    overriding
-   procedure Draw (This : in out Sample_Select_Window);
+   procedure Draw (This : in out Input_Select_Window);
 
    overriding
-   procedure On_Event (This  : in out Sample_Select_Window;
-                       Event :        Menu_Event);
+   procedure On_Event (This  : in out Input_Select_Window;
+                       Event : Menu_Event);
 
    overriding
-   procedure On_Pushed (This  : in out Sample_Select_Window)
-   is null;
+   procedure On_Pushed (This  : in out Input_Select_Window);
 
    overriding
-   procedure On_Focus (This       : in out Sample_Select_Window;
-                       Exit_Value :        Window_Exit_Value)
-   is null;
+   procedure On_Focus (This       : in out Input_Select_Window;
+                       Exit_Value : Window_Exit_Value);
 
-end WNM.GUI.Menu.Sample_Select;
+end WNM.GUI.Menu.Audio_Input_Select;
