@@ -35,6 +35,7 @@ with WNM.Sample_Library;
 with WNM.Project.Library;
 with WNM.Mixer;
 with WNM.Coproc;
+with WNM.Power_Control;
 
 with MIDI;
 
@@ -101,7 +102,12 @@ package body WNM.Tasks is
       WNM.Note_Off_Sequencer.Update (Clock);
 
       if (Systick_Count mod UI_Period_Miliseconds) = 0 then
-         WNM.UI.Update;
+
+         if WNM_HAL.Shutdown_Requested then
+            WNM.Power_Control.Power_Down;
+         else
+            WNM.UI.Update;
+         end if;
       end if;
 
       if (Systick_Count mod LED_Period_Miliseconds) = 0 then

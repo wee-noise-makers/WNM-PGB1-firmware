@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2023 Fabien Chouteau                  --
+--                     Copyright (C) 2024 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,45 +19,40 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-package WNM.GUI.Menu.System_Info is
+with RP.GPIO;
+with RP.PIO;
+with RP.PIO.Touch_Sense;
 
-   procedure Push_Window;
+package WNM_HAL.Touch_Filter is
 
-private
+   Data_Count : constant := 5;
+   type Data_Index is mod Data_Count;
+   type Data_Array is array (Data_Index) of HAL.UInt32;
 
-   type Info_Kind is (Synth_CPU_Load,
-                      Synth_Max_CPU_Load,
-                      Synth_Missed_Deadlines,
-                      DAC_Missed_Deadlines,
-                      Input_Missed_Deadlines,
-                      Prj_Last_Load_Size,
-                      Prj_Last_Save_Size,
-                      Raise_Exception,
-                      Touch,
-                      Battery);
-
-   package Next_Info_Kind is new Enum_Next (Info_Kind, Wrap => True);
-   use Next_Info_Kind;
-
-   function Info_Kind_Count is new Enum_Count (Info_Kind);
-
-   type Instance is new Menu_Window with record
-      K : Info_Kind := Info_Kind'First;
+   type Filtered_Touch_Sensor
+     (Pin   : not null access RP.GPIO.GPIO_Point;
+      PIO   : not null access RP.PIO.PIO_Device;
+      SM    : RP.PIO.PIO_SM)
+   is new RP.PIO.Touch_Sense.Touch_Sensor (Pin, PIO, SM)
+   with record
+      Values  : Data_Array := (others => 0);
+      Next_In : Data_Index := Data_Index'First;
    end record;
 
-   overriding
-   procedure Draw (This : in out Instance);
+   procedure Trigger_Measures (This : in out Filtered_Touch_Sensor);
+   procedure Process_Measures (This : in out Filtered_Touch_Sensor);
 
-   overriding
-   procedure On_Event (This  : in out Instance;
-                       Event : Menu_Event);
+   function Read (This : in out Filtered_Touch_Sensor) return HAL.UInt32;
 
-   overriding
-   procedure On_Pushed (This : in out Instance)
-   is null;
+   type Scale is record
+      Min : Integer := Integer'Last;
+      Max : Integer := Integer'First;
 
-   overriding
-   procedure On_Focus (This       : in out Instance;
-                       Exit_Value : Window_Exit_Value);
+      Min_F : Float := Float'Last;
+      Max_F : Float := Float'First;
+   end record;
 
-end WNM.GUI.Menu.System_Info;
+   function Process (This   : in out Scale;
+                     P1, P2 :        Integer)
+                     return Touch_Value;
+end WNM_HAL.Touch_Filter;

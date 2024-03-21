@@ -66,6 +66,20 @@ package body WNM_HAL is
    is (ASFML_Sim.Strip_Touch, ASFML_Sim.Strip_Value);
 
    ---------
+   -- TP1 --
+   ---------
+
+   function TP1 return HAL.UInt32
+   is (0);
+
+   ---------
+   -- TP2 --
+   ---------
+
+   function TP2 return HAL.UInt32
+   is (0);
+
+   ---------
    -- Set --
    ---------
 
@@ -364,6 +378,13 @@ package body WNM_HAL is
       MIDI.Decoder.Queue.Pop (MIDI_In_Queue, Msg, Success);
    end Get_External;
 
+   ------------------------
+   -- Shutdown_Requested --
+   ------------------------
+
+   function Shutdown_Requested return Boolean
+   is (False);
+
    ----------------
    -- Power_Down --
    ----------------
@@ -421,6 +442,13 @@ package body WNM_HAL is
 
    procedure Synth_CPU_Check_Hold
    is null;
+
+   ------------------------
+   -- Battery_Millivolts --
+   ------------------------
+
+   function Battery_Millivolts return Natural
+   is (4000);
 
    ----------------------
    -- Set_Indicator_IO --
