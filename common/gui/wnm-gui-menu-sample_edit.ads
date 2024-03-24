@@ -58,6 +58,9 @@ private
    procedure On_Pushed (This  : in out Edit_Sample_Menu);
 
    overriding
+   procedure On_Pop (This : in out Edit_Sample_Menu);
+
+   overriding
    procedure On_Focus (This       : in out Edit_Sample_Menu;
                        Exit_Value : Window_Exit_Value);
 

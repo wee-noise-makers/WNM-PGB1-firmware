@@ -19,66 +19,16 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Sample_Library; use WNM.Sample_Library;
-
-with Tresses;
+with HAL;
 
 package WNM.Shared_Buffers is
 
-   Sample_Rec_Buffer    : Sample_Audio_Data := (others => 0);
-   Sample_Sector_Buffer : WNM_HAL.Storage_Sector_Data;
+   Shared_Buffer_Byte_Size : constant := 45_134;
+   --  As small as possbile, but big enough to fit either the QOA sample or
+   --  the reverb buffer.
 
-   procedure Init;
-   procedure Init_From_Sample (Id : Valid_Sample_Index);
-
-   procedure Record_Buffer (Input : WNM_HAL.Mono_Buffer);
-
-   function Recorded_Length return Sample_Point_Count;
-
-   procedure Save_Sample (Id   : Valid_Sample_Index;
-                          Name : String);
-
-   type Waveform_Point is range 0 .. 20;
-
-   type Waveform_Index is range 1 .. 119;
-   --  This range based on the pixel width we can use to draw the waveform
-
-   type Waveform is array (Waveform_Index) of Waveform_Point;
-
-   function Waveform_Data return Waveform;
-
-   function Start_Point return Sample_Point_Count;
-   function End_Point return Sample_Point_Count;
-
-   function Start_Point_Index return Waveform_Index;
-   function End_Point_Index return Waveform_Index;
-
-   function Last_Played_Point_Index return Waveform_Index;
-
-   procedure Move_Start_Point (Count : Integer);
-   procedure Move_End_Point (Count : Integer);
-
-   function Get_Point (Index : Sample_Point_Index) return Tresses.S16;
-
-private
-
-   Rec_Start_Point : Sample_Point_Index := Sample_Point_Index'First;
-   Rec_End_Point   : Sample_Point_Index := Sample_Point_Index'First;
-   Length      : Sample_Point_Count := 0;
-
-   Play_Start_Offset : Sample_Point_Count := 0;
-   Play_End_Offset   : Sample_Point_Count := 0;
-
-   Last_Played_Offset : Sample_Point_Count := 0
-     with Atomic, Volatile;
-   --  This will be set by the Synth CPU
-
-   Next_Wave_Cnt : Natural := 0;
-   Wave_Segment_Count : constant Natural :=
-     Natural (Sample_Point_Count'Last) / Natural (Waveform_Index'Last);
-
-   Next_Wave : Waveform_Index := Waveform_Index'First;
-   Wave_Data : Waveform := (others => 0);
-   Wave_Acc  : Tresses.S32 := 0;
+   Shared_Butffer_Bit_Size : constant := Shared_Buffer_Byte_Size * 8;
+   Shared_Buffer : HAL.UInt8_Array (1 .. Shared_Buffer_Byte_Size)
+     with Alignment => 8;
 
 end WNM.Shared_Buffers;

@@ -28,7 +28,7 @@ with Tresses.DSP;
 with Tresses.Resources;
 
 with WNM.Sample_Library; use WNM.Sample_Library;
-with WNM.Shared_Buffers;
+with WNM.Sample_Recording;
 
 package body WNM.Voices.Sampler_Voice is
 
@@ -230,6 +230,7 @@ package body WNM.Voices.Sampler_Voice is
 
       P : U32;
    begin
+
       if This.Do_Init then
          This.Do_Init := False;
 
@@ -343,7 +344,7 @@ package body WNM.Voices.Sampler_Voice is
    is
       Out_Index : Natural := Buffer'First;
       Sample_Point : S32;
-      Sample_Len : constant U32 := U32 (WNM.Shared_Buffers.Recorded_Length);
+      Sample_Len : constant U32 := U32 (WNM.Sample_Recording.Recorded_Length);
       P : U32;
    begin
       loop
@@ -360,9 +361,11 @@ package body WNM.Voices.Sampler_Voice is
                    (This.Phase, Phase_Frac_Bits - 15) and 16#7FFF#);
 
             A : constant S32 :=
-              S32 (Shared_Buffers.Get_Point (Sample_Point_Index (P)));
+              S32 (Sample_Recording.Get_Point (This.Cache,
+                   Sample_Point_Index (P)));
             B : constant S32 :=
-              S32 (Shared_Buffers.Get_Point (Sample_Point_Index (P) + 1));
+              S32 (Sample_Recording.Get_Point (This.Cache,
+                   Sample_Point_Index (P) + 1));
          begin
             Sample_Point := A + ((B - A) * V) / 2**15;
          end;

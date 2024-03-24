@@ -19,9 +19,8 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Shared_Buffers;
+with WNM.Sample_Recording;
 with WNM.Sample_Library;
-with WNM.Sample_Edit;
 with WNM.GUI.Menu.Drawing;
 with WNM.GUI.Bitmap_Fonts;     use WNM.GUI.Bitmap_Fonts;
 
@@ -40,15 +39,6 @@ package body WNM.GUI.Menu.Sample_Trim is
       Push (Sample_Trim_Singleton'Access);
    end Push_Window;
 
-   --------------------
-   -- Preview_Sample --
-   --------------------
-
-   procedure Preview_Sample (This : Trim_Window) is
-   begin
-      null;
-   end Preview_Sample;
-
    ----------
    -- Draw --
    ----------
@@ -58,7 +48,7 @@ package body WNM.GUI.Menu.Sample_Trim is
      (This : in out Trim_Window)
    is
       use Sample_Library;
-      use Shared_Buffers;
+      use Sample_Recording;
       X : Integer;
 
       Length : constant Sample_Point_Count := End_Point - Start_Point;
@@ -95,26 +85,16 @@ package body WNM.GUI.Menu.Sample_Trim is
          when B_Press =>
             Pop (Exit_Value => Failure);
          when Up_Press =>
-            Shared_Buffers.Move_End_Point (Move_Step);
+            Sample_Recording.Move_End_Point (Move_Step);
          when Down_Press =>
-            Shared_Buffers.Move_End_Point (-Move_Step);
+            Sample_Recording.Move_End_Point (-Move_Step);
          when Right_Press =>
-            Shared_Buffers.Move_Start_Point (Move_Step);
+            Sample_Recording.Move_Start_Point (Move_Step);
          when Left_Press =>
-            Shared_Buffers.Move_Start_Point (-Move_Step);
+            Sample_Recording.Move_Start_Point (-Move_Step);
          when others =>
             null;
       end case;
    end On_Event;
-
-   ---------------
-   -- On_Pushed --
-   ---------------
-
-   overriding
-   procedure On_Pushed (This : in out Trim_Window) is
-   begin
-      WNM.Sample_Edit.Update_Waveform;
-   end On_Pushed;
 
 end WNM.GUI.Menu.Sample_Trim;

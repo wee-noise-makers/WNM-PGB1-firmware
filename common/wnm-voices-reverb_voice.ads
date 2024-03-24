@@ -79,13 +79,14 @@ private
      );
 
    --  The reveb buffer is mapped on the sample recording buffer to save
-   --  memory space. These two features are not used together.
+   --  memory space. These two features are not used together. Make sure
+   --  there's enough room for the reverb sample.
    pragma Compile_Time_Error
-     (WNM.Shared_Buffers.Sample_Rec_Buffer'Length < Reverb_Pck.Reverb_Buffer'Length,
+     (WNM.Shared_Buffers.Shared_Buffer'Size < Reverb_Pck.Reverb_Buffer'Size,
       "Shared buffer too small");
+
    Buffer : aliased Reverb_Pck.Reverb_Buffer
-   --  with Address => WNM.Shared_Buffers.Sample_Rec_Buffer'Address
-   ;
+     with Address => WNM.Shared_Buffers.Shared_Buffer'Address;
 
    type Instance
    is new Four_Params_Voice

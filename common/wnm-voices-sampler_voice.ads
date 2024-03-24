@@ -23,6 +23,7 @@ with Interfaces;
 
 with Tresses;            use Tresses;
 with Tresses.Interfaces; use Tresses.Interfaces;
+with WNM.QOA;
 
 private with Tresses.Envelopes.AR;
 private with WNM.Sample_Library;
@@ -75,7 +76,8 @@ package WNM.Voices.Sampler_Voice is
                       Key  :        MIDI.MIDI_Key);
 
    procedure Render (This   : in out Sample_Rec_Playback_Instance;
-                     Buffer :    out Tresses.Mono_Buffer);
+                     Buffer :    out Tresses.Mono_Buffer)
+     with Linker_Section => QOA.Code_Linker_Section;
 
 private
 
@@ -104,8 +106,9 @@ private
    type Sample_Rec_Playback_Instance
    is tagged
            record
-              On : Boolean := False;
-              Phase : Sample_Phase := 0;
+              On              : Boolean := False;
+              Phase           : Sample_Phase := 0;
               Phase_Increment : Sample_Phase := 0;
+              Cache           : QOA.Decoder_Cache;
            end record;
 end WNM.Voices.Sampler_Voice;

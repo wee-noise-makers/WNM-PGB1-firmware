@@ -22,7 +22,7 @@
 with WNM.GUI.Bitmap_Fonts; use WNM.GUI.Bitmap_Fonts;
 
 with WNM.Utils;
-with WNM.Shared_Buffers;
+with WNM.Sample_Recording;
 
 with lfo_sine;
 with lfo_ramp_up;
@@ -1153,7 +1153,7 @@ package body WNM.GUI.Menu.Drawing is
                             Show_Cut      : Boolean := False;
                             Show_Playhead : Boolean := False)
    is
-      use Shared_Buffers;
+      use WNM.Sample_Recording;
       use WNM.Screen;
 
       Wave_Height : constant Integer := Integer (Waveform_Point'Last);

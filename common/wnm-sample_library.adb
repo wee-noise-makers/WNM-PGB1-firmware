@@ -20,7 +20,6 @@
 -------------------------------------------------------------------------------
 
 with System.Address_To_Access_Conversions;
-with WNM.QOA; use WNM.QOA;
 
 package body WNM.Sample_Library is
 
@@ -97,7 +96,7 @@ package body WNM.Sample_Library is
       else
          Entries (Id).Name := Sample_Data.all (Id).Name;
 
-         Len := UInt32'Min (Len, UInt32 (QOA.Sample_Point_Count'Last));
+         Len := UInt32'Min (Len, UInt32 (Sample_Point_Count'Last));
 
          Entries (Id).Length := Sample_Point_Count (Len);
          Entries (Id).Used := True;

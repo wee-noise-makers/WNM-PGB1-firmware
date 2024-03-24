@@ -537,6 +537,9 @@ package body WNM.Synth is
 
          Sample_Rec_Playback.Render (Output.R (Bypass));
          Output.L (Bypass) := Output.R (Bypass);
+      elsif WNM.Mixer.Get_Sample_Rec_Mode in WNM.Mixer.Saving then
+         --  Do nothing...
+         null;
       else
 
          --  Regular synthesis of all channels

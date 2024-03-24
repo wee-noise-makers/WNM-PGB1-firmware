@@ -80,7 +80,7 @@ package WNM.Mixer is
    FX_Drive    : aliased WNM.Voices.Drive_Voice.Instance;
    FX_Bitcrush : aliased WNM.Voices.Bitcrusher_Voice.Instance;
 
-   type Sample_Rec_Mode is (None, Preview, Rec, Play);
+   type Sample_Rec_Mode is (None, Preview, Rec, Play, Saving);
 
    procedure Enter_Sample_Rec_Mode (Mode : Sample_Rec_Mode);
    function Get_Sample_Rec_Mode return Sample_Rec_Mode;

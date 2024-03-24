@@ -25,6 +25,7 @@ project Wnm_Ps1_Device is
       for Leading_Switches ("Ada") use ("-Wl,-u_sbrk");
       for Default_Switches ("Ada") use Noise_Nugget_SDK.Linker_Switches &
       ("-Wl,--print-memory-usage"
+       ,"-Wl,-Map=map.txt"
        ,"-Wl,--gc-sections"
        ,"-Wl,--allow-multiple-definition"
        ,"-lc"

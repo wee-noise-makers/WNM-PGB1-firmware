@@ -28,7 +28,7 @@ with WNM.Coproc;
 with WNM.Synth; use WNM.Synth;
 with WNM.Generic_Queue;
 with WNM.Persistent;
-with WNM.Shared_Buffers;
+with WNM.Sample_Recording;
 with BBqueue;
 
 package body WNM.Mixer is
@@ -56,7 +56,9 @@ package body WNM.Mixer is
    -- Input --
 
    subtype Input_Buffer_Index
-     is System.Storage_Elements.Storage_Count range 1 .. 3;
+     is System.Storage_Elements.Storage_Count
+   range 1 .. WNM_Configuration.Audio.Input_Buffer_Count;
+
    Input_Audio_Buffers : array (Input_Buffer_Index) of WNM_HAL.Stereo_Buffer;
    Input_Queue : BBqueue.Offsets_Only (Input_Audio_Buffers'Length);
    Input_Queue_WG : BBqueue.Write_Grant;
@@ -162,7 +164,6 @@ package body WNM.Mixer is
       use Interfaces;
 
       L, R : S32;
-
    begin
 
       Process_Input (Input, Persistent.Data.Input_FX);
@@ -252,15 +253,16 @@ package body WNM.Mixer is
                             (S32 (Input.L (Bypass)(Index)) +
                                    S32 (Input.R (Bypass)(Index))));
                   end loop;
-                  WNM.Shared_Buffers.Record_Buffer (Mono);
+                  WNM.Sample_Recording.Record_Buffer (Mono);
                end;
             end if;
 
-         when None | Play =>
+         when None | Play | Saving =>
             --  We don't use the input in this stage, but we still want to
             --  consume the buffer. So the input is read into the overdrive
             --  channel that is not used in this mode. We cannot use the
-            --  bypass channel as it contains sample playback from synth CPU.
+            --  bypass channel as it may contains sample playback comming
+            --  from synth CPU.
             Process_Input (Input, Overdrive);
       end case;
 
@@ -283,7 +285,7 @@ package body WNM.Mixer is
       case Sample_Rec_State is
          when None =>
             Mix_Regular (Input, Output);
-         when Preview | Rec | Play =>
+         when Preview | Rec | Play | Saving =>
             Mix_Sampling (Input, Output);
       end case;
 
@@ -496,6 +498,9 @@ package body WNM.Mixer is
 
    procedure Enter_Sample_Rec_Mode (Mode : Sample_Rec_Mode) is
    begin
+      if Mode = None and then Sample_Rec_State /= None then
+         WNM.Sample_Recording.Reset;
+      end if;
       Sample_Rec_State := Mode;
    end Enter_Sample_Rec_Mode;
 

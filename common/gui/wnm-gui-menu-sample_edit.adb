@@ -28,7 +28,7 @@ with WNM.GUI.Menu.Recording;
 with WNM.GUI.Menu.Drawing;
 
 with WNM.Mixer;
-with WNM.Shared_Buffers;
+with WNM.Sample_Recording;
 
 package body WNM.GUI.Menu.Sample_Edit is
 
@@ -94,6 +94,17 @@ package body WNM.GUI.Menu.Sample_Edit is
       null;
    end On_Pushed;
 
+   ------------
+   -- On_Pop --
+   ------------
+
+   overriding
+   procedure On_Pop (This : in out Edit_Sample_Menu) is
+      pragma Unreferenced (This);
+   begin
+      Mixer.Enter_Sample_Rec_Mode (Mixer.None);
+   end On_Pop;
+
    ---------------
    -- Exit_Edit --
    ---------------
@@ -143,7 +154,8 @@ package body WNM.GUI.Menu.Sample_Edit is
          when Select_Sample =>
 
             if Exit_Value = Success then
-               Shared_Buffers.Init_From_Sample (Menu.Sample_Select.Selected);
+               Sample_Recording.Init_From_Sample
+                 (Menu.Sample_Select.Selected);
                New_State := Trim;
 
             else
@@ -184,7 +196,9 @@ package body WNM.GUI.Menu.Sample_Edit is
             if Exit_Value = Success then
                New_State := Select_Mode;
 
-               Shared_Buffers.Save_Sample
+               Mixer.Enter_Sample_Rec_Mode (Mixer.Saving);
+
+               Sample_Recording.Save_Sample
                  (Sample_Select.Selected,
                   Text_Dialog.Value);
 
@@ -207,7 +221,7 @@ package body WNM.GUI.Menu.Sample_Edit is
 
          when Record_Sample =>
             Recording.Push_Window;
-            Shared_Buffers.Init;
+            Sample_Recording.Reset;
             Mixer.Enter_Sample_Rec_Mode (Mixer.Rec);
 
          when Select_Sample =>

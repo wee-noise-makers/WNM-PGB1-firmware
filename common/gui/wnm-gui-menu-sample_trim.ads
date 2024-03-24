@@ -34,14 +34,4 @@ private
    procedure On_Event (This  : in out Trim_Window;
                        Event : Menu_Event);
 
-   overriding
-   procedure On_Pushed (This  : in out Trim_Window);
-
-   overriding
-   procedure On_Focus (This       : in out Trim_Window;
-                       Exit_Value : Window_Exit_Value)
-   is null;
-
-   procedure Preview_Sample (This : Trim_Window);
-
 end WNM.GUI.Menu.Sample_Trim;
