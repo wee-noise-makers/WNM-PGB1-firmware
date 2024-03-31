@@ -225,12 +225,26 @@ package body WNM.GUI.Menu.Drawing is
    is
       use WNM.Project;
 
-      DX : constant Integer := Box_Center.X + 10;
-      DY : constant := Box_Top + 22;
+      Pos_X : constant Natural := Box_Center.X + 14;
+      DX : constant Natural := Pos_X - 3;
+      DY : constant := Box_Top + 15;
+
+      Str : constant String := Img (D);
+      Str_Pix_Len : constant Natural := Str'Length * Bitmap_Fonts.Width;
+      Str_X : constant Natural := Pos_X - (Str_Pix_Len / 2);
+
+      X : Integer := Str_X;
    begin
+
+      Print (X_Offset    => X,
+             Y_Offset    => Value_Text_Y,
+             Str         => Str);
+
       if Selected then
-         Screen.Draw_Line ((DX - 1, Select_Line_Y),
-                           (DX + 5, Select_Line_Y));
+         Screen.Draw_Line
+           ((Str_X, Select_Line_Y),
+
+            (Str_X + Str_Pix_Len, Select_Line_Y));
       end if;
 
       if D = Double then
