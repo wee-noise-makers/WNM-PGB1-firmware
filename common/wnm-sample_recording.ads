@@ -22,7 +22,6 @@
 with WNM.Sample_Library; use WNM.Sample_Library;
 with WNM.QOA;
 with WNM.Shared_Buffers;
-with HAL;
 with Tresses;
 
 package WNM.Sample_Recording is

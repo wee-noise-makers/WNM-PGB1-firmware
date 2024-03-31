@@ -715,6 +715,13 @@ package body WNM.Project is
    is (G_Project.Tracks (T).Offset);
 
    -------------------
+   -- Track_Shuffle --
+   -------------------
+
+   function Track_Shuffle (T : Tracks := Editing_Track) return Shuffle_Value
+   is (G_Project.Tracks (T).Shuffle);
+
+   -------------------
    -- CC_Controller --
    -------------------
 
@@ -1189,6 +1196,7 @@ package body WNM.Project is
          when Pan             => Set (Track.Pan, V);
          when Master_FX       => Set (Track.FX, V);
          when Track_Octave_Offset => Set (Track.Offset, V);
+         when Shuffle         => Set (Track.Shuffle, V);
          when LFO_Rate        => Set (Track.LFO_Rate, V);
          when LFO_Amplitude   => Set (Track.LFO_Amp, V);
          when LFO_Shape       => Set (Track.LFO_Shape, V);
@@ -1233,6 +1241,7 @@ package body WNM.Project is
          when Pan             => Next (Track.Pan);
          when Master_FX       => Next (Track.FX);
          when Track_Octave_Offset => Next (Track.Offset);
+         when Shuffle         => Next (Track.Shuffle);
          when LFO_Rate        => Next (Track.LFO_Rate);
 
          when LFO_Amplitude   =>
@@ -1285,6 +1294,7 @@ package body WNM.Project is
          when Pan             => Prev (Track.Pan);
          when Master_FX       => Prev (Track.FX);
          when Track_Octave_Offset => Prev (Track.Offset);
+         when Shuffle         => Prev (Track.Shuffle);
          when LFO_Rate        => Prev (Track.LFO_Rate);
          when LFO_Amplitude   =>
             Prev (Track.LFO_Amp, Track.LFO_Amp_Mode, 1);
@@ -1335,6 +1345,7 @@ package body WNM.Project is
          when Pan             => Next_Fast (Track.Pan);
          when Master_FX       => Next_Fast (Track.FX);
          when Track_Octave_Offset => Next_Fast (Track.Offset);
+         when Shuffle         => Next_Fast (Track.Shuffle);
          when LFO_Rate        => Next_Fast (Track.LFO_Rate);
 
          when LFO_Amplitude   =>
@@ -1386,6 +1397,7 @@ package body WNM.Project is
          when Pan             => Prev_Fast (Track.Pan);
          when Master_FX       => Prev_Fast (Track.FX);
          when Track_Octave_Offset => Prev_Fast (Track.Offset);
+         when Shuffle         => Prev_Fast (Track.Shuffle);
          when LFO_Rate        => Prev_Fast (Track.LFO_Rate);
 
          when LFO_Amplitude   =>
