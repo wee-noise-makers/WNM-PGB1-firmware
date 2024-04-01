@@ -149,4 +149,50 @@ package body ASFML_SIM_Menu is
       end loop;
    end Render;
 
+   ------------------
+   -- Splashscreen --
+   ------------------
+
+   procedure Splashscreen (Window : Sf.Graphics.sfRenderTexture_Ptr;
+                           Font   : Sf.Graphics.sfFont_Ptr)
+   is
+      use Sf.Graphics.Text;
+      use Sf;
+
+      Win_Size : constant Sf.System.Vector2.sfVector2u := getSize (Window);
+
+      Splash_Size : constant Sf.System.Vector2.sfVector2f :=
+        (Float (Win_Size.x) / 1.2, Float (Win_Size.y) / 1.5);
+
+      Splash_Pos : constant Sf.System.Vector2.sfVector2f :=
+        ((Float (Win_Size.x) - Splash_Size.x) / 2.0,
+         (Float (Win_Size.y) - Splash_Size.y) / 2.0);
+   begin
+      --  Background
+      setOutlineColor (Rect, Sf.Graphics.Color.sfWhite);
+      setFillColor (Rect, Sf.Graphics.Color.sfBlack);
+      setOutlineThickness (Rect, 2.0);
+      setSize (Rect, Splash_Size);
+      setPosition (Rect, Splash_Pos);
+      drawRectangleShape (Window, Rect);
+
+      setPosition (Text, (Splash_Pos.x + 40.0, Splash_Pos.y + 100.0));
+      setCharacterSize (Text, 40);
+      setFont (Text, Font);
+      setString
+        (Text,
+         "Hello there, welcome to the PGB-1 simulator!"  & ASCII.LF &
+         ASCII.LF &
+         "Quick disclaimer, this program is a development" & ASCII.LF &
+         "tool and does not represent the final features," & ASCII.LF &
+         "sound, or performances of the PGB-1." & ASCII.LF &
+         ASCII.LF &
+         "https://weenoisemakers.com/pgb-1 for more info." & ASCII.LF &
+         ASCII.LF &
+         "Have fun :)");
+      setColor (Text, Sf.Graphics.Color.sfWhite);
+      drawText (Window, Text);
+
+   end Splashscreen;
+
 end ASFML_SIM_Menu;

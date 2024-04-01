@@ -935,6 +935,14 @@ package body ASFML_Sim.Window is
       drawSprite (This.Sim_Panel.Render_Texture, This.OLED_Sprite);
       This.Draw_Buttons_Label (This.Sim_Panel.Render_Texture);
 
+      if This.Show_Splashscreen then
+         ASFML_SIM_Menu.Splashscreen (This.Sim_Panel.Render_Texture,
+                                      This.Font);
+         if not User_Input_Event_Logs.Empty then
+            This.Show_Splashscreen := False;
+         end if;
+      end if;
+
       This.Sim_Panel.Draw (This.Window);
       -----------
 
