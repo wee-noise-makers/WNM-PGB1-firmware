@@ -1,3 +1,3 @@
-# WNM-PS1-firmware
+# WNM-PGB1-firmware
 
-Pocket open source sequencer/sampler/synthesizer
+Open-source pocket groovebox
