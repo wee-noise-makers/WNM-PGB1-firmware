@@ -1,22 +1,22 @@
-with "config/wnm_ps1_device_config.gpr";
+with "config/wnm_pgb1_device_config.gpr";
 
 with "noise_nugget_sdk.gpr";
 
-project Wnm_Ps1_Device is
+project Wnm_PGB1_Device is
 
    for Runtime ("Ada") use Noise_Nugget_SDK'Runtime ("Ada");
    for Target use Noise_Nugget_SDK'Target;
 
    for Languages use ("Ada", "C");
    for Source_Dirs use ("src/", "config/", "../common/**");
-   for Object_Dir use "obj/" & Wnm_Ps1_Device_Config.Build_Profile;
+   for Object_Dir use "obj/" & Wnm_Pgb1_Device_Config.Build_Profile;
    for Create_Missing_Dirs use "True";
    for Exec_Dir use "bin";
-   for Main use ("wnm_ps1_device.adb");
+   for Main use ("wnm_pgb1_device.adb");
 
    package Compiler is
       for Default_Switches ("Ada") use
-        Wnm_Ps1_Device_Config.Ada_Compiler_Switches &
+        Wnm_Pgb1_Device_Config.Ada_Compiler_Switches &
       ("-gnatwJ" -- Suppress warnings on obsolescent features
       );
    end Compiler;
@@ -41,4 +41,4 @@ project Wnm_Ps1_Device is
       for Artifacts (".") use ("share");
    end Install;
 
-end Wnm_Ps1_Device;
+end Wnm_PGB1_Device;

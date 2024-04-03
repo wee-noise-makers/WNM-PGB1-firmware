@@ -4,7 +4,7 @@ with GNAT.Command_Line; use GNAT.Command_Line;
 with ASFML_Sim;
 with ASFML_SIM_Storage;
 
-procedure WNM_PS1_Simulator is
+procedure WNM_PGB1_Simulator is
 begin
 
    declare
@@ -64,4 +64,4 @@ begin
    ASFML_Sim.Sim_Clock.Release;
    delay until Ada.Real_Time.Time_Last;
 
-end WNM_PS1_Simulator;
+end WNM_PGB1_Simulator;

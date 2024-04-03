@@ -15,7 +15,7 @@ with MIDI.Encoder;
 with MIDI.Decoder.Queue;
 with RtMIDI;
 
-with Wnm_Ps1_Simulator_Config;
+with Wnm_Pgb1_Simulator_Config;
 
 package body WNM_HAL is
 
@@ -27,9 +27,9 @@ package body WNM_HAL is
      (others => (others => False));
 
    MIDI_Out : constant RtMIDI.MIDI_Out :=
-     RtMIDI.Create (Wnm_Ps1_Simulator_Config.Crate_Name);
+     RtMIDI.Create (Wnm_Pgb1_Simulator_Config.Crate_Name);
    MIDI_In : constant RtMIDI.MIDI_In :=
-     RtMIDI.Create (Wnm_Ps1_Simulator_Config.Crate_Name);
+     RtMIDI.Create (Wnm_Pgb1_Simulator_Config.Crate_Name);
 
    MIDI_In_Queue : MIDI.Decoder.Queue.Instance (1024);
 
@@ -468,7 +468,7 @@ begin
    end if;
 
    pragma Warnings (Off, "condition is always");
-   if Wnm_Ps1_Simulator_Config.Alire_Host_OS = "windows" then
+   if Wnm_Pgb1_Simulator_Config.Alire_Host_OS = "windows" then
       RtMIDI.Open_Port (MIDI_Out, 1, "Output");
    else
       RtMIDI.Create_Virtual_Port (MIDI_Out, "Output");
@@ -486,7 +486,7 @@ begin
    RtMIDI.Set_Callback (MIDI_In, MIDI_Input_Callback_C'Access);
 
    pragma Warnings (Off, "condition is always *");
-   if Wnm_Ps1_Simulator_Config.Alire_Host_OS = "windows" then
+   if Wnm_Pgb1_Simulator_Config.Alire_Host_OS = "windows" then
       RtMIDI.Open_Port (MIDI_In, 0, "Input");
    else
       RtMIDI.Create_Virtual_Port (MIDI_In, "Input");

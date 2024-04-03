@@ -1,12 +1,12 @@
-name = "wnm_ps1_simulator"
-description = "Shiny new project"
+name = "wnm_pgb1_simulator"
+description = "Simulator of the PGB-1 groovebox"
 version = "0.1.0-dev"
 
 authors = ["Fabien Chouteau"]
 maintainers = ["Fabien Chouteau <fabien.chouteau@gmail.com>"]
 maintainers-logins = ["Fabien-Chouteau"]
 
-executables = ["wnm_ps1_simulator"]
+executables = ["wnm-pgb1-simulator"]
 
 [[depends-on]]
 asfml = "^2.5.2"

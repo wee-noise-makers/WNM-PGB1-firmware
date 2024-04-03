@@ -15,7 +15,7 @@ with WNM_Configuration;
 with ASFML_Sim_Resources;
 with ROM_Builder.From_TOML;
 with ROM_Builder.Sample_Library;
-with Wnm_Ps1_Simulator_Config;
+with Wnm_Pgb1_Simulator_Config;
 
 package body ASFML_SIM_Storage is
 
@@ -432,12 +432,12 @@ package body ASFML_SIM_Storage is
       else
          declare
             Home_Dir : constant String :=
-              (if Wnm_Ps1_Simulator_Config.Alire_Host_OS = "windows"
+              (if Wnm_Pgb1_Simulator_Config.Alire_Host_OS = "windows"
                then Getenv ("HOMEDRIVE").all & Getenv ("HOMEPATH").all
                else Getenv ("HOME").all);
 
             ROM_Dir : constant String := Home_Dir & "/.config/wnm-ps1/" &
-              Wnm_Ps1_Simulator_Config.Crate_Version & "/";
+              Wnm_Pgb1_Simulator_Config.Crate_Version & "/";
          begin
             Ada.Directories.Create_Path (ROM_Dir);
 
