@@ -443,7 +443,7 @@ package body WNM.Synth is
                end if;
 
             when Synth_CPU_Crash =>
-               raise Program_Error with "Unexpected coproc message for synth";
+               raise Program_Error with "Synth exception requested";
          end case;
       end loop;
    end Process_Coproc_Events;
