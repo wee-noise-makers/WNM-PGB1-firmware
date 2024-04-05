@@ -47,6 +47,7 @@ package WNM_Configuration is
       Sample_Frequency            : constant := Tresses.Resources.SAMPLE_RATE;
       Samples_Per_Buffer          : constant := 128;
       Mixer_Buffer_Count          : constant := 3;
+      Input_Buffer_Count          : constant := 3;
 
       Mono_Buffer_Size_In_Bytes   : constant := Samples_Per_Buffer * 2;
       Stereo_Buffer_Size_In_Bytes : constant := Samples_Per_Buffer * 4;
@@ -91,7 +92,7 @@ package WNM_Configuration is
       Sectors_Per_Sample       : constant := Sample_Library_Sectors / Nbr_Samples;
       Single_Sample_Byte_Size  : constant := Sample_Library_Byte_Size / Nbr_Samples;
       Single_Sample_Point_Cnt  : constant := Single_Sample_Byte_Size / 2;
-      Sample_Name_Lenght       : constant := 14;
+      Sample_Name_Length       : constant := 14;
 
    end Storage;
 end WNM_Configuration;

@@ -39,6 +39,8 @@ with HAL;                   use HAL;
 
 package body WNM.Project.Step_Sequencer is
 
+   G_Keyboard_Octave : Octave_Offset := 0;
+
    Pattern_Counter : array (Tracks, Patterns) of UInt32;
    --  Count how many times a pattern has played
 
@@ -193,6 +195,43 @@ package body WNM.Project.Step_Sequencer is
 
          when UI.FX_Mode =>
             null;
+
+         when UI.Sample_Edit_Mode =>
+            case Button is
+               when B1 =>
+                  Prev (G_Keyboard_Octave);
+               when B8 =>
+                  Next (G_Keyboard_Octave);
+               when B4 =>
+                  G_Keyboard_Octave := 0;
+               when others =>
+                  declare
+                     Key : constant MIDI.MIDI_Key :=
+                       Offset ((case Button is
+                                  when B9  => MIDI.C4,
+                                  when B2  => MIDI.Cs4,
+                                  when B10 => MIDI.D4,
+                                  when B3  => MIDI.Ds4,
+                                  when B11 => MIDI.E4,
+                                  when B12 => MIDI.F4,
+                                  when B5  => MIDI.Fs4,
+                                  when B13 => MIDI.G4,
+                                  when B6  => MIDI.Gs4,
+                                  when B14 => MIDI.A4,
+                                  when B7  => MIDI.As4,
+                                  when B15 => MIDI.B4,
+                                  when B16 => MIDI.C5,
+                                  when others => MIDI.C4),
+                               G_Keyboard_Octave);
+                  begin
+                     WNM.Coproc.Push_To_Synth
+                       ((WNM.Coproc.MIDI_Event,
+                        (MIDI.Note_On,
+                         WNM.Synth.Sample_Rec_Playback_Channel,
+                         Key,
+                         127)));
+                  end;
+            end case;
       end case;
    end On_Press;
 
@@ -209,7 +248,8 @@ package body WNM.Project.Step_Sequencer is
          when UI.Song_Mode =>
             null;
 
-         when UI.Track_Mode | UI.Step_Mode | UI.FX_Mode | UI.Pattern_Mode =>
+         when UI.Track_Mode | UI.Step_Mode | UI.FX_Mode | UI.Pattern_Mode |
+              UI.Sample_Edit_Mode =>
             null;
       end case;
    end On_Release;
@@ -348,17 +388,23 @@ package body WNM.Project.Step_Sequencer is
                         Velo        : MIDI.MIDI_Data;
                         Rep         : Repeat_Cnt;
                         Now         : Time.Time_Microseconds;
+                        Shuffle     : Time.Time_Microseconds;
                         Duration    : Time.Time_Microseconds;
                         Repeat_Span : Time.Time_Microseconds)
    is
-      Repeat_Time : Time.Time_Microseconds := Now;
+      Start_Time : Time.Time_Microseconds := Now;
    begin
 
-      Play_Now (Now, T, Key, Velo, Duration);
+      if Shuffle = 0 then
+         Play_Now (Now, T, Key, Velo, Duration);
+      else
+         Start_Time := Start_Time + Shuffle;
+         Play_Later (T, Start_Time, Key, Velo, Duration);
+      end if;
 
       for X in 1 .. Rep loop
-         Repeat_Time := Repeat_Time + Repeat_Span;
-         Play_Later (T, Repeat_Time, Key, Velo, Duration);
+         Start_Time := Start_Time + Repeat_Span;
+         Play_Later (T, Start_Time, Key, Velo, Duration);
       end loop;
 
    end Play_Note;
@@ -372,20 +418,26 @@ package body WNM.Project.Step_Sequencer is
                        Oct         : Octave_Offset;
                        Rep         : Repeat_Cnt;
                        Now         : Time.Time_Microseconds;
+                       Shuffle     : Time.Time_Microseconds;
                        Duration    : Time.Time_Microseconds;
                        Repeat_Span : Time.Time_Microseconds)
    is
-      Repeat_Time : Time.Time_Microseconds := Now;
+      Start_Time : Time.Time_Microseconds := Now;
       Key : MIDI.MIDI_Key := Offset (Arpeggiator.Next_Note (T), Oct);
    begin
 
-      Play_Now (Now, T, Key, Velo, Duration);
+      if Shuffle = 0 then
+         Play_Now (Now, T, Key, Velo, Duration);
+      else
+         Start_Time := Start_Time + Shuffle;
+         Play_Later (T, Start_Time, Key, Velo, Duration);
+      end if;
 
       for X in 1 .. Rep loop
-         Repeat_Time := Repeat_Time + Repeat_Span;
+         Start_Time := Start_Time + Repeat_Span;
          Key := Arpeggiator.Next_Note (T);
 
-         Play_Later (T, Repeat_Time, Key, Velo, Duration);
+         Play_Later (T, Start_Time, Key, Velo, Duration);
       end loop;
 
    end Play_Arp;
@@ -401,25 +453,33 @@ package body WNM.Project.Step_Sequencer is
                          Velo        : MIDI.MIDI_Data;
                          Rep         : Repeat_Cnt;
                          Now         : Time.Time_Microseconds;
+                         Shuffle     : Time.Time_Microseconds;
                          Duration    : Time.Time_Microseconds;
                          Repeat_Span : Time.Time_Microseconds)
    is
-      Repeat_Time : Time.Time_Microseconds := Now;
+      Start_Time : Time.Time_Microseconds := Now;
       Offset_Chord : WNM.Chord_Settings.Chord_Notes;
    begin
       for X in Chord'First .. Last_Note loop
          Offset_Chord (X) := Offset (Chord (X), Oct);
       end loop;
 
-      for X in Chord'First .. Last_Note loop
-         Play_Now (Now, T, Offset_Chord (X), Velo, Duration);
-      end loop;
+      if Shuffle = 0 then
+         for X in Chord'First .. Last_Note loop
+            Play_Now (Now, T, Offset_Chord (X), Velo, Duration);
+         end loop;
+      else
+         Start_Time := Start_Time + Shuffle;
+         for X in Chord'First .. Last_Note loop
+            Play_Later (T, Start_Time, Offset_Chord (X), Velo, Duration);
+         end loop;
+      end if;
 
       for X in 1 .. Rep loop
-         Repeat_Time := Repeat_Time + Repeat_Span;
+         Start_Time := Start_Time + Repeat_Span;
 
          for X in Chord'First .. Last_Note loop
-            Play_Later (T, Repeat_Time, Offset_Chord (X), Velo, Duration);
+            Play_Later (T, Start_Time, Offset_Chord (X), Velo, Duration);
          end loop;
       end loop;
    end Play_Chord;
@@ -438,37 +498,46 @@ package body WNM.Project.Step_Sequencer is
       Step : Step_Rec renames G_Project.Steps (T)(P)(S);
       Track : Track_Rec renames G_Project.Tracks (T);
 
+      Ms_Per_Beat : constant Time.Time_Microseconds
+        := Microseconds_Per_Beat;
+
       Note_Duration : constant Time.Time_Microseconds :=
         (case Step.Duration
          is
-            when Double  => Microseconds_Per_Beat * 2,
-            when Whole   => Microseconds_Per_Beat,
-            when Half    => Microseconds_Per_Beat / 2,
-            when Quarter => Microseconds_Per_Beat / 4,
-            when N_8th   => Microseconds_Per_Beat / 8,
-            when N_16th  => Microseconds_Per_Beat / 16,
-            when N_32nd  => Microseconds_Per_Beat / 32);
+            when Double  => Ms_Per_Beat * 8,
+            when Whole   => Ms_Per_Beat * 4,
+            when Half    => Ms_Per_Beat * 2,
+            when Quarter => Ms_Per_Beat,
+            when N_8th   => Ms_Per_Beat / 2,
+            when N_16th  => Ms_Per_Beat / 4,
+            when N_32nd  => Ms_Per_Beat / 8);
 
       Repeat_Span : constant Time.Time_Microseconds :=
-        Microseconds_Per_Beat / (case Step.Repeat_Rate
-                                 is
-                                    when Rate_1_2  => 2,
-                                    when Rate_1_3  => 3,
-                                    when Rate_1_4  => 4,
-                                    when Rate_1_5  => 5,
-                                    when Rate_1_6  => 6,
-                                    when Rate_1_8  => 8,
-                                    when Rate_1_10 => 10,
-                                    when Rate_1_12 => 12,
-                                    when Rate_1_16 => 16,
-                                    when Rate_1_20 => 20,
-                                    when Rate_1_24 => 24,
-                                    when Rate_1_32 => 32);
+        Ms_Per_Beat / (case Step.Repeat_Rate
+                       is
+                          when Rate_1_2  => 2,
+                          when Rate_1_3  => 3,
+                          when Rate_1_4  => 4,
+                          when Rate_1_5  => 5,
+                          when Rate_1_6  => 6,
+                          when Rate_1_8  => 8,
+                          when Rate_1_10 => 10,
+                          when Rate_1_12 => 12,
+                          when Rate_1_16 => 16,
+                          when Rate_1_20 => 20,
+                          when Rate_1_24 => 24,
+                          when Rate_1_32 => 32);
 
       Repeat_Duration : constant Time.Time_Microseconds :=
         (if Step.Repeat /= 0 and then Repeat_Span < Note_Duration
          then Repeat_Span
          else Note_Duration);
+
+      Shuffle : constant Time.Time_Microseconds :=
+        (if S mod 2 = 0 and then Track.Shuffle /= 0
+         then ((Ms_Per_Beat / 4) / 100) *
+                Time.Time_Microseconds (Track.Shuffle)
+         else 0);
 
       Octave : constant Octave_Offset := Add_Sat (Step.Oct, Track.Offset);
    begin
@@ -477,7 +546,7 @@ package body WNM.Project.Step_Sequencer is
          when Note =>
             Play_Note (T, Offset (Step.Note, Octave),
                        Step.Velo, Step.Repeat,
-                       Now, Repeat_Duration, Repeat_Span);
+                       Now, Shuffle, Repeat_Duration, Repeat_Span);
 
          when Note_In_Chord =>
 
@@ -486,13 +555,13 @@ package body WNM.Project.Step_Sequencer is
                          (Current_Chord (Chord_Index_Range (Step.Note)),
                           Octave),
                        Step.Velo, Step.Repeat,
-                       Now, Repeat_Duration, Repeat_Span);
+                       Now, Shuffle, Repeat_Duration, Repeat_Span);
 
          when Arp =>
 
             Play_Arp (T,
                       Step.Velo, Octave, Step.Repeat,
-                      Now, Repeat_Duration, Repeat_Span);
+                      Now, Shuffle, Repeat_Duration, Repeat_Span);
 
          when Chord =>
 
@@ -501,7 +570,7 @@ package body WNM.Project.Step_Sequencer is
                G_Project.Tracks (T).Notes_Per_Chord,
                Octave,
                Step.Velo, Step.Repeat,
-               Now, Repeat_Duration, Repeat_Span);
+               Now, Shuffle, Repeat_Duration, Repeat_Span);
       end case;
 
    end Play_Step;
@@ -704,6 +773,13 @@ package body WNM.Project.Step_Sequencer is
          Execute_Step;
       end if;
    end MIDI_Clock_Tick;
+
+   ---------------------
+   -- Keyboard_Octave --
+   ---------------------
+
+   function Keyboard_Octave return Octave_Offset
+   is (G_Keyboard_Octave);
 
    -------------------------
    -- Song_Start_Callback --

@@ -20,7 +20,6 @@
 -------------------------------------------------------------------------------
 
 with System.Address_To_Access_Conversions;
-with WNM.QOA; use WNM.QOA;
 
 package body WNM.Sample_Library is
 
@@ -83,41 +82,46 @@ package body WNM.Sample_Library is
    -- Load --
    ----------
 
-   procedure Load is
+   procedure Load (Id : Valid_Sample_Index) is
       use HAL;
       Len : UInt32;
    begin
+      Len := Sample_Data.all (Id).Len;
 
+      if Len = 0 then
+         Entries (Id) :=
+           (Used => False,
+            Name => (others => ' '),
+            Length => 0);
+      else
+         Entries (Id).Name := Sample_Data.all (Id).Name;
+
+         Len := UInt32'Min (Len, UInt32 (Sample_Point_Count'Last));
+
+         Entries (Id).Length := Sample_Point_Count (Len);
+         Entries (Id).Used := True;
+      end if;
+   end Load;
+
+   ----------
+   -- Load --
+   ----------
+
+   procedure Load is
+   begin
       for Sample_Id in Valid_Sample_Index loop
-
-         Len := Sample_Data.all (Sample_Id).Len;
-
-         if Len = 0 then
-            Entries (Sample_Id) :=
-              (Used => False,
-               Name => (others => ' '),
-               Length => 0);
-         else
-            Entries (Sample_Id).Name := Sample_Data.all (Sample_Id).Name;
-
-            Len := UInt32'Min (Len, UInt32 (QOA.Sample_Point_Count'Last));
-
-            Entries (Sample_Id).Length := Sample_Point_Count (Len);
-            Entries (Sample_Id).Used := True;
-         end if;
+         Load (Sample_Id);
       end loop;
    end Load;
 
-   ----------------------------
-   -- Point_Index_To_Seconds --
-   ----------------------------
+   ----------------
+   -- To_Seconds --
+   ----------------
 
-   function Point_Index_To_Seconds (Index : Sample_Point_Index)
-                                    return Sample_Time
-   is
+   function To_Seconds (Index : Sample_Point_Count) return Sample_Time is
    begin
       return Sample_Time (Float (Index) /
                             Float (WNM_Configuration.Audio.Sample_Frequency));
-   end Point_Index_To_Seconds;
+   end To_Seconds;
 
 end WNM.Sample_Library;

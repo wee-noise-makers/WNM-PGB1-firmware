@@ -31,6 +31,8 @@ package WNM_HAL is
    end record;
 
    function Touch_Strip_State return Touch_Data;
+   function TP1 return HAL.UInt32;
+   function TP2 return HAL.UInt32;
 
    ----------
    -- LEDs --
@@ -129,6 +131,15 @@ package WNM_HAL is
 
    function Sample_Data_Base return System.Address;
 
+   type Storage_Sector_Data
+   is array (1 .. WNM_Configuration.Storage.Sector_Byte_Size) of HAL.UInt8;
+
+   type Sample_Sector_Id
+   is range 0 .. WNM_Configuration.Storage.Sample_Library_Sectors - 1;
+
+   procedure Write_To_Storage (Id   : Sample_Sector_Id;
+                               Data : Storage_Sector_Data);
+
    ---------------------
    -- Coproc Messages --
    ---------------------
@@ -161,6 +172,7 @@ package WNM_HAL is
    -- Power --
    -----------
 
+   function Shutdown_Requested return Boolean;
    procedure Power_Down;
 
    procedure Enter_DFU_Mode;
@@ -191,6 +203,12 @@ package WNM_HAL is
    procedure Synth_CPU_Check_Hold;
    --  This procedure checks if the sequencer CPU asked for a hold, and if
    --  that's the case holds until released.
+
+   -------------
+   -- Battery --
+   -------------
+
+   function Battery_Millivolts return Natural;
 
    -----------
    -- Debug --

@@ -11,7 +11,10 @@ package ASFML_SIM_Menu is
                            return Event_Result;
 
    procedure Render (Window : Sf.Graphics.sfRenderTexture_Ptr;
-                     Font : Sf.Graphics.sfFont_Ptr);
+                     Font   : Sf.Graphics.sfFont_Ptr);
+
+   procedure Splashscreen (Window : Sf.Graphics.sfRenderTexture_Ptr;
+                           Font   : Sf.Graphics.sfFont_Ptr);
 
 private
 

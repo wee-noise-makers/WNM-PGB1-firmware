@@ -37,6 +37,8 @@ with RP.Multicore.FIFO;
 with RP.Multicore.Spinlocks;
 with RP.DMA;
 with RP.ROM;
+with RP.PIO;
+with RP.ADC;
 with RP.Watchdog;
 with RP2040_SVD.Interrupts;
 
@@ -46,13 +48,16 @@ with Noise_Nugget_SDK.Button_Matrix_Definition;
 with Noise_Nugget_SDK.Button_Matrix;
 with Noise_Nugget_SDK.Screen.SSD1306;
 with Noise_Nugget_SDK.MIDI;
+with Noise_Nugget_SDK.Audio.PIO_I2S_ASM;
 
 with Atomic.Critical_Section;
 
 with Cortex_M.Systick;
 with Cortex_M.Debug;
 
+with WNM_HAL.Touch_Filter;
 with WNM_HAL.File_System;
+with RP.Flash;
 
 package body WNM_HAL is
 
@@ -60,24 +65,58 @@ package body WNM_HAL is
      (Row_Count    => 6,
       Column_Count => 5);
 
+
    package BM is new Noise_Nugget_SDK.Button_Matrix
      (Definition => BM_Definition,
-      Column_Pins => (1 => 15,
-                      2 => 20,
+      --  Column_Pins => (1 => 15,
+      --                  2 => 20,
+      --                  3 => 26,
+      --                  4 => 28,
+      --                  5 => 29),
+      --  Row_Pins    => (1 => 21,
+      --                  2 => 22,
+      --                  3 => 23,
+      --                  4 => 24,
+      --                  5 => 25,
+      --                  6 => 27)
+      Column_Pins => (1 => 18,
+                      2 => 19,
                       3 => 26,
-                      4 => 28,
+                      4 => 23,
                       5 => 29),
-      Row_Pins    => (1 => 21,
-                      2 => 22,
-                      3 => 23,
+      Row_Pins    => (1 => 20,
+                      2 => 21,
+                      3 => 22,
                       4 => 24,
                       5 => 25,
                       6 => 27)
      );
 
-   B_Play_Power : RP.GPIO.GPIO_Point := (Pin => 14);
+   Keep_Power_On_Pin    : RP.GPIO.GPIO_Point := (Pin => 14);
+   Shutdown_Request_Pin : RP.GPIO.GPIO_Point := (Pin => 15);
 
-   Enable_Indicator_IO : constant Boolean := True;
+   Touch_PIO   : RP.PIO.PIO_Device renames RP.Device.PIO_1;
+   Touch_Pin_1 : aliased RP.GPIO.GPIO_Point := (Pin => 17);
+   Touch_SM_1  : constant RP.PIO.PIO_SM := 1;
+   Touch_Pin_2 : aliased RP.GPIO.GPIO_Point := (Pin => 16);
+   Touch_SM_2  : constant RP.PIO.PIO_SM := 2;
+   Touch_Sensor_1 : WNM_HAL.Touch_Filter.Filtered_Touch_Sensor
+     (Touch_Pin_1'Access,
+      Touch_PIO'Access,
+      Touch_SM_1);
+   Touch_Sensor_2 : WNM_HAL.Touch_Filter.Filtered_Touch_Sensor
+     (Touch_Pin_2'Access,
+      Touch_PIO'Access,
+      Touch_SM_2);
+   Touch_Val_1, Touch_Val_2 : HAL.UInt32 := 0
+     with Atomic;
+   TP_Scale : WNM_HAL.Touch_Filter.Scale;
+
+   VBAT_Sense_Pin  : constant RP.GPIO.GPIO_Point := (Pin => 28);
+   VBAT_Sense_Chan : constant RP.ADC.ADC_Channel :=
+     RP.ADC.To_ADC_Channel (VBAT_Sense_Pin);
+
+   Enable_Indicator_IO : constant Boolean := False;
    Indicator_IO : array (Indicator_IO_Line) of
      RP.GPIO.GPIO_Point := (GP16 => (Pin => 16),
                             GP17 => (Pin => 17),
@@ -152,37 +191,37 @@ package body WNM_HAL is
          S_Track_Button   : constant Boolean := IO (1, 2);
          S_Step_Button    : constant Boolean := IO (1, 3);
          S_Rec            : constant Boolean := IO (1, 4);
-         S_PAD_A          : constant Boolean := IO (1, 5);
-         S_Func           : constant Boolean := IO (1, 6);
+         S_Play           : constant Boolean := IO (1, 5);
+         S_PAD_A          : constant Boolean := IO (1, 6);
 
          S_PAD_Down       : constant Boolean := IO (2, 1);
          S_B1             : constant Boolean := IO (2, 2);
          S_B9             : constant Boolean := IO (2, 3);
          S_B16            : constant Boolean := IO (2, 4);
          S_B8             : constant Boolean := IO (2, 5);
-         S_Pattern_Button : constant Boolean := IO (2, 6);
+         S_Func           : constant Boolean := IO (2, 6);
 
          S_PAD_Up         : constant Boolean := IO (3, 1);
          S_B2             : constant Boolean := IO (3, 2);
          S_B10            : constant Boolean := IO (3, 3);
          S_B15            : constant Boolean := IO (3, 4);
          S_B7             : constant Boolean := IO (3, 5);
-         S_Chord_Button   : constant Boolean := IO (3, 6);
+         S_Pattern_Button : constant Boolean := IO (3, 6);
 
          S_PAD_Right      : constant Boolean := IO (4, 1);
          S_B3             : constant Boolean := IO (4, 2);
          S_B11            : constant Boolean := IO (4, 3);
          S_B14            : constant Boolean := IO (4, 4);
          S_B6             : constant Boolean := IO (4, 5);
-         S_Menu           : constant Boolean := IO (4, 6);
+         S_Chord_Button   : constant Boolean := IO (4, 6);
 
+         S_Menu           : constant Boolean := IO (5, 1);
          S_B4             : constant Boolean := IO (5, 2);
          S_B12            : constant Boolean := IO (5, 3);
          S_B13            : constant Boolean := IO (5, 4);
          S_B5             : constant Boolean := IO (5, 5);
          S_PAD_B          : constant Boolean := IO (5, 6);
 
-         S_Play           : constant Boolean := not B_Play_Power.Set;
       begin
 
          return
@@ -209,7 +248,7 @@ package body WNM_HAL is
             Step_Button    => (if S_Step_Button then Down else Up),
             Track_Button   => (if S_Track_Button then Down else Up),
             Pattern_Button => (if S_Pattern_Button then Down else Up),
-            Chord_Button   => (if S_Chord_Button then Down else Up),
+            Song_Button    => (if S_Chord_Button then Down else Up),
             PAD_Up         => (if S_PAD_Up then Down else Up),
             PAD_Down       => (if S_PAD_Down then Down else Up),
             PAD_Left       => (if S_PAD_Left then Down else Up),
@@ -218,6 +257,49 @@ package body WNM_HAL is
             PAD_B          => (if S_PAD_B then Down else Up));
       end;
    end State;
+
+   -----------------------
+   -- Touch_Strip_State --
+   -----------------------
+
+   function Touch_Strip_State return Touch_Data is
+   begin
+      Touch_Sensor_1.Process_Measures;
+      Touch_Val_1 := Touch_Sensor_1.Read;
+
+      Touch_Sensor_2.Process_Measures;
+      Touch_Val_2 := Touch_Sensor_2.Read;
+
+      --  Start measures for the next iteration
+      Touch_Sensor_1.Trigger_Measures;
+      Touch_Sensor_2.Trigger_Measures;
+
+      if Touch_Val_1 > 2600 and then Touch_Val_2 > 2600 then
+         return (Touch => True,
+                 Value => Touch_Filter.Process (TP_Scale,
+                   Integer (Touch_Val_1), Integer (Touch_Val_2)));
+      else
+         return (Touch => False, Value => 0.0);
+      end if;
+   end Touch_Strip_State;
+
+   ---------
+   -- TP1 --
+   ---------
+
+   function TP1 return  HAL.UInt32 is
+   begin
+      return Touch_Val_1;
+   end TP1;
+
+   ---------
+   -- TP2 --
+   ---------
+
+   function TP2 return  HAL.UInt32 is
+   begin
+      return Touch_Val_2;
+   end TP2;
 
    ---------
    -- Set --
@@ -468,6 +550,28 @@ package body WNM_HAL is
    is (System.Storage_Elements.To_Address
        (WNM_Configuration.Storage.Sample_Library_Base_Addr));
 
+   ----------------------
+   -- Write_To_Stroage --
+   ----------------------
+
+   procedure Write_To_Storage (Id   : Sample_Sector_Id;
+                               Data : Storage_Sector_Data)
+   is
+      use RP.Flash;
+
+      Offset : constant Flash_Offset :=
+        Flash_Offset
+          (WNM_Configuration.Storage.Sample_Library_Offset
+           + Flash_Offset (Id) * WNM_Configuration.Storage.Sector_Byte_Size);
+   begin
+      WNM_HAL.Wait_Synth_CPU_Hold;
+
+      RP.Flash.Erase (Offset, Data'Length);
+      RP.Flash.Program (Offset, Data'Address, Data'Length);
+
+      WNM_HAL.Release_Synth_CPU_Hold;
+   end Write_To_Storage;
+
    ----------
    -- Push --
    ----------
@@ -523,15 +627,20 @@ package body WNM_HAL is
    procedure Get_External (Msg : out MIDI.Message; Success : out Boolean)
    renames External_MIDI.Get_Input;
 
+   ------------------------
+   -- Shutdown_Requested --
+   ------------------------
+
+   function Shutdown_Requested return Boolean
+   is (Shutdown_Request_Pin.Set);
+
    -----------
    -- Power --
    -----------
 
    procedure Power_Down is
    begin
-      B_Play_Power.Configure (RP.GPIO.Output, RP.GPIO.Pull_Down);
-      B_Play_Power.Clear;
-
+      Keep_Power_On_Pin.Clear;
       loop
          Breakpoint_If_Debug;
       end loop;
@@ -642,6 +751,15 @@ package body WNM_HAL is
       end if;
    end Synth_CPU_Check_Hold;
 
+   ------------------------
+   -- Battery_Millivolts --
+   ------------------------
+
+   function Battery_Millivolts return Natural is
+   begin
+      return (Natural (RP.ADC.Read_Microvolts (VBAT_Sense_Chan)) * 2) / 1000;
+   end Battery_Millivolts;
+
    ----------------------
    -- Set_Indicator_IO --
    ----------------------
@@ -707,46 +825,6 @@ package body WNM_HAL is
          end loop;
       end Print_Msg;
 
-
-      ----------------
-      -- Print_Code --
-      ----------------
-
-      procedure Print_Code (Code :        Integer;
-                            X    : in out Integer;
-                            Y    :        Integer)
-      is
-         function To_UInt32
-         is new Ada.Unchecked_Conversion (Integer, UInt32);
-
-         U32 : constant UInt32 := To_UInt32 (Code);
-      begin
-         WNM.GUI.Bitmap_Fonts.Print (X, Y, 'x');
-
-         for Cnt in reverse 0 .. 7 loop
-            WNM.GUI.Bitmap_Fonts.Print
-              (X, Y,
-               (case Shift_Right (U32, 4 * Cnt) and 16#F# is
-                   when 0 => '0',
-                   when 1 => '1',
-                   when 2 => '2',
-                   when 3 => '3',
-                   when 4 => '4',
-                   when 5 => '5',
-                   when 6 => '6',
-                   when 7 => '7',
-                   when 8 => '8',
-                   when 9 => '9',
-                   when 10 => 'A',
-                   when 11 => 'B',
-                   when 12 => 'C',
-                   when 13 => 'D',
-                   when 14 => 'E',
-                   when 15 => 'F',
-                   when others => '-'));
-         end loop;
-      end Print_Code;
-
       X, Y : Integer;
 
    begin
@@ -772,7 +850,7 @@ package body WNM_HAL is
       Clear_Pixels;
       X := 0;
       WNM.GUI.Bitmap_Fonts.Print (X, 0, "CPU-0 Err:");
-      Print_Code (Line, X, -2);
+      WNM.GUI.Bitmap_Fonts.Print (X, 0, Line'Img);
 
       Y := WNM.GUI.Bitmap_Fonts.Height;
       Print_Msg (Msg, Y);
@@ -782,7 +860,7 @@ package body WNM_HAL is
          X := 0;
          Y := Y + WNM.GUI.Bitmap_Fonts.Height;
          WNM.GUI.Bitmap_Fonts.Print (X, Y, "CPU-1 Err:");
-         Print_Code (Synth_CPU_LCH_Line, X, Y);
+         WNM.GUI.Bitmap_Fonts.Print (X, Y, Synth_CPU_LCH_Line'Img);
 
          Y := Y + WNM.GUI.Bitmap_Fonts.Height;
          Print_Msg (Synth_CPU_LCH_Msg, Y);
@@ -837,9 +915,12 @@ package body WNM_HAL is
       Last_Chance_Handler (Message'Address, Cortex_M_Fault_Status);
    end ISR_Invalid;
 
-
 begin
-   B_Play_Power.Configure (RP.GPIO.Input, RP.GPIO.Pull_Up);
+   --  Keep power on
+   Keep_Power_On_Pin.Configure (RP.GPIO.Output, RP.GPIO.Pull_Down);
+   Keep_Power_On_Pin.Set;
+
+   Shutdown_Request_Pin.Configure (RP.GPIO.Input, RP.GPIO.Pull_Up);
 
    if Enable_Indicator_IO then
       for Id in Indicator_IO_Line loop
@@ -847,4 +928,24 @@ begin
          Indicator_IO (Id).Clear;
       end loop;
    end if;
+
+   Touch_PIO.Clear_FIFOs (Touch_SM_1);
+   Touch_PIO.Clear_FIFO_Status (Touch_SM_1);
+   Touch_Sensor_1.Initialize
+     (ASM_Offset =>
+        Noise_Nugget_SDK.Audio.
+          PIO_I2S_ASM.Audio_I2s_Program_Instructions'Length);
+   --  Touch_Sensor_1.Set_Alpha (0.03);
+
+   Touch_PIO.Clear_FIFOs (Touch_SM_2);
+   Touch_PIO.Clear_FIFO_Status (Touch_SM_2);
+   Touch_Sensor_2.Initialize
+     (ASM_Offset =>
+        Noise_Nugget_SDK.Audio.
+          PIO_I2S_ASM.Audio_I2s_Program_Instructions'Length);
+   --  Touch_Sensor_2.Set_Alpha (0.03);
+
+   RP.ADC.Enable;
+   RP.ADC.Configure (VBAT_Sense_Chan);
+   RP.ADC.Set_Mode (RP.ADC.Free_Running);
 end WNM_HAL;

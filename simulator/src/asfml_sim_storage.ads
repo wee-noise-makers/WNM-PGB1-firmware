@@ -1,6 +1,6 @@
 with System;
 with Littlefs;
-
+with WNM_HAL;
 with GNAT.Strings;
 
 package ASFML_SIM_Storage is
@@ -27,6 +27,9 @@ package ASFML_SIM_Storage is
    procedure Print_FS_Tree;
 
    function Sample_Data_Base return System.Address;
+
+   procedure Write_To_Sample_Data (Id   : WNM_HAL.Sample_Sector_Id;
+                                   Data : WNM_HAL.Storage_Sector_Data);
 
    function ROM_Path return String;
    --  Return path to either the default ROM in user config dir or ROM path

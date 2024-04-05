@@ -32,7 +32,9 @@ private
                       Input_Missed_Deadlines,
                       Prj_Last_Load_Size,
                       Prj_Last_Save_Size,
-                      Raise_Exception);
+                      Raise_Exception,
+                      Touch,
+                      Battery);
 
    package Next_Info_Kind is new Enum_Next (Info_Kind, Wrap => True);
    use Next_Info_Kind;

@@ -21,8 +21,8 @@
 
 with WNM.GUI.Bitmap_Fonts; use WNM.GUI.Bitmap_Fonts;
 
-with WNM.Sample_Edit;
 with WNM.Utils;
+with WNM.Sample_Recording;
 
 with lfo_sine;
 with lfo_ramp_up;
@@ -40,6 +40,7 @@ with fx_bitcrusher;
 with fx_filter;
 with fx_overdrive;
 with fx_reverb;
+with cut_2;
 
 package body WNM.GUI.Menu.Drawing is
 
@@ -224,12 +225,26 @@ package body WNM.GUI.Menu.Drawing is
    is
       use WNM.Project;
 
-      DX : constant Integer := Box_Center.X + 10;
-      DY : constant := Box_Top + 22;
+      Pos_X : constant Natural := Box_Center.X + 14;
+      DX : constant Natural := Pos_X - 3;
+      DY : constant := Box_Top + 15;
+
+      Str : constant String := Img (D);
+      Str_Pix_Len : constant Natural := Str'Length * Bitmap_Fonts.Width;
+      Str_X : constant Natural := Pos_X - (Str_Pix_Len / 2);
+
+      X : Integer := Str_X;
    begin
+
+      Print (X_Offset    => X,
+             Y_Offset    => Value_Text_Y,
+             Str         => Str);
+
       if Selected then
-         Screen.Draw_Line ((DX - 1, Select_Line_Y),
-                           (DX + 5, Select_Line_Y));
+         Screen.Draw_Line
+           ((Str_X, Select_Line_Y),
+
+            (Str_X + Str_Pix_Len, Select_Line_Y));
       end if;
 
       if D = Double then
@@ -478,7 +493,7 @@ package body WNM.GUI.Menu.Drawing is
       Bar_Height : constant := 128 / Bar_Width - 1;
       Bar_Left : constant Natural :=
         Left + (Sub_Label_Width - Bar_Width) / 2;
-      Bar_Bottom : constant := Value_Text_Y + 2;
+      Bar_Bottom : constant := Value_Text_Y + 1;
       Bar_Top    : constant := Bar_Bottom - Bar_Height;
       Bar_Center : constant Screen.Point :=
         (Bar_Left + Bar_Width / 2,
@@ -496,7 +511,7 @@ package body WNM.GUI.Menu.Drawing is
       --  Short label
       X := Left;
       Print (X_Offset => X,
-             Y_Offset => Value_Text_Y + 4,
+             Y_Offset => Value_Text_Y + 3,
              Str      => Label);
 
       if Enabled then
@@ -580,7 +595,7 @@ package body WNM.GUI.Menu.Drawing is
       Bar_Height : constant := 128 / Bar_Width - 1;
       Bar_Left : constant Natural :=
         Left + (Sub_Label_Width - Bar_Width) / 2;
-      Bar_Bottom : constant := Value_Text_Y + 2;
+      Bar_Bottom : constant := Value_Text_Y + 1;
       Bar_Top    : constant := Bar_Bottom - Bar_Height;
       --  Bar_Center : constant Screen.Point :=
       --    (Bar_Left + Bar_Width / 2,
@@ -742,7 +757,7 @@ package body WNM.GUI.Menu.Drawing is
       Bar_Height : constant := 128 / Bar_Width - 1;
       Bar_Left : constant Natural :=
         Left + (Sub_Label_Width - Bar_Width) / 2;
-      Bar_Bottom : constant := Value_Text_Y + 2;
+      Bar_Bottom : constant := Value_Text_Y + 1;
       Bar_Top    : constant := Bar_Bottom - Bar_Height;
       --  Bar_Center : constant Screen.Point :=
       --    (Bar_Left + Bar_Width / 2,
@@ -1148,36 +1163,62 @@ package body WNM.GUI.Menu.Drawing is
    -- Draw_Waveform --
    -------------------
 
-   procedure Draw_Waveform is
-      use Sample_Library;
+   procedure Draw_Waveform (Top           : Integer;
+                            Show_Cut      : Boolean := False;
+                            Show_Playhead : Boolean := False)
+   is
+      use WNM.Sample_Recording;
+      use WNM.Screen;
 
-      X : Integer := Box_Left;
-      Y_Center : constant Integer := Box_Center.Y;
+      Wave_Height : constant Integer := Integer (Waveform_Point'Last);
+      Cut_Top : constant Integer := Top + Wave_Height;
+      Wave_Left : constant Integer := cut_2.Data.W / 2;
+      Wave_Mid  : constant Integer :=  Top + Wave_Height / 2;
+      Start_Index : constant Waveform_Index := Start_Point_Index;
+      End_Index : constant Waveform_Index := End_Point_Index;
+      Play_Index : constant Waveform_Index := Last_Played_Point_Index;
+
+      procedure Draw_Cut (X, Y : Integer) is
+      begin
+         --  Copy_Bitmap ((case Animation_Step mod 12 is
+         --                  when 0 .. 6 => cut_1.Data,
+         --                  when others => cut_2.Data),
+         --               X            => X - cut_1.Data.W / 2,
+         --               Y            => Y,
+         --               Invert_Color => False);
+
+         Copy_Bitmap (cut_2.Data,
+                      X            => X - cut_2.Data.W / 2,
+                      Y            => Y,
+                      Invert_Color => False);
+
+         --  Dot vertical line
+         for V in Y - Integer (Waveform_Point'Last) .. Y - 1 loop
+            Screen.Set_Pixel ((X, V), On => (V mod 2) = 0);
+         end loop;
+      end Draw_Cut;
+
+      Wave : constant Waveform := Waveform_Data;
+      X : Integer := Wave_Left;
    begin
-
-      Print (X_Offset => X,
-             Y_Offset => Box_Top,
-             Str      => Point_Index_To_Seconds (Sample_Edit.Start)'Img);
-
-      Print (X_Offset => X,
-             Y_Offset => Box_Top,
-             Str      => " .. ");
-
-      Print (X_Offset => X,
-             Y_Offset => Box_Top,
-             Str      => Point_Index_To_Seconds (Sample_Edit.Stop)'Img);
-
-      X := Box_Left;
-      for Elt of Sample_Edit.Waveform loop
-         declare
-            Val : constant Integer := Integer (Float (Elt) * 5.0);
-         begin
-            Screen.Draw_Line ((X, Y_Center - Val),
-                              (X, Y_Center + Val));
-         end;
-
+      for Idx in Wave'Range loop
+         Screen.Draw_Line ((X, Wave_Mid + Integer (Wave (Idx) / 2)),
+                           (X, Wave_Mid - Integer (Wave (Idx) / 2)));
          X := X + 1;
       end loop;
+
+      if Show_Cut then
+         Draw_Cut (Wave_Left + Integer (Start_Index) - 1, Cut_Top);
+         Draw_Cut (Wave_Left + Integer (End_Index) - 1, Cut_Top);
+      end if;
+
+      if Show_Playhead and then Play_Index /= Waveform_Index'First then
+         Screen.Draw_Line ((Wave_Left + Integer (Play_Index),
+                           Cut_Top),
+
+                           (Wave_Left + Integer (Play_Index),
+                            Cut_Top - Wave_Height));
+      end if;
    end Draw_Waveform;
 
 end WNM.GUI.Menu.Drawing;

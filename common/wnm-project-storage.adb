@@ -312,6 +312,10 @@ package body WNM.Project.Storage is
                      Output.Push
                        (Out_UInt (Integer (Track.Offset) -
                           Integer (Octave_Offset'First)));
+
+                  when Shuffle =>
+                     Output.Push (Out_UInt (Track.Shuffle));
+
                   when LFO_Rate =>
                      Output.Push (Out_UInt (Track.LFO_Rate));
 
@@ -578,6 +582,7 @@ package body WNM.Project.Storage is
       procedure Read is new File_In.Read_Gen_Mod (MIDI.MIDI_Data);
       procedure Read is new File_In.Read_Gen_Int
         (Chord_Settings.Chord_Index_Range);
+      procedure Read is new File_In.Read_Gen_Int (Shuffle_Value);
 
       T_Id : Tracks;
       S : Track_Settings;
@@ -627,6 +632,7 @@ package body WNM.Project.Storage is
                         Input.Set_Format_Error;
                      end if;
                   end;
+               when Shuffle     => Read (Input, Track.Shuffle);
                when LFO_Rate    => Read (Input, Track.LFO_Rate);
                when LFO_Amplitude => Read (Input, Track.LFO_Amp);
                when LFO_Shape => Read (Input, Track.LFO_Shape);

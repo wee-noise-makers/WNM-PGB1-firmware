@@ -15,7 +15,7 @@ with MIDI.Encoder;
 with MIDI.Decoder.Queue;
 with RtMIDI;
 
-with Wnm_Ps1_Simulator_Config;
+with Wnm_Pgb1_Simulator_Config;
 
 package body WNM_HAL is
 
@@ -27,9 +27,9 @@ package body WNM_HAL is
      (others => (others => False));
 
    MIDI_Out : constant RtMIDI.MIDI_Out :=
-     RtMIDI.Create (Wnm_Ps1_Simulator_Config.Crate_Name);
+     RtMIDI.Create (Wnm_Pgb1_Simulator_Config.Crate_Name);
    MIDI_In : constant RtMIDI.MIDI_In :=
-     RtMIDI.Create (Wnm_Ps1_Simulator_Config.Crate_Name);
+     RtMIDI.Create (Wnm_Pgb1_Simulator_Config.Crate_Name);
 
    MIDI_In_Queue : MIDI.Decoder.Queue.Instance (1024);
 
@@ -64,6 +64,20 @@ package body WNM_HAL is
 
    function Touch_Strip_State return Touch_Data
    is (ASFML_Sim.Strip_Touch, ASFML_Sim.Strip_Value);
+
+   ---------
+   -- TP1 --
+   ---------
+
+   function TP1 return HAL.UInt32
+   is (0);
+
+   ---------
+   -- TP2 --
+   ---------
+
+   function TP2 return HAL.UInt32
+   is (0);
 
    ---------
    -- Set --
@@ -285,6 +299,17 @@ package body WNM_HAL is
    function Sample_Data_Base return System.Address
    is (ASFML_SIM_Storage.Sample_Data_Base);
 
+   ----------------------
+   -- Write_To_Storage --
+   ----------------------
+
+   procedure Write_To_Storage (Id   : Sample_Sector_Id;
+                               Data : Storage_Sector_Data)
+   is
+   begin
+      ASFML_SIM_Storage.Write_To_Sample_Data (Id, Data);
+   end Write_To_Storage;
+
    ----------
    -- Push --
    ----------
@@ -353,6 +378,13 @@ package body WNM_HAL is
       MIDI.Decoder.Queue.Pop (MIDI_In_Queue, Msg, Success);
    end Get_External;
 
+   ------------------------
+   -- Shutdown_Requested --
+   ------------------------
+
+   function Shutdown_Requested return Boolean
+   is (False);
+
    ----------------
    -- Power_Down --
    ----------------
@@ -411,6 +443,13 @@ package body WNM_HAL is
    procedure Synth_CPU_Check_Hold
    is null;
 
+   ------------------------
+   -- Battery_Millivolts --
+   ------------------------
+
+   function Battery_Millivolts return Natural
+   is (4000);
+
    ----------------------
    -- Set_Indicator_IO --
    ----------------------
@@ -429,7 +468,7 @@ begin
    end if;
 
    pragma Warnings (Off, "condition is always");
-   if Wnm_Ps1_Simulator_Config.Alire_Host_OS = "windows" then
+   if Wnm_Pgb1_Simulator_Config.Alire_Host_OS = "windows" then
       RtMIDI.Open_Port (MIDI_Out, 1, "Output");
    else
       RtMIDI.Create_Virtual_Port (MIDI_Out, "Output");
@@ -447,7 +486,7 @@ begin
    RtMIDI.Set_Callback (MIDI_In, MIDI_Input_Callback_C'Access);
 
    pragma Warnings (Off, "condition is always *");
-   if Wnm_Ps1_Simulator_Config.Alire_Host_OS = "windows" then
+   if Wnm_Pgb1_Simulator_Config.Alire_Host_OS = "windows" then
       RtMIDI.Open_Port (MIDI_In, 0, "Input");
    else
       RtMIDI.Create_Virtual_Port (MIDI_In, "Input");

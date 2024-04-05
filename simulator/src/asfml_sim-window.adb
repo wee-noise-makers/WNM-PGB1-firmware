@@ -656,16 +656,8 @@ package body ASFML_Sim.Window is
       Left : constant Float := 10.0;
 
       Y : Float := Botton;
-      Evt : Input_Event;
-
       Line_Count : Natural := 0;
    begin
-
-      --  process new events
-      while not User_Input_Event_Logs.Empty loop
-         User_Input_Event_Logs.Remove (Evt);
-         Log_Button_Event (Evt);
-      end loop;
 
       --  Keyboard Layout
       Draw_Text (This, W, (Left, Top - Float (Line_Height)),
@@ -901,6 +893,17 @@ package body ASFML_Sim.Window is
    begin
       clear (This.Window, sfBlack);
 
+      --  Process user input logs
+      declare
+         Evt : Input_Event;
+      begin
+         while not User_Input_Event_Logs.Empty loop
+            This.Show_Splashscreen := False;
+            User_Input_Event_Logs.Remove (Evt);
+            Log_Button_Event (Evt);
+         end loop;
+      end;
+
       if This.Show_Data_Panel then
          --  Draw Data
          clear (This.Data_Panel.Render_Texture, sfBlack);
@@ -934,6 +937,11 @@ package body ASFML_Sim.Window is
       --  Draw stuff in front of the front panel
       drawSprite (This.Sim_Panel.Render_Texture, This.OLED_Sprite);
       This.Draw_Buttons_Label (This.Sim_Panel.Render_Texture);
+
+      if This.Show_Splashscreen then
+         ASFML_SIM_Menu.Splashscreen (This.Sim_Panel.Render_Texture,
+                                      This.Font);
+      end if;
 
       This.Sim_Panel.Draw (This.Window);
       -----------

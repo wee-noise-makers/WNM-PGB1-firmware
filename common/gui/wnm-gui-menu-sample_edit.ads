@@ -27,31 +27,44 @@ package WNM.GUI.Menu.Sample_Edit is
 
 private
 
-   type Edit_Sample_State is (Select_Sample,
+   type Edit_Sample_State is (Select_Mode,
+                              Select_Input,
+                              Record_Sample,
+                              Select_Sample,
                               Trim,
                               Enter_Name,
                               Select_Index,
                               Confirm);
 
+   type Main_Sample_Edit_Mode is (New_Sample, Edit_Sample);
+   package Main_Sample_Edit_Mode_Next
+   is new Enum_Next (Main_Sample_Edit_Mode);
+   use Main_Sample_Edit_Mode_Next;
+
    type Edit_Sample_Menu is new Menu_Window with record
+      Mode         : Main_Sample_Edit_Mode := Edit_Sample;
       State        : Edit_Sample_State;
       Sample_Entry : Sample_Index := Invalid_Sample_Entry;
    end record;
 
    overriding
-   procedure Draw (This   : in out Edit_Sample_Menu)
-   is null;
+   procedure Draw (This : in out Edit_Sample_Menu);
 
    overriding
    procedure On_Event (This  : in out Edit_Sample_Menu;
-                       Event : Menu_Event)
-   is null;
+                       Event :        Menu_Event);
 
    overriding
    procedure On_Pushed (This  : in out Edit_Sample_Menu);
 
    overriding
+   procedure On_Pop (This : in out Edit_Sample_Menu);
+
+   overriding
    procedure On_Focus (This       : in out Edit_Sample_Menu;
                        Exit_Value : Window_Exit_Value);
+
+   procedure Exit_Edit (This       : in out Edit_Sample_Menu;
+                        Exit_Value :        Window_Exit_Value);
 
 end WNM.GUI.Menu.Sample_Edit;

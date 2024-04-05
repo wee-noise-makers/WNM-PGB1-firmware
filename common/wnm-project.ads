@@ -279,6 +279,9 @@ package WNM.Project is
    function Track_Volume (T : Tracks := Editing_Track) return Audio_Volume;
    function Track_Pan (T : Tracks := Editing_Track) return Audio_Pan;
    function Track_Offset (T : Tracks := Editing_Track) return Octave_Offset;
+
+   type Shuffle_Value is range 0 .. 100;
+   function Track_Shuffle (T : Tracks := Editing_Track) return Shuffle_Value;
    function CC_Default (T : Tracks := Editing_Track;
                         Id : CC_Id)
                         return MIDI.MIDI_Data;
@@ -357,6 +360,7 @@ package WNM.Project is
                            Pan,
                            Master_FX,
                            Track_Octave_Offset,
+                           Shuffle,
                            Arp_Mode,
                            Arp_Notes,
                            Notes_Per_Chord,
@@ -386,23 +390,24 @@ package WNM.Project is
                            Pan                 => 11,
                            Master_FX           => 12,
                            Track_Octave_Offset => 13,
-                           Arp_Mode            => 14,
-                           Arp_Notes           => 15,
-                           Notes_Per_Chord     => 16,
-                           MIDI_Chan           => 17,
-                           MIDI_Instrument     => 18,
-                           CC_Ctrl_A           => 19,
-                           CC_Label_A          => 20,
-                           CC_Ctrl_B           => 21,
-                           CC_Label_B          => 22,
-                           CC_Ctrl_C           => 23,
-                           CC_Label_C          => 24,
-                           CC_Ctrl_D           => 25,
-                           CC_Label_D          => 26,
-                           Track_Mode          => 27,
-                           LFO_Amp_Mode        => 28,
-                           LFO_Loop            => 29,
-                           LFO_Sync            => 30);
+                           Shuffle             => 14,
+                           Arp_Mode            => 15,
+                           Arp_Notes           => 16,
+                           Notes_Per_Chord     => 17,
+                           MIDI_Chan           => 18,
+                           MIDI_Instrument     => 19,
+                           CC_Ctrl_A           => 20,
+                           CC_Label_A          => 21,
+                           CC_Ctrl_B           => 22,
+                           CC_Label_B          => 23,
+                           CC_Ctrl_C           => 24,
+                           CC_Label_C          => 25,
+                           CC_Ctrl_D           => 26,
+                           CC_Label_D          => 27,
+                           Track_Mode          => 28,
+                           LFO_Amp_Mode        => 29,
+                           LFO_Loop            => 30,
+                           LFO_Sync            => 31);
 
    subtype User_Track_Settings
      is Track_Settings range Engine .. Track_Mode;
@@ -662,6 +667,10 @@ private
                                                 Wrap => False);
    use Octave_Offset_Next;
 
+   package Shuffle_Value_Next is new Enum_Next (T => Shuffle_Value,
+                                                Wrap => False);
+   use Shuffle_Value_Next;
+
    type Step_Rec is record
       Trig        : Trigger_Kind;
       Repeat      : Repeat_Cnt;
@@ -730,6 +739,7 @@ private
       Volume : Audio_Volume := Init_Volume;
       Pan : Audio_Pan := Init_Pan;
       Offset : Octave_Offset := 0;
+      Shuffle : Shuffle_Value := Shuffle_Value'First;
       FX  : FX_Kind := Bypass;
       LFO_Rate : MIDI.MIDI_Data := 0;
       LFO_Amp : MIDI.MIDI_Data := 0;
@@ -768,6 +778,7 @@ private
       Volume => Init_Volume,
       Pan => Init_Pan,
       Offset => 0,
+      Shuffle => Shuffle_Value'First,
       FX  => Bypass,
       LFO_Rate => 63,
       LFO_Amp => 63,

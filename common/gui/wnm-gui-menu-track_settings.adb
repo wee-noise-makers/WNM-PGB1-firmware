@@ -50,6 +50,7 @@ package body WNM.GUI.Menu.Track_Settings is
        when Project.Pan => Pan,
        when Project.Master_FX => Master_FX,
        when Project.Track_Octave_Offset => Octave_Offset,
+       when Project.Shuffle => Shuffle,
        when Project.LFO_Rate => LFO,
        when Project.LFO_Amplitude => LFO,
        when Project.LFO_Shape => LFO,
@@ -214,6 +215,10 @@ package body WNM.GUI.Menu.Track_Settings is
             Draw_Title ("Octave offset:", "");
             Draw_Value (Project.Track_Offset'Img);
 
+         when Shuffle =>
+            Draw_Title ("Shuffle:", "");
+            Draw_Value (Project.Track_Shuffle'Img);
+
          when Arp_Mode =>
             Draw_Title ("Arpeggiator mode:", "");
             Draw_Value (Project.Img (Project.Arp_Mode));
@@ -235,7 +240,6 @@ package body WNM.GUI.Menu.Track_Settings is
             Draw_Value (Builtin_Instruments (This.Instrument).Name);
 
          when Engine =>
-
             Draw_Title ("Synth Engine:", "");
             Draw_Value (Project.Selected_Engine_Img (Editing_Track));
 

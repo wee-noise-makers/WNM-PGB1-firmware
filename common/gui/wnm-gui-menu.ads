@@ -22,7 +22,7 @@
 package WNM.GUI.Menu is
 
    type Base_Menu_Kind is (Step_Menu, Track_Menu, Pattern_Menu,
-                           Chord_Menu);
+                           Chord_Menu, Sample_Edit_Menu);
 
    procedure Open (Kind : Base_Menu_Kind);
 
@@ -48,7 +48,7 @@ package WNM.GUI.Menu is
 
    procedure On_Event (Event : Menu_Event);
 
-   type Window_Exit_Value is (None, Success, Failure);
+   type Window_Exit_Value is (Success, Failure);
 
    type Menu_Window is interface;
 
@@ -62,11 +62,11 @@ package WNM.GUI.Menu is
    is abstract;
 
    procedure On_Pushed (This  : in out Menu_Window)
-   is abstract;
+   is null;
 
    procedure On_Focus (This       : in out Menu_Window;
                        Exit_Value : Window_Exit_Value)
-   is abstract;
+   is null;
 
    procedure On_Pop (This : in out Menu_Window)
    is null;
@@ -75,6 +75,6 @@ package WNM.GUI.Menu is
    procedure Pop (Exit_Value : Window_Exit_Value);
 
    procedure Exit_Menu;
-   --  Pop all the windows in stack with a None exit value
+   --  Pop all the windows in stack with a Failure exit value
 
 end WNM.GUI.Menu;

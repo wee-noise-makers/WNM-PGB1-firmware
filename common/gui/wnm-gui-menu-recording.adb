@@ -21,13 +21,14 @@
 
 with WNM.Screen;               use WNM.Screen;
 with WNM.GUI.Bitmap_Fonts;     use WNM.GUI.Bitmap_Fonts;
-with WNM.Synth;
 
 with tape_1;
 with tape_2;
 with tape_3;
 with tape_4;
 with HAL; use HAL;
+
+with WNM.GUI.Menu.Drawing;
 
 package body WNM.GUI.Menu.Recording is
 
@@ -51,10 +52,13 @@ package body WNM.GUI.Menu.Recording is
      (This   : in out Recording_Window)
    is
       pragma Unreferenced (This);
-      X : Integer := 35;
+      X             : Integer := 35;
+      Wave_Top      : constant Integer := 15;
+      Recording_Top : constant Integer := Screen_Height - tape_1.Data.H - 1;
+
    begin
       Print (X_Offset    => X,
-             Y_Offset    => 5 + 8,
+             Y_Offset    => Recording_Top + 5,
              Str         => "Recording");
 
       Copy_Bitmap ((case Animation_Step mod 4 is
@@ -63,31 +67,30 @@ package body WNM.GUI.Menu.Recording is
                       when 2      => tape_3.Data,
                       when others => tape_4.Data),
                    X            => 0,
-                   Y            => 0 + 8,
+                   Y            => Recording_Top,
                    Invert_Color => True);
       Animation_Step := Animation_Step + 1;
+
+      Drawing.Draw_Waveform (Wave_Top, Show_Cut => True);
    end Draw;
 
    --------------
    -- On_Event --
    --------------
 
-   overriding procedure On_Event
+   overriding
+   procedure On_Event
      (This  : in out Recording_Window;
       Event : Menu_Event)
    is
       pragma Unreferenced (This);
    begin
       case Event.Kind is
-         when Left_Press =>
-            WNM.Synth.Stop_Recording;
+         when A_Press =>
             Menu.Pop (Exit_Value => Success);
-         when Right_Press =>
-            Synth.Stop_Recording;
+         when B_Press =>
             Menu.Pop (Exit_Value => Failure);
-         when Encoder_Right =>
-            null;
-         when Encoder_Left =>
+         when others =>
             null;
       end case;
    end On_Event;

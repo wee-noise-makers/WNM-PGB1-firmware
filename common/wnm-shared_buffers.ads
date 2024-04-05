@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                  Copyright (C) 2016-2017 Fabien Chouteau                  --
+--                     Copyright (C) 2024 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,19 +19,16 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-package WNM.GUI.Menu.Sample_Trim is
+with HAL;
 
-   procedure Push_Window;
+package WNM.Shared_Buffers is
 
-private
+   Shared_Buffer_Byte_Size : constant := 45_134;
+   --  As small as possbile, but big enough to fit either the QOA sample or
+   --  the reverb buffer.
 
-   type Trim_Window is new Menu_Window with null record;
+   Shared_Butffer_Bit_Size : constant := Shared_Buffer_Byte_Size * 8;
+   Shared_Buffer : HAL.UInt8_Array (1 .. Shared_Buffer_Byte_Size)
+     with Alignment => 8;
 
-   overriding
-   procedure Draw (This : in out Trim_Window);
-
-   overriding
-   procedure On_Event (This  : in out Trim_Window;
-                       Event : Menu_Event);
-
-end WNM.GUI.Menu.Sample_Trim;
+end WNM.Shared_Buffers;

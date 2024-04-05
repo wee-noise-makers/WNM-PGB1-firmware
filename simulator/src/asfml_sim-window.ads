@@ -67,6 +67,7 @@ private
    is tagged
            record
               Show_Data_Panel : Boolean := False;
+              Show_Splashscreen : Boolean := True;
 
               Font : Sf.Graphics.sfFont_Ptr;
               Text : Sf.Graphics.sfText_Ptr;

@@ -23,6 +23,7 @@ with Interfaces;
 
 with Tresses;            use Tresses;
 with Tresses.Interfaces; use Tresses.Interfaces;
+with WNM.QOA;
 
 private with Tresses.Envelopes.AR;
 private with WNM.Sample_Library;
@@ -67,6 +68,17 @@ package WNM.Voices.Sampler_Voice is
           when P_Release => "REL",
           when P_Drive   => "DRV");
 
+   --  Special type to play the recorded sample in sample rec/edit mode
+   type Sample_Rec_Playback_Instance
+   is tagged private;
+
+   procedure Note_On (This : in out Sample_Rec_Playback_Instance;
+                      Key  :        MIDI.MIDI_Key);
+
+   procedure Render (This   : in out Sample_Rec_Playback_Instance;
+                     Buffer :    out Tresses.Mono_Buffer)
+     with Linker_Section => QOA.Code_Linker_Section;
+
 private
 
    subtype Sample_Phase is Standard.Interfaces.Unsigned_32;
@@ -91,4 +103,12 @@ private
       Do_Init : Boolean := True;
    end record;
 
+   type Sample_Rec_Playback_Instance
+   is tagged
+           record
+              On              : Boolean := False;
+              Phase           : Sample_Phase := 0;
+              Phase_Increment : Sample_Phase := 0;
+              Cache           : QOA.Decoder_Cache;
+           end record;
 end WNM.Voices.Sampler_Voice;

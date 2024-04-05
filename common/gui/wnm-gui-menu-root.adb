@@ -22,7 +22,6 @@
 with WNM.GUI.Menu.Drawing;           use WNM.GUI.Menu.Drawing;
 --  with WNM.GUI.Menu.Sample_Select;     use WNM.GUI.Menu.Sample_Select;
 with WNM.GUI.Menu.Text_Dialog;       use WNM.GUI.Menu.Text_Dialog;
---  with WNM.GUI.Menu.Sample_Edit;
 with WNM.GUI.Menu.Yes_No_Dialog;
 --  with WNM.GUI.Menu.Create_Sample;
 --  with WNM.GUI.Menu.Passthrough;
@@ -41,7 +40,6 @@ package body WNM.GUI.Menu.Root is
    is (case Item is
           when Projects    => "Projects",
           when Inputs      => "Inputs",
-          --  when Edit_Sample     => "Edit sample",
           --  when Create_Sample   => "Create sample",
           --  when Change_Sample   => "Change sample",
           --  when Set_Passthrough => "Passthrough",
@@ -98,9 +96,7 @@ package body WNM.GUI.Menu.Root is
 
                when Inputs =>
                   Menu.Inputs.Push_Window;
-               --  when Edit_Sample =>
-               --     Menu.Sample_Edit.Push_Window;
-               --
+
                --  when Create_Sample =>
                --     Menu.Create_Sample.Push_Window;
                --
@@ -130,7 +126,7 @@ package body WNM.GUI.Menu.Root is
             end case;
 
          when B_Press =>
-            Menu.Pop (Exit_Value => None);
+            null;
 
          when Up_Press =>
             null;

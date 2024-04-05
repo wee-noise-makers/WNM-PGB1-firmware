@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2022 Fabien Chouteau                    --
+--                     Copyright (C) 2024 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,28 +19,40 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Sample_Library; use WNM.Sample_Library;
-with WNM.Screen;
+with RP.GPIO;
+with RP.PIO;
+with RP.PIO.Touch_Sense;
 
-package WNM.Sample_Edit is
+package WNM_HAL.Touch_Filter is
 
-   procedure Load (Index : Valid_Sample_Index;
-                   Start, Stop : Sample_Point_Index);
+   Data_Count : constant := 5;
+   type Data_Index is mod Data_Count;
+   type Data_Array is array (Data_Index) of HAL.UInt32;
 
-   function Start return Sample_Point_Index;
-   function Stop return Sample_Point_Index;
+   type Filtered_Touch_Sensor
+     (Pin   : not null access RP.GPIO.GPIO_Point;
+      PIO   : not null access RP.PIO.PIO_Device;
+      SM    : RP.PIO.PIO_SM)
+   is new RP.PIO.Touch_Sense.Touch_Sensor (Pin, PIO, SM)
+   with record
+      Values  : Data_Array := (others => 0);
+      Next_In : Data_Index := Data_Index'First;
+   end record;
 
-   procedure Inc_Start;
-   procedure Inc_Stop;
+   procedure Trigger_Measures (This : in out Filtered_Touch_Sensor);
+   procedure Process_Measures (This : in out Filtered_Touch_Sensor);
 
-   procedure Dec_Start;
-   procedure Dec_Stop;
+   function Read (This : in out Filtered_Touch_Sensor) return HAL.UInt32;
 
-   type Waveform_Point is delta 0.02 range 0.0 .. 1.0;
-   type Waveform_Range is range 0 .. WNM.Screen.Width - 20;
+   type Scale is record
+      Min : Integer := Integer'Last;
+      Max : Integer := Integer'First;
 
-   Waveform : array (Waveform_Range) of Waveform_Point;
+      Min_F : Float := Float'Last;
+      Max_F : Float := Float'First;
+   end record;
 
-   procedure Update_Waveform;
-
-end WNM.Sample_Edit;
+   function Process (This   : in out Scale;
+                     P1, P2 :        Integer)
+                     return Touch_Value;
+end WNM_HAL.Touch_Filter;

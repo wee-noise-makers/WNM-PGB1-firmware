@@ -37,6 +37,8 @@ package WNM.Project.Step_Sequencer is
 
    procedure MIDI_Clock_Tick (Step : MIDI.Time.Step_Count);
 
+   function Keyboard_Octave return Octave_Offset;
+
 private
 
    Current_Playing_Step : Sequencer_Steps := Sequencer_Steps'First with Atomic;

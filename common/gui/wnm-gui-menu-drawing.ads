@@ -128,6 +128,8 @@ package WNM.GUI.Menu.Drawing is
                                   D        : Pattern_Length;
                                   Selected : Boolean);
 
-   procedure Draw_Waveform;
+   procedure Draw_Waveform (Top           : Integer;
+                            Show_Cut      : Boolean := False;
+                            Show_Playhead : Boolean := False);
 
 end WNM.GUI.Menu.Drawing;

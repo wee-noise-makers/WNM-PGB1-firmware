@@ -91,7 +91,7 @@ package body WNM.GUI.Menu.Projects is
             end case;
 
          when B_Press =>
-            Menu.Pop (Exit_Value => None);
+            Menu.Pop (Exit_Value => Success);
 
          when Up_Press =>
             null;

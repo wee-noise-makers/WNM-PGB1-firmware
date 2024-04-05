@@ -81,6 +81,24 @@ package body WNM.GUI.Menu.System_Info is
 
          when Raise_Exception =>
             Drawing.Draw_Title ("Press A to raise", "an exception");
+
+         when Touch =>
+            declare
+               type TP_Img is delta 0.01 range 0.0 .. 10.0;
+               --  Use a fixed point type to get a 'Img without
+               --  scientific notation...
+
+               Val : constant Touch_Value := WNM_HAL.Touch_Strip_State.Value;
+            begin
+               Drawing.Draw_Title
+                 ("Touch sensor", TP_Img'Image (TP_Img (Val)));
+               Drawing.Draw_Value (WNM_HAL.TP1'Img & " " & WNM_HAL.TP2'Img);
+            end;
+
+         when Battery =>
+            Drawing.Draw_Title ("Battery", "");
+            Drawing.Draw_Value (WNM_HAL.Battery_Millivolts'Img & " mV");
+
       end case;
    end Draw;
 

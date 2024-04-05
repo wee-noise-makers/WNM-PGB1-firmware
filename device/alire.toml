@@ -1,5 +1,5 @@
-name = "wnm_ps1_device"
-description = "Shiny new project"
+name = "wnm_pgb1_device"
+description = "Firmware for the PGB-1 groovebox"
 version = "0.1.0-dev"
 
 authors = ["Fabien Chouteau"]

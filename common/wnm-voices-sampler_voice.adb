@@ -28,6 +28,7 @@ with Tresses.DSP;
 with Tresses.Resources;
 
 with WNM.Sample_Library; use WNM.Sample_Library;
+with WNM.Sample_Recording;
 
 package body WNM.Voices.Sampler_Voice is
 
@@ -229,6 +230,7 @@ package body WNM.Voices.Sampler_Voice is
 
       P : U32;
    begin
+
       if This.Do_Init then
          This.Do_Init := False;
 
@@ -318,6 +320,65 @@ package body WNM.Voices.Sampler_Voice is
          --  Fill remaining point, if any...
          Buffer (Out_Index .. Buffer'Last) := (others => 0);
       end;
+   end Render;
+
+   -------------
+   -- Note_On --
+   -------------
+
+   procedure Note_On (This : in out Sample_Rec_Playback_Instance;
+                      Key  :        MIDI.MIDI_Key)
+   is
+   begin
+      This.Phase_Increment := Pitch_Table2 (Key);
+      This.On := True;
+      This.Phase := 0;
+   end Note_On;
+
+   ------------
+   -- Render --
+   ------------
+
+   procedure Render (This   : in out Sample_Rec_Playback_Instance;
+                     Buffer :    out Tresses.Mono_Buffer)
+   is
+      Out_Index : Natural := Buffer'First;
+      Sample_Point : S32;
+      Sample_Len : constant U32 := U32 (WNM.Sample_Recording.Recorded_Length);
+      P : U32;
+   begin
+      loop
+
+         P := Shift_Right (This.Phase, Phase_Frac_Bits);
+         This.On := P <= Sample_Len - 1;
+
+         exit when not This.On or else Out_Index > Buffer'Last;
+
+         --  Interpolation between two sample points
+         declare
+            V : constant S32 :=
+              S32 (Shift_Right
+                   (This.Phase, Phase_Frac_Bits - 15) and 16#7FFF#);
+
+            A : constant S32 :=
+              S32 (Sample_Recording.Get_Point (This.Cache,
+                   Sample_Point_Index (P)));
+            B : constant S32 :=
+              S32 (Sample_Recording.Get_Point (This.Cache,
+                   Sample_Point_Index (P) + 1));
+         begin
+            Sample_Point := A + ((B - A) * V) / 2**15;
+         end;
+
+         This.Phase := This.Phase + This.Phase_Increment;
+
+         Buffer (Out_Index) := S16 (Sample_Point);
+
+         Out_Index := Out_Index + 1;
+      end loop;
+
+      --  Fill remaining point, if any...
+      Buffer (Out_Index .. Buffer'Last) := (others => 0);
    end Render;
 
 end WNM.Voices.Sampler_Voice;

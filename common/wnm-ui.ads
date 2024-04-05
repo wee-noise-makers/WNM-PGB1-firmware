@@ -37,6 +37,7 @@ package WNM.UI is
                             Step_Mode,
                             Song_Mode,
                             FX_Mode,
+                            Sample_Edit_Mode,
 
                             Pattern_Select,
                             Track_Select,
@@ -49,7 +50,9 @@ package WNM.UI is
                             Copy
                            );
 
-   subtype Main_Modes is Input_Mode_Type range Pattern_Mode .. FX_Mode;
+   subtype Main_Modes
+     is Input_Mode_Type range Pattern_Mode .. Sample_Edit_Mode;
+
    function Input_Mode return Input_Mode_Type;
    function Input_GUI_Mode return Input_Mode_Type;
 
