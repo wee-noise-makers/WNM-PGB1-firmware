@@ -35,6 +35,7 @@ with WNM.Sample_Library;
 with WNM.Project.Library;
 with WNM.Mixer;
 with WNM.Coproc;
+with WNM.Project_Load_Broadcast;
 
 with MIDI;
 
@@ -184,6 +185,10 @@ package body WNM.Tasks is
       WNM.GUI.Menu.Track_Settings.Push_Window;
 
       WNM.Mixer.Start_Mixer;
+
+      --  Trigger a project load event to setup various things like current
+      --  chord or track settings.
+      WNM.Project_Load_Broadcast.Broadcast;
 
       WNM_HAL.Start_Sequencer_Tick;
       WNM_HAL.Watchdog_Init;

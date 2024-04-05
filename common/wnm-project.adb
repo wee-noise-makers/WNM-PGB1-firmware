@@ -26,8 +26,14 @@ with WNM.Utils;
 with WNM.Speech;
 with WNM.Sample_Library;
 with WNM.UI;
+with WNM.Project_Load_Broadcast;
 
 package body WNM.Project is
+
+   procedure Project_Load_Callback;
+   package Project_Load_Listener
+   is new Project_Load_Broadcast.Register (Project_Load_Callback'Access);
+   pragma Unreferenced (Project_Load_Listener);
 
    -------------
    -- Do_Copy --
@@ -1892,10 +1898,21 @@ package body WNM.Project is
    procedure Clear is
    begin
       G_Project := (others => <>);
+
+      WNM.Project_Load_Broadcast.Broadcast;
+   end Clear;
+
+   ---------------------------
+   -- Project_Load_Callback --
+   ---------------------------
+
+   procedure Project_Load_Callback is
+   begin
+      --  Update all track settings on project load
       for T in Tracks loop
          Synchronize_Synth_Settings (T);
       end loop;
-   end Clear;
+   end Project_Load_Callback;
 
    -----------------
    -- Handle_MIDI --

@@ -87,6 +87,7 @@
 --  <End of File>
 
 with HAL; use HAL;
+with WNM.Project_Load_Broadcast;
 with WNM.File_System.LEB128_File_Out; use WNM.File_System.LEB128_File_Out;
 with WNM.File_System.LEB128_File_In; use WNM.File_System.LEB128_File_In;
 with WNM.Project.Storage.File_Out;
@@ -1082,10 +1083,8 @@ package body WNM.Project.Storage is
 
       File_System.Close;
 
-      --  Update all the synth settings after loading a project
-      for T in Tracks loop
-         Synchronize_Synth_Settings (T);
-      end loop;
+      --  Signal project load
+      WNM.Project_Load_Broadcast.Broadcast;
 
       return Input.Status;
    end Load;

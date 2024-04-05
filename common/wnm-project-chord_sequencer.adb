@@ -22,7 +22,10 @@
 with MIDI; use MIDI;
 with WNM.Step_Event_Broadcast;
 with WNM.Song_Start_Broadcast;
+with WNM.Project_Load_Broadcast;
 with WNM.Project.Song_Part_Sequencer;
+
+with Ada.Text_IO;
 
 package body WNM.Project.Chord_Sequencer is
 
@@ -35,6 +38,11 @@ package body WNM.Project.Chord_Sequencer is
    package Song_Start_Listener
    is new Song_Start_Broadcast.Register (Song_Start_Callback'Access);
    pragma Unreferenced (Song_Start_Listener);
+
+   procedure Project_Load_Callback;
+   package Project_Load_Listener
+   is new Project_Load_Broadcast.Register (Project_Load_Callback'Access);
+   pragma Unreferenced (Project_Load_Listener);
 
    procedure Update_Current;
    --  Update the current tonic, name, and chord notes
@@ -173,6 +181,15 @@ package body WNM.Project.Chord_Sequencer is
          end;
       end if;
    end Step_Callback;
+
+   ---------------------------
+   -- Project_Load_Callback --
+   ---------------------------
+
+   procedure Project_Load_Callback is
+   begin
+      Update_Current;
+   end Project_Load_Callback;
 
    -------------------
    -- Current_Tonic --
