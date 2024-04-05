@@ -689,40 +689,16 @@ private
       CC_Val => (others => 0));
 
    Default_Step_Lead : constant Step_Rec :=
-     (Trig => None,
-      Repeat => 0,
-      Repeat_Rate => Rate_1_8,
-      Note_Mode => Arp,
-      Note => 0,
-      Oct => 0,
-      Duration => N_16th,
-      Velo => MIDI.MIDI_Data'Last,
-      CC_Ena => (others => False),
-      CC_Val => (others => 0));
+     (Default_Step with delta Note_Mode => Arp,
+                              Note => 0);
 
    Default_Step_Bass : constant Step_Rec :=
-     (Trig => None,
-      Repeat => 0,
-      Repeat_Rate => Rate_1_8,
-      Note_Mode => Note_In_Chord,
-      Note => 0,
-      Oct => 0,
-      Duration => N_16th,
-      Velo => MIDI.MIDI_Data'Last,
-      CC_Ena => (others => False),
-      CC_Val => (others => 0));
+     (Default_Step with delta Note_Mode => Note_In_Chord,
+                              Note => 0);
 
    Default_Step_Chord : constant Step_Rec :=
-     (Trig => None,
-      Repeat => 0,
-      Repeat_Rate => Rate_1_8,
-      Note_Mode => Chord,
-      Note => 0,
-      Oct => 0,
-      Duration => N_16th,
-      Velo => MIDI.MIDI_Data'Last,
-      CC_Ena => (others => False),
-      CC_Val => (others => 0));
+     (Default_Step with delta Note_Mode => Chord,
+                              Note => 0);
 
    type Pattern_Step_Arr is array (Sequencer_Steps) of Step_Rec
      with Pack;
@@ -944,7 +920,10 @@ private
       Patterns : All_Pattern_Arr := (others => (others => Default_Pattern));
 
       Steps : All_Steps_Arr :=
-        (others => (others => (others => Default_Step)));
+        (Bass_Track  => (others => (others => Default_Step_Bass)),
+         Lead_Track  => (others => (others => Default_Step_Lead)),
+         Chord_Track => (others => (others => Default_Step_Chord)),
+         others      => (others => (others => Default_Step)));
 
       Parts : Song_Part_Arr;
 
