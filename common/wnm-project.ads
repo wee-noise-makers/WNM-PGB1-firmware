@@ -505,7 +505,11 @@ package WNM.Project is
                               Id : Chord_Slot_Id;
                               S  : User_Chord_Settings);
 
-   procedure Randomly_Pick_A_Progression;
+   type Scale_Choice is (Random, Major, Minor);
+   type Key_Choice is (Random, C, Cs, D, Ds, E, F, Fs, G, Gs, A, As, B);
+   procedure Randomly_Pick_A_Progression (Prog_Id : WNM.Chord_Progressions;
+                                          Scale_C : Scale_Choice;
+                                          Key_C   : Key_Choice);
    --  a.k.a. The Magic Hat of Chord Progression
 
    -----------

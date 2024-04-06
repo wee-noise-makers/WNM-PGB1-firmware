@@ -25,8 +25,6 @@ with WNM.Song_Start_Broadcast;
 with WNM.Project_Load_Broadcast;
 with WNM.Project.Song_Part_Sequencer;
 
-with Ada.Text_IO;
-
 package body WNM.Project.Chord_Sequencer is
 
    procedure Step_Callback;

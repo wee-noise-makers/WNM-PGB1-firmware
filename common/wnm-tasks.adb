@@ -43,8 +43,9 @@ with MIDI;
 package body WNM.Tasks is
 
    Systick_Count : UInt32 := 0;
-   UI_Period_Miliseconds : constant := 20;
+   UI_Period_Miliseconds  : constant := 20;
    LED_Period_Miliseconds : constant := 100;
+   Rand_Update_Period : Rand_Percent := 0;
 
    --------------------
    -- Handle_MIDI_In --
@@ -101,6 +102,12 @@ package body WNM.Tasks is
       WNM.MIDI_Clock.Update;
       WNM.Short_Term_Sequencer.Update (Clock);
       WNM.Note_Off_Sequencer.Update (Clock);
+
+      --  Tentatively adding more entropy by calling random at random
+      --  intervals...
+      if Systick_Count mod (UInt32 (Rand_Update_Period) + 1) = 0 then
+         Rand_Update_Period := Random;
+      end if;
 
       if (Systick_Count mod UI_Period_Miliseconds) = 0 then
 

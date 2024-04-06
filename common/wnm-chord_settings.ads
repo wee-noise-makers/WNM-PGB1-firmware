@@ -162,6 +162,34 @@ package WNM.Chord_Settings is
        Key_Img (C (2)) & " " &
        Key_Img (C (3)));
 
+   function Img (A : Accidentals) return String
+   is (case A is
+          when Natural => "",
+          when Sharp => "#",
+          when Flat => "b");
+
+   function Img (Degree : Scale_Range; Major : Boolean := True) return String
+   is (if Major
+       then (case Degree is
+            when 1 => "I",
+            when 2 => "II",
+            when 3 => "III",
+            when 4 => "IV",
+            when 5 => "V",
+            when 6 => "VI",
+            when 7 => "VII")
+       else (case Degree is
+            when 1 => "i",
+            when 2 => "ii",
+            when 3 => "iii",
+            when 4 => "iv",
+            when 5 => "v",
+            when 6 => "vi",
+            when 7 => "vii"));
+
+   function Img (C : Roman_Numeral_Notation) return String
+   is (Img (C.Accidental) & Img (C.Degree) & Img (C.Harmonic_Function));
+
    function "+" (K : MIDI.MIDI_Key; I : Interval)
                  return MIDI.MIDI_Key
    is (if K <= MIDI.MIDI_Key'Last - I'Enum_Rep
@@ -186,12 +214,18 @@ package WNM.Chord_Settings is
    is ((K + I (0), K + I (1), K + I (2), K + I (3)))
      with Inline;
 
-   function To_Chord (R     : Roman_Numeral_Notation;
+   function To_Notes (R     : Roman_Numeral_Notation;
                       Key   : MIDI.MIDI_Key;
                       Scale : Scale_Name)
                       return Chord_Notes
    is (((Key + Scales (Scale)(R.Degree)) + R.Accidental) +
          Chords (R.Harmonic_Function));
+
+   function Tonic (R     : Roman_Numeral_Notation;
+                   Key   : MIDI.MIDI_Key;
+                   Scale : Scale_Name)
+                   return MIDI.MIDI_Key
+   is ((Key + Scales (Scale)(R.Degree)) + R.Accidental);
 
    --  min
    bImin : constant Roman_Numeral_Notation := (1, Flat, Min_Triad);

@@ -41,6 +41,9 @@ with fx_filter;
 with fx_overdrive;
 with fx_reverb;
 with cut_2;
+with magic_hat_1;
+with magic_hat_2;
+with magic_hat_3;
 
 package body WNM.GUI.Menu.Drawing is
 
@@ -1220,5 +1223,63 @@ package body WNM.GUI.Menu.Drawing is
                             Cut_Top - Wave_Height));
       end if;
    end Draw_Waveform;
+
+   --------------------
+   -- Draw_Magic_Hat --
+   --------------------
+
+   procedure Draw_Magic_Hat (X, Y : Integer;
+                             Animate : Boolean;
+                             Step    : HAL.UInt32)
+   is
+      use WNM.Screen;
+      use type HAL.UInt32;
+
+      Step_Per_Frames : constant := 5;
+      Frame_Count : constant HAL.UInt32 := Step_Per_Frames * 3;
+      Still_Frame : constant HAL.UInt32 := 0;
+      Frame : constant HAL.UInt32 := (if Animate
+                                      then Step mod Frame_Count
+                                      else Still_Frame);
+
+      BX : constant Natural := X + (Natural (Step) mod 2);
+      BY : constant Natural := Y + (Natural (Step) mod 2);
+
+      F1_S : constant := 0;
+      F1_E : constant := F1_S + Step_Per_Frames;
+      F2_S : constant := F1_E + 1;
+      F2_E : constant := F2_S + Step_Per_Frames;
+      F3_S : constant := F2_E + 1;
+      F3_E : constant := F3_S + Step_Per_Frames;
+
+   begin
+      case Frame is
+         when F1_S .. F1_E =>
+            Copy_Bitmap (magic_hat_1.Data, BX, BY);
+         when F2_S .. F2_E =>
+            Copy_Bitmap (magic_hat_2.Data, BX, BY);
+         when F3_S .. F3_E =>
+            Copy_Bitmap (magic_hat_3.Data, BX, BY);
+         when others => null;
+      end case;
+
+      --  Random blinking stars
+      for Stars in 1 .. Random mod 4 loop
+         declare
+            SX : constant Natural := X + Natural (Random mod 25);
+            SY : constant Natural := Y + Natural (Random mod 25);
+         begin
+            if (Random mod 2) = 0 then
+               Screen.Set_Pixel ((SX, SY));
+            else
+               Screen.Set_Pixel ((SX + 0, SY + 0));
+               Screen.Set_Pixel ((SX + 1, SY + 0));
+               Screen.Set_Pixel ((SX - 1, SY + 0));
+               Screen.Set_Pixel ((SX + 0, SY + 1));
+               Screen.Set_Pixel ((SX + 0, SY - 1));
+            end if;
+         end;
+      end loop;
+   end Draw_Magic_Hat;
 
 end WNM.GUI.Menu.Drawing;

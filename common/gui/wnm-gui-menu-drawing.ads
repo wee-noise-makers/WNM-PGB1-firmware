@@ -20,6 +20,7 @@
 -------------------------------------------------------------------------------
 
 with MIDI;
+with HAL;
 
 with WNM.Screen;
 with WNM.Sample_Library;
@@ -132,4 +133,7 @@ package WNM.GUI.Menu.Drawing is
                             Show_Cut      : Boolean := False;
                             Show_Playhead : Boolean := False);
 
+   procedure Draw_Magic_Hat (X, Y : Integer;
+                             Animate : Boolean;
+                             Step    : HAL.UInt32);
 end WNM.GUI.Menu.Drawing;

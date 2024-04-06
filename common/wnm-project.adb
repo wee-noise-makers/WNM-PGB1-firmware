@@ -1684,10 +1684,80 @@ package body WNM.Project is
    -- Randomly_Pick_A_Progression --
    ---------------------------------
 
-   procedure Randomly_Pick_A_Progression is
+   procedure Randomly_Pick_A_Progression (Prog_Id : WNM.Chord_Progressions;
+                                          Scale_C : Scale_Choice;
+                                          Key_C   : Key_Choice)
+   is
+      use WNM.Chord_Settings;
+      use type MIDI.MIDI_Key;
+
+      pragma Compile_Time_Error
+        (Major_Progressions'Length > Rand_Percent'Last,
+         "Random values don't cover all progressions range");
+      pragma Compile_Time_Error
+        (Minor_Progressions'Length > Rand_Percent'Last,
+         "Random values don't cover all progressions range");
+      pragma Compile_Time_Error
+        (Modal_Progressions'Length > Rand_Percent'Last,
+         "Random values don't cover all progressions range");
+
+      Collection : access constant Progression_Collection := null;
+      Scale : Scale_Name;
+      Key  : MIDI.MIDI_Key;
    begin
-      --  https://github.com/ldrolez/free-midi-chords
-      null; -- TODO..
+      case Scale_C is
+         when Random =>
+            case UInt32 (WNM.Random) mod 3 is
+            when 0      => Scale := Major_Scale;
+            when 1      => Scale := Minor_Scale;
+            when others => Scale := Minor_Scale; --  TODO: modal
+            end case;
+         when Major =>
+            Scale := Major_Scale;
+         when Minor =>
+            Scale := Minor_Scale;
+      end case;
+
+      case Key_C is
+         when Random => Key := MIDI.C4 + MIDI.MIDI_Key (Random mod 12);
+         when C      => Key := MIDI.C4;
+         when Cs     => Key := MIDI.Cs4;
+         when D      => Key := MIDI.D4;
+         when Ds     => Key := MIDI.Ds4;
+         when E      => Key := MIDI.E4;
+         when F      => Key := MIDI.F4;
+         when Fs     => Key := MIDI.Fs4;
+         when G      => Key := MIDI.G4;
+         when Gs     => Key := MIDI.Gs4;
+         when A      => Key := MIDI.A4;
+         when As     => Key := MIDI.As4;
+         when B      => Key := MIDI.B4;
+      end case;
+
+      case Scale is
+         when Major_Scale => Collection := Major_Progressions'Access;
+         when Minor_Scale => Collection := Minor_Progressions'Access;
+         --  when ... => Collection := Modal_Progressions'Access;
+      end case;
+
+      declare
+         Collection_Len : constant Natural := Collection.all'Length;
+         Offset : constant Natural := Natural (WNM.Random) mod Collection_Len;
+         Index  : constant Integer := Collection.all'First + Offset;
+
+         Prog : Chord_Progression_Rec renames
+           G_Project.Progressions (Prog_Id);
+
+         C_Id : Chord_Slot_Id := Chord_Slot_Id'First;
+      begin
+         for Chord of Collection.all (Index).all loop
+            Prog.Chords (C_Id).Tonic := Tonic (Chord, Key, Scale);
+            Prog.Chords (C_Id).Name := Chord.Harmonic_Function;
+            Prog.Chords (C_Id).Duration := Steps_Per_Bar;
+            Prog.Len := C_Id;
+            C_Id := @ + 1;
+         end loop;
+      end;
    end Randomly_Pick_A_Progression;
 
    -----------------------

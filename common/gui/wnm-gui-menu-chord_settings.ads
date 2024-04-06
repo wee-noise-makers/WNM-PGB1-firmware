@@ -20,6 +20,7 @@
 -------------------------------------------------------------------------------
 
 with WNM.Project;
+with HAL;
 
 package WNM.GUI.Menu.Chord_Settings is
 
@@ -33,7 +34,7 @@ private
    subtype Part_Sub_Settings is WNM.Project.User_Part_Settings;
    function Part_Sub_Settings_Count is new Enum_Count (Part_Sub_Settings);
 
-   type Chord_Top_Settings is (Chord_Type);
+   type Chord_Top_Settings is (Prog_Edit, Add_Remove, Magic_Hat);
    function Chord_Top_Settings_Count is new Enum_Count (Chord_Top_Settings);
 
    subtype Chord_Sub_Settings is WNM.Project.User_Chord_Settings;
@@ -48,7 +49,9 @@ private
       --  Chord Progression
       Selected_Chord : Project.Chord_Slot_Id := Project.Chord_Slot_Id'First;
       Current_Chord_Setting : Chord_Sub_Settings := Chord_Sub_Settings'First;
-      Add_Remove_View : Boolean := False;
+      Top_Chord_Setting : Chord_Top_Settings := Chord_Top_Settings'First;
+
+      Hat_Anim_Step : HAL.UInt32 := 0;
    end record;
 
    overriding

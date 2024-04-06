@@ -51,16 +51,6 @@ package body WNM.GUI.Menu.Chord_Settings is
    -- To_Top --
    ------------
 
-   function To_Top (S : Chord_Sub_Settings) return Chord_Top_Settings
-   is (case S is
-          when WNM.Project.Tonic    => Chord_Type,
-          when WNM.Project.Name     => Chord_Type,
-          when WNM.Project.Duration => Chord_Type);
-
-   ------------
-   -- To_Top --
-   ------------
-
    function To_Top (S : Part_Sub_Settings) return Part_Top_Settings
    is (case S is
           when WNM.Project.Part_Patterns    => Part_Main,
@@ -211,50 +201,38 @@ package body WNM.GUI.Menu.Chord_Settings is
    is
       use WNM.Chord_Settings;
       use WNM.Project;
+      use type HAL.UInt32;
 
       Sub : constant Chord_Sub_Settings := This.Current_Chord_Setting;
-      Top : constant Chord_Top_Settings := To_Top (Sub);
+      Top : constant Chord_Top_Settings := This.Top_Chord_Setting;
 
       Len      : constant Project.Chord_Slot_Id :=
         WNM.Project.Progression_Length (Prog);
       Id : constant Chord_Slot_Id := This.Selected_Chord;
-      Add_Remove_View : constant Boolean := This.Add_Remove_View;
    begin
 
       Draw_Menu_Box ("Chord settings",
-                     Count => Natural (Len) + 1,
+                     Count => Natural (Len) + 2,
                      Index =>
-                       (if Add_Remove_View
-                        then Natural (Len)
-                        else Natural (Id) - 1));
+                       (case Top is
+                           when Prog_Edit  => Natural (Id) - 1,
+                           when Add_Remove => Natural (Len) + 0,
+                           when Magic_Hat  => Natural (Len) + 1));
 
-      if This.Add_Remove_View then
-         case Len is
-            when Chord_Slot_Id'First =>
-               Draw_Title ("A: add a chord",
-                           "");
-            when Chord_Slot_Id'Last =>
-               Draw_Title ("",
-                           "B: remove a chord");
-            when others =>
-               Draw_Title ("A: add a chord",
-                           "B: remove a chord");
-         end case;
-      else
-         declare
-            Tonic : constant MIDI.MIDI_Key :=
-              WNM.Project.Selected_Tonic (Prog, Id);
-            Name : constant WNM.Chord_Settings.Chord_Name :=
-              WNM.Project.Selected_Name (Prog, Id);
-            Duration : constant WNM.Duration_In_Steps :=
-              WNM.Project.Selected_Duration (Prog, Id);
+      case Top is
+         when Prog_Edit =>
+            declare
+               Tonic : constant MIDI.MIDI_Key :=
+                 WNM.Project.Selected_Tonic (Prog, Id);
+               Name : constant WNM.Chord_Settings.Chord_Name :=
+                 WNM.Project.Selected_Name (Prog, Id);
+               Duration : constant WNM.Duration_In_Steps :=
+                 WNM.Project.Selected_Duration (Prog, Id);
 
-            Notes : constant WNM.Chord_Settings.Chord_Notes :=
-              Tonic + WNM.Chord_Settings.Chords (Name);
-         begin
+               Notes : constant WNM.Chord_Settings.Chord_Notes :=
+                 Tonic + WNM.Chord_Settings.Chords (Name);
+            begin
 
-            case Top is
-            when Chord_Type =>
                Draw_MIDI_Note (Tonic,
                                Sub = WNM.Project.Tonic);
 
@@ -278,9 +256,33 @@ package body WNM.GUI.Menu.Chord_Settings is
                                              " ");
                   end loop;
                end;
+            end;
+
+         when Add_Remove =>
+            case Len is
+            when Chord_Slot_Id'First =>
+               Draw_Title ("A: add a chord",
+                           "");
+            when Chord_Slot_Id'Last =>
+               Draw_Title ("",
+                           "B: remove a chord");
+            when others =>
+               Draw_Title ("A: add a chord",
+                           "B: remove a chord");
             end case;
-         end;
-      end if;
+
+         when Magic_Hat =>
+            Draw_Title ("Magic Hat of chords", "");
+            Draw_Value ("Press A");
+
+            Draw_Magic_Hat (Box_Center.X + 15,
+                            Box_Top + 13,
+                            This.Hat_Anim_Step /= 0,
+                            This.Hat_Anim_Step);
+            if This.Hat_Anim_Step /= 0 then
+               This.Hat_Anim_Step := @ - 1;
+            end if;
+      end case;
 
    end Draw_Song_Chord;
 
@@ -406,16 +408,11 @@ package body WNM.GUI.Menu.Chord_Settings is
 
       This.Selected_Chord := Chord_Slot_Id'Min (This.Selected_Chord, Len);
 
-      case Event.Kind is
-         when Left_Press =>
+      case This.Top_Chord_Setting is
+         when Prog_Edit =>
 
-            if This.Add_Remove_View then
-               --  If we are in the add/remove view, go to the last chord of
-               --  the progression.
-               This.Selected_Chord := Len;
-               This.Add_Remove_View := False;
-               This.Current_Chord_Setting := Chord_Sub_Settings'Last;
-            else
+            case Event.Kind is
+            when Left_Press =>
                if This.Current_Chord_Setting = Chord_Sub_Settings'First
                  and then
                    This.Selected_Chord /= Chord_Slot_Id'First
@@ -424,15 +421,11 @@ package body WNM.GUI.Menu.Chord_Settings is
                end if;
 
                Prev (This.Current_Chord_Setting);
-            end if;
-         when Right_Press =>
-            if This.Add_Remove_View then
-               null;
-            else
+            when Right_Press =>
                if This.Current_Chord_Setting = Chord_Sub_Settings'Last then
 
                   if This.Selected_Chord = Len then
-                     This.Add_Remove_View := True;
+                     This.Top_Chord_Setting := Add_Remove;
                   else
                      This.Selected_Chord := @ + 1;
                      This.Current_Chord_Setting := Chord_Sub_Settings'First;
@@ -440,43 +433,68 @@ package body WNM.GUI.Menu.Chord_Settings is
                else
                   Next (This.Current_Chord_Setting);
                end if;
-            end if;
 
-         when Up_Press =>
-            WNM.Project.Next_Value (Prog,
-                                    This.Selected_Chord,
-                                    This.Current_Chord_Setting);
+            when Up_Press =>
+               WNM.Project.Next_Value (Prog,
+                                       This.Selected_Chord,
+                                       This.Current_Chord_Setting);
+            when Down_Press =>
+               WNM.Project.Prev_Value (Prog,
+                                       This.Selected_Chord,
+                                       This.Current_Chord_Setting);
 
-         when Down_Press =>
-            WNM.Project.Prev_Value (Prog,
-                                    This.Selected_Chord,
-                                    This.Current_Chord_Setting);
+            when Slider_Touch =>
+               Project.Set (Prog,
+                            This.Selected_Chord,
+                            This.Current_Chord_Setting,
+                            Event.Slider_Value);
 
-         when A_Press =>
-            if This.Add_Remove_View
-              and then
-                Len /= Chord_Slot_Id'Last
-            then
-               WNM.Project.Increase_Progession_Length (Prog);
-               This.Selected_Chord := WNM.Project.Progression_Length (Prog);
-               This.Add_Remove_View := False;
-            end if;
+            when others => null;
 
-         when B_Press =>
-            if This.Add_Remove_View
-              and then
-                Len /= Chord_Slot_Id'First
-            then
-               WNM.Project.Decrease_Progession_Length (Prog);
-               This.Selected_Chord := WNM.Project.Progression_Length (Prog);
-            end if;
+            end case;
 
-         when Slider_Touch =>
-            Project.Set (Prog,
-                         This.Selected_Chord,
-                         This.Current_Chord_Setting,
-                         Event.Slider_Value);
+         when Add_Remove =>
 
+            case Event.Kind is
+            when Left_Press =>
+               --  If we are in the add/remove view, go to the last chord of
+               --  the progression.
+               This.Selected_Chord := Len;
+               This.Current_Chord_Setting := Chord_Sub_Settings'Last;
+               This.Top_Chord_Setting := Prog_Edit;
+
+               when Right_Press =>
+                  This.Top_Chord_Setting := Magic_Hat;
+
+               when A_Press =>
+                  if Len /= Chord_Slot_Id'Last then
+                     WNM.Project.Increase_Progession_Length (Prog);
+                     This.Selected_Chord :=
+                       WNM.Project.Progression_Length (Prog);
+                  end if;
+
+               when B_Press =>
+                  if Len /= Chord_Slot_Id'First then
+                     WNM.Project.Decrease_Progession_Length (Prog);
+                     This.Selected_Chord :=
+                       WNM.Project.Progression_Length (Prog);
+                  end if;
+
+               when others => null;
+            end case;
+
+         when Magic_Hat =>
+
+            case Event.Kind is
+            when Left_Press =>
+               This.Top_Chord_Setting := Add_Remove;
+
+            when A_Press =>
+               This.Hat_Anim_Step := HAL.UInt32 (30 * 2);
+               Project.Randomly_Pick_A_Progression (Prog, Random, Random);
+
+            when others => null;
+            end case;
       end case;
    end On_Chord_Event;
 
