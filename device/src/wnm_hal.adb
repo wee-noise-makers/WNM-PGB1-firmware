@@ -39,7 +39,7 @@ with RP.DMA;
 with RP.ROM;
 with RP.PIO;
 with RP.ADC;
-with RP.Watchdog;
+--  with RP.Watchdog;
 with RP2040_SVD.Interrupts;
 
 with Noise_Nugget_SDK.WS2812;
@@ -65,20 +65,8 @@ package body WNM_HAL is
      (Row_Count    => 6,
       Column_Count => 5);
 
-
    package BM is new Noise_Nugget_SDK.Button_Matrix
      (Definition => BM_Definition,
-      --  Column_Pins => (1 => 15,
-      --                  2 => 20,
-      --                  3 => 26,
-      --                  4 => 28,
-      --                  5 => 29),
-      --  Row_Pins    => (1 => 21,
-      --                  2 => 22,
-      --                  3 => 23,
-      --                  4 => 24,
-      --                  5 => 25,
-      --                  6 => 27)
       Column_Pins => (1 => 18,
                       2 => 19,
                       3 => 26,
@@ -386,7 +374,7 @@ package body WNM_HAL is
         Noise_Nugget_SDK.Audio.Audio_Volume (Value);
 
    begin
-      Noise_Nugget_SDK.Audio.Set_Line_Volume (2, SDK_Value, SDK_Value);
+      Noise_Nugget_SDK.Audio.Set_Line_Volume (3, SDK_Value, SDK_Value);
    end Set_Line_In_Volume;
 
    -----------------------------
