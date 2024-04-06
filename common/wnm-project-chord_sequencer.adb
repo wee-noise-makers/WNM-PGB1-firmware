@@ -45,74 +45,6 @@ package body WNM.Project.Chord_Sequencer is
    procedure Update_Current;
    --  Update the current tonic, name, and chord notes
 
-   --  Init_Scale_Root : constant MIDI.MIDI_Key := MIDI.C4;
-   --  Init_Scale      : constant Scale_Name := Minor_Scale;
-   --  Init_Chords     : constant Chord_Arr :=
-   --    (1 => (Init_Scale_Root + Scales (Init_Scale)(0),
-   --           Substitutions (Scale_Chords (Init_Scale)(0)).Sub (1),
-   --           Default_Chord.Duration),
-   --
-   --     2 => (Init_Scale_Root + Scales (Init_Scale)(1),
-   --           Substitutions (Scale_Chords (Init_Scale)(1)).Sub (1),
-   --           Default_Chord.Duration),
-   --
-   --     3 => (Init_Scale_Root + Scales (Init_Scale)(2),
-   --           Substitutions (Scale_Chords (Init_Scale)(2)).Sub (1),
-   --           Default_Chord.Duration),
-   --
-   --     4 => (Init_Scale_Root + Scales (Init_Scale)(3),
-   --           Substitutions (Scale_Chords (Init_Scale)(3)).Sub (1),
-   --           Default_Chord.Duration),
-   --
-   --     5 => (Init_Scale_Root + Scales (Init_Scale)(4),
-   --           Substitutions (Scale_Chords (Init_Scale)(4)).Sub (1),
-   --           Default_Chord.Duration),
-   --
-   --     6 => (Init_Scale_Root + Scales (Init_Scale)(5),
-   --           Substitutions (Scale_Chords (Init_Scale)(5)).Sub (1),
-   --           Default_Chord.Duration),
-   --
-   --     7 => (Init_Scale_Root + Scales (Init_Scale)(6),
-   --           Substitutions (Scale_Chords (Init_Scale)(6)).Sub (1),
-   --           Default_Chord.Duration),
-   --
-   --     8 => (Init_Scale_Root + Scales (Init_Scale)(0),
-   --           Substitutions (Scale_Chords (Init_Scale)(0)).Sub (3),
-   --           Default_Chord.Duration),
-   --
-   --     9 => (Init_Scale_Root + Scales (Init_Scale)(0),
-   --           Substitutions (Scale_Chords (Init_Scale)(0)).Sub (2),
-   --           Default_Chord.Duration),
-   --
-   --     10 => (Init_Scale_Root + Scales (Init_Scale)(1),
-   --            Substitutions (Scale_Chords (Init_Scale)(1)).Sub (2),
-   --            Default_Chord.Duration),
-   --
-   --     11 => (Init_Scale_Root + Scales (Init_Scale)(2),
-   --            Substitutions (Scale_Chords (Init_Scale)(2)).Sub (2),
-   --            Default_Chord.Duration),
-   --
-   --     12 => (Init_Scale_Root + Scales (Init_Scale)(3),
-   --            Substitutions (Scale_Chords (Init_Scale)(3)).Sub (2),
-   --            Default_Chord.Duration),
-   --
-   --     13 => (Init_Scale_Root + Scales (Init_Scale)(4),
-   --            Substitutions (Scale_Chords (Init_Scale)(4)).Sub (2),
-   --            Default_Chord.Duration),
-   --
-   --     14 => (Init_Scale_Root + Scales (Init_Scale)(5),
-   --            Substitutions (Scale_Chords (Init_Scale)(5)).Sub (2),
-   --            Default_Chord.Duration),
-   --
-   --     15 => (Init_Scale_Root + Scales (Init_Scale)(6),
-   --            Substitutions (Scale_Chords (Init_Scale)(6)).Sub (2),
-   --            Default_Chord.Duration),
-   --
-   --     16 => (Init_Scale_Root + Scales (Init_Scale)(0),
-   --            Substitutions (Scale_Chords (Init_Scale)(0)).Sub (4),
-   --            Default_Chord.Duration)
-   --    );
-
    -------------------------
    -- Song_Start_Callback --
    -------------------------
@@ -138,11 +70,8 @@ package body WNM.Project.Chord_Sequencer is
       New_Prog : constant WNM.Chord_Progressions :=
         G_Project.Parts (Part).Progression;
    begin
-
-      --  Ada.Text_IO.Put_Line ("--------------------------------");
-      --  Ada.Text_IO.Put_Line ("Step callback");
       if New_Prog /= G_Play_State.Progression then
-         --  Ada.Text_IO.Put_Line ("New PROGRESSION");
+
          --  There's a new progression in town
          G_Play_State.Chord_Steps_Count := 1;
          G_Play_State.Progression := New_Prog;
@@ -158,8 +87,6 @@ package body WNM.Project.Chord_Sequencer is
               G_Project.Progressions (G_Play_State.Progression);
             Chord : Chord_Rec renames Prog.Chords (G_Play_State.Chord_Id);
          begin
-            --  Ada.Text_IO.Put_Line ("G_Steps_Count:" & G_Steps_Count'Img);
-            --  Ada.Text_IO.Put_Line ("Chord_Duration:" & Chord.Duration'Img);
             if G_Play_State.Chord_Steps_Count > Natural (Chord.Duration) then
                --  End of this chord, going to the next one
 
@@ -173,8 +100,6 @@ package body WNM.Project.Chord_Sequencer is
                G_Play_State.Chord_Steps_Count := 1;
 
                Update_Current;
-            else
-               G_Play_State.Chord_Steps_Count := @ + 1;
             end if;
          end;
       end if;

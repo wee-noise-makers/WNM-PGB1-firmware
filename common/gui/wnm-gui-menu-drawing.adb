@@ -1235,7 +1235,7 @@ package body WNM.GUI.Menu.Drawing is
       use WNM.Screen;
       use type HAL.UInt32;
 
-      Step_Per_Frames : constant := 5;
+      Step_Per_Frames : constant := 3;
       Frame_Count : constant HAL.UInt32 := Step_Per_Frames * 3;
       Still_Frame : constant HAL.UInt32 := 0;
       Frame : constant HAL.UInt32 := (if Animate
@@ -1264,22 +1264,24 @@ package body WNM.GUI.Menu.Drawing is
       end case;
 
       --  Random blinking stars
-      for Stars in 1 .. Random mod 4 loop
-         declare
-            SX : constant Natural := X + Natural (Random mod 25);
-            SY : constant Natural := Y + Natural (Random mod 25);
-         begin
-            if (Random mod 2) = 0 then
-               Screen.Set_Pixel ((SX, SY));
-            else
-               Screen.Set_Pixel ((SX + 0, SY + 0));
-               Screen.Set_Pixel ((SX + 1, SY + 0));
-               Screen.Set_Pixel ((SX - 1, SY + 0));
-               Screen.Set_Pixel ((SX + 0, SY + 1));
-               Screen.Set_Pixel ((SX + 0, SY - 1));
-            end if;
-         end;
-      end loop;
+      if Animate then
+         for Stars in 1 .. Random mod 4 loop
+            declare
+               SX : constant Natural := X + Natural (Random mod 25);
+               SY : constant Natural := Y + Natural (Random mod 25);
+            begin
+               if (Random mod 2) = 0 then
+                  Screen.Set_Pixel ((SX, SY));
+               else
+                  Screen.Set_Pixel ((SX + 0, SY + 0));
+                  Screen.Set_Pixel ((SX + 1, SY + 0));
+                  Screen.Set_Pixel ((SX - 1, SY + 0));
+                  Screen.Set_Pixel ((SX + 0, SY + 1));
+                  Screen.Set_Pixel ((SX + 0, SY - 1));
+               end if;
+            end;
+         end loop;
+      end if;
    end Draw_Magic_Hat;
 
 end WNM.GUI.Menu.Drawing;

@@ -460,6 +460,12 @@ package body WNM.Project.Step_Sequencer is
       Start_Time : Time.Time_Microseconds := Now;
       Offset_Chord : WNM.Chord_Settings.Chord_Notes;
    begin
+      --  Put_Line ("Play_Chord: " &
+      --              Key_Img (Chord (0)) &
+      --              " " & Key_Img (Chord (1)) &
+      --              " " & Key_Img (Chord (2)) &
+      --              " " & Key_Img (Chord (3)));
+
       for X in Chord'First .. Last_Note loop
          Offset_Chord (X) := Offset (Chord (X), Oct);
       end loop;

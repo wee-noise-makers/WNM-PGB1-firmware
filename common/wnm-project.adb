@@ -1719,18 +1719,18 @@ package body WNM.Project is
       end case;
 
       case Key_C is
-         when Random => Key := MIDI.C4 + MIDI.MIDI_Key (Random mod 12);
-         when C      => Key := MIDI.C4;
-         when Cs     => Key := MIDI.Cs4;
-         when D      => Key := MIDI.D4;
-         when Ds     => Key := MIDI.Ds4;
-         when E      => Key := MIDI.E4;
-         when F      => Key := MIDI.F4;
-         when Fs     => Key := MIDI.Fs4;
-         when G      => Key := MIDI.G4;
-         when Gs     => Key := MIDI.Gs4;
-         when A      => Key := MIDI.A4;
-         when As     => Key := MIDI.As4;
+         when Random => Key := MIDI.C3 + MIDI.MIDI_Key (Random mod 12);
+         when C      => Key := MIDI.C3;
+         when Cs     => Key := MIDI.Cs3;
+         when D      => Key := MIDI.D3;
+         when Ds     => Key := MIDI.Ds3;
+         when E      => Key := MIDI.E3;
+         when F      => Key := MIDI.F3;
+         when Fs     => Key := MIDI.Fs3;
+         when G      => Key := MIDI.G3;
+         when Gs     => Key := MIDI.Gs3;
+         when A      => Key := MIDI.A3;
+         when As     => Key := MIDI.As3;
          when B      => Key := MIDI.B4;
       end case;
 

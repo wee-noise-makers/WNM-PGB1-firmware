@@ -272,7 +272,7 @@ package body WNM.GUI.Menu.Chord_Settings is
             end case;
 
          when Magic_Hat =>
-            Draw_Title ("Magic Hat of chords", "");
+            Draw_Title ("Magic Hat of Chords", "");
             Draw_Value ("Press A");
 
             Draw_Magic_Hat (Box_Center.X + 15,
@@ -490,7 +490,7 @@ package body WNM.GUI.Menu.Chord_Settings is
                This.Top_Chord_Setting := Add_Remove;
 
             when A_Press =>
-               This.Hat_Anim_Step := HAL.UInt32 (30 * 2);
+               This.Hat_Anim_Step := HAL.UInt32 (30 * 1);
                Project.Randomly_Pick_A_Progression (Prog, Random, Random);
 
             when others => null;
