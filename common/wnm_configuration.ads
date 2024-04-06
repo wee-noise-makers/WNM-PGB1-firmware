@@ -1,4 +1,5 @@
 with Tresses.Resources;
+with HAL_Configuration;
 
 package WNM_Configuration is
 
@@ -44,10 +45,10 @@ package WNM_Configuration is
       Song_Button   => 2);
 
    package Audio is
-      Sample_Frequency            : constant := Tresses.Resources.SAMPLE_RATE;
-      Samples_Per_Buffer          : constant := 128;
-      Mixer_Buffer_Count          : constant := 3;
-      Input_Buffer_Count          : constant := 3;
+      Sample_Frequency   : constant := Tresses.Resources.SAMPLE_RATE;
+      Samples_Per_Buffer : constant := 128;
+      Mixer_Buffer_Count : constant := HAL_Configuration.Mixer_Buffer_Count;
+      Input_Buffer_Count : constant := HAL_Configuration.Input_Buffer_Count;
 
       Mono_Buffer_Size_In_Bytes   : constant := Samples_Per_Buffer * 2;
       Stereo_Buffer_Size_In_Bytes : constant := Samples_Per_Buffer * 4;

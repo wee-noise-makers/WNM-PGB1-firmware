@@ -12,7 +12,7 @@ with RP.Multicore.FIFO;
 with RP.Multicore.Spinlocks;
 with Cortex_M.NVIC;
 
-procedure WNM_PS1_Device is
+procedure WNM_PGB1_Device is
 begin
    --  Make sure we don't have data left in the FIFO after reset
    RP.Multicore.FIFO.Drain;
@@ -74,4 +74,4 @@ begin
    WNM_HAL.Set_Main_Volume (WNM_HAL.Init_Input_Volume);
 
    WNM.Tasks.Sequencer_Core;
-end WNM_PS1_Device;
+end WNM_PGB1_Device;
