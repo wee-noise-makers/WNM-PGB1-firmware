@@ -34,7 +34,7 @@ package WNM.Synth is
 
    Kick_Channel                : constant MIDI.MIDI_Channel := 1;
    Snare_Channel               : constant MIDI.MIDI_Channel := 2;
-   Cymbal_Channel              : constant MIDI.MIDI_Channel := 3;
+   Hihat_Channel               : constant MIDI.MIDI_Channel := 3;
    Bass_Channel                : constant MIDI.MIDI_Channel := 4;
    Lead_Channel                : constant MIDI.MIDI_Channel := 5;
    Chord_Channel               : constant MIDI.MIDI_Channel := 6;
@@ -121,10 +121,10 @@ package WNM.Synth is
    function Snare_Param_Short_Label (Id : Tresses.Param_Id)
                                      return Tresses.Short_Label;
 
-   function Cymbal_Param_Label (Id : Tresses.Param_Id)
-                                return String;
-   function Cymbal_Param_Short_Label (Id : Tresses.Param_Id)
-                                      return Tresses.Short_Label;
+   function Hihat_Param_Label (Id : Tresses.Param_Id)
+                               return String;
+   function Hihat_Param_Short_Label (Id : Tresses.Param_Id)
+                                     return Tresses.Short_Label;
 
    function Sampler_Param_Label (Id : Tresses.Param_Id)
                                  return String;

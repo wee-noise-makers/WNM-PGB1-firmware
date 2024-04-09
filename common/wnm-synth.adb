@@ -41,7 +41,7 @@ package body WNM.Synth is
 
    TK          : aliased Tresses.Drums.Kick.Instance;
    TS          : aliased WNM.Voices.Snare_Voice.Instance;
-   TC          : aliased Tresses.Drums.Cymbal.Instance;
+   HH          : aliased Tresses.Drums.Cymbal.Instance;
    Lead        : aliased Tresses.Voices.Macro.Instance;
    Bass        : aliased Tresses.Voices.Macro.Instance;
    Chord       : aliased WNM.Voices.Chord_Voice.Instance;
@@ -93,7 +93,7 @@ package body WNM.Synth is
         Sample2_Channel    => Sampler2'Access,
         Kick_Channel       => TK'Access,
         Snare_Channel      => TS'Access,
-        Cymbal_Channel     => TC'Access,
+        Hihat_Channel     => HH'Access,
         Lead_Channel       => Lead'Access,
         Bass_Channel       => Bass'Access,
         Chord_Channel      => Chord'Access,
@@ -558,12 +558,12 @@ package body WNM.Synth is
                       Volume => Volume_For_Chan (Snare_Channel),
                       Pan => Pan_For_Chan (Snare_Channel));
 
-         TC.Render (Buffer);
-         WNM_HAL.Mix (Output.L (FX_Send (Cymbal_Channel)),
-                      Output.R (FX_Send (Cymbal_Channel)),
+         HH.Render (Buffer);
+         WNM_HAL.Mix (Output.L (FX_Send (Hihat_Channel)),
+                      Output.R (FX_Send (Hihat_Channel)),
                       Input => Buffer,
-                      Volume => Volume_For_Chan (Cymbal_Channel),
-                      Pan => Pan_For_Chan (Cymbal_Channel));
+                      Volume => Volume_For_Chan (Hihat_Channel),
+                      Pan => Pan_For_Chan (Hihat_Channel));
 
          Lead.Render (Buffer, Aux_Buffer);
          WNM_HAL.Mix (Output.L (FX_Send (Lead_Channel)),
@@ -744,14 +744,14 @@ package body WNM.Synth is
    -- Cymbal_Param_Label --
    ------------------------
 
-   function Cymbal_Param_Label (Id : Tresses.Param_Id) return String
+   function Hihat_Param_Label (Id : Tresses.Param_Id) return String
    is (Tresses.Macro.Param_Label (Tresses.Drum_Cymbal, Id));
 
    ------------------------------
    -- Cymbal_Param_Short_Label --
    ------------------------------
 
-   function Cymbal_Param_Short_Label (Id : Tresses.Param_Id)
+   function Hihat_Param_Short_Label (Id : Tresses.Param_Id)
                                       return Tresses.Short_Label
    is (Tresses.Macro.Param_Short_Label (Tresses.Drum_Cymbal, Id));
 
