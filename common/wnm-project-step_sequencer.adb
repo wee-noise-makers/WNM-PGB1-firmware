@@ -365,20 +365,6 @@ package body WNM.Project.Step_Sequencer is
       end loop;
    end Process_CC_Values;
 
-   ------------------------
-   -- Do_Preview_Trigger --
-   ------------------------
-
-   procedure Do_Preview_Trigger (T : Tracks) is
-   begin
-      Process_CC_Values (Editing_Pattern, T, 1);
-      Play_Now (Time.Clock,
-                T,
-                Offset (MIDI.C4, G_Project.Tracks (T).Offset),
-                MIDI.MIDI_Data'Last,
-                Microseconds_Per_Beat);
-   end Do_Preview_Trigger;
-
    ---------------
    -- Play_Note --
    ---------------
@@ -779,6 +765,33 @@ package body WNM.Project.Step_Sequencer is
          Execute_Step;
       end if;
    end MIDI_Clock_Tick;
+
+   ------------------------
+   -- Do_Preview_Trigger --
+   ------------------------
+
+   procedure Do_Preview_Trigger (T : Tracks) is
+   begin
+      Process_CC_Values (Editing_Pattern, T, 1);
+      if Mode (T) = Chord_Mode then
+         Play_Chord (T           => T,
+                     Chord       => Chord_Sequencer.Current_Chord,
+                     Last_Note   => G_Project.Tracks (T).Notes_Per_Chord,
+                     Oct         => G_Project.Tracks (T).Offset,
+                     Velo        => MIDI.MIDI_Data'Last,
+                     Rep         => 0,
+                     Now         => Time.Clock,
+                     Shuffle     => 0,
+                     Duration    => Microseconds_Per_Beat,
+                     Repeat_Span => 0);
+      else
+         Play_Now (Time.Clock,
+                   T,
+                   Offset (MIDI.C4, G_Project.Tracks (T).Offset),
+                   MIDI.MIDI_Data'Last,
+                   Microseconds_Per_Beat);
+      end if;
+   end Do_Preview_Trigger;
 
    ---------------------
    -- Keyboard_Octave --
