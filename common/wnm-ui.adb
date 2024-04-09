@@ -602,6 +602,8 @@ package body WNM.UI is
    -----------------
 
    procedure Update_LEDs is
+      Beat_Step : constant Boolean :=
+        WNM.MIDI_Clock.Step in 1 .. 6 | 24 .. 30;
    begin
       LEDs.Turn_Off_All;
 
@@ -613,7 +615,8 @@ package body WNM.UI is
       -- Play LED --
       if WNM.MIDI_Clock.Running  then
          --  LEDs.Turn_On (Play);
-         if WNM.MIDI_Clock.Step in 1 | 24 then
+
+         if Beat_Step then
             LEDs.Turn_On (Play, LEDs.Play);
          end if;
       end if;
@@ -698,10 +701,10 @@ package body WNM.UI is
 
                --  Blinking playing Chord
                if WNM.MIDI_Clock.Running then
-                  if WNM.MIDI_Clock.Step in 1 | 24 then
+                  if Beat_Step then
                      LEDs.Turn_On
                        (To_Button (Project.Song_Part_Sequencer.Playing),
-                        LEDs.Play);
+                        LEDs.Violet);
                   end if;
                end if;
 
