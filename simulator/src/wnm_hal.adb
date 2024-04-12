@@ -174,6 +174,7 @@ package body WNM_HAL is
 
    procedure Set_Line_In_Volume (Volume : Audio_Volume) is null;
    procedure Set_Mic_Volumes (Headset, Internal : Audio_Volume) is null;
+   procedure Set_ADC_Volume (Volume : Audio_Volume) is null;
 
    ---------
    -- Mix --

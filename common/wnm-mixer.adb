@@ -467,6 +467,23 @@ package body WNM.Mixer is
    function Get_Line_In_Volume return Audio_Volume
    is (WNM.Persistent.Data.Line_In_Volume);
 
+   -----------------------
+   -- Change_ADC_Volume --
+   -----------------------
+
+   procedure Change_ADC_Volume (Volume_Delta : Integer) is
+   begin
+      Volume_Change (Persistent.Data.ADC_Volume, Volume_Delta);
+      WNM_HAL.Set_ADC_Volume (Persistent.Data.ADC_Volume);
+   end Change_ADC_Volume;
+
+   --------------------
+   -- Get_ADC_Volume --
+   --------------------
+
+   function Get_ADC_Volume return Audio_Volume
+   is (WNM.Persistent.Data.ADC_Volume);
+
    -------------------
    -- Input_FX_Next --
    -------------------

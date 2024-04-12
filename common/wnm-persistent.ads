@@ -29,6 +29,7 @@ package WNM.Persistent is
       Line_In_Volume      : Audio_Volume := Init_Input_Volume;
       Internal_Mic_Volume : Audio_Volume := Init_Input_Volume;
       Headset_Mic_Volume  : Audio_Volume := Init_Input_Volume;
+      ADC_Volume          : Audio_Volume := Init_Input_Volume;
       Input_FX            : FX_Kind      := FX_Kind'First;
    end record;
 
@@ -38,6 +39,7 @@ package WNM.Persistent is
       Line_In_Volume      => Init_Input_Volume,
       Internal_Mic_Volume => Init_Input_Volume,
       Headset_Mic_Volume  => Init_Input_Volume,
+      ADC_Volume          => Init_Input_Volume,
       Input_FX            => FX_Kind'First);
 
    Data : Persistent_Data := Default;

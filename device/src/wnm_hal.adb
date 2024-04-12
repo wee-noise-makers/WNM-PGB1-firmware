@@ -375,6 +375,7 @@ package body WNM_HAL is
 
    begin
       Noise_Nugget_SDK.Audio.Set_Line_Volume (3, SDK_Value, SDK_Value);
+      Noise_Nugget_SDK.Audio.Set_Line_Volume (2, 0.0, 0.0);
    end Set_Line_In_Volume;
 
    -----------------------------
@@ -400,11 +401,11 @@ package body WNM_HAL is
          HS_SDK_Value);
    end Set_Mic_Volumes;
 
-   ----------------------------
-   -- Set_Headset_Mic_Volume --
-   ----------------------------
+   --------------------
+   -- Set_ADC_Volume --
+   --------------------
 
-   procedure Set_Headset_Mic_Volume (Volume : Audio_Volume) is
+   procedure Set_ADC_Volume (Volume : Audio_Volume) is
       Value : constant Float :=
         Float (Volume) / Float (Audio_Volume'Last);
 
@@ -412,8 +413,8 @@ package body WNM_HAL is
         Noise_Nugget_SDK.Audio.Audio_Volume (Value);
 
    begin
-      Noise_Nugget_SDK.Audio.Set_Mic_Boost (SDK_Value, SDK_Value);
-   end Set_Headset_Mic_Volume;
+      Noise_Nugget_SDK.Audio.Set_ADC_Volume (SDK_Value, SDK_Value);
+   end Set_ADC_Volume;
 
    ---------
    -- Mix --

@@ -42,7 +42,8 @@ package body WNM.GUI.Menu.Inputs is
 
    function To_Top (S : Sub_Settings) return Top_Settings
    is (case S is
-          when Line_In_Volume .. Input_FX    => Audio_In,
+          when Line_In_Volume .. ADC_Volume  => Audio_In,
+          when Input_FX                      => Audio_In_FX,
           when MIDI_In_Mode .. MIDI_In_Clock => MIDI_In);
 
    ----------
@@ -51,14 +52,15 @@ package body WNM.GUI.Menu.Inputs is
 
    overriding
    procedure Draw (This   : in out Instance) is
-      Top_Setting : constant Top_Settings := To_Top (This.Current_Setting);
+      Sub : constant Sub_Settings := This.Current_Setting;
+      Top : constant Top_Settings := To_Top (Sub);
    begin
       Draw_Menu_Box
         ("Inputs settings",
          Count => Top_Settings_Count,
          Index => Top_Settings'Pos (To_Top (This.Current_Setting)));
 
-      case Top_Setting is
+      case Top is
          when Audio_In =>
 
             case This.Current_Setting is
@@ -77,24 +79,28 @@ package body WNM.GUI.Menu.Inputs is
             Draw_Volume (Id => WNM.Project.A,
                          Value => Mixer.Get_Line_In_Volume,
                          Label => "LIN",
-                         Selected =>
-                            This.Current_Setting = Line_In_Volume);
+                         Selected => Sub = Line_In_Volume);
 
             Draw_Volume (Id => WNM.Project.B,
                          Value => Mixer.Get_Internal_Mic_Volume,
                          Label => "MIC",
-                         Selected =>
-                            This.Current_Setting = Internal_Mic_Volume);
+                         Selected => Sub = Internal_Mic_Volume);
 
             Draw_Volume (Id => WNM.Project.C,
                          Value => Mixer.Get_Headset_Mic_Volume,
                          Label => "HSM",
-                         Selected =>
-                            This.Current_Setting = Headset_Mic_Volume);
+                         Selected => Sub = Headset_Mic_Volume);
 
-            Draw_FX (Id => WNM.Project.D,
+            Draw_Volume (Id => WNM.Project.D,
+                         Value => Mixer.Get_ADC_Volume,
+                         Label => "ADC",
+                         Selected => Sub = ADC_Volume);
+
+         when Audio_In_FX =>
+
+            Draw_FX (Id => WNM.Project.A,
                      Value => Mixer.Input_FX,
-                     Selected => This.Current_Setting = Input_FX);
+                     Selected => Sub = Input_FX);
 
          when MIDI_In =>
             Draw_Title ("MIDI In", "");
@@ -124,6 +130,8 @@ package body WNM.GUI.Menu.Inputs is
                   Mixer.Change_Internal_Mic_Volume (1);
                when Headset_Mic_Volume =>
                   Mixer.Change_Headset_Mic_Volume (1);
+               when ADC_Volume =>
+                  Mixer.Change_ADC_Volume (1);
                when Input_FX =>
                   Mixer.Input_FX_Next;
                when others =>
@@ -138,6 +146,8 @@ package body WNM.GUI.Menu.Inputs is
                   Mixer.Change_Internal_Mic_Volume (-1);
                when Headset_Mic_Volume =>
                   Mixer.Change_Headset_Mic_Volume (-1);
+               when ADC_Volume =>
+                  Mixer.Change_ADC_Volume (-1);
                when Input_FX =>
                   Mixer.Input_FX_Prev;
                when others =>

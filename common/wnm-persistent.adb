@@ -32,14 +32,16 @@ package body WNM.Persistent is
                              P_Line_In_Volume,
                              P_Internal_Mic_Volume,
                              P_Headset_Mic_Volume,
-                             P_Input_FX);
+                             P_Input_FX,
+                             P_ADC_Volume);
 
    for Persistent_Token use (P_Last_Project        => 0,
                              P_Main_Volume         => 1,
                              P_Line_In_Volume      => 2,
                              P_Internal_Mic_Volume => 3,
                              P_Headset_Mic_Volume  => 4,
-                             P_Input_FX            => 5);
+                             P_Input_FX            => 5,
+                             P_ADC_Volume          => 6);
 
    ----------
    -- Save --
@@ -69,6 +71,8 @@ package body WNM.Persistent is
                Output.Push (Out_UInt (Data.Headset_Mic_Volume));
             when P_Input_FX =>
                Output.Push (Data.Input_FX'Enum_Rep);
+            when P_ADC_Volume =>
+               Output.Push (Out_UInt (Data.Headset_Mic_Volume));
          end case;
 
          exit when Output.Status /= Ok;
@@ -123,6 +127,8 @@ package body WNM.Persistent is
                Read_Volume (Input, Data.Headset_Mic_Volume);
             when P_Input_FX =>
                Read (Input, Data.Input_FX);
+            when P_ADC_Volume  =>
+               Read_Volume (Input, Data.ADC_Volume);
          end case;
 
          exit when Input.Status /= Ok;
@@ -132,6 +138,7 @@ package body WNM.Persistent is
       WNM_HAL.Set_Line_In_Volume (Data.Line_In_Volume);
       WNM_HAL.Set_Mic_Volumes (Data.Headset_Mic_Volume,
                                Data.Internal_Mic_Volume);
+      WNM_HAL.Set_ADC_Volume (Data.ADC_Volume);
 
       Input.Close;
    end Load;

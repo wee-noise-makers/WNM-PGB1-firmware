@@ -65,6 +65,9 @@ package WNM.Mixer is
    procedure Change_Line_In_Volume (Volume_Delta : Integer);
    function Get_Line_In_Volume return Audio_Volume;
 
+   procedure Change_ADC_Volume (Volume_Delta : Integer);
+   function Get_ADC_Volume return Audio_Volume;
+
    procedure Input_FX_Next;
    procedure Input_FX_Prev;
    function Input_FX return FX_Kind;

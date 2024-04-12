@@ -26,6 +26,7 @@ package WNM.GUI.Menu.Inputs is
 private
 
    type Top_Settings is (Audio_In,
+                         Audio_In_FX,
                          MIDI_In);
 
    function Top_Settings_Count is new Enum_Count (Top_Settings);
@@ -34,8 +35,10 @@ private
      (Line_In_Volume,
       Internal_Mic_Volume,
       Headset_Mic_Volume,
+      ADC_Volume,
       Input_FX,
-      MIDI_In_Mode, MIDI_In_Clock);
+      MIDI_In_Mode,
+      MIDI_In_Clock);
 
    function Sub_Settings_Count is new Enum_Count (Sub_Settings);
 

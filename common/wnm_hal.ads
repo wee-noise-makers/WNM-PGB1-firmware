@@ -99,6 +99,7 @@ package WNM_HAL is
    procedure Set_Main_Volume (Volume : Audio_Volume);
    procedure Set_Line_In_Volume (Volume : Audio_Volume);
    procedure Set_Mic_Volumes (Headset, Internal : Audio_Volume);
+   procedure Set_ADC_Volume (Volume : Audio_Volume);
 
    procedure Mix (Out_L, Out_R : in out Mono_Buffer;
                   Input        :        Mono_Buffer;

@@ -64,11 +64,11 @@ begin
       raise Program_Error with "MDM";
    end if;
 
+   Noise_Nugget_SDK.Audio.Set_ADC_Volume (0.0, 0.0);
    Noise_Nugget_SDK.Audio.Enable_Mic (True, True);
    Noise_Nugget_SDK.Audio.Mixer_To_Output (False, False);
-   Noise_Nugget_SDK.Audio.Set_ADC_Volume (1.0, 1.0);
 
-   WNM_HAL.Set_Line_In_Volume (WNM_HAL.Init_Volume);
+   WNM_HAL.Set_Line_In_Volume (WNM_HAL.Init_Input_Volume);
    WNM_HAL.Set_Mic_Volumes (WNM_HAL.Init_Input_Volume,
                             WNM_HAL.Init_Input_Volume);
    WNM_HAL.Set_Main_Volume (WNM_HAL.Init_Input_Volume);
