@@ -71,7 +71,7 @@ private
                   Arp_Notes | CC_Default_A .. CC_Default_B,
 
           --  Single engine
-          when Project.Kick_Mode | Project.Cymbal_Mode | Project.Chord_Mode |
+          when Project.Kick_Mode | Project.Hihat_Mode | Project.Chord_Mode |
                Project.Sample1_Mode | Project.Sample2_Mode =>
              S in Track_Mode | Volume | Pan | Master_FX | Arp_Mode |
                   Track_Octave_Offset | Shuffle |
