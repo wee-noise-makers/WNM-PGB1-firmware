@@ -427,14 +427,15 @@ package body WNM.Sample_Recording is
             Rec_Start_Point : constant Sample_Point_Index :=
               Sample_Point_Index (Frame_Head) * QOA.Points_Per_Frame;
 
+            Play_Offset : constant Sample_Point_Count :=
+              Play_Start_Offset + Index;
+
             Real_Index : constant Sample_Point_Index :=
               Sample_Point_Index
-                ((Natural (Rec_Start_Point) +
-                   Natural (Play_Start_Offset) +
-                   Natural (Index)) mod
+                ((Natural (Rec_Start_Point) + Natural (Play_Offset)) mod
                    Natural (Sample_Point_Count'Last));
          begin
-            Last_Played_Offset := Real_Index;
+            Last_Played_Offset := Play_Offset;
 
             return QOA.Decode_Single_Sample
               (Cache,

@@ -1216,11 +1216,9 @@ package body WNM.GUI.Menu.Drawing is
       end if;
 
       if Show_Playhead and then Play_Index /= Waveform_Index'First then
-         Screen.Draw_Line ((Wave_Left + Integer (Play_Index),
-                           Cut_Top),
-
-                           (Wave_Left + Integer (Play_Index),
-                            Cut_Top - Wave_Height));
+         Screen.Draw_Line
+           ((Wave_Left + Integer (Play_Index) - 1, Cut_Top),
+            (Wave_Left + Integer (Play_Index) - 1, Cut_Top - Wave_Height));
       end if;
    end Draw_Waveform;
 
