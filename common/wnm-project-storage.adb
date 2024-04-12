@@ -426,8 +426,12 @@ package body WNM.Project.Storage is
                case Set is
                   when Part_Patterns =>
                      for T_Id in Tracks loop
-                        Output.Push
-                          (Out_UInt (Part.Pattern_Select (T_Id)'Enum_Rep));
+                        if Part.Track_Mute (T_Id) then
+                           Output.Push (Out_UInt (0));
+                        else
+                           Output.Push
+                             (Out_UInt (Part.Pattern_Select (T_Id)'Enum_Rep));
+                        end if;
                      end loop;
 
                   when Part_Length =>
@@ -673,7 +677,6 @@ package body WNM.Project.Storage is
 
       procedure Read is new File_In.Read_Gen_Enum (Boolean);
       procedure Read is new File_In.Read_Gen_Int (Song_Element);
-      procedure Read is new File_In.Read_Gen_Int (Patterns);
       procedure Read is new File_In.Read_Gen_Int (WNM.Duration_In_Steps);
 
       Elt : Song_Element;
@@ -713,7 +716,21 @@ package body WNM.Project.Storage is
             case S is
                when Part_Patterns =>
                   for Track_Id in Tracks loop
-                     Read (Input, Part.Pattern_Select (Track_Id));
+                     declare
+                        P_Id : In_UInt;
+                     begin
+                        Input.Read (P_Id);
+
+                        if P_Id not in
+                          In_UInt (Patterns'First) .. In_UInt (Patterns'Last)
+                        then
+                           Part.Track_Mute (Track_Id) := True;
+                           Part.Pattern_Select (Track_Id) := Patterns'First;
+                        else
+                           Part.Track_Mute (Track_Id) := False;
+                           Part.Pattern_Select (Track_Id) := Patterns (P_Id);
+                        end if;
+                     end;
                   end loop;
 
                when Part_Length =>
