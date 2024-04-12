@@ -596,8 +596,18 @@ package body WNM_HAL is
    -------------------
 
    procedure Send_External (Msg : MIDI.Message) is
+      use MIDI;
    begin
-      External_MIDI.Send (Msg);
+      if Msg.Kind = MIDI.Sys
+        and then Msg.Cmd in
+          Timming_Tick | Stop_Song | Start_Song | Continue_Song
+      then
+         -- Filter out timming and song messages.
+         -- TODO: this should be controlled by the user.
+         null;
+      else
+         External_MIDI.Send (Msg);
+      end if;
    end Send_External;
 
    ------------------
