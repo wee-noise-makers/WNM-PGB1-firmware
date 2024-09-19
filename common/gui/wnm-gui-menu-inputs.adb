@@ -19,6 +19,7 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with WNM.Audio_Routing;
 with WNM.Mixer;
 with WNM.Project;
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
@@ -42,7 +43,7 @@ package body WNM.GUI.Menu.Inputs is
 
    function To_Top (S : Sub_Settings) return Top_Settings
    is (case S is
-          when Line_In_Volume .. ADC_Volume  => Audio_In,
+          when Line_In_Mute .. Input_Volume  => Audio_In,
           when Input_FX                      => Audio_In_FX,
           when MIDI_In_Mode .. MIDI_In_Clock => MIDI_In);
 
@@ -64,40 +65,47 @@ package body WNM.GUI.Menu.Inputs is
          when Audio_In =>
 
             case This.Current_Setting is
-               when Line_In_Volume =>
+               when Line_In_Mute =>
                   Draw_Title ("Line Input", "");
-               when Internal_Mic_Volume =>
+               when Internal_Mic_Mute =>
                   Draw_Title ("Internal Microphone", "");
-               when Headset_Mic_Volume =>
+               when Headset_Mic_Mute =>
                   Draw_Title ("Headset Microphone", "");
-               when Input_FX =>
-                  Draw_Title ("FX: " & Img (Mixer.Input_FX), "");
+               when Input_Volume =>
+                  Draw_Title ("Input Volume", "");
                when others =>
                   null;
             end case;
 
             Draw_Volume (Id => WNM.Project.A,
-                         Value => Mixer.Get_Line_In_Volume,
+                         Value => (if Audio_Routing.Get_Line_In_Mute
+                                   then 0
+                                   else WNM_HAL.Audio_Volume'Last),
                          Label => "LIN",
-                         Selected => Sub = Line_In_Volume);
+                         Selected => Sub = Line_In_Mute);
 
             Draw_Volume (Id => WNM.Project.B,
-                         Value => Mixer.Get_Internal_Mic_Volume,
+                         Value => (if Audio_Routing.Get_Internal_Mic_Mute
+                                   then 0
+                                   else WNM_HAL.Audio_Volume'Last),
                          Label => "MIC",
-                         Selected => Sub = Internal_Mic_Volume);
+                         Selected => Sub = Internal_Mic_Mute);
 
             Draw_Volume (Id => WNM.Project.C,
-                         Value => Mixer.Get_Headset_Mic_Volume,
+                         Value => (if Audio_Routing.Get_Headset_Mic_Mute
+                                   then 0
+                                   else WNM_HAL.Audio_Volume'Last),
                          Label => "HSM",
-                         Selected => Sub = Headset_Mic_Volume);
+                         Selected => Sub = Headset_Mic_Mute);
 
             Draw_Volume (Id => WNM.Project.D,
-                         Value => Mixer.Get_ADC_Volume,
-                         Label => "ADC",
-                         Selected => Sub = ADC_Volume);
+                         Value => Audio_Routing.Get_ADC_Volume,
+                         Label => "VOL",
+                         Selected => Sub = Input_Volume);
 
          when Audio_In_FX =>
 
+            Draw_Title ("Input FX: " & Img (Mixer.Input_FX), "");
             Draw_FX (Id => WNM.Project.A,
                      Value => Mixer.Input_FX,
                      Selected => Sub = Input_FX);
@@ -124,14 +132,14 @@ package body WNM.GUI.Menu.Inputs is
 
          when Up_Press =>
             case This.Current_Setting is
-               when Line_In_Volume =>
-                  Mixer.Change_Line_In_Volume (1);
-               when Internal_Mic_Volume =>
-                  Mixer.Change_Internal_Mic_Volume (1);
-               when Headset_Mic_Volume =>
-                  Mixer.Change_Headset_Mic_Volume (1);
-               when ADC_Volume =>
-                  Mixer.Change_ADC_Volume (1);
+               when Line_In_Mute =>
+                  Audio_Routing.Toggle_Line_In_Mute;
+               when Internal_Mic_Mute =>
+                  Audio_Routing.Toggle_Internal_Mic_Mute;
+               when Headset_Mic_Mute =>
+                  Audio_Routing.Toggle_Headset_Mic_Mute;
+               when Input_Volume =>
+                  Audio_Routing.Change_ADC_Volume (1);
                when Input_FX =>
                   Mixer.Input_FX_Next;
                when others =>
@@ -140,14 +148,14 @@ package body WNM.GUI.Menu.Inputs is
 
          when Down_Press =>
             case This.Current_Setting is
-               when Line_In_Volume =>
-                  Mixer.Change_Line_In_Volume (-1);
-               when Internal_Mic_Volume =>
-                  Mixer.Change_Internal_Mic_Volume (-1);
-               when Headset_Mic_Volume =>
-                  Mixer.Change_Headset_Mic_Volume (-1);
-               when ADC_Volume =>
-                  Mixer.Change_ADC_Volume (-1);
+               when Line_In_Mute =>
+                  Audio_Routing.Toggle_Line_In_Mute;
+               when Internal_Mic_Mute =>
+                  Audio_Routing.Toggle_Internal_Mic_Mute;
+               when Headset_Mic_Mute =>
+                  Audio_Routing.Toggle_Headset_Mic_Mute;
+               when Input_Volume =>
+                  Audio_Routing.Change_ADC_Volume (-1);
                when Input_FX =>
                   Mixer.Input_FX_Prev;
                when others =>

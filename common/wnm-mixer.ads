@@ -52,22 +52,6 @@ package WNM.Mixer is
    procedure Next_In_Buffer (Buffer             : out System.Address;
                              Stereo_Point_Count : out HAL.UInt32);
 
-   procedure Change_Main_Volume (Volume_Delta : Integer);
-   procedure Set_Main_Volume (Volume : Audio_Volume);
-   function Get_Main_Volume return Audio_Volume;
-
-   procedure Change_Internal_Mic_Volume (Volume_Delta : Integer);
-   function Get_Internal_Mic_Volume return Audio_Volume;
-
-   procedure Change_Headset_Mic_Volume (Volume_Delta : Integer);
-   function Get_Headset_Mic_Volume return Audio_Volume;
-
-   procedure Change_Line_In_Volume (Volume_Delta : Integer);
-   function Get_Line_In_Volume return Audio_Volume;
-
-   procedure Change_ADC_Volume (Volume_Delta : Integer);
-   function Get_ADC_Volume return Audio_Volume;
-
    procedure Input_FX_Next;
    procedure Input_FX_Prev;
    function Input_FX return FX_Kind;
@@ -87,8 +71,5 @@ package WNM.Mixer is
 
    procedure Enter_Sample_Rec_Mode (Mode : Sample_Rec_Mode);
    function Get_Sample_Rec_Mode return Sample_Rec_Mode;
-
-   type Sample_Rec_Inputs is (Line_In, Internal_Mic, Headset_Mic);
-   Sample_Rec_Input : Sample_Rec_Inputs := Sample_Rec_Inputs'First;
 
 end WNM.Mixer;

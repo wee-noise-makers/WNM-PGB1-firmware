@@ -160,4 +160,13 @@ package body WNM.File_System.LEB128_File_Out is
       This.Error := Write (A'Address, A'Length);
    end Push;
 
+   ----------
+   -- Push --
+   ----------
+
+   procedure Push (This : in out Instance; A : Boolean) is
+   begin
+      Instance'Class (This).Push (Out_UInt (if A then 1 else 0));
+   end Push;
+
 end WNM.File_System.LEB128_File_Out;

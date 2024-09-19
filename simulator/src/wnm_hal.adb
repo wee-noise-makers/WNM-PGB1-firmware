@@ -80,6 +80,13 @@ package body WNM_HAL is
    is (0);
 
    ---------
+   -- TP2 --
+   ---------
+
+   function TP3 return HAL.UInt32
+   is (0);
+
+   ---------
    -- Set --
    ---------
 
@@ -151,14 +158,7 @@ package body WNM_HAL is
       end loop;
    end Update_Screen;
 
-   ------------------------
-   -- Select_Audio_Input --
-   ------------------------
-
-   procedure Select_Audio_Input (Kind : Audio_Input_Kind) is
-   begin
-      null;
-   end Select_Audio_Input;
+   procedure Select_Audio_Output (Kind : Audio_Output_Kind) is null;
 
    -----------------------
    -- Set_Master_Volume --
@@ -172,9 +172,18 @@ package body WNM_HAL is
       ASFML_Sim.Main_Volume := Step * Integer_16 (Volume);
    end Set_Main_Volume;
 
-   procedure Set_Line_In_Volume (Volume : Audio_Volume) is null;
-   procedure Set_Mic_Volumes (Headset, Internal : Audio_Volume) is null;
-   procedure Set_ADC_Volume (Volume : Audio_Volume) is null;
+   ----------------------
+   -- Set_Input_Volume --
+   ----------------------
+
+   procedure Set_Input_Volume (Volume : Audio_Volume) is null;
+
+   ----------
+   -- Mute --
+   ----------
+
+   procedure Mute (Kind : Audio_Input_Kind; Mute : Boolean := True)
+   is null;
 
    ---------
    -- Mix --
@@ -444,24 +453,32 @@ package body WNM_HAL is
    procedure Synth_CPU_Check_Hold
    is null;
 
+   --------------------------
+   -- Read_Battery_Voltage --
+   --------------------------
+
+   procedure Read_Battery_Voltage
+   is null;
+
    ------------------------
    -- Battery_Millivolts --
    ------------------------
 
    function Battery_Millivolts return Natural
-   is (4000);
+   is (3500);
 
-   ----------------------
-   -- Set_Indicator_IO --
-   ----------------------
+   --------------------
+   -- Read_HP_Detect --
+   --------------------
 
-   procedure Set_Indicator_IO (Id : Indicator_IO_Line) is null;
+   procedure Read_HP_Detect is null;
 
-   ------------------------
-   -- Clear_Indicator_IO --
-   ------------------------
+   ---------------
+   -- HP_Detect --
+   ---------------
 
-   procedure Clear_Indicator_IO (Id : Indicator_IO_Line) is null;
+   function HP_Detect return Boolean
+   is (False);
 
 begin
    if not RtMIDI.Valid (MIDI_Out) then

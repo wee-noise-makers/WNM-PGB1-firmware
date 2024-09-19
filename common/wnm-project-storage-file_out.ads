@@ -59,7 +59,6 @@ private package WNM.Project.Storage.File_Out is
    procedure Push (This : in out Instance; A : MIDI.MIDI_Data);
    procedure Push (This : in out Instance; A : WNM.Duration_In_Steps);
    procedure Push (This : in out Instance; A : WNM.Pattern_Length);
-   procedure Push (This : in out Instance; A : Boolean);
 
 private
 

@@ -51,6 +51,7 @@ package WNM.File_System.LEB128_File_In is
 
    procedure Read (This : in out Instance; A : out In_UInt);
    procedure Read (This : in out Instance; A : out String);
+   procedure Read (This : in out Instance; A : out Boolean);
 
    generic
       type T is (<>);

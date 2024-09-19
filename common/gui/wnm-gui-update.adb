@@ -30,7 +30,7 @@ with WNM.GUI.Menu.Drawing;  use WNM.GUI.Menu.Drawing;
 with WNM.GUI.Logo;
 with WNM.GUI.Popup;
 with WNM.Project;
-with WNM.Mixer;
+with WNM.Audio_Routing;
 with WNM.Time;
 
 package body WNM.GUI.Update is
@@ -63,12 +63,13 @@ package body WNM.GUI.Update is
       Print (X_Offset    => B,
              Y_Offset    => 0,
              Str         => Project.Track_Name);
+      Menu.Drawing.Draw_Battery (Anim_Step);
       Screen.Draw_H_Line (8);
 
       case WNM.UI.Input_GUI_Mode is
          when WNM.UI.Volume_BPM_Mute | WNM.UI.Volume_BPM_Solo =>
             BPM := Integer (WNM.Project.Get_BPM);
-            Volume := Integer (WNM.Mixer.Get_Main_Volume);
+            Volume := Integer (WNM.Audio_Routing.Get_Main_Volume);
 
             WNM.GUI.Parameters.Print_Percentage
               (Slot  => WNM.GUI.Parameters.Up,

@@ -534,6 +534,8 @@ package body WNM.Project.Step_Sequencer is
       Octave : constant Octave_Offset := Add_Sat (Step.Oct, Track.Offset);
    begin
 
+      Process_CC_Values (P, T, S);
+
       case Step.Note_Mode is
          when Note =>
             Play_Note (T, Offset (Step.Note, Octave),
@@ -588,8 +590,8 @@ package body WNM.Project.Step_Sequencer is
          S : Step_Rec renames
            G_Project.Steps (Track)(Pattern)(Step);
       begin
-         --  Send CC first
-         Process_CC_Values (Pattern, Track, Step);
+         --  --  Send CC first
+         --  Process_CC_Values (Pattern, Track, Step);
 
          if not UI.Muted (Track)
            and then
@@ -619,6 +621,18 @@ package body WNM.Project.Step_Sequencer is
                when One_Of_Five =>
                   Condition := Pattern_Counter (Track, Pattern) mod 5 = 0;
             end case;
+
+            if not Condition and then Track in 1 .. 3 then
+               if WNM.UI.FX_On (B9) then
+                  Condition := Random <= 5;
+               elsif WNM.UI.FX_On (B10) then
+                  Condition := Random <= 50;
+               elsif WNM.UI.FX_On (B11) then
+                  Condition := Random <= 75;
+               elsif WNM.UI.FX_On (B12) then
+                  Condition := True;
+               end if;
+            end if;
 
             --  Play step?
             if Condition then

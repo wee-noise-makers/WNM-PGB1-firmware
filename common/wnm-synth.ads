@@ -93,9 +93,6 @@ package WNM.Synth is
    procedure Push_Copro_Event (Msg : WNM.Coproc.Message);
    procedure Process_Coproc_Events;
 
-   procedure Set_Passthrough (Kind : Audio_Input_Kind);
-   function Get_Passthrough return Audio_Input_Kind;
-
    -----------
    -- Synth --
    -----------

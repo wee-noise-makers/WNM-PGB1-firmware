@@ -29,17 +29,17 @@ package body WNM.Persistent is
 
    type Persistent_Token is (P_Last_Project,
                              P_Main_Volume,
-                             P_Line_In_Volume,
-                             P_Internal_Mic_Volume,
-                             P_Headset_Mic_Volume,
+                             P_Line_In_Mute,
+                             P_Internal_Mic_Mute,
+                             P_Headset_Mic_Mute,
                              P_Input_FX,
                              P_ADC_Volume);
 
    for Persistent_Token use (P_Last_Project        => 0,
                              P_Main_Volume         => 1,
-                             P_Line_In_Volume      => 2,
-                             P_Internal_Mic_Volume => 3,
-                             P_Headset_Mic_Volume  => 4,
+                             P_Line_In_Mute        => 2,
+                             P_Internal_Mic_Mute   => 3,
+                             P_Headset_Mic_Mute    => 4,
                              P_Input_FX            => 5,
                              P_ADC_Volume          => 6);
 
@@ -63,16 +63,16 @@ package body WNM.Persistent is
                Output.Push (Out_UInt (Data.Last_Project));
             when P_Main_Volume =>
                Output.Push (Out_UInt (Data.Main_Volume));
-            when P_Line_In_Volume =>
-               Output.Push (Out_UInt (Data.Line_In_Volume));
-            when P_Internal_Mic_Volume =>
-               Output.Push (Out_UInt (Data.Internal_Mic_Volume));
-            when P_Headset_Mic_Volume =>
-               Output.Push (Out_UInt (Data.Headset_Mic_Volume));
+            when P_Line_In_Mute =>
+               Output.Push (Data.Line_In_Mute);
+            when P_Internal_Mic_Mute =>
+               Output.Push (Data.Internal_Mic_Mute);
+            when P_Headset_Mic_Mute =>
+               Output.Push (Data.Headset_Mic_Mute);
             when P_Input_FX =>
                Output.Push (Data.Input_FX'Enum_Rep);
             when P_ADC_Volume =>
-               Output.Push (Out_UInt (Data.Headset_Mic_Volume));
+               Output.Push (Out_UInt (Data.ADC_Volume));
          end case;
 
          exit when Output.Status /= Ok;
@@ -119,12 +119,12 @@ package body WNM.Persistent is
                Read_Prj (Input, Data.Last_Project);
             when P_Main_Volume =>
                Read_Volume (Input, Data.Main_Volume);
-            when P_Line_In_Volume =>
-               Read_Volume (Input, Data.Line_In_Volume);
-            when P_Internal_Mic_Volume =>
-               Read_Volume (Input, Data.Internal_Mic_Volume);
-            when P_Headset_Mic_Volume  =>
-               Read_Volume (Input, Data.Headset_Mic_Volume);
+            when P_Line_In_Mute =>
+               Input.Read (Data.Line_In_Mute);
+            when P_Internal_Mic_Mute =>
+               Input.Read (Data.Internal_Mic_Mute);
+            when P_Headset_Mic_Mute  =>
+               Input.Read (Data.Headset_Mic_Mute);
             when P_Input_FX =>
                Read (Input, Data.Input_FX);
             when P_ADC_Volume  =>
@@ -135,10 +135,10 @@ package body WNM.Persistent is
       end loop;
 
       WNM_HAL.Set_Main_Volume (Data.Main_Volume);
-      WNM_HAL.Set_Line_In_Volume (Data.Line_In_Volume);
-      WNM_HAL.Set_Mic_Volumes (Data.Headset_Mic_Volume,
-                               Data.Internal_Mic_Volume);
-      WNM_HAL.Set_ADC_Volume (Data.ADC_Volume);
+      WNM_HAL.Mute (WNM_HAL.Line_In, Data.Line_In_Mute);
+      WNM_HAL.Mute (WNM_HAL.Headset_Mic, Data.Headset_Mic_Mute);
+      WNM_HAL.Mute (WNM_HAL.Internal_Mic, Data.Internal_Mic_Mute);
+      WNM_HAL.Set_Input_Volume (Data.ADC_Volume);
 
       Input.Close;
    end Load;

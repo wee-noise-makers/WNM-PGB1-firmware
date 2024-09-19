@@ -42,7 +42,7 @@ private
    use Main_Sample_Edit_Mode_Next;
 
    type Edit_Sample_Menu is new Menu_Window with record
-      Mode         : Main_Sample_Edit_Mode := Edit_Sample;
+      Mode         : Main_Sample_Edit_Mode := New_Sample;
       State        : Edit_Sample_State;
       Sample_Entry : Sample_Index := Invalid_Sample_Entry;
    end record;

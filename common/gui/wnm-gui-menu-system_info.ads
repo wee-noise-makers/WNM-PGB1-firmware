@@ -34,6 +34,7 @@ private
                       Prj_Last_Save_Size,
                       Raise_Exception,
                       Touch,
+                      HP_Detect,
                       Battery);
 
    package Next_Info_Kind is new Enum_Next (Info_Kind, Wrap => True);

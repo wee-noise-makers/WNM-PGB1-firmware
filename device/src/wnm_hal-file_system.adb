@@ -94,9 +94,7 @@ package body WNM_HAL.File_System is
         with Address => Buffer;
 
    begin
-      Set_Indicator_IO (GP16);
       Dst_Buffer := Src_Buffer;
-      Clear_Indicator_IO (GP16);
       return Littlefs.LFS_ERR_OK;
    end Read;
 
@@ -113,7 +111,6 @@ package body WNM_HAL.File_System is
    is
       pragma Unreferenced (C);
    begin
-      Set_Indicator_IO (GP17);
       if Off /= 0 then
          raise Program_Error with "LFS Prog: Off /= 0";
       end if;
@@ -145,8 +142,6 @@ package body WNM_HAL.File_System is
          end;
       end if;
 
-      Clear_Indicator_IO (GP17);
-
       return Littlefs.LFS_ERR_OK;
    end Prog;
 
@@ -160,15 +155,11 @@ package body WNM_HAL.File_System is
    is
       pragma Unreferenced (C);
    begin
-      Set_Indicator_IO (GP18);
-
       WNM_HAL.Wait_Synth_CPU_Hold;
 
       RP.Flash.Erase (Block_ID_To_Flash_Offset (Block), LFS_Block_Size);
 
       WNM_HAL.Release_Synth_CPU_Hold;
-
-      Clear_Indicator_IO (GP18);
 
       return Littlefs.LFS_ERR_OK;
    end Erase;

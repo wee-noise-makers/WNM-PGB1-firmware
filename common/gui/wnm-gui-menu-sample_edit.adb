@@ -26,9 +26,14 @@ with WNM.GUI.Menu.Yes_No_Dialog;
 with WNM.GUI.Menu.Audio_Input_Select;
 with WNM.GUI.Menu.Recording;
 with WNM.GUI.Menu.Drawing;
+with WNM.GUI.Bitmap_Fonts;
 
 with WNM.Mixer;
 with WNM.Sample_Recording;
+with WNM.Screen;
+
+with new_sample_icon;
+with edit_sample_icon;
 
 package body WNM.GUI.Menu.Sample_Edit is
 
@@ -49,8 +54,40 @@ package body WNM.GUI.Menu.Sample_Edit is
 
    overriding
    procedure Draw (This : in out Edit_Sample_Menu) is
+
+      Spacing : constant := 15;
+      X_New : constant Natural :=
+        (Screen.Width - (2 * new_sample_icon.Data.W + Spacing)) / 2;
+
+      X_Edit : constant Natural :=
+        X_New + new_sample_icon.Data.W + Spacing;
+
+      Y_Icons : constant := 18;
    begin
-      Drawing.Draw_Title ("Select Mode", This.Mode'Img);
+      Screen.Copy_Bitmap (new_sample_icon.Data,
+                          X_New, Y_Icons,
+                          Invert_Color => This.Mode = New_Sample);
+
+      Screen.Copy_Bitmap (edit_sample_icon.Data,
+                          X_Edit, Y_Icons,
+                          Invert_Color => This.Mode = Edit_Sample);
+
+      case This.Mode is
+         when New_Sample =>
+            Screen.Draw_Rect (((X_New - 1, Y_Icons - 1),
+                              new_sample_icon.Data.W + 2,
+                              new_sample_icon.Data.H + 2));
+         when Edit_Sample =>
+            Screen.Draw_Rect (((X_Edit - 1, Y_Icons - 1),
+                              edit_sample_icon.Data.W + 2,
+                              edit_sample_icon.Data.H + 2));
+      end case;
+
+      Drawing.Draw_Str ((Screen.Width - 10 * Bitmap_Fonts.Width) / 2,
+                        Drawing.Box_Bottom - 8,
+                        (case This.Mode is
+                            when Edit_Sample => "Edit Sample",
+                            when New_Sample  => "New Sample"));
    end Draw;
 
    --------------
@@ -65,9 +102,12 @@ package body WNM.GUI.Menu.Sample_Edit is
       case Event.Kind is
          when A_Press =>
             case This.Mode is
+
             when New_Sample =>
                This.State := Select_Input;
+               Mixer.Enter_Sample_Rec_Mode (Mixer.Preview);
                Audio_Input_Select.Push_Window;
+
             when Edit_Sample =>
                This.State := Select_Sample;
                This.Sample_Entry := Invalid_Sample_Entry;
@@ -216,21 +256,20 @@ package body WNM.GUI.Menu.Sample_Edit is
             null; -- Stay on the current window
 
          when Select_Input =>
-            Audio_Input_Select.Push_Window;
             Mixer.Enter_Sample_Rec_Mode (Mixer.Preview);
+            Audio_Input_Select.Push_Window;
 
          when Record_Sample =>
-            Recording.Push_Window;
-            Sample_Recording.Reset;
             Mixer.Enter_Sample_Rec_Mode (Mixer.Rec);
+            Recording.Push_Window;
 
          when Select_Sample =>
-            Sample_Select.Push_Window ("Sample to edit");
             Mixer.Enter_Sample_Rec_Mode (Mixer.Preview);
+            Sample_Select.Push_Window ("Sample to edit");
 
          when Trim =>
-            Sample_Trim.Push_Window;
             Mixer.Enter_Sample_Rec_Mode (Mixer.Play);
+            Sample_Trim.Push_Window;
 
          when Confirm =>
             Yes_No_Dialog.Set_Title ("Save Sample?");

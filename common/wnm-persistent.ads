@@ -26,9 +26,9 @@ package WNM.Persistent is
    type Persistent_Data is record
       Last_Project        : WNM.Project.Library.Prj_Index;
       Main_Volume         : Audio_Volume := Init_Volume;
-      Line_In_Volume      : Audio_Volume := Init_Input_Volume;
-      Internal_Mic_Volume : Audio_Volume := Init_Input_Volume;
-      Headset_Mic_Volume  : Audio_Volume := Init_Input_Volume;
+      Line_In_Mute        : Boolean := False;
+      Internal_Mic_Mute   : Boolean := True;
+      Headset_Mic_Mute    : Boolean := True;
       ADC_Volume          : Audio_Volume := Init_Input_Volume;
       Input_FX            : FX_Kind      := FX_Kind'First;
    end record;
@@ -36,9 +36,9 @@ package WNM.Persistent is
    Default : constant Persistent_Data :=
      (Last_Project        => WNM.Project.Library.Invalid_Prj_Entry,
       Main_Volume         => Init_Volume,
-      Line_In_Volume      => Init_Input_Volume,
-      Internal_Mic_Volume => Init_Input_Volume,
-      Headset_Mic_Volume  => Init_Input_Volume,
+      Line_In_Mute        => False,
+      Internal_Mic_Mute   => True,
+      Headset_Mic_Mute    => True,
       ADC_Volume          => Init_Input_Volume,
       Input_FX            => FX_Kind'First);
 

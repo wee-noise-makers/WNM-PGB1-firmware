@@ -25,7 +25,7 @@ with RP.PIO.Touch_Sense;
 
 package WNM_HAL.Touch_Filter is
 
-   Data_Count : constant := 5;
+   Data_Count : constant := 4;
    type Data_Index is mod Data_Count;
    type Data_Array is array (Data_Index) of HAL.UInt32;
 

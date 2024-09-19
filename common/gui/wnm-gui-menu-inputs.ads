@@ -32,10 +32,10 @@ private
    function Top_Settings_Count is new Enum_Count (Top_Settings);
 
    type Sub_Settings is
-     (Line_In_Volume,
-      Internal_Mic_Volume,
-      Headset_Mic_Volume,
-      ADC_Volume,
+     (Line_In_Mute,
+      Internal_Mic_Mute,
+      Headset_Mic_Mute,
+      Input_Volume,
       Input_FX,
       MIDI_In_Mode,
       MIDI_In_Clock);

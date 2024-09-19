@@ -39,6 +39,7 @@ package WNM.Screen is
 
    procedure Set_Pixel (Pt : Point; On : Boolean := True);
    procedure Fill_Rect (R : Rect; On : Boolean := True);
+   procedure Draw_Rect (R : Rect; On : Boolean := True);
    procedure Draw_Line (Start, Stop : Point; On : Boolean := True);
    procedure Draw_Circle (Center : Point; Radius : Natural);
    procedure Draw_H_Line (Y : Natural; On : Boolean := True);
@@ -54,6 +55,11 @@ package WNM.Screen is
    procedure Copy_Bitmap (Bmp          : Bitmap;
                           X, Y         : Integer;
                           Invert_Color : Boolean := False);
+
+   procedure Copy_Bitmap_Sub (Bmp          : Bitmap;
+                              X, Y         : Integer;
+                              Sub          : Rect;
+                              Invert_Color : Boolean := False);
 
    procedure Sleep;
    procedure Wakeup;

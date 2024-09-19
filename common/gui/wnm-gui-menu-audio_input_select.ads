@@ -19,13 +19,18 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+private with WNM_HAL;
+
 package WNM.GUI.Menu.Audio_Input_Select is
 
    procedure Push_Window;
 
 private
 
-   type Input_Select_Window is new Menu_Window with null record;
+   type Input_Select_Window is new Menu_Window with record
+      Sample_Rec_Input : WNM_HAL.Audio_Input_Kind :=
+        WNM_HAL.Audio_Input_Kind'First;
+   end record;
 
    overriding
    procedure Draw (This : in out Input_Select_Window);

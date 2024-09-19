@@ -40,7 +40,7 @@ package body WNM.GUI.Logo is
    procedure Draw_On_Screen (Anim_Step : HAL.UInt2) is
    begin
       WNM.Screen.Clear;
-      Copy_Bitmap (wnm_logo_text.Data, Left, Top);
+      Copy_Bitmap (wnm_logo_text.Data, Left, Top, Invert_Color => True);
 
       WNM.Screen.Draw_Line (Start     => (Left, Top + 9),
                             Stop      => (Left + 29, Top + 9));
@@ -52,7 +52,7 @@ package body WNM.GUI.Logo is
                       when 1 => wnm_logo_wave_2.Data,
                       when 2 => wnm_logo_wave_3.Data,
                       when 3 => wnm_logo_wave_4.Data),
-                   Left + 30, Top + 7);
+                   Left + 30, Top + 7, Invert_Color => True);
    end Draw_On_Screen;
 
 end WNM.GUI.Logo;

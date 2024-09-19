@@ -132,8 +132,6 @@ package body WNM.Synth is
    Recording_Source : Rec_Source;
    Recording_Size   : Natural;
 
-   Passthrough : Audio_Input_Kind := Line_In;
-
    G_CPU_Load : CPU_Load := 0.0 with Volatile, Atomic;
    G_Max_CPU_Load : CPU_Load := 0.0 with Volatile, Atomic;
    G_Count_Missed_Deadlines : HAL.UInt32 := 0 with Volatile, Atomic;
@@ -273,9 +271,7 @@ package body WNM.Synth is
 
             when WNM.Coproc.Buffer_Available =>
 
-               Set_Indicator_IO (GP19);
                Next_Points (WNM.Mixer.Mixer_Buffers (Msg.Buffer_Id));
-               Clear_Indicator_IO (GP19);
 
                --  Send the buffers back to main CPU
                WNM.Coproc.Push_To_Main (Msg);
@@ -295,7 +291,6 @@ package body WNM.Synth is
                      case Msg.MIDI_Evt.Kind is
                      when MIDI.Note_On =>
 
-                        Set_Indicator_IO (GP16);
                         declare
                            Key : constant MIDI_Key := Msg.MIDI_Evt.Key;
                         begin
@@ -327,7 +322,6 @@ package body WNM.Synth is
                            end if;
                         end;
 
-                        Clear_Indicator_IO (GP16);
                      when MIDI.Note_Off =>
 
                         declare
@@ -633,28 +627,7 @@ package body WNM.Synth is
          end if;
       end;
 
-      WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP19);
-
    end Next_Points;
-
-   ---------------------
-   -- Set_Passthrough --
-   ---------------------
-
-   procedure Set_Passthrough (Kind : Audio_Input_Kind) is
-   begin
-      Select_Audio_Input (Kind);
-      Passthrough := Kind;
-   end Set_Passthrough;
-
-   ---------------------
-   -- Get_Passthrough --
-   ---------------------
-
-   function Get_Passthrough return Audio_Input_Kind is
-   begin
-      return Passthrough;
-   end Get_Passthrough;
 
    ----------------------
    -- Lead_Engine_Last --

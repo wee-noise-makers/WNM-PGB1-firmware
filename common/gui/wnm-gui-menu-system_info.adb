@@ -92,8 +92,16 @@ package body WNM.GUI.Menu.System_Info is
             begin
                Drawing.Draw_Title
                  ("Touch sensor", TP_Img'Image (TP_Img (Val)));
-               Drawing.Draw_Value (WNM_HAL.TP1'Img & " " & WNM_HAL.TP2'Img);
+               Drawing.Draw_Value (WNM_HAL.TP1'Img & " " &
+                                   WNM_HAL.TP2'Img & " " &
+                                   WNM_HAL.TP3'Img);
             end;
+
+         when HP_Detect =>
+            Drawing.Draw_Title ("Head Phone", "");
+            Drawing.Draw_Value (if WNM_HAL.HP_Detect
+                                then "Detected"
+                                else "Not Detected");
 
          when Battery =>
             Drawing.Draw_Title ("Battery", "");

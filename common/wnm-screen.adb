@@ -74,6 +74,26 @@ package body WNM.Screen is
    end Fill_Rect;
 
    ---------------
+   -- Draw_Rect --
+   ---------------
+
+   procedure Draw_Rect (R : Rect; On : Boolean := True) is
+      TL : constant Point :=
+        (R.Position.X, R.Position.Y);
+      TR : constant Point :=
+        (R.Position.X + R.Width - 1, R.Position.Y);
+      BL : constant Point :=
+        (R.Position.X, R.Position.Y + R.Height - 1);
+      BR : constant Point :=
+        (R.Position.X + R.Width - 1, R.Position.Y + R.Height - 1);
+   begin
+      Draw_Line (TL, TR, On => On);
+      Draw_Line (TR, BR, On => On);
+      Draw_Line (BL, BR, On => On);
+      Draw_Line (TL, BL, On => On);
+   end Draw_Rect;
+
+   ---------------
    -- Draw_Line --
    ---------------
 
@@ -198,10 +218,35 @@ package body WNM.Screen is
       for A in 0 .. Bmp.W - 1 loop
          for B in 0 .. Bmp.H - 1 loop
             Set_Pixel ((X + A, Y + B),
-                       Data (1 + A + B * Bmp.W) = Invert_Color);
+                       Data (1 + A + B * Bmp.W) /= Invert_Color);
          end loop;
       end loop;
    end Copy_Bitmap;
+
+   ---------------------
+   -- Copy_Bitmap_Sub --
+   ---------------------
+
+   procedure Copy_Bitmap_Sub (Bmp          : Bitmap;
+                              X, Y         : Integer;
+                              Sub          : Rect;
+                              Invert_Color : Boolean := False)
+   is
+      type Bit_Array is array (Positive range <>) of Boolean
+        with Pack;
+
+      Data : Bit_Array (1 .. Bmp.W * Bmp.H)
+        with Address => Bmp.Data'Address;
+
+   begin
+      for A in 0 .. Sub.Width - 1 loop
+         for B in 0 .. Sub.Height - 1 loop
+            Set_Pixel ((X + A, Y + B),
+                       Data (1 + Sub.Position.X + A +
+                         (Sub.Position.Y + B) * Bmp.W) /= Invert_Color);
+         end loop;
+      end loop;
+   end Copy_Bitmap_Sub;
 
    -----------
    -- Sleep --

@@ -33,6 +33,7 @@ package WNM_HAL is
    function Touch_Strip_State return Touch_Data;
    function TP1 return HAL.UInt32;
    function TP2 return HAL.UInt32;
+   function TP3 return HAL.UInt32;
 
    ----------
    -- LEDs --
@@ -86,8 +87,8 @@ package WNM_HAL is
    type Stereo_Buffer is array (1 .. Audio.Samples_Per_Buffer) of Stereo_Point
      with Pack, Size => Audio.Stereo_Buffer_Size_In_Bytes * 8;
 
-   type Audio_Input_Kind is (None, Line_In);
-   procedure Select_Audio_Input (Kind : Audio_Input_Kind);
+   type Audio_Output_Kind is (Headphones, Speakers);
+   procedure Select_Audio_Output (Kind : Audio_Output_Kind);
 
    type Audio_Volume is range 0 .. 100;
    Init_Volume : constant Audio_Volume := 70;
@@ -97,9 +98,10 @@ package WNM_HAL is
    Init_Pan : constant Audio_Pan := 50;
 
    procedure Set_Main_Volume (Volume : Audio_Volume);
-   procedure Set_Line_In_Volume (Volume : Audio_Volume);
-   procedure Set_Mic_Volumes (Headset, Internal : Audio_Volume);
-   procedure Set_ADC_Volume (Volume : Audio_Volume);
+   procedure Set_Input_Volume (Volume : Audio_Volume);
+
+   type Audio_Input_Kind is (Line_In, Internal_Mic, Headset_Mic);
+   procedure Mute (Kind : Audio_Input_Kind; Mute : Boolean := True);
 
    procedure Mix (Out_L, Out_R : in out Mono_Buffer;
                   Input        :        Mono_Buffer;
@@ -175,7 +177,6 @@ package WNM_HAL is
 
    function Shutdown_Requested return Boolean;
    procedure Power_Down;
-
    procedure Enter_DFU_Mode;
 
    --------------
@@ -192,7 +193,7 @@ package WNM_HAL is
    --  Writing to the flash storage disables read access for a short period of
    --  time. During this periode the synth CPU must not execute code or read
    --  data from the flash. The following subprograms provide a way for the
-   --  sequencre CPU to request the synth CPU to hold during flash operations.
+   --  sequencer CPU to request the synth CPU to hold during flash operations.
 
    procedure Wait_Synth_CPU_Hold;
    --  This procedure will request the synth CPU to hold and only return when
@@ -209,14 +210,23 @@ package WNM_HAL is
    -- Battery --
    -------------
 
+   procedure Read_Battery_Voltage;
+
    function Battery_Millivolts return Natural;
 
-   -----------
-   -- Debug --
-   -----------
+   ----------------------
+   -- Headphone Detect --
+   ----------------------
 
-   type Indicator_IO_Line is (GP16, GP17, GP18, GP19);
-   procedure Set_Indicator_IO (Id : Indicator_IO_Line);
-   procedure Clear_Indicator_IO (Id : Indicator_IO_Line);
+   procedure Read_HP_Detect;
+   --  HP detect line is on an I2C IO expander, reading the state requires
+   --  I2C coms and takes a bit of time. To avoid concurent use of the I2C
+   --  peripherial we want run the query only from the sequencer CPU tick
+   --  handler. On the other hand we may want to use the value at different
+   --  places in the code (e.g. the GUI). So this procedure is only reading
+   --  the state from the IO expander and stores it into a variable. To read
+   --  the variable use the function below from anywhere in the code.
+
+   function HP_Detect return Boolean;
 
 end WNM_HAL;

@@ -42,6 +42,7 @@ package WNM.File_System.LEB128_File_Out is
 
    procedure Push (This : in out Instance; A : Out_UInt);
    procedure Push (This : in out Instance; A : String);
+   procedure Push (This : in out Instance; A : Boolean);
 
 private
 

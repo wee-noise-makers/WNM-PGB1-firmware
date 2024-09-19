@@ -44,10 +44,20 @@ with cut_2;
 with magic_hat_1;
 with magic_hat_2;
 with magic_hat_3;
+with battery_100;
+with battery_90;
+with battery_80;
+with battery_70;
+with battery_60;
+with battery_50;
+with battery_40;
+with battery_30;
+with battery_20;
+with battery_10;
+with battery_0;
 
 package body WNM.GUI.Menu.Drawing is
 
-   Title_Y_Offset : constant := 10;
    Scroll_Bar_Y_Offset : constant := 19;
 
    Value_Text_Y : constant := Box_Bottom - 11;
@@ -55,6 +65,18 @@ package body WNM.GUI.Menu.Drawing is
    Title_Text_Y : constant := Box_Top + 4;
 
    Arrow_Y_Offset : constant := Box_Top - Bitmap_Fonts.Height - 2;
+
+   --------------
+   -- Draw_Str --
+   --------------
+
+   procedure Draw_Str (X, Y : Integer;
+                       Str  : String)
+   is
+      VX : Integer := X;
+   begin
+      Bitmap_Fonts.Print (VX, Y, Str);
+   end Draw_Str;
 
    -------------------
    -- Draw_Menu_Box --
@@ -623,16 +645,14 @@ package body WNM.GUI.Menu.Drawing is
          Screen.Copy_Bitmap
            (lfo_sync.Data,
             Bar_Left,
-            Value_Text_Y - 2,
-            Invert_Color => True);
+            Value_Text_Y - 2);
       end if;
 
       if Loo = On then
          Screen.Copy_Bitmap
            (lfo_loop.Data,
             Bar_Left + 5,
-            Value_Text_Y - 2,
-            Invert_Color => True);
+            Value_Text_Y - 2);
       end if;
 
       X := Bar_Left - 1;
@@ -640,22 +660,22 @@ package body WNM.GUI.Menu.Drawing is
       case Shape is
          when Sine =>
             Screen.Copy_Bitmap
-              (lfo_sine.Data, X, Y, Invert_Color => True);
+              (lfo_sine.Data, X, Y);
          when Ramp_Up =>
             Screen.Copy_Bitmap
-              (lfo_ramp_up.Data, X, Y, Invert_Color => True);
+              (lfo_ramp_up.Data, X, Y);
          when Ramp_Down =>
             Screen.Copy_Bitmap
-              (lfo_ramp_down.Data, X, Y, Invert_Color => True);
+              (lfo_ramp_down.Data, X, Y);
          when Exp_Up =>
             Screen.Copy_Bitmap
-              (lfo_exp_up.Data, X, Y, Invert_Color => True);
+              (lfo_exp_up.Data, X, Y);
          when Exp_Down =>
             Screen.Copy_Bitmap
-              (lfo_exp_down.Data, X, Y, Invert_Color => True);
+              (lfo_exp_down.Data, X, Y);
          when Triangle =>
             Screen.Copy_Bitmap
-              (lfo_triangle.Data, X, Y, Invert_Color => True);
+              (lfo_triangle.Data, X, Y);
       end case;
 
    end Draw_LFO_Shape;
@@ -787,20 +807,15 @@ package body WNM.GUI.Menu.Drawing is
       Y := Bar_Top;
       case Value is
          when Bypass =>
-            Screen.Copy_Bitmap
-              (fx_bypass.Data, X, Y, Invert_Color => True);
+            Screen.Copy_Bitmap (fx_bypass.Data, X, Y);
          when Overdrive =>
-            Screen.Copy_Bitmap
-              (fx_overdrive.Data, X, Y, Invert_Color => True);
+            Screen.Copy_Bitmap (fx_overdrive.Data, X, Y);
          when Filter =>
-            Screen.Copy_Bitmap
-              (fx_filter.Data, X, Y, Invert_Color => True);
+            Screen.Copy_Bitmap (fx_filter.Data, X, Y);
          when Bitcrusher =>
-            Screen.Copy_Bitmap
-              (fx_bitcrusher.Data, X, Y, Invert_Color => True);
+            Screen.Copy_Bitmap (fx_bitcrusher.Data, X, Y);
          when Reverb =>
-            Screen.Copy_Bitmap
-              (fx_reverb.Data, X, Y, Invert_Color => True);
+            Screen.Copy_Bitmap (fx_reverb.Data, X, Y);
       end case;
 
    end Draw_FX;
@@ -925,14 +940,11 @@ package body WNM.GUI.Menu.Drawing is
       Y := Bar_Top;
       case Mode is
          when Project.Low_Pass =>
-            Screen.Copy_Bitmap
-              (filter_lp.Data, X, Y, Invert_Color => True);
+            Screen.Copy_Bitmap (filter_lp.Data, X, Y);
          when Project.High_Pass =>
-            Screen.Copy_Bitmap
-              (filter_hp.Data, X, Y, Invert_Color => True);
+            Screen.Copy_Bitmap (filter_hp.Data, X, Y);
          when Project.Band_Pass =>
-            Screen.Copy_Bitmap
-              (filter_bp.Data, X, Y, Invert_Color => True);
+            Screen.Copy_Bitmap (filter_bp.Data, X, Y);
       end case;
 
    end Draw_Filter_Mode;
@@ -1193,7 +1205,7 @@ package body WNM.GUI.Menu.Drawing is
          Copy_Bitmap (cut_2.Data,
                       X            => X - cut_2.Data.W / 2,
                       Y            => Y,
-                      Invert_Color => False);
+                      Invert_Color => True);
 
          --  Dot vertical line
          for V in Y - Integer (Waveform_Point'Last) .. Y - 1 loop
@@ -1281,5 +1293,56 @@ package body WNM.GUI.Menu.Drawing is
          end loop;
       end if;
    end Draw_Magic_Hat;
+
+   ------------------
+   -- Draw_Battery --
+   ------------------
+
+   procedure Draw_Battery (Step : HAL.UInt32) is
+      use HAL;
+
+      X : constant Integer := Screen_Width - battery_100.Data.W - 1;
+      Y : constant Integer := 0;
+
+      Blink_Rate_0 : constant := 10;
+      Blink_Rate_10 : constant := 15;
+      Blink_Rate_20 : constant := 30;
+
+      Millivolts : constant Natural := WNM_HAL.Battery_Millivolts;
+   begin
+      if Millivolts <= 2500 then
+
+         if Step mod Blink_Rate_0 < Blink_Rate_0 / 2 then -- Blink
+            Screen.Copy_Bitmap (battery_0.Data, X, Y);
+         end if;
+
+      elsif Millivolts <= 3000 then
+         if Step mod Blink_Rate_10 < Blink_Rate_10 / 2 then -- Blink
+            Screen.Copy_Bitmap (battery_10.Data, X, Y);
+         end if;
+
+      elsif Millivolts <= 3200 then
+         if Step mod Blink_Rate_20 < Blink_Rate_20 / 2 then -- Blink
+            Screen.Copy_Bitmap (battery_20.Data, X, Y);
+         end if;
+
+      elsif Millivolts <= 3220 then
+         Screen.Copy_Bitmap (battery_30.Data, X, Y);
+      elsif Millivolts <= 3250 then
+         Screen.Copy_Bitmap (battery_40.Data, X, Y);
+      elsif Millivolts <= 3300 then
+         Screen.Copy_Bitmap (battery_50.Data, X, Y);
+      elsif Millivolts <= 3400 then
+         Screen.Copy_Bitmap (battery_60.Data, X, Y);
+      elsif Millivolts <= 3500 then
+         Screen.Copy_Bitmap (battery_70.Data, X, Y);
+      elsif Millivolts <= 3600 then
+         Screen.Copy_Bitmap (battery_80.Data, X, Y);
+      elsif Millivolts <= 3700 then
+         Screen.Copy_Bitmap (battery_90.Data, X, Y);
+      else
+         Screen.Copy_Bitmap (battery_100.Data, X, Y);
+      end if;
+   end Draw_Battery;
 
 end WNM.GUI.Menu.Drawing;

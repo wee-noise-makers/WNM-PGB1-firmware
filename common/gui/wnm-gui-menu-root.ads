@@ -27,16 +27,9 @@ private
 
    type Menu_Items is (Projects,
                        Inputs,
-                       --  Create_Sample,
-                       --  Change_Sample,
-                       --  Set_Passthrough,
                        Test_Text_Input,
-                       --  Load,
-                       --  Save,
-                       --  Settings,
-                       System_Info,
                        DFU_Mode,
-                       Shutdown);
+                       System_Info);
 
    function Menu_Items_Count is new Enum_Count (Menu_Items);
 

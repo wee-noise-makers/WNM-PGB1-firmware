@@ -28,7 +28,7 @@ with WNM.GUI.Menu.Root;
 with WNM.LEDs;
 with WNM.Time;
 with WNM.UI.Logs;
-with WNM.Mixer;
+with WNM.Audio_Routing;
 
 with HAL; use HAL;
 
@@ -103,9 +103,9 @@ package body WNM.UI is
             when Volume_BPM_Mute | Volume_BPM_Solo =>
                case B is
                   when PAD_Up =>
-                     WNM.Mixer.Change_Main_Volume (1);
+                     WNM.Audio_Routing.Change_Main_Volume (1);
                   when PAD_Down =>
-                     WNM.Mixer.Change_Main_Volume (-1);
+                     WNM.Audio_Routing.Change_Main_Volume (-1);
                   when PAD_Left =>
                      WNM.Project.Change_BPM (-1);
                   when PAD_Right =>
@@ -585,7 +585,7 @@ package body WNM.UI is
          if TP.Touch then
             case Current_Input_Mode is
                when Volume_BPM_Mute | Volume_BPM_Solo =>
-                  WNM.Mixer.Set_Main_Volume
+                  WNM.Audio_Routing.Set_Main_Volume
                     (Audio_Volume (TP.Value * Float (Audio_Volume'Last)));
                when FX_Alt =>
                   Project.Alt_Slider_Set (TP.Value);

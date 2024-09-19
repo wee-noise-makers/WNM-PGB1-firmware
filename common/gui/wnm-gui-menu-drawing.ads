@@ -30,6 +30,7 @@ with WNM.Project.Library;
 
 package WNM.GUI.Menu.Drawing is
 
+   Title_Y_Offset : constant := 10;
    Box_Top    : constant := 22;
    Box_Bottom : constant := Screen.Height - 1;
    Box_Left   : constant := 0; -- Bitmap_Fonts.Width;
@@ -39,6 +40,9 @@ package WNM.GUI.Menu.Drawing is
    Box_Height : constant := Box_Bottom - Box_Top;
    Box_Center : constant Screen.Point := ((Box_Right + Box_Left) / 2,
                                           (Box_Top + Box_Bottom) / 2);
+
+   procedure Draw_Str (X, Y : Integer;
+                       Str  : String);
 
    procedure Draw_Menu_Box (Title : String;
                             Count : Natural;
@@ -136,4 +140,7 @@ package WNM.GUI.Menu.Drawing is
    procedure Draw_Magic_Hat (X, Y : Integer;
                              Animate : Boolean;
                              Step    : HAL.UInt32);
+
+   procedure Draw_Battery (Step : HAL.UInt32);
+
 end WNM.GUI.Menu.Drawing;

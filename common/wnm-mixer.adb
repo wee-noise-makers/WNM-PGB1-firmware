@@ -29,6 +29,7 @@ with WNM.Synth; use WNM.Synth;
 with WNM.Generic_Queue;
 with WNM.Persistent;
 with WNM.Sample_Recording;
+with WNM.Audio_Routing;
 with BBqueue;
 
 package body WNM.Mixer is
@@ -226,7 +227,6 @@ package body WNM.Mixer is
                            Output : in out WNM_HAL.Stereo_Buffer)
    is
       use Tresses;
-      use Tresses.DSP;
       use Interfaces;
    begin
       --  Handle Audio Input
@@ -238,8 +238,8 @@ package body WNM.Mixer is
             Input.L (Bypass) := (others => 0);
             Input.R (Bypass) := (others => 0);
 
-            --  Pass the input to the output for preview of what we recording
-            --  input.
+            --  Pass the input to the output for preview of what we are
+            --  recording.
             Process_Input (Input, Bypass);
 
             --  If in rec mode, save incoming data
@@ -249,9 +249,8 @@ package body WNM.Mixer is
                begin
                   for Index in Output'Range loop
                      Mono (Index) :=
-                       S16 (Clip_S16
-                            (S32 (Input.L (Bypass)(Index)) +
-                                   S32 (Input.R (Bypass)(Index))));
+                       S16 ((S32 (Input.L (Bypass)(Index)) +
+                                S32 (Input.R (Bypass)(Index))) / 2);
                   end loop;
                   WNM.Sample_Recording.Record_Buffer (Mono);
                end;
@@ -374,117 +373,6 @@ package body WNM.Mixer is
    end Next_In_Buffer;
 
    -------------------
-   -- Volume_Change --
-   -------------------
-
-   procedure Volume_Change (V : in out Audio_Volume; Delt : Integer) is
-      Res : Integer;
-   begin
-      Res := Integer (V) + Delt;
-      if Res in Integer (Audio_Volume'First) .. Integer (Audio_Volume'Last)
-      then
-         V := Audio_Volume (Res);
-      end if;
-   end Volume_Change;
-
-   ------------------------
-   -- Change_Main_Volume --
-   ------------------------
-
-   procedure Change_Main_Volume (Volume_Delta : Integer) is
-   begin
-      Volume_Change (Persistent.Data.Main_Volume, Volume_Delta);
-      WNM_HAL.Set_Main_Volume (Persistent.Data.Main_Volume);
-   end Change_Main_Volume;
-
-   ---------------------
-   -- Set_Main_Volume --
-   ---------------------
-
-   procedure Set_Main_Volume (Volume : Audio_Volume) is
-   begin
-      Persistent.Data.Main_Volume := Volume;
-      WNM_HAL.Set_Main_Volume (Persistent.Data.Main_Volume);
-   end Set_Main_Volume;
-
-   ---------------------
-   -- Get_Main_Volume --
-   ---------------------
-
-   function Get_Main_Volume return Audio_Volume
-   is (WNM.Persistent.Data.Main_Volume);
-
-   --------------------------------
-   -- Change_Internal_Mic_Volume --
-   --------------------------------
-
-   procedure Change_Internal_Mic_Volume (Volume_Delta : Integer) is
-   begin
-      Volume_Change (Persistent.Data.Internal_Mic_Volume, Volume_Delta);
-      WNM_HAL.Set_Mic_Volumes (Persistent.Data.Headset_Mic_Volume,
-                               Persistent.Data.Internal_Mic_Volume);
-   end Change_Internal_Mic_Volume;
-
-   -----------------------------
-   -- Get_Internal_Mic_Volume --
-   -----------------------------
-
-   function Get_Internal_Mic_Volume return Audio_Volume
-   is (WNM.Persistent.Data.Internal_Mic_Volume);
-
-   -------------------------------
-   -- Change_Headset_Mic_Volume --
-   -------------------------------
-
-   procedure Change_Headset_Mic_Volume (Volume_Delta : Integer) is
-   begin
-      Volume_Change (Persistent.Data.Headset_Mic_Volume, Volume_Delta);
-      WNM_HAL.Set_Mic_Volumes (Persistent.Data.Headset_Mic_Volume,
-                               Persistent.Data.Internal_Mic_Volume);
-   end Change_Headset_Mic_Volume;
-
-   ----------------------------
-   -- Get_Headset_Mic_Volume --
-   ----------------------------
-
-   function Get_Headset_Mic_Volume return Audio_Volume
-   is (WNM.Persistent.Data.Headset_Mic_Volume);
-
-   ---------------------------
-   -- Change_Line_In_Volume --
-   ---------------------------
-
-   procedure Change_Line_In_Volume (Volume_Delta : Integer) is
-   begin
-      Volume_Change (Persistent.Data.Line_In_Volume, Volume_Delta);
-      WNM_HAL.Set_Line_In_Volume (Persistent.Data.Line_In_Volume);
-   end Change_Line_In_Volume;
-
-   ------------------------
-   -- Get_Line_In_Volume --
-   ------------------------
-
-   function Get_Line_In_Volume return Audio_Volume
-   is (WNM.Persistent.Data.Line_In_Volume);
-
-   -----------------------
-   -- Change_ADC_Volume --
-   -----------------------
-
-   procedure Change_ADC_Volume (Volume_Delta : Integer) is
-   begin
-      Volume_Change (Persistent.Data.ADC_Volume, Volume_Delta);
-      WNM_HAL.Set_ADC_Volume (Persistent.Data.ADC_Volume);
-   end Change_ADC_Volume;
-
-   --------------------
-   -- Get_ADC_Volume --
-   --------------------
-
-   function Get_ADC_Volume return Audio_Volume
-   is (WNM.Persistent.Data.ADC_Volume);
-
-   -------------------
    -- Input_FX_Next --
    -------------------
 
@@ -516,9 +404,21 @@ package body WNM.Mixer is
    procedure Enter_Sample_Rec_Mode (Mode : Sample_Rec_Mode) is
    begin
       if Mode = None and then Sample_Rec_State /= None then
+         WNM.Audio_Routing.Leave_Sampling;
          WNM.Sample_Recording.Reset;
+
+      elsif Mode /= None and then Sample_Rec_State = None then
+         WNM.Audio_Routing.Enter_Sampling;
       end if;
+
       Sample_Rec_State := Mode;
+
+      if Mode = Rec then
+         --  Going back to record mode, we may have to disable the speaker
+         --  when recording from internal mic.
+         WNM.Audio_Routing.Periodic_Update;
+      end if;
+
    end Enter_Sample_Rec_Mode;
 
    -------------------------

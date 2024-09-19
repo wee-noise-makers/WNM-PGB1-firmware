@@ -39,6 +39,7 @@ with RP.DMA;
 with RP.ROM;
 with RP.PIO;
 with RP.ADC;
+with RP.Clock;
 --  with RP.Watchdog;
 with RP2040_SVD.Interrupts;
 
@@ -67,27 +68,29 @@ package body WNM_HAL is
 
    package BM is new Noise_Nugget_SDK.Button_Matrix
      (Definition => BM_Definition,
-      Column_Pins => (1 => 18,
-                      2 => 19,
+      Column_Pins => (1 => 21,
+                      2 => 22,
                       3 => 26,
                       4 => 23,
                       5 => 29),
       Row_Pins    => (1 => 20,
-                      2 => 21,
-                      3 => 22,
+                      2 => 18,
+                      3 => 19,
                       4 => 24,
                       5 => 25,
                       6 => 27)
      );
 
-   Keep_Power_On_Pin    : RP.GPIO.GPIO_Point := (Pin => 14);
-   Shutdown_Request_Pin : RP.GPIO.GPIO_Point := (Pin => 15);
+   Keep_Power_On_Pin    : RP.GPIO.GPIO_Point := (Pin => 5);
+   Shutdown_Request_Pin : RP.GPIO.GPIO_Point := (Pin => 4);
 
    Touch_PIO   : RP.PIO.PIO_Device renames RP.Device.PIO_1;
    Touch_Pin_1 : aliased RP.GPIO.GPIO_Point := (Pin => 17);
    Touch_SM_1  : constant RP.PIO.PIO_SM := 1;
    Touch_Pin_2 : aliased RP.GPIO.GPIO_Point := (Pin => 16);
    Touch_SM_2  : constant RP.PIO.PIO_SM := 2;
+   Touch_Pin_3 : aliased RP.GPIO.GPIO_Point := (Pin => 15);
+   Touch_SM_3  : constant RP.PIO.PIO_SM := 3;
    Touch_Sensor_1 : WNM_HAL.Touch_Filter.Filtered_Touch_Sensor
      (Touch_Pin_1'Access,
       Touch_PIO'Access,
@@ -96,20 +99,27 @@ package body WNM_HAL is
      (Touch_Pin_2'Access,
       Touch_PIO'Access,
       Touch_SM_2);
-   Touch_Val_1, Touch_Val_2 : HAL.UInt32 := 0
+   Touch_Sensor_3 : WNM_HAL.Touch_Filter.Filtered_Touch_Sensor
+     (Touch_Pin_3'Access,
+      Touch_PIO'Access,
+      Touch_SM_3);
+   Touch_Val_1, Touch_Val_2, Touch_Val_3 : HAL.UInt32 := 0
      with Atomic;
-   TP_Scale : WNM_HAL.Touch_Filter.Scale;
 
    VBAT_Sense_Pin  : constant RP.GPIO.GPIO_Point := (Pin => 28);
    VBAT_Sense_Chan : constant RP.ADC.ADC_Channel :=
      RP.ADC.To_ADC_Channel (VBAT_Sense_Pin);
 
-   Enable_Indicator_IO : constant Boolean := False;
-   Indicator_IO : array (Indicator_IO_Line) of
-     RP.GPIO.GPIO_Point := (GP16 => (Pin => 16),
-                            GP17 => (Pin => 17),
-                            GP18 => (Pin => 18),
-                            GP19 => (Pin => 19));
+   type VBAT_Index is mod 10;
+   VBAT_History : array (VBAT_Index) of Natural := (others => 0);
+   VBAT_Next_In : VBAT_Index := VBAT_Index'First;
+   VBAT_Mean : Natural := 0;
+
+   Jack_Detected : Boolean := True
+     with Volatile;
+
+   Output_Volume : Noise_Nugget_SDK.Audio.Audio_Volume := 0.0
+     with Volatile;
 
    package Screen is new Noise_Nugget_SDK.Screen.SSD1306
      (SPI         => RP.Device.SPI_1'Access,
@@ -151,7 +161,7 @@ package body WNM_HAL is
    ----------
 
    package LED_Strip is new Noise_Nugget_SDK.WS2812
-     (Pin => 5,
+     (Pin => 14,
       Number_Of_LEDs => LED_Position'Length);
 
    procedure Systick;
@@ -258,17 +268,52 @@ package body WNM_HAL is
       Touch_Sensor_2.Process_Measures;
       Touch_Val_2 := Touch_Sensor_2.Read;
 
+      Touch_Sensor_3.Process_Measures;
+      Touch_Val_3 := Touch_Sensor_3.Read;
+
       --  Start measures for the next iteration
       Touch_Sensor_1.Trigger_Measures;
       Touch_Sensor_2.Trigger_Measures;
+      Touch_Sensor_3.Trigger_Measures;
 
-      if Touch_Val_1 > 2600 and then Touch_Val_2 > 2600 then
-         return (Touch => True,
-                 Value => Touch_Filter.Process (TP_Scale,
-                   Integer (Touch_Val_1), Integer (Touch_Val_2)));
-      else
-         return (Touch => False, Value => 0.0);
-      end if;
+      declare
+         Threshold : constant UInt32 := 1700;
+         A : constant Float :=
+           (Float (Touch_Val_1) - Float (Threshold)) / Float (Threshold);
+         B : constant Float :=
+           (Float (Touch_Val_2) - Float (Threshold)) / Float (Threshold);
+         C : constant Float :=
+           (Float (Touch_Val_3) - Float (Threshold)) / Float (Threshold);
+         Pos : Float;
+      begin
+         --  Touching two points
+         if A > 0.0 and then B > 0.0 then
+            Pos := 0.5 * (0.0 + (B / (A + B)));
+            return (Touch => True, Value => Pos);
+         elsif B > 0.0 and then C > 0.0 then
+            Pos := 0.5 * (1.0 + (C / (B + C)));
+            return (Touch => True, Value => Pos);
+         end if;
+
+         --  Touching only one of the end points
+         if A > 0.0 and then B <= 0.0 and then C <= 0.0 then
+            return (Touch => True, Value => Touch_Value'First);
+         elsif C > 0.0 and then A <= 0.0 and then B <= 0.0 then
+            return (Touch => True, Value => Touch_Value'Last);
+         end if;
+
+      end;
+
+      return (Touch => False, Value => 0.0);
+
+      --  if Touch_Val_1 > 2600 and then Touch_Val_2 > 2600 then
+      --  --  if Touch_Val_1 > 3000 and then Touch_Val_2 > 3000 then
+      --     return (Touch => True,
+      --             Value => Touch_Filter.Process (TP_Scale,
+      --               Integer (Touch_Val_1), Integer (Touch_Val_2)));
+      --  else
+      --     return (Touch => False, Value => 0.0);
+      --  end if;
    end Touch_Strip_State;
 
    ---------
@@ -288,6 +333,15 @@ package body WNM_HAL is
    begin
       return Touch_Val_2;
    end TP2;
+
+   ---------
+   -- TP3 --
+   ---------
+
+   function TP3 return  HAL.UInt32 is
+   begin
+      return Touch_Val_3;
+   end TP3;
 
    ---------
    -- Set --
@@ -340,12 +394,28 @@ package body WNM_HAL is
    procedure Update_Screen
      renames Screen.Update;
 
-   ------------------------
-   -- Select_Audio_Input --
-   ------------------------
+   -------------------------
+   -- Select_Audio_Output --
+   -------------------------
 
-   procedure Select_Audio_Input (Kind : Audio_Input_Kind)
-   is null;
+   procedure Select_Audio_Output (Kind : Audio_Output_Kind) is
+   begin
+      case Kind is
+         when Headphones =>
+            Noise_Nugget_SDK.Audio.Set_Speaker_Volume (0.0, 0.0);
+            Noise_Nugget_SDK.Audio.Enable_Speaker (False, False);
+            Noise_Nugget_SDK.Audio.Set_HP_Volume (Output_Volume,
+                                                  Output_Volume);
+         when Speakers =>
+            Noise_Nugget_SDK.Audio.Set_HP_Volume (0.0, 0.0);
+            Noise_Nugget_SDK.Audio.Enable_Speaker (True, False, Gain => 2);
+            Noise_Nugget_SDK.Audio.Set_Speaker_Volume
+              (L2R => 0.0,
+               R2R => 0.0,
+               L2L => Output_Volume,
+               R2L => Output_Volume);
+      end case;
+   end Select_Audio_Output;
 
    ---------------------
    -- Set_Main_Volume --
@@ -354,58 +424,50 @@ package body WNM_HAL is
    procedure Set_Main_Volume (Volume : Audio_Volume) is
       Value : constant Float :=
         Float (Volume) / Float (Audio_Volume'Last);
-
-      SDK_Value : constant Noise_Nugget_SDK.Audio.Audio_Volume :=
-        Noise_Nugget_SDK.Audio.Audio_Volume (Value);
-
    begin
-      Noise_Nugget_SDK.Audio.Set_HP_Volume (SDK_Value, SDK_Value);
+      Output_Volume := Noise_Nugget_SDK.Audio.Audio_Volume (Value);
+      Noise_Nugget_SDK.Audio.Set_HP_Volume (Output_Volume, Output_Volume);
+      Noise_Nugget_SDK.Audio.Set_Speaker_Volume (Output_Volume, Output_Volume);
    end Set_Main_Volume;
 
-   ------------------------
-   -- Set_Line_In_Volume --
-   ------------------------
+   ----------
+   -- Mute --
+   ----------
 
-   procedure Set_Line_In_Volume (Volume : Audio_Volume) is
-      Value : constant Float :=
-        Float (Volume) / Float (Audio_Volume'Last);
-
-      SDK_Value : constant Noise_Nugget_SDK.Audio.Audio_Volume :=
-        Noise_Nugget_SDK.Audio.Audio_Volume (Value);
-
+   procedure Mute (Kind : Audio_Input_Kind; Mute : Boolean := True) is
+      use Noise_Nugget_SDK.Audio;
    begin
-      Noise_Nugget_SDK.Audio.Set_Line_Volume (3, SDK_Value, SDK_Value);
-      Noise_Nugget_SDK.Audio.Set_Line_Volume (2, 0.0, 0.0);
-   end Set_Line_In_Volume;
+      case Kind is
+         when Line_In =>
+            if Mute then
+               Set_Line_Boost (1, L2L => 0, R2R => 0);
+            else
+               Set_Line_Boost (1, L2L => 1, R2R => 1);
+            end if;
 
-   -----------------------------
-   -- Set_Internal_Mic_Volume --
-   -----------------------------
+         when Internal_Mic =>
 
-   procedure Set_Mic_Volumes (Headset, Internal : Audio_Volume) is
-      HS_Value : constant Float :=
-        Float (Headset) / Float (Audio_Volume'Last);
+            if Mute then
+               Set_Line_Boost (2, L2L => 0, L2R => 0);
+            else
+               Set_Line_Boost (2, L2L => 9, L2R => 9);
+            end if;
 
-      HS_SDK_Value : constant Noise_Nugget_SDK.Audio.Audio_Volume :=
-        Noise_Nugget_SDK.Audio.Audio_Volume (HS_Value);
+         when Headset_Mic =>
+            if Mute then
+               Set_Line_Boost (3, R2L => 0, R2R => 0);
+            else
+               Set_Line_Boost (3, R2L => 9, R2R => 9);
+            end if;
 
-      Internal_Value : constant Float :=
-        Float (Internal) / Float (Audio_Volume'Last);
+      end case;
+   end Mute;
 
-      Internal_SDK_Value : constant Noise_Nugget_SDK.Audio.Audio_Volume :=
-        Noise_Nugget_SDK.Audio.Audio_Volume (Internal_Value);
+   ----------------------
+   -- Set_Input_Volume --
+   ----------------------
 
-   begin
-      Noise_Nugget_SDK.Audio.Set_Mic_Boost
-        (Internal_SDK_Value,
-         HS_SDK_Value);
-   end Set_Mic_Volumes;
-
-   --------------------
-   -- Set_ADC_Volume --
-   --------------------
-
-   procedure Set_ADC_Volume (Volume : Audio_Volume) is
+   procedure Set_Input_Volume (Volume : Audio_Volume) is
       Value : constant Float :=
         Float (Volume) / Float (Audio_Volume'Last);
 
@@ -414,7 +476,7 @@ package body WNM_HAL is
 
    begin
       Noise_Nugget_SDK.Audio.Set_ADC_Volume (SDK_Value, SDK_Value);
-   end Set_ADC_Volume;
+   end Set_Input_Volume;
 
    ---------
    -- Mix --
@@ -461,12 +523,72 @@ package body WNM_HAL is
       Vol_L_S16 : constant S16 :=
         S16 ((S32 (Vol_S16) * S32 (Pan_L_S16)) / 2**15);
    begin
-
       for Idx in Out_L'Range loop
          Point_Mix (Out_L (Idx), Input (Idx), Vol_L_S16);
          Point_Mix (Out_R (Idx), Input (Idx), Vol_R_S16);
       end loop;
    end Mix;
+
+   --  procedure Mix (Out_L, Out_R : in out Mono_Buffer;
+   --                 Input        :        Mono_Buffer;
+   --                 Volume       :        Audio_Volume;
+   --                 Pan          :        Audio_Pan)
+   --  is
+   --     use Tresses;
+   --     use Interfaces;
+   --     use RP.Device;
+   --
+   --     function To_U32 is new Ada.Unchecked_Conversion (S32, UInt32);
+   --     function To_S32 is new Ada.Unchecked_Conversion (UInt32, S32);
+   --
+   --     procedure Point_Mix (P_Out    : in out Mono_Point;
+   --                          P_In     :        Mono_Point)
+   --       with Inline_Always;
+   --
+   --     procedure Point_Mix (P_Out    : in out Mono_Point;
+   --                          P_In     :        Mono_Point)
+   --     is
+   --     begin
+   --        -- Blend --
+   --        INTERP_0.BASE (1) := To_U32 (S32 (P_In));
+   --
+   --        -- Clamp --
+   --        --  From blend output to clamp input
+   --        INTERP_1.ACCUM (0) :=
+   --          To_U32 (To_S32 (INTERP_0.PEEK (1)) + S32 (P_Out));
+   --
+   --        --  TODO: Can we also do the addition in Interp_1???
+   --
+   --        P_Out := Mono_Point (To_S32 (INTERP_1.PEEK (0)));
+   --     end Point_Mix;
+   --
+   --  begin
+   --     --  Blending with Interp 0
+   --     INTERP_0.CTRL (0) := (BLEND => True,
+   --                           others => <>);
+   --     INTERP_0.CTRL (1) := (SIGNED => True,
+   --                           others => <>);
+   --     INTERP_0.BASE (0) := 0;
+   --
+   --     --  Clamping with Interp 1
+   --     INTERP_1.CTRL (0) := (SIGNED => True,
+   --                           CLAMP => True,
+   --                           others => <>);
+   --     INTERP_1.BASE (0) := To_U32 (S32 (S16'First));
+   --     INTERP_1.BASE (1) := To_U32 (S32 (S16'Last));
+   --
+   --     INTERP_0.ACCUM (1) :=
+   --       (UInt32 (Volume) * UInt32 (Audio_Pan'Last - Pan) * 255) / 10000;
+   --     for Idx in Out_L'Range loop
+   --        Point_Mix (Out_L (Idx), Input (Idx));
+   --     end loop;
+   --
+   --     INTERP_0.ACCUM (1) :=
+   --       (UInt32 (Volume) * UInt32 (Pan) * 255) / 10000;
+   --     for Idx in Out_L'Range loop
+   --        Point_Mix (Out_R (Idx), Input (Idx));
+   --     end loop;
+   --  end Mix;
 
    ------------------
    -- Milliseconds --
@@ -519,7 +641,8 @@ package body WNM_HAL is
       Cortex_M.Systick.Configure
         (Cortex_M.Systick.CPU_Clock,
          Generate_Interrupt => True,
-         Reload_Value       => UInt24 ((133_000_000 / 1_000) - 1));
+         Reload_Value       =>
+           UInt24 ((RP.Clock.Frequency (RP.Clock.SYS) / 1_000) - 1));
 
       Cortex_M.Systick.Enable;
    end Start_Sequencer_Tick;
@@ -602,8 +725,8 @@ package body WNM_HAL is
         and then Msg.Cmd in
           Timming_Tick | Stop_Song | Start_Song | Continue_Song
       then
-         -- Filter out timming and song messages.
-         -- TODO: this should be controlled by the user.
+         --  Filter out timming and song messages.
+         --  TODO: this should be controlled by the user.
          null;
       else
          External_MIDI.Send (Msg);
@@ -750,36 +873,50 @@ package body WNM_HAL is
       end if;
    end Synth_CPU_Check_Hold;
 
+   --------------------------
+   -- Read_Battery_Voltage --
+   --------------------------
+
+   procedure Read_Battery_Voltage is
+      V : constant Natural :=
+        (Natural (RP.ADC.Read_Microvolts (VBAT_Sense_Chan)) * 2) / 1000;
+
+      Acc : Natural := 0;
+   begin
+      VBAT_History (VBAT_Next_In) := V;
+      VBAT_Next_In := VBAT_Next_In + 1;
+
+      for Elt of VBAT_History loop
+         Acc := Acc + Elt;
+      end loop;
+
+      VBAT_Mean := Acc / VBAT_History'Length;
+   end Read_Battery_Voltage;
+
    ------------------------
    -- Battery_Millivolts --
    ------------------------
 
    function Battery_Millivolts return Natural is
    begin
-      return (Natural (RP.ADC.Read_Microvolts (VBAT_Sense_Chan)) * 2) / 1000;
+      return VBAT_Mean;
    end Battery_Millivolts;
 
-   ----------------------
-   -- Set_Indicator_IO --
-   ----------------------
+   --------------------
+   -- Read_HP_Detect --
+   --------------------
 
-   procedure Set_Indicator_IO (Id : Indicator_IO_Line) is
+   procedure Read_HP_Detect is
    begin
-      if Enable_Indicator_IO then
-         Indicator_IO (Id).Set;
-      end if;
-   end Set_Indicator_IO;
+      Jack_Detected := Noise_Nugget_SDK.Audio.Jack_Detect;
+   end Read_HP_Detect;
 
-   ------------------------
-   -- Clear_Indicator_IO --
-   ------------------------
+   ---------------
+   -- HP_Detect --
+   ---------------
 
-   procedure Clear_Indicator_IO (Id : Indicator_IO_Line) is
-   begin
-      if Enable_Indicator_IO then
-         Indicator_IO (Id).Clear;
-      end if;
-   end Clear_Indicator_IO;
+   function HP_Detect return Boolean
+   is (Jack_Detected);
 
    -------------------------
    -- Breakpoint_If_Debug --
@@ -921,13 +1058,6 @@ begin
 
    Shutdown_Request_Pin.Configure (RP.GPIO.Input, RP.GPIO.Pull_Up);
 
-   if Enable_Indicator_IO then
-      for Id in Indicator_IO_Line loop
-         Indicator_IO (Id).Configure (RP.GPIO.Output);
-         Indicator_IO (Id).Clear;
-      end loop;
-   end if;
-
    Touch_PIO.Clear_FIFOs (Touch_SM_1);
    Touch_PIO.Clear_FIFO_Status (Touch_SM_1);
    Touch_Sensor_1.Initialize
@@ -943,6 +1073,14 @@ begin
         Noise_Nugget_SDK.Audio.
           PIO_I2S_ASM.Audio_I2s_Program_Instructions'Length);
    --  Touch_Sensor_2.Set_Alpha (0.03);
+
+   Touch_PIO.Clear_FIFOs (Touch_SM_3);
+   Touch_PIO.Clear_FIFO_Status (Touch_SM_3);
+   Touch_Sensor_3.Initialize
+     (ASM_Offset =>
+        Noise_Nugget_SDK.Audio.
+          PIO_I2S_ASM.Audio_I2s_Program_Instructions'Length);
+   --  Touch_Sensor_3.Set_Alpha (0.03);
 
    RP.ADC.Enable;
    RP.ADC.Configure (VBAT_Sense_Chan);

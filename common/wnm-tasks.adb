@@ -37,6 +37,7 @@ with WNM.Mixer;
 with WNM.Coproc;
 with WNM.Project_Load_Broadcast;
 with WNM.Power_Control;
+with WNM.Audio_Routing;
 
 with MIDI;
 
@@ -45,6 +46,7 @@ package body WNM.Tasks is
    Systick_Count : UInt32 := 0;
    UI_Period_Miliseconds  : constant := 20;
    LED_Period_Miliseconds : constant := 100;
+   HP_Detect_Period_Miliseconds : constant := 250;
    Rand_Update_Period : Rand_Percent := 0;
 
    --------------------
@@ -98,7 +100,6 @@ package body WNM.Tasks is
    begin
       WNM_HAL.Watchdog_Check;
 
-      --  WNM_HAL.Set_Indicator_IO (WNM_HAL.GP17);
       WNM.MIDI_Clock.Update;
       WNM.Short_Term_Sequencer.Update (Clock);
       WNM.Note_Off_Sequencer.Update (Clock);
@@ -120,6 +121,12 @@ package body WNM.Tasks is
 
       if (Systick_Count mod LED_Period_Miliseconds) = 0 then
          WNM.UI.Update_LEDs;
+         WNM_HAL.Read_Battery_Voltage;
+      end if;
+
+      if (Systick_Count mod HP_Detect_Period_Miliseconds) = 0 then
+
+         WNM.Audio_Routing.Periodic_Update;
       end if;
 
       Handle_MIDI_In;
@@ -129,7 +136,6 @@ package body WNM.Tasks is
       WNM_HAL.Flush_Output;
 
       Systick_Count := Systick_Count + 1;
-      --  WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP17);
    end Sequencer_1khz_Tick;
 
    ------------------------------
@@ -150,9 +156,7 @@ package body WNM.Tasks is
 
          case Msg.Kind is
             when Coproc.Buffer_Available =>
-               WNM_HAL.Set_Indicator_IO (WNM_HAL.GP18);
                WNM.Mixer.Push_To_Mix (Msg.Buffer_Id);
-               WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP18);
 
             when Synth_CPU_Crash =>
                raise Program_Error with "Synth crash";
@@ -220,9 +224,7 @@ package body WNM.Tasks is
                                 Stereo_Point_Count : out HAL.UInt32)
    is
    begin
-      WNM_HAL.Set_Indicator_IO (WNM_HAL.GP17);
       WNM.Mixer.Next_Out_Buffer (Buffer, Stereo_Point_Count);
-      WNM_HAL.Clear_Indicator_IO (WNM_HAL.GP17);
    end Next_Output_Buffer;
 
    -----------------------

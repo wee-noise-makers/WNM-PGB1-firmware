@@ -21,6 +21,7 @@
 
 with WNM.Screen;               use WNM.Screen;
 with WNM.GUI.Bitmap_Fonts;     use WNM.GUI.Bitmap_Fonts;
+with WNM.Audio_Routing;
 
 with tape_1;
 with tape_2;
@@ -67,8 +68,7 @@ package body WNM.GUI.Menu.Recording is
                       when 2      => tape_3.Data,
                       when others => tape_4.Data),
                    X            => 0,
-                   Y            => Recording_Top,
-                   Invert_Color => True);
+                   Y            => Recording_Top);
       Animation_Step := Animation_Step + 1;
 
       Drawing.Draw_Waveform (Wave_Top, Show_Cut => True);
@@ -90,6 +90,10 @@ package body WNM.GUI.Menu.Recording is
             Menu.Pop (Exit_Value => Success);
          when B_Press =>
             Menu.Pop (Exit_Value => Failure);
+         when Up_Press =>
+            WNM.Audio_Routing.Change_ADC_Volume (1);
+         when Down_Press =>
+            WNM.Audio_Routing.Change_ADC_Volume (-1);
          when others =>
             null;
       end case;

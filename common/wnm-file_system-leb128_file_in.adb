@@ -242,6 +242,17 @@ package body WNM.File_System.LEB128_File_In is
       end;
    end Read;
 
+   ----------
+   -- Read --
+   ----------
+
+   procedure Read (This : in out Instance; A : out Boolean) is
+      R : In_UInt;
+   begin
+      Instance'Class (This).Read (R);
+      A := R /= 0;
+   end Read;
+
    ---------------------
    -- Convert_To_Enum --
    ---------------------

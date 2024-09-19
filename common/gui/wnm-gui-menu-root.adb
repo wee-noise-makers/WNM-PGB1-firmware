@@ -38,17 +38,10 @@ package body WNM.GUI.Menu.Root is
 
    function Menu_Item_Text (Item : Menu_Items) return String
    is (case Item is
-          when Projects    => "Projects",
-          when Inputs      => "Inputs",
-          --  when Create_Sample   => "Create sample",
-          --  when Change_Sample   => "Change sample",
-          --  when Set_Passthrough => "Passthrough",
+          when Projects        => "Projects",
+          when Inputs          => "Inputs",
           when Test_Text_Input => "Test text input",
-          --  when Load            => "Load",
-          --  when Save            => "Save",
-          --  when Settings        => "Settings",
           when DFU_Mode        => "Update Mode",
-          when Shutdown        => "Shutdown",
           when System_Info     => "System Info");
 
    ----------------------
@@ -97,22 +90,9 @@ package body WNM.GUI.Menu.Root is
                when Inputs =>
                   Menu.Inputs.Push_Window;
 
-               --  when Create_Sample =>
-               --     Menu.Create_Sample.Push_Window;
-               --
-               --  when Change_Sample =>
-               --     Sample_Select.Push_Window;
-               --
-               --  when Set_Passthrough =>
-               --     Passthrough.Push_Window;
-
                when Test_Text_Input =>
                   Text_Dialog.Set_Title ("Enter some text");
                   Text_Dialog.Push_Window;
-
-               when Shutdown =>
-                  Yes_No_Dialog.Set_Title ("Shutdown?");
-                  Yes_No_Dialog.Push_Window;
 
                when DFU_Mode =>
                   Yes_No_Dialog.Set_Title ("Enter Update Mode?");
@@ -121,8 +101,6 @@ package body WNM.GUI.Menu.Root is
                when System_Info =>
                   Menu.System_Info.Push_Window;
 
-               --  when others =>
-               --     null;
             end case;
 
          when B_Press =>
@@ -160,10 +138,8 @@ package body WNM.GUI.Menu.Root is
    procedure On_Pushed
      (This  : in out Root_Menu)
    is
-      --  pragma Unreferenced (This);
    begin
       This.Item := Menu_Items'First;
-      --  Menu.System_Info.Push_Window;
    end On_Pushed;
 
    --------------
@@ -180,11 +156,6 @@ package body WNM.GUI.Menu.Root is
          when DFU_Mode =>
             if Exit_Value = Success then
                WNM.Power_Control.Enter_DFU_Mode;
-            end if;
-
-         when Shutdown =>
-            if Exit_Value = Success then
-               WNM.Power_Control.Power_Down;
             end if;
 
          when others =>
