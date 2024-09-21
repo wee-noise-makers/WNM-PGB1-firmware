@@ -70,12 +70,17 @@ package body WNM.GUI.Menu.Drawing is
    -- Draw_Str --
    --------------
 
-   procedure Draw_Str (X, Y : Integer;
-                       Str  : String)
+   procedure Draw_Str (X, Y      : Integer;
+                       Str       : String;
+                       Underline : Boolean := False)
    is
       VX : Integer := X;
    begin
       Bitmap_Fonts.Print (VX, Y, Str);
+
+      if Underline then
+         Screen.Draw_Line ((X, Y + Font_Height), (VX, Y + Font_Height));
+      end if;
    end Draw_Str;
 
    -------------------

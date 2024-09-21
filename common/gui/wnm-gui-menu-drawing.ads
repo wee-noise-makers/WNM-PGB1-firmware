@@ -27,6 +27,7 @@ with WNM.Sample_Library;
 with WNM.Speech;
 with WNM.Project;
 with WNM.Project.Library;
+with WNM.GUI.Bitmap_Fonts;
 
 package WNM.GUI.Menu.Drawing is
 
@@ -41,8 +42,12 @@ package WNM.GUI.Menu.Drawing is
    Box_Center : constant Screen.Point := ((Box_Right + Box_Left) / 2,
                                           (Box_Top + Box_Bottom) / 2);
 
-   procedure Draw_Str (X, Y : Integer;
-                       Str  : String);
+   Font_Width  : constant := Bitmap_Fonts.Width;
+   Font_Height : constant := Bitmap_Fonts.Height;
+
+   procedure Draw_Str (X, Y      : Integer;
+                       Str       : String;
+                       Underline : Boolean := False);
 
    procedure Draw_Menu_Box (Title : String;
                             Count : Natural;

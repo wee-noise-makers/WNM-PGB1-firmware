@@ -31,6 +31,7 @@ package WNM_HAL is
    end record;
 
    function Touch_Strip_State return Touch_Data;
+   procedure Set_Thresholds (TP1, TP2, TP3 : HAL.UInt32);
    function TP1 return HAL.UInt32;
    function TP2 return HAL.UInt32;
    function TP3 return HAL.UInt32;

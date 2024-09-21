@@ -33,15 +33,21 @@ package body WNM.Persistent is
                              P_Internal_Mic_Mute,
                              P_Headset_Mic_Mute,
                              P_Input_FX,
-                             P_ADC_Volume);
+                             P_ADC_Volume,
+                             P_TP1_Threshold,
+                             P_TP2_Threshold,
+                             P_TP3_Threshold);
 
-   for Persistent_Token use (P_Last_Project        => 0,
-                             P_Main_Volume         => 1,
-                             P_Line_In_Mute        => 2,
-                             P_Internal_Mic_Mute   => 3,
-                             P_Headset_Mic_Mute    => 4,
-                             P_Input_FX            => 5,
-                             P_ADC_Volume          => 6);
+   for Persistent_Token use (P_Last_Project      => 0,
+                             P_Main_Volume       => 1,
+                             P_Line_In_Mute      => 2,
+                             P_Internal_Mic_Mute => 3,
+                             P_Headset_Mic_Mute  => 4,
+                             P_Input_FX          => 5,
+                             P_ADC_Volume        => 6,
+                             P_TP1_Threshold     => 7,
+                             P_TP2_Threshold     => 8,
+                             P_TP3_Threshold     => 9);
 
    ----------
    -- Save --
@@ -73,6 +79,12 @@ package body WNM.Persistent is
                Output.Push (Data.Input_FX'Enum_Rep);
             when P_ADC_Volume =>
                Output.Push (Out_UInt (Data.ADC_Volume));
+            when P_TP1_Threshold =>
+               Output.Push (Out_UInt (Data.TP1_Threshold));
+            when P_TP2_Threshold =>
+               Output.Push (Out_UInt (Data.TP2_Threshold));
+            when P_TP3_Threshold =>
+               Output.Push (Out_UInt (Data.TP3_Threshold));
          end case;
 
          exit when Output.Status /= Ok;
@@ -90,6 +102,7 @@ package body WNM.Persistent is
       procedure To_P_Token is new Convert_To_Enum (Persistent_Token);
       procedure Read is new Read_Gen_Enum (FX_Kind);
       procedure Read_Prj is new Read_Gen_Int (Project.Library.Prj_Index);
+      procedure Read_U32 is new Read_Gen_Mod (HAL.UInt32);
       procedure Read_Volume is new Read_Gen_Int (Audio_Volume);
 
       Input : LEB128_File_In.Instance;
@@ -129,6 +142,12 @@ package body WNM.Persistent is
                Read (Input, Data.Input_FX);
             when P_ADC_Volume  =>
                Read_Volume (Input, Data.ADC_Volume);
+            when P_TP1_Threshold  =>
+               Read_U32 (Input, Data.TP1_Threshold);
+            when P_TP2_Threshold  =>
+               Read_U32 (Input, Data.TP2_Threshold);
+            when P_TP3_Threshold  =>
+               Read_U32 (Input, Data.TP3_Threshold);
          end case;
 
          exit when Input.Status /= Ok;
@@ -139,6 +158,9 @@ package body WNM.Persistent is
       WNM_HAL.Mute (WNM_HAL.Headset_Mic, Data.Headset_Mic_Mute);
       WNM_HAL.Mute (WNM_HAL.Internal_Mic, Data.Internal_Mic_Mute);
       WNM_HAL.Set_Input_Volume (Data.ADC_Volume);
+      WNM_HAL.Set_Thresholds (Data.TP1_Threshold,
+                              Data.TP2_Threshold,
+                              Data.TP3_Threshold);
 
       Input.Close;
    end Load;

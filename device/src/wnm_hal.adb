@@ -106,6 +106,8 @@ package body WNM_HAL is
    Touch_Val_1, Touch_Val_2, Touch_Val_3 : HAL.UInt32 := 0
      with Atomic;
 
+   TP1_Threshold, TP2_Threshold, TP3_Threshold : HAL.UInt32 := 9999;
+
    VBAT_Sense_Pin  : constant RP.GPIO.GPIO_Point := (Pin => 28);
    VBAT_Sense_Chan : constant RP.ADC.ADC_Channel :=
      RP.ADC.To_ADC_Channel (VBAT_Sense_Pin);
@@ -277,44 +279,54 @@ package body WNM_HAL is
       Touch_Sensor_3.Trigger_Measures;
 
       declare
-         Threshold : constant UInt32 := 1700;
          A : constant Float :=
-           (Float (Touch_Val_1) - Float (Threshold)) / Float (Threshold);
+           (Float (Touch_Val_1) - Float (TP1_Threshold)) / Float (TP1_Threshold);
          B : constant Float :=
-           (Float (Touch_Val_2) - Float (Threshold)) / Float (Threshold);
+           (Float (Touch_Val_2) - Float (TP2_Threshold)) / Float (TP2_Threshold);
          C : constant Float :=
-           (Float (Touch_Val_3) - Float (Threshold)) / Float (Threshold);
-         Pos : Float;
+           (Float (Touch_Val_3) - Float (TP3_Threshold)) / Float (TP3_Threshold);
       begin
-         --  Touching two points
-         if A > 0.0 and then B > 0.0 then
-            Pos := 0.5 * (0.0 + (B / (A + B)));
-            return (Touch => True, Value => Pos);
-         elsif B > 0.0 and then C > 0.0 then
-            Pos := 0.5 * (1.0 + (C / (B + C)));
-            return (Touch => True, Value => Pos);
-         end if;
 
-         --  Touching only one of the end points
-         if A > 0.0 and then B <= 0.0 and then C <= 0.0 then
-            return (Touch => True, Value => Touch_Value'First);
-         elsif C > 0.0 and then A <= 0.0 and then B <= 0.0 then
-            return (Touch => True, Value => Touch_Value'Last);
-         end if;
+         if A > 0.0 or else B > 0.0 or else C > 0.0 then
+            declare
 
+               Clamp_A : constant Float := Float'Max (0.0, A);
+               Clamp_B : constant Float := Float'Max (0.0, B);
+               Clamp_C : constant Float := Float'Max (0.0, C);
+
+               --  The center of mass is calculated in one dimension for the
+               --  three touch points. In order to ensure consistent access
+               --  to the limit values, the coordinates of A and C have been
+               --  slightly moved outwards (-0.1 instead of 0.0, and 1.1
+               --  instead of 1.0).
+               Center_Of_Mass : constant Float :=
+                 (Clamp_A * (-0.1) + Clamp_B * 0.5 + Clamp_C * 1.1)
+                   /
+                 (Clamp_A + Clamp_B + Clamp_C);
+
+               --  The result is then confined to the output range
+               Clamp_COM : constant Float :=
+                 Float'Max (Touch_Value'First,
+                            Float'Min (Touch_Value'Last, Center_Of_Mass));
+            begin
+               return (Touch => True, Value => Clamp_COM);
+            end;
+         else
+            return (Touch => False, Value => 0.0);
+         end if;
       end;
-
-      return (Touch => False, Value => 0.0);
-
-      --  if Touch_Val_1 > 2600 and then Touch_Val_2 > 2600 then
-      --  --  if Touch_Val_1 > 3000 and then Touch_Val_2 > 3000 then
-      --     return (Touch => True,
-      --             Value => Touch_Filter.Process (TP_Scale,
-      --               Integer (Touch_Val_1), Integer (Touch_Val_2)));
-      --  else
-      --     return (Touch => False, Value => 0.0);
-      --  end if;
    end Touch_Strip_State;
+
+   --------------------
+   -- Set_Thresholds --
+   --------------------
+
+   procedure Set_Thresholds (TP1, TP2, TP3 : HAL.UInt32) is
+   begin
+      TP1_Threshold := TP1;
+      TP2_Threshold := TP2;
+      TP3_Threshold := TP3;
+   end Set_Thresholds;
 
    ---------
    -- TP1 --

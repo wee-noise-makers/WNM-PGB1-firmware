@@ -20,17 +20,21 @@
 -------------------------------------------------------------------------------
 
 with WNM.Project.Library;
+with HAL;
 
 package WNM.Persistent is
 
    type Persistent_Data is record
       Last_Project        : WNM.Project.Library.Prj_Index;
-      Main_Volume         : Audio_Volume := Init_Volume;
-      Line_In_Mute        : Boolean := False;
-      Internal_Mic_Mute   : Boolean := True;
-      Headset_Mic_Mute    : Boolean := True;
-      ADC_Volume          : Audio_Volume := Init_Input_Volume;
-      Input_FX            : FX_Kind      := FX_Kind'First;
+      Main_Volume         : Audio_Volume;
+      Line_In_Mute        : Boolean;
+      Internal_Mic_Mute   : Boolean;
+      Headset_Mic_Mute    : Boolean;
+      ADC_Volume          : Audio_Volume;
+      Input_FX            : FX_Kind;
+      TP1_Threshold       : HAL.UInt32;
+      TP2_Threshold       : HAL.UInt32;
+      TP3_Threshold       : HAL.UInt32;
    end record;
 
    Default : constant Persistent_Data :=
@@ -40,7 +44,10 @@ package WNM.Persistent is
       Internal_Mic_Mute   => True,
       Headset_Mic_Mute    => True,
       ADC_Volume          => Init_Input_Volume,
-      Input_FX            => FX_Kind'First);
+      Input_FX            => FX_Kind'First,
+      TP1_Threshold       => 1250,
+      TP2_Threshold       => 1500,
+      TP3_Threshold       => 1250);
 
    Data : Persistent_Data := Default;
 

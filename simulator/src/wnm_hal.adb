@@ -65,6 +65,12 @@ package body WNM_HAL is
    function Touch_Strip_State return Touch_Data
    is (ASFML_Sim.Strip_Touch, ASFML_Sim.Strip_Value);
 
+   --------------------
+   -- Set_Thresholds --
+   --------------------
+
+   procedure Set_Thresholds (TP1, TP2, TP3 : HAL.UInt32) is null;
+
    ---------
    -- TP1 --
    ---------

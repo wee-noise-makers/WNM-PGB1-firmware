@@ -19,11 +19,15 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with HAL;
+
 with WNM.GUI.Menu.Drawing;
 with WNM.GUI.Menu.Yes_No_Dialog;
 with WNM.Synth;
 with WNM.Mixer;
 with WNM.Project.Library;
+with WNM.Persistent;
+with WNM.Screen;
 
 package body WNM.GUI.Menu.System_Info is
 
@@ -84,17 +88,49 @@ package body WNM.GUI.Menu.System_Info is
 
          when Touch =>
             declare
+               use WNM.GUI.Menu.Drawing;
+
                type TP_Img is delta 0.01 range 0.0 .. 10.0;
                --  Use a fixed point type to get a 'Img without
                --  scientific notation...
 
-               Val : constant Touch_Value := WNM_HAL.Touch_Strip_State.Value;
+               State : constant Touch_Data := WNM_HAL.Touch_Strip_State;
+
+               Touch_Str : constant String :=
+                 (if State.Touch
+                  then TP_Img'Image (TP_Img (State.Value))
+                  else "_.__");
+
+               Bar_Length : constant Natural :=
+                 Natural (Float ((Box_Right - Box_Left)) * State.Value);
+
+               Thresh_Y : constant := Box_Bottom - Font_Height - 2;
+               Read_Y   : constant := Thresh_Y - Font_Height - 2;
+
+               TP_Spacing : constant := (Box_Right - Box_Left) / 3;
+               TP1_X    : constant := Box_Left + 3;
+               TP2_X    : constant := TP1_X + TP_Spacing;
+               TP3_X    : constant := TP2_X + TP_Spacing;
             begin
-               Drawing.Draw_Title
-                 ("Touch sensor", TP_Img'Image (TP_Img (Val)));
-               Drawing.Draw_Value (WNM_HAL.TP1'Img & " " &
-                                   WNM_HAL.TP2'Img & " " &
-                                   WNM_HAL.TP3'Img);
+
+               Drawing.Draw_Title ("Touch sensor " & Touch_Str, "");
+
+               Drawing.Draw_Str (TP1_X, Read_Y, WNM_HAL.TP1'Img);
+               Drawing.Draw_Str (TP2_X, Read_Y, WNM_HAL.TP2'Img);
+               Drawing.Draw_Str (TP3_X, Read_Y, WNM_HAL.TP3'Img);
+
+               Drawing.Draw_Str (TP1_X, Thresh_Y,
+                                 WNM.Persistent.Data.TP1_Threshold'Img);
+               Drawing.Draw_Str (TP2_X, Thresh_Y,
+                                 WNM.Persistent.Data.TP2_Threshold'Img);
+               Drawing.Draw_Str (TP3_X, Thresh_Y,
+                                 WNM.Persistent.Data.TP3_Threshold'Img);
+
+               if State.Touch then
+                  Screen.Draw_Line
+                    ((Box_Left, Box_Top + Font_Height + 8),
+                     (Box_Left + Bar_Length, Box_Top + Font_Height + 8));
+               end if;
             end;
 
          when HP_Detect =>
@@ -118,6 +154,8 @@ package body WNM.GUI.Menu.System_Info is
    procedure On_Event (This  : in out Instance;
                        Event : Menu_Event)
    is
+      use HAL;
+
    begin
       case Event.Kind is
          when A_Press =>
@@ -133,6 +171,16 @@ package body WNM.GUI.Menu.System_Info is
                when Raise_Exception =>
                   Yes_No_Dialog.Set_Title ("Raise exception?");
                   Yes_No_Dialog.Push_Window;
+
+               when Touch =>
+                  --  Set new threshold values
+                  WNM.Persistent.Data.TP1_Threshold := WNM_HAL.TP1 + 150;
+                  WNM.Persistent.Data.TP2_Threshold := WNM_HAL.TP2 + 150;
+                  WNM.Persistent.Data.TP3_Threshold := WNM_HAL.TP3 + 150;
+
+                  WNM_HAL.Set_Thresholds (WNM.Persistent.Data.TP1_Threshold,
+                                          WNM.Persistent.Data.TP2_Threshold,
+                                          WNM.Persistent.Data.TP3_Threshold);
                when others =>
                   null;
             end case;
