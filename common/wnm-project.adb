@@ -1999,7 +1999,43 @@ package body WNM.Project is
 
    procedure Clear is
    begin
-      G_Project := (others => <>);
+      --  G_Project := (others => <>); Unforunately the statement above is
+      --  not usable as it first create a full instance of the project on the
+      --  stack before copying it into G_Project. Of course there's not enough
+      --  room on the stack to hold the full project.
+
+      G_Project.BPM := BPM_Default;
+      G_Project.Tracks := Tracks_Defaults;
+
+      G_Project.Patterns := (others => (others => Default_Pattern));
+
+      for T in Tracks loop
+         case T is
+            when Bass_Track =>
+               G_Project.Steps (T) :=
+                 (others => (others => Default_Step_Bass));
+
+            when Lead_Track =>
+               G_Project.Steps (T) :=
+                 (others => (others => Default_Step_Lead));
+
+            when Chord_Track =>
+               G_Project.Steps (T) :=
+                 (others => (others => Default_Step_Chord));
+
+            when others =>
+               G_Project.Steps (T) :=
+                 (others => (others => Default_Step));
+         end case;
+      end loop;
+
+      G_Project.Parts := (others => <>);
+      G_Project.Part_Origin := WNM.Parts'First;
+
+      G_Project.Progressions := (others => <>);
+
+      G_Project.Alt_Slider_Track := Lead_Track;
+      G_Project.Alt_Slider_Target := Alt_Slider_Control'First;
 
       WNM.Project_Load_Broadcast.Broadcast;
    end Clear;

@@ -901,6 +901,18 @@ private
                                       (3, 119, "CC3              ")
                                      ));
 
+   Tracks_Defaults : constant Track_Arr :=
+     (Kick_Track     => Default_Kick_Track,
+      Snare_Track    => Default_Snare_Track,
+      Cymbal_Track   => Default_Cymbal_Track,
+      Bass_Track     => Default_Bass_Track,
+      Lead_Track     => Default_Lead_Track,
+      Sample1_Track  => Default_Sample1_Track,
+      Sample2_Track  => Default_Sample2_Track,
+      Chord_Track    => Default_Chord_Track,
+      Bitcrush_Track => Default_Bitcrush_Track,
+      others         => Default_Track);
+
    type Chord_Rec is record
       Tonic : MIDI.MIDI_Key := MIDI.C4;
       Name  : WNM.Chord_Settings.Chord_Name :=
@@ -940,19 +952,11 @@ private
 
    type Song_Part_Arr is array (WNM.Parts) of Song_Part_Rec;
 
+   BPM_Default : constant := 120;
    type Project_Rec is record
-      BPM : Beat_Per_Minute := 120;
+      BPM : Beat_Per_Minute := BPM_Default;
 
-      Tracks : Track_Arr := (Kick_Track     => Default_Kick_Track,
-                             Snare_Track    => Default_Snare_Track,
-                             Cymbal_Track   => Default_Cymbal_Track,
-                             Bass_Track     => Default_Bass_Track,
-                             Lead_Track     => Default_Lead_Track,
-                             Sample1_Track  => Default_Sample1_Track,
-                             Sample2_Track  => Default_Sample2_Track,
-                             Chord_Track    => Default_Chord_Track,
-                             Bitcrush_Track => Default_Bitcrush_Track,
-                             others         => Default_Track);
+      Tracks : Track_Arr := Tracks_Defaults;
 
       Patterns : All_Pattern_Arr := (others => (others => Default_Pattern));
 
