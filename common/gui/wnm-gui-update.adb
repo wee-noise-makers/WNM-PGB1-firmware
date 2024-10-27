@@ -92,22 +92,6 @@ package body WNM.GUI.Update is
                   null;
             end case;
 
-         --  when WNM.UI.Pattern_Mode =>
-         --     B := 1;
-         --     Print (X_Offset    => B,
-         --            Y_Offset    => Box_Top,
-         --            Str         => "Pattern Mode");
-         --  when WNM.UI.Track_Mode =>
-         --     B := 1;
-         --     Print (X_Offset    => B,
-         --            Y_Offset    => Box_Top,
-         --            Str         => "Track Mode");
-         --  when WNM.UI.Step_Mode =>
-         --     B := 1;
-         --     Print (X_Offset    => B,
-         --            Y_Offset    => Box_Top,
-         --            Str         => "Step Mode");
-
          when WNM.UI.Pattern_Mode |
               WNM.UI.Track_Mode |
               WNM.UI.Step_Mode |
@@ -118,11 +102,26 @@ package body WNM.GUI.Update is
             Menu.Draw;
 
          when WNM.UI.FX_Alt =>
+            B :=
+              Box_Left + (Box_Right - Box_Left - 7 * Bitmap_Fonts.Width) / 2;
+
+            Print (X_Offset => B,
+                   Y_Offset => Box_Top,
+                   Str      => "FX/Copy");
+
             B := 1;
-            Print (X_Offset    => B,
-                   Y_Offset    => Box_Top,
-                   Str         => "FX/Copy",
-                   Invert_From => 0);
+            declare
+               T : constant Tracks := WNM.Project.Alt_Slider_Track;
+               Name : constant String := WNM.Project.Track_Name (T);
+            begin
+               Print (X_Offset => B,
+                      Y_Offset => Box_Top + 12,
+                      Str      => Name & "(" & Img (T) & ")");
+            end;
+            B := 1;
+            Print (X_Offset => B,
+                   Y_Offset => Box_Top + 22,
+                   Str      => "Ctrl: " & WNM.Project.Alt_Slider_Target_Img);
 
          when WNM.UI.Copy =>
             declare

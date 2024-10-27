@@ -1767,6 +1767,26 @@ package body WNM.Project is
    function Alt_Slider_Target return Alt_Slider_Control
    is (G_Project.Alt_Slider_Target);
 
+   ---------------------------
+   -- Alt_Slider_Target_Img --
+   ---------------------------
+
+   function Alt_Slider_Target_Img return String is
+      T : constant Tracks := G_Project.Alt_Slider_Track;
+   begin
+      case Alt_Slider_Target is
+         when Alt_Sld_CC_Default_A  => return CC_Controller_Label (T, A);
+         when Alt_Sld_CC_Default_B  => return CC_Controller_Label (T, B);
+         when Alt_Sld_CC_Default_C  => return CC_Controller_Label (T, C);
+         when Alt_Sld_CC_Default_D  => return CC_Controller_Label (T, D);
+         when Alt_Sld_LFO_Rate      => return "LFO Rate";
+         when Alt_Sld_LFO_Amplitude => return "LFO Amplitude";
+         when Alt_Sld_Volume        => return "Volume";
+         when Alt_Sld_Pan           => return "Pan";
+         when Alt_Sld_Shuffle       => return "Shuffle";
+      end case;
+   end Alt_Slider_Target_Img;
+
    ----------------------
    -- Alt_Slider_Track --
    ----------------------
@@ -1781,7 +1801,7 @@ package body WNM.Project is
    procedure Alt_Slider_Set (Val : WNM_HAL.Touch_Value) is
    begin
       Set (G_Project.Alt_Slider_Track,
-           G_Project.Alt_Slider_Target,
+           To_Track_Setting (G_Project.Alt_Slider_Target),
            Val);
 
       Synchronize_Synth_Setting (G_Project.Alt_Slider_Track, CC_Default_A);

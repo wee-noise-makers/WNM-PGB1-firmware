@@ -567,8 +567,30 @@ package WNM.Project is
    ------------
 
    --  "Alt Slider" is controlled by touch slider during Alt/FX mode
-   subtype Alt_Slider_Control is User_Track_Settings;
+   type Alt_Slider_Control is (Alt_Sld_CC_Default_A,
+                               Alt_Sld_CC_Default_B,
+                               Alt_Sld_CC_Default_C,
+                               Alt_Sld_CC_Default_D,
+                               Alt_Sld_LFO_Rate,
+                               Alt_Sld_LFO_Amplitude,
+                               Alt_Sld_Volume,
+                               Alt_Sld_Pan,
+                               Alt_Sld_Shuffle);
+   function To_Track_Setting (Ctrl : Alt_Slider_Control)
+                              return User_Track_Settings
+   is (case Ctrl is
+       when Alt_Sld_CC_Default_A  => CC_Default_A,
+       when Alt_Sld_CC_Default_B  => CC_Default_B,
+       when Alt_Sld_CC_Default_C  => CC_Default_C,
+       when Alt_Sld_CC_Default_D  => CC_Default_D,
+       when Alt_Sld_LFO_Rate      => LFO_Rate,
+       when Alt_Sld_LFO_Amplitude => LFO_Amplitude,
+       when Alt_Sld_Volume        => Volume,
+       when Alt_Sld_Pan           => Pan,
+       when Alt_Sld_Shuffle       => Shuffle);
+
    function Alt_Slider_Target return Alt_Slider_Control;
+   function Alt_Slider_Target_Img return String;
    function Alt_Slider_Track return Tracks;
 
    procedure Alt_Slider_Set (Val : WNM_HAL.Touch_Value);
@@ -948,7 +970,7 @@ private
       Progressions : Chord_Progression_Arr;
 
       Alt_Slider_Track : WNM.Tracks := Lead_Track;
-      Alt_Slider_Target : Alt_Slider_Control := Engine;
+      Alt_Slider_Target : Alt_Slider_Control := Alt_Slider_Control'First;
    end record;
 
    G_Project : Project_Rec := (others => <>);

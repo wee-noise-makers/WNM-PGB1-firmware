@@ -113,6 +113,21 @@ package body WNM.UI is
                   when others =>
                      null;
                end case;
+
+            when FX_Alt =>
+               case B is
+                  when PAD_Up =>
+                     Project.Alt_Slider_Target_Next;
+                  when PAD_Down =>
+                     Project.Alt_Slider_Target_Prev;
+                  when PAD_Left =>
+                     Project.Alt_Slider_Track_Prev;
+                  when PAD_Right =>
+                     Project.Alt_Slider_Track_Next;
+                  when others =>
+                     null;
+               end case;
+
             when others =>
                declare
                   Kind : constant GUI.Menu.Menu_Event_Kind :=
