@@ -34,7 +34,11 @@ package body WNM.GUI.Menu is
 
    procedure Open (Kind : Base_Menu_Kind) is
    begin
-      Exit_Menu;
+
+      while Stack_Cnt /= 0 loop
+         Pop (Failure);
+      end loop;
+
       case Kind is
          when Step_Menu =>
             GUI.Menu.Step_Settings.Push_Window;
@@ -117,7 +121,7 @@ package body WNM.GUI.Menu is
 
    procedure Exit_Menu is
    begin
-      while Stack_Cnt /= 0 loop
+      while Stack_Cnt > 1 loop
          Pop (Failure);
       end loop;
    end Exit_Menu;

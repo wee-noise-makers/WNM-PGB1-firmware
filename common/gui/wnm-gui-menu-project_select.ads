@@ -29,9 +29,7 @@ package WNM.GUI.Menu.Project_Select is
 
 private
 
-   type Project_Select_Window is new Menu_Window with record
-      Index  : WNM.Project.Library.Valid_Prj_Index;
-   end record;
+   type Project_Select_Window is new Menu_Window with null record;
 
    overriding
    procedure Draw (This : in out Project_Select_Window);

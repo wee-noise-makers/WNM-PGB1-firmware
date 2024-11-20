@@ -25,7 +25,7 @@ with HAL;
 package WNM.Persistent is
 
    type Persistent_Data is record
-      Last_Project        : WNM.Project.Library.Prj_Index;
+      Last_Project        : WNM.Project.Library.Valid_Prj_Index;
       Main_Volume         : Audio_Volume;
       Line_In_Mute        : Boolean;
       Internal_Mic_Mute   : Boolean;
@@ -38,7 +38,7 @@ package WNM.Persistent is
    end record;
 
    Default : constant Persistent_Data :=
-     (Last_Project        => WNM.Project.Library.Invalid_Prj_Entry,
+     (Last_Project        => WNM.Project.Library.Valid_Prj_Index'First,
       Main_Volume         => Init_Volume,
       Line_In_Mute        => False,
       Internal_Mic_Mute   => True,

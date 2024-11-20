@@ -40,7 +40,7 @@ package body WNM.GUI.Menu.Project_Select is
    --------------
 
    function Selected return Valid_Prj_Index
-   is (Project_Select.Index);
+   is (Persistent.Data.Last_Project);
 
    ----------
    -- Draw --
@@ -52,7 +52,7 @@ package body WNM.GUI.Menu.Project_Select is
    is
    begin
       Draw_Menu_Box ("Select project", 0, 0);
-      Draw_Project_Select (This.Index);
+      Draw_Project_Select (Persistent.Data.Last_Project);
    end Draw;
 
    --------------
@@ -74,15 +74,15 @@ package body WNM.GUI.Menu.Project_Select is
          when B_Press =>
             Menu.Pop (Exit_Value => Failure);
          when Down_Press =>
-            Next (This.Index);
+            Next (Persistent.Data.Last_Project);
          when Up_Press =>
-            Prev (This.Index);
+            Prev (Persistent.Data.Last_Project);
          when Right_Press =>
             null;
          when Left_Press =>
             null;
          when Slider_Touch =>
-            Set (This.Index, Event.Slider_Value);
+            Set (Persistent.Data.Last_Project, Event.Slider_Value);
       end case;
    end On_Event;
 
@@ -95,11 +95,7 @@ package body WNM.GUI.Menu.Project_Select is
      (This  : in out Project_Select_Window)
    is
    begin
-      if Persistent.Data.Last_Project in Valid_Prj_Index then
-         This.Index := Persistent.Data.Last_Project;
-      else
-         This.Index := Valid_Prj_Index'First;
-      end if;
+      null;
    end On_Pushed;
 
    --------------

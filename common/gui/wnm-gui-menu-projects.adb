@@ -250,6 +250,7 @@ package body WNM.GUI.Menu.Projects is
                      end if;
 
                      New_State := Idle;
+                     Menu.Exit_Menu;
 
                   when Delete_Project =>
 
@@ -288,6 +289,8 @@ package body WNM.GUI.Menu.Projects is
                      Do_Save (Project_Select.Selected,
                               Text_Dialog.Value);
                      New_State := Idle;
+                     Menu.Exit_Menu;
+
                   when Rename_Project =>
                      New_State := Confirm;
                   when others =>
@@ -305,6 +308,7 @@ package body WNM.GUI.Menu.Projects is
                               Project.Library.Entry_Name
                                 (Project_Select.Selected));
                      New_State := Idle;
+                     Menu.Exit_Menu;
 
                   when Rename_Project =>
                      Do_Rename (Project_Select.Selected,
@@ -318,6 +322,7 @@ package body WNM.GUI.Menu.Projects is
                   when Clear_Project =>
                      Project.Clear;
                      New_State := Idle;
+                     Menu.Exit_Menu;
 
                   when others =>
                      raise Program_Error;
