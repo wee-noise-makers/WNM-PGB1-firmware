@@ -47,6 +47,7 @@ package WNM.Project is
    procedure Set_BPM (BPM : Beat_Per_Minute);
    procedure Change_BPM (BPM_Delta : Integer);
    function Get_BPM return Beat_Per_Minute;
+
    function Samples_Per_Beat return Synth.Sample_Time;
    function Microseconds_Per_Beat return Time.Time_Microseconds;
 
@@ -952,7 +953,7 @@ private
 
    type Song_Part_Arr is array (WNM.Parts) of Song_Part_Rec;
 
-   BPM_Default : constant := 120;
+   BPM_Default : constant := 120.0;
    type Project_Rec is record
       BPM : Beat_Per_Minute := BPM_Default;
 

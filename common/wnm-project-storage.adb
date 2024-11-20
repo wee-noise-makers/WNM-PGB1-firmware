@@ -510,7 +510,10 @@ package body WNM.Project.Storage is
    begin
       Output.Start_Global;
       Output.Push (Out_UInt (Global_Settings'Enum_Rep (BPM)));
-      Output.Push (G_Project.BPM);
+
+      --  Only store the integer part of the BPM
+      Output.Push (Out_UInt (G_Project.BPM));
+
       Output.End_Section;
    end Save_Global;
 
@@ -1027,8 +1030,6 @@ package body WNM.Project.Storage is
    procedure Load_Global (Input : in out File_In.Instance) is
       procedure To_Global_Settings is new Convert_To_Enum (Global_Settings);
 
-      procedure Read_BPM is new File_In.Read_Gen_Int (Beat_Per_Minute);
-
       Set : Global_Settings;
       Raw : In_UInt;
       Success : Boolean;
@@ -1044,7 +1045,13 @@ package body WNM.Project.Storage is
          exit when not Success;
 
          case Set is
-            when BPM   => Read_BPM (Input, G_Project.BPM);
+            when BPM  => Input.Read (Raw);
+               if Raw
+                      in In_UInt (Beat_Per_Minute'First) ..
+                        In_UInt (Beat_Per_Minute'Last)
+               then
+                  G_Project.BPM := Beat_Per_Minute (Raw);
+               end if;
          end case;
 
          exit when Input.Status /= Ok;

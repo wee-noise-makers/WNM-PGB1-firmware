@@ -20,6 +20,7 @@
 -------------------------------------------------------------------------------
 
 with MIDI;
+with MIDI.Time;
 
 pragma Warnings (Off);
 with WNM_Configuration; use WNM_Configuration;
@@ -59,7 +60,7 @@ package WNM is
    type Mixer_Buffer_Index is range 1 .. Audio.Mixer_Buffer_Count
      with Size => 8;
 
-   subtype Beat_Per_Minute is Positive range 50 .. 200;
+   subtype Beat_Per_Minute is MIDI.Time.BPM range 50.00 .. 200.00;
    subtype Sequencer_Steps is Keyboard_Value;
 
    Steps_Per_Beat : constant := 4;

@@ -50,7 +50,6 @@ private package WNM.Project.Storage.File_Out is
    procedure End_Section (This : in out Instance);
    procedure End_File (This : in out Instance);
 
-   procedure Push (This : in out Instance; A : Beat_Per_Minute);
    procedure Push (This : in out Instance; A : Step_Settings);
    procedure Push (This : in out Instance; A : Track_Settings);
    procedure Push (This : in out Instance; A : Pattern_Settings);

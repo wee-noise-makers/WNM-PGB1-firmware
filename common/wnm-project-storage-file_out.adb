@@ -156,16 +156,6 @@ package body WNM.Project.Storage.File_Out is
    -- Push --
    ----------
 
-   procedure Push (This : in out Instance; A : Beat_Per_Minute) is
-      procedure Push_G is new Push_Gen (Beat_Per_Minute);
-   begin
-      Push_G (Parent (This), A);
-   end Push;
-
-   ----------
-   -- Push --
-   ----------
-
    procedure Push (This : in out Instance; A : Step_Settings) is
       procedure Push_G is new Push_Gen (Step_Settings);
    begin

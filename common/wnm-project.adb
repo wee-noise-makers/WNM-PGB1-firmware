@@ -96,8 +96,10 @@ package body WNM.Project is
       Res : Integer;
    begin
       Res := Integer (G_Project.BPM) + BPM_Delta;
-      if Res in Beat_Per_Minute then
-         G_Project.BPM := Res;
+      if Res
+        in Integer (Beat_Per_Minute'First) .. Integer (Beat_Per_Minute'Last)
+      then
+         G_Project.BPM := Beat_Per_Minute (Res);
       end if;
    end Change_BPM;
 
@@ -105,8 +107,10 @@ package body WNM.Project is
    -- Get_BPM --
    -------------
 
-   function Get_BPM return Beat_Per_Minute
-   is (G_Project.BPM);
+   function Get_BPM return Beat_Per_Minute is
+   begin
+      return G_Project.BPM;
+   end Get_BPM;
 
    ----------------------
    -- Samples_Per_Beat --
