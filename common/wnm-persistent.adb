@@ -60,7 +60,7 @@ package body WNM.Persistent is
 
       for Token in Persistent_Token loop
 
-         Output.Push (Out_UInt (P_Last_Project'Enum_Rep));
+         Output.Push (Out_UInt (Token'Enum_Rep));
 
          exit when Output.Status /= Ok;
 
