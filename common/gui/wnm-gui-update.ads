@@ -19,7 +19,11 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with HAL;
+
 package WNM.GUI.Update is
+
+   Anim_Step : HAL.UInt32 := 0;
 
    procedure Update;
 

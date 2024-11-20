@@ -38,14 +38,15 @@ package WNM.LEDs is
       Yellow       => (255, 255, 000),
       Orange       => (255, 128, 000));
 
-   Play        : constant Hue := Green;
-   Recording   : constant Hue := Red;
-   Step        : constant Hue := Magenta;
-   Track       : constant Hue := Azure;
-   Pattern     : constant Hue := Blue;
-   Chord       : constant Hue := Orange;
-   Part        : constant Hue := Chartreuse;
-   FX          : constant Hue := Violet;
+   Play         : constant Hue := Green;
+   Recording    : constant Hue := Red;
+   Step         : constant Hue := Magenta;
+   Track        : constant Hue := Azure;
+   Pattern      : constant Hue := Blue;
+   Pattern_Link : constant Hue := Azure;
+   Chord        : constant Hue := Orange;
+   Part         : constant Hue := Chartreuse;
+   FX           : constant Hue := Violet;
 
    procedure Set_Hue (H : Hue);
 

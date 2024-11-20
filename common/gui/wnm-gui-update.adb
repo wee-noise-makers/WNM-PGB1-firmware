@@ -35,17 +35,12 @@ with WNM.Time;
 
 package body WNM.GUI.Update is
 
-   Anim_Step : HAL.UInt32 := 0;
-
    ------------
    -- Update --
    ------------
 
    procedure Update is
       B : Integer;
-
-      BPM : Natural;
-      Volume : Natural;
    begin
 
       WNM.Screen.Clear;
@@ -68,20 +63,18 @@ package body WNM.GUI.Update is
 
       case WNM.UI.Input_GUI_Mode is
          when WNM.UI.Volume_BPM_Mute | WNM.UI.Volume_BPM_Solo =>
-            BPM := Integer (WNM.Project.Get_BPM);
-            Volume := Integer (WNM.Audio_Routing.Get_Main_Volume);
 
             WNM.GUI.Parameters.Print_Percentage
               (Slot  => WNM.GUI.Parameters.Up,
                Name  => "Volume",
-               Value => Volume);
+               Value => Integer (WNM.Audio_Routing.Get_Main_Volume));
 
             WNM.GUI.Parameters.Print_Int
               (Slot  => WNM.GUI.Parameters.Down,
                Name  => "BPM",
-               Value => BPM,
-               Min   => 50,
-               Max   => 200);
+               Value => Integer (WNM.Project.Get_BPM),
+               Min   => Integer (Beat_Per_Minute'First),
+               Max   => Integer (Beat_Per_Minute'Last));
 
             case WNM.UI.Input_GUI_Mode is
                when WNM.UI.Volume_BPM_Mute =>

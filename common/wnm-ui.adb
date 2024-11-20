@@ -56,8 +56,6 @@ package body WNM.UI is
    Solo_Mode_Enabled : Boolean := False;
    Solo_Track : WNM.Tracks := 1;
 
-   Play_Released : Boolean := False;
-
    ----------------
    -- Input_Mode --
    ----------------
@@ -529,16 +527,6 @@ package body WNM.UI is
    begin
       State := WNM_HAL.State;
 
-      if not Play_Released then
-         --  The device starts when holding the play button down. We wait for
-         --  the user to release this button before doing anything.
-         if State (Play) = Up then
-            Play_Released := True;
-         else
-            return;
-         end if;
-      end if;
-
       --  Handle buttons
       for B in Button loop
          if Last_State (B) = State (B) then
@@ -701,7 +689,31 @@ package body WNM.UI is
             when Pattern_Mode =>
                LEDs.Set_Hue (LEDs.Pattern);
                LEDs.Turn_On (Pattern_Button);
-               LEDs.Turn_On (To_Button (Project.Editing_Pattern));
+
+               declare
+                  T : constant Tracks := Project.Editing_Track;
+                  EP : constant Patterns := Project.Editing_Pattern;
+                  P : Patterns;
+               begin
+                  LEDs.Turn_On (To_Button (EP));
+
+                  LEDs.Set_Hue (LEDs.Pattern_Link);
+
+                  --  Chained patterns after EP
+                  P := EP;
+                  while P /= Patterns'Last and then Project.Link (T, P) loop
+                     P := P + 1;
+                     LEDs.Turn_On (To_Button (P));
+                  end loop;
+
+                  --  Chained patterns before EP
+                  P := EP;
+                  while P /= Patterns'First and then Project.Link (T, P - 1)
+                  loop
+                     P := P - 1;
+                     LEDs.Turn_On (To_Button (P));
+                  end loop;
+               end;
 
             when Song_Mode =>
                case Project.Editing_Song_Elt is

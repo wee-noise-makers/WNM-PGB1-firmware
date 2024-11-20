@@ -19,9 +19,13 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with HAL; use HAL;
+
 with WNM.Project; use WNM.Project;
+with WNM.Screen;
 
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
+with WNM.GUI.Update;
 
 package body WNM.GUI.Menu.Pattern_Settings is
 
@@ -58,6 +62,7 @@ package body WNM.GUI.Menu.Pattern_Settings is
    is
       Sub : constant Sub_Settings := This.Current_Setting;
       Top : constant Top_Settings := To_Top (Sub);
+      EP : constant Patterns := Project.Editing_Pattern;
    begin
       Draw_Menu_Box ("Pattern settings",
                      Count => Top_Settings_Count,
@@ -73,15 +78,42 @@ package body WNM.GUI.Menu.Pattern_Settings is
             end case;
 
             Draw_Pattern_Length (6,
-                                 Project.Pattern_Length,
+                                 Project.Pattern_Length (P => EP),
                                  Selected => Sub = Length);
 
-            Draw_Value_Pos ((if Project.Link
+            Draw_Value_Pos ((if Project.Link (P => EP)
                             then "->"
                             else "X"),
                             70,
                             Selected => Sub = Has_Link);
       end case;
+
+      for P in Patterns loop
+         declare
+            Rect_Size : constant := 6;
+            Space : constant := 4;
+            Top : constant := Drawing.Box_Top + Space;
+            Left : constant := Drawing.Box_Right - 8 * (Rect_Size + Space);
+
+            X : constant Integer := Left +
+              (if P < 9
+               then (Integer (P) - 1)
+               else (Integer (P) - 9)) * (Rect_Size + Space);
+
+            Y : constant Integer := Top +
+              (if P < 9 then 0 else Rect_Size + Space);
+         begin
+            if P = EP and then Update.Anim_Step mod 14 < 7 then
+               Screen.Fill_Rect (((X, Y), Rect_Size, Rect_Size));
+            else
+               Screen.Draw_Rect (((X, Y), Rect_Size, Rect_Size));
+            end if;
+            if Project.Link (P => P) then
+               Screen.Fill_Rect (((X + Rect_Size, Y + 1),
+                                 Space, Rect_Size - 2));
+            end if;
+         end;
+      end loop;
 
    end Draw;
 
