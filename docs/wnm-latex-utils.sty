@@ -1,0 +1,26 @@
+\ProvidesPackage{wnm-latex-utils}
+
+\usepackage{menukeys}
+\usepackage{xcolor}
+\usepackage{mdframed}
+\usepackage{qrcode}
+\usepackage[inkscapeformat=png]{svg}
+
+\newenvironment{important}[1][]{%
+   \begin{mdframed}[%
+      backgroundcolor={red!15}, hidealllines=true,
+      skipabove=0.7\baselineskip, skipbelow=0.7\baselineskip,
+      splitbottomskip=2pt, splittopskip=4pt, #1]%
+   \makebox[0pt]{% ignore the withd of !
+      \smash{% ignor the height of !
+         \fontsize{20pt}{20pt}\selectfont% make the ! bigger
+         \hspace*{-19pt}% move ! to the left
+         \raisebox{-2pt}{% move ! up a little
+            {\color{red!70!black}\sffamily\bfseries !}% type the bold red !
+         }%
+      }%
+   }%
+}{\end{mdframed}}
+
+\newcommand{\kbd}[1]{\keys{#1}}
+\newcommand{\pgbmenu}[1]{\emph{#1}}

@@ -1,0 +1,163 @@
+\documentclass[10pt]{article}
+\usepackage{amssymb,amsmath,amsthm,amsfonts}
+\usepackage{multicol,multirow}
+\usepackage{calc}
+\usepackage{ifthen}
+\usepackage[portrait]{geometry}
+\usepackage[hidelinks,colorlinks=false]{hyperref}
+\usepackage{tcolorbox}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,
+    positioning,
+    quotes, shapes, spy}
+\usepackage[percent]{overpic}
+\usepackage{../wnm-latex-utils}
+
+\ifthenelse{\lengthtest { \paperwidth = 11in}}
+    { \geometry{top=.5in,left=.5in,right=.5in,bottom=.5in} }
+	{\ifthenelse{ \lengthtest{ \paperwidth = 297mm}}
+		{\geometry{top=1cm,left=1cm,right=1cm,bottom=1cm} }
+		{\geometry{top=1cm,left=1cm,right=1cm,bottom=1cm} }
+	}
+\pagestyle{empty}
+\makeatletter
+\makeatother
+\setcounter{secnumdepth}{0}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt plus 0.5ex}
+
+\def\fulldocurl{https://weenoisemakers.com/pgb-1}
+\def\firmwareupdatesurl{https://weenoisemakers.com/pgb-1}
+\def\doctitle{WNM PGB-1 Quick Start Guide}
+
+\newcommand{\OLEDscreenshot}[1]{
+\begin{tcolorbox}[hbox, colframe=black, colback=white, boxsep=-3pt]%
+\includegraphics{#1}
+\end{tcolorbox}
+}
+
+\newcommand{\reflabel}[2]{
+[\hyperref[#1]{#2}]
+}
+
+\title{\doctitle}
+
+\begin{document}
+
+\raggedright
+\footnotesize
+
+\begin{center}
+     \Large{\textbf{\doctitle}} \\
+\end{center}
+\begin{multicols*}{2}
+\setlength{\premulticols}{1pt}
+\setlength{\postmulticols}{1pt}
+\setlength{\multicolsep}{1pt}
+\setlength{\columnsep}{2pt}
+
+\section{Complete User Guide}
+
+This document provides the essential information to start using the PGB-1.
+The complete user guide is available at: \url{\fulldocurl} \qrcode[height=40pt]{\fulldocurl}
+
+\section{Hardware Layout}
+
+\includesvg[width=250pt]{../assets/PGB1-front-black-n-white-with-labels.svg}
+
+\section{Powering Up}
+
+To power up the device, slide the Power Switch to the left. The device will power up and the status LED will glow cyan blue. 
+
+\section{Charging}
+
+\section{Navigation}
+
+Use \kbd{Left}, \kbd{Right}, \kbd{Up}, \kbd{Down}, \kbd{A}, and \kbd{B} buttons to navigate inside the PGB-1 menus.
+
+The \kbd{Left} and \kbd{Right} buttons select between the different settings.
+The \kbd{Up} and \kbd{Down} buttons change the value of the selected setting.
+The \kbd{A} button is used for positive actions (select, accept, enable, etc.), 
+the \kbd{B} button for negative actions (go back, reject, disable, etc.).
+
+On the screen, a menu position indicator is showing how many pages of settings are available and which one is currently displayed.
+In addition, a left/right facing arrow shows there are pages to the left/right of the current page. 
+
+For example, looking at the track settings:
+
+% LaTeX is amazing... (https://tikz.dev/library-spy)
+\begin{center}
+\begin{tikzpicture}
+    [spy using outlines={circle, magnification=3, connect spies}, 
+    image/.style = {scale=0.8,},
+    ]
+  
+    \node[image] (A) {\OLEDscreenshot{../assets/OLED-screenshots/PGB1-OLED-track-LFO.png}};
+    
+    % Page indicator
+    \spy [black, size=2cm] on (-0.62,0.35) in node [left] at (-2.5,-0.5);
+
+    % Right arrow
+    \spy [black, size=2cm] on (1.68, 0.45) in node [right] at (2.5,-0.5);
+\end{tikzpicture}
+\end{center}
+
+\section{Firmware Updates}
+
+\url{\firmwareupdatesurl} \qrcode[height=40pt]{\firmwareupdatesurl}
+
+\section{Audio In/Out and Volume}
+
+Audio output will automatically switch from internal speaker to headset output when a jack is inserted. To change the output volume, hold the \kbd{Play} button down and press or hold \kbd{Up} or \kbd{down}. Max volume can be very loud, especially with headphones or earbuds. Be careful, high volume for a long time may damage your hearing.
+
+Audio input is disabled by default. To configure audio input, open the main menu with \kbd{Menu}, then select \pgbmenu{Inputs}. You will be able to unmute/mute for each input (Line-in, internal microphone, headset microphone), and set a common volume. On the second page. You can select a common effect for audio input.
+
+\section{Shortcuts}
+
+\begin{itemize}
+    \item[] Increase Volume \dotfill Hold \kbd{Play} + Press \kbd{Up}
+    \item[] Decrease Volume \dotfill Hold \kbd{Play} + Press \kbd{Down}
+    \item[] Increase BPM \dotfill Hold \kbd{Play} + Press \kbd{Right}
+    \item[] Decrease BPM \dotfill Hold \kbd{Play} + Press \kbd{Left}
+    \item[] Mute Track \dotfill Hold \kbd{Play} + Press \kbd{1} to \kbd{16}
+    \item[] Solo Track \dotfill Hold \kbd{Play} + Press \kbd{Track}, then Press \kbd{1} to \kbd{16}
+    \item[] Enter Sampling Mode \dotfill Hold \kbd{CPY/FX} + Press \kbd{Edit}
+\end{itemize}
+
+\section{Tips and Tricks}
+
+\section{Troubleshooting}
+
+\subsection{Situation}
+
+\subsubsection{Device won't turn off}
+
+In case the device doesn't turn off when the power switch is in the \kbd{Off} position, it means there is an unrecoverable software malfunction. 
+
+The only way out is to follow the \reflabel{procedures:reset}{Reset Procedure} below.
+
+\subsection{Procedures}
+
+\subsubsection{Reset Procedure}
+\label{procedures:reset}
+
+\begin{important}
+Changes to the current project, if any, will not be saved.
+\end{important}
+
+Use a paperclip to press the reset button (leftmost hole at the bottom right of the front panel).
+
+\subsubsection{Forced Firmware Update Procedure}
+
+First, make sure the device is off (power switch to the right). If the device doesn't turn off, follow the \reflabel{procedures:reset}{Reset Procedure}.
+
+Connect the device to your computer using a good quality USB cable.
+
+Use a paperclip to hold the `boot` button down (rightmost hole at the bottom right of the front panel).
+
+While holding the `boot` button down, turn on the device (power switch to the left).
+
+\end{multicols*}
+
+\end{document}
