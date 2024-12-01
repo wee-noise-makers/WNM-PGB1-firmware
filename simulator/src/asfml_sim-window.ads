@@ -34,6 +34,10 @@ private package ASFML_Sim.Window is
    procedure Screenshot (This : in out Instance;
                          Path :        String);
 
+   procedure OLED_Screenshot (This          : in out Instance;
+                              Path          :        String;
+                              Black_N_White :        Boolean := False);
+
 private
 
    type Panel is tagged record

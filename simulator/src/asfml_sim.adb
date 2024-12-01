@@ -215,8 +215,14 @@ package body ASFML_Sim is
                   elsif Event.key.code = Change_Keyboard_Layout_Key then
                      Next (Current_Layout);
 
+                  elsif Event.key.code = sfKeyF10 then
+                     Sim_Window.OLED_Screenshot ("PGB1-OLED-screenshot.png");
+                  elsif Event.key.code = sfKeyF11 then
+                     Sim_Window.OLED_Screenshot
+                       ("PGB1-OLED-screenshot-bw.png",
+                        Black_N_White => True);
                   elsif Event.key.code = sfKeyF12 then
-                     Sim_Window.Screenshot ("WNM-screenshot.png");
+                     Sim_Window.Screenshot ("PGB1-screenshot.png");
                   end if;
                end if;
 

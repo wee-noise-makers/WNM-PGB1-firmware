@@ -150,15 +150,14 @@ package body WNM_HAL is
 
       FB : array (0 .. (Screen_Width * Screen_Height) - 1) of sfColor
         with Address => ASFML_Sim.Frame_Buffer'Address;
-      Pix_Color : constant sfColor := fromRGB (0, 153, 255);
-      BG_Color  : constant sfColor := fromRGB (0, 0, 0);
    begin
-      FB := (others => BG_Color);
+      FB := (others => ASFML_Sim.BG_Color);
 
       for X in Pixels_Internal'Range (1) loop
          for Y in Pixels_Internal'Range (2) loop
             if Pixels_Internal (X, Y) then
-               FB (Integer (X) + Integer (Y) * Screen_Width) := Pix_Color;
+               FB (Integer (X) + Integer (Y) * Screen_Width) :=
+                 ASFML_Sim.Pix_Color;
             end if;
          end loop;
       end loop;

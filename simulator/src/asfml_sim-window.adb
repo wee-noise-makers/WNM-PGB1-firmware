@@ -12,7 +12,6 @@ with Sf.Graphics; use Sf.Graphics;
 with Sf.Graphics.BlendMode;
 with Sf.Window.VideoMode; use Sf.Window.VideoMode;
 with Sf.Graphics.Sprite; use Sf.Graphics.Sprite;
-with Sf.Graphics.Color; use Sf.Graphics.Color;
 with Sf.Graphics.Texture; use Sf.Graphics.Texture;
 with Sf.Graphics.RenderTexture; use Sf.Graphics.RenderTexture;
 with Sf.Graphics.View; use Sf.Graphics.View;
@@ -1139,6 +1138,45 @@ package body ASFML_Sim.Window is
       Sf.Graphics.Image.destroy (Img);
       Sf.Graphics.Texture.destroy (Tex);
    end Screenshot;
+
+   ---------------------
+   -- OLED_Screenshot --
+   ---------------------
+
+   procedure OLED_Screenshot (This          : in out Instance;
+                              Path          :        String;
+                              Black_N_White :        Boolean := False)
+   is
+      Img : Sf.Graphics.sfImage_Ptr;
+   begin
+      Img := Sf.Graphics.Texture.copyToImage (This.OLED_Texture);
+
+      if Black_N_White then
+         declare
+            use Sf.Graphics.Image;
+            Size : constant sfVector2u := getSize (Img);
+            White : constant sfColor := fromRGB (255, 255, 255);
+            Black : constant sfColor := fromRGB (0, 0, 0);
+         begin
+            for X in 0 .. Size.x - 1 loop
+               for Y in 0 .. Size.y - 1 loop
+                  if getPixel (Img, X, Y) = BG_Color then
+                     setPixel (Img, X, Y, White);
+                  else
+                     setPixel (Img, X, Y, Black);
+                  end if;
+               end loop;
+            end loop;
+         end;
+      end if;
+
+      if not Sf.Graphics.Image.saveToFile (Img, Path) then
+         raise Program_Error with "Cannot save screenshot...";
+      end if;
+
+      Sf.Graphics.Image.destroy (Img);
+      --  Sf.Graphics.Texture.destroy (Tex);
+   end OLED_Screenshot;
 
    ----------------
    -- Set_Enable --

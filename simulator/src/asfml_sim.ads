@@ -4,7 +4,7 @@ with System;
 
 with Sf;
 with Sf.Window.Keyboard; use Sf.Window.Keyboard;
-with Sf.Graphics.Color;
+with Sf.Graphics.Color; use Sf.Graphics.Color;
 
 with WNM_Configuration; use WNM_Configuration;
 with WNM.UI;
@@ -27,6 +27,9 @@ package ASFML_Sim is
    Frame_Buffer : array (0 .. (Screen_Width * Screen_Height * 4) - 1) of
      aliased Sf.sfUint8
        := (others => 0);
+
+   Pix_Color : constant sfColor := fromRGB (0, 153, 255);
+   BG_Color  : constant sfColor := fromRGB (0, 0, 0);
 
    type Keyboard_Layout is array (WNM_Configuration.Button) of
      Sf.Window.Keyboard.sfKeyCode;
