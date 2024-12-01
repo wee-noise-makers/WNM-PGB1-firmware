@@ -1270,11 +1270,11 @@ package body WNM.GUI.Menu.Drawing is
    begin
       case Frame is
          when F1_S .. F1_E =>
-            Copy_Bitmap (magic_hat_1.Data, BX, BY);
+            Copy_Bitmap (magic_hat_1.Data, BX, BY, Invert_Color => True);
          when F2_S .. F2_E =>
-            Copy_Bitmap (magic_hat_2.Data, BX, BY);
+            Copy_Bitmap (magic_hat_2.Data, BX, BY, Invert_Color => True);
          when F3_S .. F3_E =>
-            Copy_Bitmap (magic_hat_3.Data, BX, BY);
+            Copy_Bitmap (magic_hat_3.Data, BX, BY, Invert_Color => True);
          when others => null;
       end case;
 

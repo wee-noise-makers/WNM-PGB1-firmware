@@ -41,8 +41,10 @@ package WNM.Project is
       Steps_Count : Natural := 0;
    end record;
 
-   procedure Do_Copy (T : in out WNM.Sequence_Copy.Copy_Transaction)
+   function Do_Copy (T : in out WNM.Sequence_Copy.Copy_Transaction)
+                     return Boolean
      with Pre => WNM.Sequence_Copy.Is_Complete (T);
+   --  Returns True if something was copied
 
    procedure Set_BPM (BPM : Beat_Per_Minute);
    procedure Change_BPM (BPM_Delta : Integer);
@@ -850,7 +852,7 @@ private
 
    Default_Bass_Track : constant Track_Rec :=
      (Default_Track with delta Engine => 7,
-                               Offset => -3,
+                               Offset => -2,
                                FX => Reverb,
                                CC => ((0, 63, "CC0              "),
                                       (1, 63, "CC1              "),

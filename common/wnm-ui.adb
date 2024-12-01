@@ -354,6 +354,11 @@ package body WNM.UI is
                         Current_Input_Mode := Copy;
                         Select_Done := True;
 
+                     when Song_Button =>
+                        Copy_T := WNM.Sequence_Copy.Start_Copy_Song;
+                        Current_Input_Mode := Copy;
+                        Select_Done := True;
+
                      when Rec =>
                         --  Switch to sample edit mode
                         Current_Input_Mode := Sample_Edit_Mode;
@@ -379,8 +384,9 @@ package body WNM.UI is
             elsif Evt = On_Press then
                WNM.Sequence_Copy.Apply (Copy_T, B);
                if WNM.Sequence_Copy.Is_Complete (Copy_T) then
-                  WNM.Project.Do_Copy (Copy_T);
-                  WNM.GUI.Popup.Display ("     copied     ", 500_000);
+                  if WNM.Project.Do_Copy (Copy_T) then
+                     WNM.GUI.Popup.Display ("     copied     ", 500_000);
+                  end if;
                end if;
             end if;
 

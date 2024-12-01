@@ -38,11 +38,18 @@ package body WNM.Sequence_Copy is
             if A.Kind in Step then
                A.State := Pattern;
             end if;
+         when Song_Button =>
+            A.State := None;
          when B1 .. B16 =>
             case A.State is
                when None =>
-                  A.T := To_Value (B);
-                  A.State := Track;
+                  if A.Kind = Song_Elt then
+                     A.E := To_Value (B);
+                     A.State := Song_Elt;
+                  else
+                     A.T := To_Value (B);
+                     A.State := Track;
+                  end if;
                when Track =>
                   A.P := To_Value (B);
                   A.State := Pattern;
@@ -51,6 +58,8 @@ package body WNM.Sequence_Copy is
                   A.State := Step;
                when Step =>
                   A.S := To_Value (B);
+               when Song_Elt =>
+                  null;
             end case;
          when others =>
             null;
@@ -106,5 +115,13 @@ package body WNM.Sequence_Copy is
                           P => Current_Pattern,
                           T => Current_Track,
                           others => <>));
+
+   ---------------------
+   -- Start_Copy_Song --
+   ---------------------
+
+   function Start_Copy_Song return Copy_Transaction
+   is (From => Copy_Addr'(State => None, Kind => Song_Elt, others => <>),
+       To   => Copy_Addr'(State => None, Kind => Song_Elt, others => <>));
 
 end WNM.Sequence_Copy;

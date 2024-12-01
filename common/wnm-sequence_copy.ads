@@ -21,22 +21,27 @@
 
 package WNM.Sequence_Copy is
 
-   type Addr_State is (None, Track, Pattern, Step);
-   type Copy_Kind is (Track, Pattern, Step);
+   type Addr_State is (None, Track, Pattern, Step, Song_Elt);
+   type Copy_Kind is (Track, Pattern, Step, Song_Elt);
 
-   type Copy_Addr is record
+   type Copy_Addr (Kind : Copy_Kind := Track) is record
       State   : Addr_State := None;
-      Kind    : Copy_Kind := Track;
-      T       : Tracks := 1;
-      P       : Patterns := 1;
-      S       : Sequencer_Steps := 1;
+      case Kind is
+         when Track | Pattern | Step =>
+            T : Tracks := 1;
+            P : Patterns := 1;
+            S : Sequencer_Steps := 1;
+         when Song_Elt =>
+            E : Song_Element := 1;
+      end case;
    end record;
 
    function Is_Complete (A : Copy_Addr) return Boolean
    is (case A.Kind is
-          when Track   => A.State = Track,
-          when Pattern => A.State = Pattern,
-          when Step    => A.State = Step);
+          when Track    => A.State = Track,
+          when Pattern  => A.State = Pattern,
+          when Step     => A.State = Step,
+          when Song_Elt => A.State = Song_Elt);
 
    function Image (A : Copy_Addr; Q : String := "??") return String
    is (case A.Kind is
@@ -60,7 +65,18 @@ package WNM.Sequence_Copy is
              when Track   => "T" & Img (A.T) & "-P" & Q & "-S__",
              when Pattern => "T" & Img (A.T) & "-P" & Img (A.P) & "-S" & Q,
              when Step    => "T" & Img (A.T) & "-P" & Img (A.P) & "-S" &
-            Img (A.S)));
+                               Img (A.S),
+             when others => raise Program_Error),
+
+          when Song_Elt =>
+         (case A.State is
+             when Song_Elt =>
+            (case A.E is
+                when Parts => "Part " & Img (A.E),
+                when Chord_Progressions => "Chords " & Img (A.E)),
+             when others => Q)
+
+      );
 
    type Copy_Transaction is record
       From, To : Copy_Addr;
@@ -80,4 +96,7 @@ package WNM.Sequence_Copy is
    function Start_Copy_Step (Current_Track   : Tracks;
                              Current_Pattern : Patterns)
                              return Copy_Transaction;
+
+   function Start_Copy_Song return Copy_Transaction;
+
 end WNM.Sequence_Copy;

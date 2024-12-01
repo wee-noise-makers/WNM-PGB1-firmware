@@ -39,8 +39,11 @@ package body WNM.Project is
    -- Do_Copy --
    -------------
 
-   procedure Do_Copy (T : in out WNM.Sequence_Copy.Copy_Transaction) is
+   function Do_Copy (T : in out WNM.Sequence_Copy.Copy_Transaction)
+                     return Boolean
+   is
       use WNM.Sequence_Copy;
+      Copied : Boolean := False;
    begin
       case T.From.Kind is
          when Track =>
@@ -56,6 +59,8 @@ package body WNM.Project is
             --  imediately.
             T.To.State := Sequence_Copy.None;
 
+            Copied := True;
+
          when WNM.Sequence_Copy.Pattern =>
             --  Copy all steps from for the pattern
             G_Project.Steps (T.To.T)(T.To.P) :=
@@ -69,6 +74,8 @@ package body WNM.Project is
             --  imediately.
             T.To.State := Sequence_Copy.Track;
 
+            Copied := True;
+
          when Step =>
             G_Project.Steps (T.To.T)(T.To.P)(T.To.S) :=
               G_Project.Steps (T.From.T)(T.From.P)(T.From.S);
@@ -76,7 +83,36 @@ package body WNM.Project is
             --  Step back in destination address to allow for a new copy
             --  imediately.
             T.To.State := Sequence_Copy.Pattern;
+
+            Copied := True;
+
+         when Song_Elt =>
+            case T.From.E is
+            when Parts =>
+               if T.To.E in Parts then
+                  G_Project.Parts (T.To.E) := G_Project.Parts (T.From.E);
+                  Copied := True;
+               end if;
+
+               --  Step back in destination address to allow for a new copy
+               --  imediately.
+               T.To.State := Sequence_Copy.None;
+
+            when Chord_Progressions =>
+               if T.To.E in Chord_Progressions then
+                  G_Project.Progressions (T.To.E) :=
+                    G_Project.Progressions (T.From.E);
+                  Copied := True;
+               end if;
+
+               --  Step back in destination address to allow for a new copy
+               --  imediately.
+               T.To.State := Sequence_Copy.None;
+            end case;
+
       end case;
+
+      return Copied;
    end Do_Copy;
 
    -------------
