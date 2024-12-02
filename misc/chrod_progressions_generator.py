@@ -32,7 +32,7 @@ import roman
 
 # Major progressions
 prog_maj = [
-    #I I IM-5 IM-5 IV IV V Vsus2",
+    #"I I IM-5 IM-5 IV IV V Vsus2",
     "I I IV iii",
     "I iii IV vi",
     "I iii vi Isus4",
@@ -82,12 +82,11 @@ prog_maj = [
 
 # minor progressions
 prog_min = [
-    "i i iv iv v7 ii5 v v7",
+    # "i i iv iv v7 ii5 v v7",
     "i ii v i",
     "i III iv VI",
     "i III VII VI",
-    "i iim v III i iim v VII",
-    "i iim v IVM",
+    "i ii v III i ii v VII",
     "i iv III VI",
     "i iv v iv",
     "i iv v v",
@@ -104,32 +103,25 @@ prog_min = [
     "i VI VII iv",
     "i VI VII v",
     "i VI VII VII",
-    "i VII i i VI v i",
     "i VII i v III VII i v i",
     "i VII i v",
     "i VII III VI",
     "i VII v VI",
     "i VII VI III iv VI VII i",
     "i VII VI III",
-    "i VII VI iv ivsus4 iv",
     "i VII VI iv",
     "i VII VI VII",
-    "i VM VII IVM VI III iv VM",
     "i7 VI III7 VII6 i i7 III7 iv7",
     "ii v i i",
     "ii v i iv",
     "ii VI i iv",
-    "iim IVM v VII",
     "im7 ivsus4 v7 isus4",
     "iv i v VI",
-    "iv i VIIm VI",
-    "iv III iim7 VM",
     "iv III VII i",
     "iv III vsus4 VI iv i III VI",
     "iv v VI VII",
     "iv VI v VII",
     "iv VI VII i",
-    "IVM v iim i III IVM",
     "v i iv VII",
     "v iv i i",
     "v VI III i",
@@ -141,7 +133,6 @@ prog_min = [
     "VI VI i VII",
     "VI VII i III",
     "VI VII v III",
-    "VI VIm i VII",
     "VII iv v i",
     "VII iv VII i",
 ]
@@ -160,27 +151,58 @@ prog_modal = [
     "bIIM bVIM biii bviim",
     "bIIM ivm biii im",
     "bVIIM bIIM bIIIM im",
+    "bVIM bIIIM bVIIM IV I",
     "bVIM bVIIm im bIIM",
+    "bVIM vi im bVIIM",
+    "bVIM7 ivmadd9 I I",
+    "I bIIIM bVIIM I",
     "I bIIIM bVIIM IV",
     "I bIIIM bVIM bVIIM",
+    "I bIIIM IV I",
     "I bIIM I iii",
+    "I bIIM7 bIIIM6 bIIM7 I im bVIIM bIIM",
     "I bVIIM bVIM bIIM",
+    "I bVIIM bVIM IV IVsus4 IV",
+    "I bVIIM I I bVIM V",
     "I bVIIM IV V", 
     "I bVIM I bIIM",
+    "I bVIM IV bIIIM bVIIM",
+    "I IIIM vi V",
     "I IIM iii V6",
     "I IIM IV I",
     "I IV bIIIM bVIM", 
     "I IV bVIIM IV",
     "I IV V bVIIM",
+    "I ivm bIIIM bVIIM",
     "I V bVIIM IV",
+    "I V ivm bVIM",
     "I5 iii II5 #IVm IV5 vi V5 viim",
     "ii bIIM I bVIIM",
     "ii bVIIM7 I", 
+    "ii IVM vm bVIIM",
     "IIIM V VIsus4 VIM I IIM",
+    "im bIIIM bVIIM IV",
+    "im bIIIM bVIM V",
+    "im bIIIM IV bVIM",
     "im bIIM bIIIM bIIM",
+    "im bIIM biim6 ivm",
+    "im bIIM im7 bviim",
     "im bIIM ivm IIIM bIIM ivm IIIM IIIM",
+    "im bIIM vm im7",
+    "im bVIIM bIIM vm",
+    "im bviim bVIM bIIM",
+    "im bVIM ivm V",
+    "im ii vm IV",
+    "im ivm9 bIIM im vm ivm7 bIIM im7",
+    "im ivm9 bIIM im",
+    "im V bVIIM IV bVIM bIIIM ivm V",
     "im VIM bi V",
     "im VIM IIIM bIIM",
+    "im vm bVIM bIIM",
+    "im vm ivm bIIM7",
+    "IV V ii im bIIIM IV",
+    "ivm bIIIM iim7 V",
+    "ivm im bviim bVIM",
     "vdim vdim ivm bIIIM",
     "vi bVIM bVIIM I",
     "vi vii V vi #IVdim V",
@@ -199,10 +221,10 @@ prog_modal = [
 
 p = re.compile("(?:(?P<flat>b)|(?P<sharp>#))?(?:(?P<minor>[vi]+)|(?P<major>[VI]+))(?P<func>sus2|sus4|dim|add9|7|m7|5|69|m|M)?")
 
-accdidents = {
-              "b": "Flat",
-              "": "Natural",
-              "s": "Sharp",
+accidents = {
+             "b": "Flat",
+             "": "Natural",
+             "s": "Sharp",
              }
 
 # Conversion table for WNM chord function names
@@ -214,18 +236,18 @@ functions = {
              "sus2": "Sus2",
              "7": "Maj_7th",
              "m7": "Min_7th",
-             "5": "Maj_Five",
+             "5": "Five",
              "m5": "Min_Five",
              "6add9": "Six_Add_Nine"
             }
 
 # First print a definition for all the chords in roman numeral notation
-for kind in ["min", "maj", "dim", "sus4", "sus2", "7", "m7", "5", "m5"]:
+for kind in ["min", "maj", "dim", "sus4", "sus2", "7", "m7", "5"]:
     print (f"   --  {kind}")
-    for accdident in ["b", "", "s"]:
+    for accident in ["b", "", "s"]:
         for degree in range(1, 8):
-            name = accdident + roman.toRoman(degree) + kind
-            accident_name = accdidents[accdident]
+            name = accident + roman.toRoman(degree) + kind
+            accident_name = accidents[accident]
             function = functions[kind]
             print(f"   {name} : constant Roman_Numeral_Notation "
                   f":= ({degree}, {accident_name}, {function});")
@@ -293,8 +315,11 @@ class Chord():
 def convert_progressions (name, progessions):
     id = 0
     for prog in progessions:
-        if "add9" in prog: # We don't support add9 chords so far
+
+        # Filter chords that we don't support
+        if "add9" in prog or "69" in prog:
             continue
+
         list = []
         for elt in prog.split(" "):
             C = Chord(elt)

@@ -51,6 +51,8 @@ private
       Current_Chord_Setting : Chord_Sub_Settings := Chord_Sub_Settings'First;
       Top_Chord_Setting : Chord_Top_Settings := Chord_Top_Settings'First;
 
+      Hat_Scale : Project.Scale_Choice := Project.Random;
+
       Hat_Anim_Step : HAL.UInt32 := 0;
    end record;
 

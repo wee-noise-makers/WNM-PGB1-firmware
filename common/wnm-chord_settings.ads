@@ -403,7 +403,6 @@ package WNM.Chord_Settings is
    sV5 : constant Roman_Numeral_Notation := (5, Sharp, Five);
    sVI5 : constant Roman_Numeral_Notation := (6, Sharp, Five);
    sVII5 : constant Roman_Numeral_Notation := (7, Sharp, Five);
-
    Major_Progression_0 : aliased constant Roman_Numeral_Progression :=
      (Imaj, Imaj, IVmaj, IIImin);
    --  I I IV iii
@@ -622,250 +621,206 @@ package WNM.Chord_Settings is
      Major_Progression_42'Access
      );
    Minor_Progression_0 : aliased constant Roman_Numeral_Progression :=
-     (Imin, Imin, IVmin, IVmin, Vm7, Vmin, Vm7);
-   --  i i iv iv v7 ii5 v v7
-
-   Minor_Progression_1 : aliased constant Roman_Numeral_Progression :=
      (Imin, IImin, Vmin, Imin);
    --  i ii v i
 
-   Minor_Progression_2 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_1 : aliased constant Roman_Numeral_Progression :=
      (Imin, IIImaj, IVmin, VImaj);
    --  i III iv VI
 
-   Minor_Progression_3 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_2 : aliased constant Roman_Numeral_Progression :=
      (Imin, IIImaj, VIImaj, VImaj);
    --  i III VII VI
 
-   Minor_Progression_4 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_3 : aliased constant Roman_Numeral_Progression :=
      (Imin, IImin, Vmin, IIImaj, Imin, IImin, Vmin, VIImaj);
-   --  i iim v III i iim v VII
+   --  i ii v III i ii v VII
 
-   Minor_Progression_5 : aliased constant Roman_Numeral_Progression :=
-     (Imin, IImin, Vmin, IVmaj);
-   --  i iim v IVM
-
-   Minor_Progression_6 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_4 : aliased constant Roman_Numeral_Progression :=
      (Imin, IVmin, IIImaj, VImaj);
    --  i iv III VI
 
-   Minor_Progression_7 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_5 : aliased constant Roman_Numeral_Progression :=
      (Imin, IVmin, Vmin, IVmin);
    --  i iv v iv
 
-   Minor_Progression_8 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_6 : aliased constant Roman_Numeral_Progression :=
      (Imin, IVmin, Vmin, Vmin);
    --  i iv v v
 
-   Minor_Progression_9 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_7 : aliased constant Roman_Numeral_Progression :=
      (Imin, IVmin, VImaj, Vmin);
    --  i iv VI v
 
-   Minor_Progression_10 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_8 : aliased constant Roman_Numeral_Progression :=
      (Imin, IVmin, VIImaj, Imin);
    --  i iv VII i
 
-   Minor_Progression_11 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_9 : aliased constant Roman_Numeral_Progression :=
      (Imin, IVmin, VIImaj, Vmin, Imin, Imin, IImin, Vmaj);
    --  i iv VII v i i ii V
 
-   Minor_Progression_12 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_10 : aliased constant Roman_Numeral_Progression :=
      (Imin, Vmin, IVmin, VIImaj);
    --  i v iv VII
 
-   Minor_Progression_13 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_11 : aliased constant Roman_Numeral_Progression :=
      (Imin, Vdim, IVmin, VImaj);
    --  i vdim iv VI
 
-   Minor_Progression_14 : aliased constant Roman_Numeral_Progression :=
-     (Imin, VImaj, IIImaj, VIImaj, Imin, III7, VIImaj);
-   --  i VI III VII i VI69 III7 VII
-
-   Minor_Progression_15 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_12 : aliased constant Roman_Numeral_Progression :=
      (Imin, VImaj, IIImaj, VIImaj);
    --  i VI III VII
 
-   Minor_Progression_16 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_13 : aliased constant Roman_Numeral_Progression :=
      (Imin, VImaj, IVmin, IImin);
    --  i VI iv ii
 
-   Minor_Progression_17 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_14 : aliased constant Roman_Numeral_Progression :=
      (Imin, VImaj, IVmin, IIImaj);
    --  i VI iv III
 
-   Minor_Progression_18 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_15 : aliased constant Roman_Numeral_Progression :=
      (Imin, VImaj, IVmin, Vmin);
    --  i VI iv v
 
-   Minor_Progression_19 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_16 : aliased constant Roman_Numeral_Progression :=
      (Imin, VImaj, VIImaj, IVmin);
    --  i VI VII iv
 
-   Minor_Progression_20 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_17 : aliased constant Roman_Numeral_Progression :=
      (Imin, VImaj, VIImaj, Vmin);
    --  i VI VII v
 
-   Minor_Progression_21 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_18 : aliased constant Roman_Numeral_Progression :=
      (Imin, VImaj, VIImaj, VIImaj);
    --  i VI VII VII
 
-   Minor_Progression_22 : aliased constant Roman_Numeral_Progression :=
-     (Imin, VIImaj, Imin, Imin, VImaj, Vmin, Imin);
-   --  i VII i i VI v i
-
-   Minor_Progression_23 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_19 : aliased constant Roman_Numeral_Progression :=
      (Imin, VIImaj, Imin, Vmin, IIImaj, VIImaj, Imin, Vmin, Imin);
    --  i VII i v III VII i v i
 
-   Minor_Progression_24 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_20 : aliased constant Roman_Numeral_Progression :=
      (Imin, VIImaj, Imin, Vmin);
    --  i VII i v
 
-   Minor_Progression_25 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_21 : aliased constant Roman_Numeral_Progression :=
      (Imin, VIImaj, IIImaj, VImaj);
    --  i VII III VI
 
-   Minor_Progression_26 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_22 : aliased constant Roman_Numeral_Progression :=
      (Imin, VIImaj, Vmin, VImaj);
    --  i VII v VI
 
-   Minor_Progression_27 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_23 : aliased constant Roman_Numeral_Progression :=
      (Imin, VIImaj, VImaj, IIImaj, IVmin, VImaj, VIImaj, Imin);
    --  i VII VI III iv VI VII i
 
-   Minor_Progression_28 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_24 : aliased constant Roman_Numeral_Progression :=
      (Imin, VIImaj, VImaj, IIImaj);
    --  i VII VI III
 
-   Minor_Progression_29 : aliased constant Roman_Numeral_Progression :=
-     (Imin, VIImaj, VImaj, IVmin, IVsus4, IVmin);
-   --  i VII VI iv ivsus4 iv
-
-   Minor_Progression_30 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_25 : aliased constant Roman_Numeral_Progression :=
      (Imin, VIImaj, VImaj, IVmin);
    --  i VII VI iv
 
-   Minor_Progression_31 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_26 : aliased constant Roman_Numeral_Progression :=
      (Imin, VIImaj, VImaj, VIImaj);
    --  i VII VI VII
 
-   Minor_Progression_32 : aliased constant Roman_Numeral_Progression :=
-     (Imin, Vmaj, VIImaj, IVmaj, VImaj, IIImaj, IVmin, Vmaj);
-   --  i VM VII IVM VI III iv VM
-
-   Minor_Progression_33 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_27 : aliased constant Roman_Numeral_Progression :=
      (Im7, VImaj, III7, VIImaj, Imin, Im7, III7, IVm7);
    --  i7 VI III7 VII6 i i7 III7 iv7
 
-   Minor_Progression_34 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_28 : aliased constant Roman_Numeral_Progression :=
      (IImin, Vmin, Imin, Imin);
    --  ii v i i
 
-   Minor_Progression_35 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_29 : aliased constant Roman_Numeral_Progression :=
      (IImin, Vmin, Imin, IVmin);
    --  ii v i iv
 
-   Minor_Progression_36 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_30 : aliased constant Roman_Numeral_Progression :=
      (IImin, VImaj, Imin, IVmin);
    --  ii VI i iv
 
-   Minor_Progression_37 : aliased constant Roman_Numeral_Progression :=
-     (IImin, IVmaj, Vmin, VIImaj);
-   --  iim IVM v VII
-
-   Minor_Progression_38 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_31 : aliased constant Roman_Numeral_Progression :=
      (Im7, IVsus4, Vm7, Isus4);
    --  im7 ivsus4 v7 isus4
 
-   Minor_Progression_39 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_32 : aliased constant Roman_Numeral_Progression :=
      (IVmin, Imin, Vmin, VImaj);
    --  iv i v VI
 
-   Minor_Progression_40 : aliased constant Roman_Numeral_Progression :=
-     (IVmin, Imin, VIImin, VImaj);
-   --  iv i VIIm VI
-
-   Minor_Progression_41 : aliased constant Roman_Numeral_Progression :=
-     (IVmin, IIImaj, IIm7, Vmaj);
-   --  iv III iim7 VM
-
-   Minor_Progression_42 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_33 : aliased constant Roman_Numeral_Progression :=
      (IVmin, IIImaj, VIImaj, Imin);
    --  iv III VII i
 
-   Minor_Progression_43 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_34 : aliased constant Roman_Numeral_Progression :=
      (IVmin, IIImaj, Vsus4, VImaj, IVmin, Imin, IIImaj, VImaj);
    --  iv III vsus4 VI iv i III VI
 
-   Minor_Progression_44 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_35 : aliased constant Roman_Numeral_Progression :=
      (IVmin, Vmin, VImaj, VIImaj);
    --  iv v VI VII
 
-   Minor_Progression_45 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_36 : aliased constant Roman_Numeral_Progression :=
      (IVmin, VImaj, Vmin, VIImaj);
    --  iv VI v VII
 
-   Minor_Progression_46 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_37 : aliased constant Roman_Numeral_Progression :=
      (IVmin, VImaj, VIImaj, Imin);
    --  iv VI VII i
 
-   Minor_Progression_47 : aliased constant Roman_Numeral_Progression :=
-     (IVmaj, Vmin, IImin, Imin, IIImaj, IVmaj);
-   --  IVM v iim i III IVM
-
-   Minor_Progression_48 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_38 : aliased constant Roman_Numeral_Progression :=
      (Vmin, Imin, IVmin, VIImaj);
    --  v i iv VII
 
-   Minor_Progression_49 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_39 : aliased constant Roman_Numeral_Progression :=
      (Vmin, IVmin, Imin, Imin);
    --  v iv i i
 
-   Minor_Progression_50 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_40 : aliased constant Roman_Numeral_Progression :=
      (Vmin, VImaj, IIImaj, Imin);
    --  v VI III i
 
-   Minor_Progression_51 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_41 : aliased constant Roman_Numeral_Progression :=
      (Vmin, VImaj, Vmin, Imin);
    --  v VI v i
 
-   Minor_Progression_52 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_42 : aliased constant Roman_Numeral_Progression :=
      (VImaj, Imin, Vmin, IIImaj);
    --  VI i v III
 
-   Minor_Progression_53 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_43 : aliased constant Roman_Numeral_Progression :=
      (VImaj, Imin, Vmin, Vmin);
    --  VI i v v
 
-   Minor_Progression_54 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_44 : aliased constant Roman_Numeral_Progression :=
      (VImaj, IIImaj, Imin, Vmin);
    --  VI III i v
 
-   Minor_Progression_55 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_45 : aliased constant Roman_Numeral_Progression :=
      (VImaj, IVmin, Imin, Vmin);
    --  VI iv i v
 
-   Minor_Progression_56 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_46 : aliased constant Roman_Numeral_Progression :=
      (VImaj, VImaj, Imin, VIImaj);
    --  VI VI i VII
 
-   Minor_Progression_57 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_47 : aliased constant Roman_Numeral_Progression :=
      (VImaj, VIImaj, Imin, IIImaj);
    --  VI VII i III
 
-   Minor_Progression_58 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_48 : aliased constant Roman_Numeral_Progression :=
      (VImaj, VIImaj, Vmin, IIImaj);
    --  VI VII v III
 
-   Minor_Progression_59 : aliased constant Roman_Numeral_Progression :=
-     (VImaj, VImin, Imin, VIImaj);
-   --  VI VIm i VII
-
-   Minor_Progression_60 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_49 : aliased constant Roman_Numeral_Progression :=
      (VIImaj, IVmin, Vmin, Imin);
    --  VII iv v i
 
-   Minor_Progression_61 : aliased constant Roman_Numeral_Progression :=
+   Minor_Progression_50 : aliased constant Roman_Numeral_Progression :=
      (VIImaj, IVmin, VIImaj, Imin);
    --  VII iv VII i
 
@@ -920,18 +875,7 @@ package WNM.Chord_Settings is
      Minor_Progression_47'Access,
      Minor_Progression_48'Access,
      Minor_Progression_49'Access,
-     Minor_Progression_50'Access,
-     Minor_Progression_51'Access,
-     Minor_Progression_52'Access,
-     Minor_Progression_53'Access,
-     Minor_Progression_54'Access,
-     Minor_Progression_55'Access,
-     Minor_Progression_56'Access,
-     Minor_Progression_57'Access,
-     Minor_Progression_58'Access,
-     Minor_Progression_59'Access,
-     Minor_Progression_60'Access,
-     Minor_Progression_61'Access
+     Minor_Progression_50'Access
      );
    Modal_Progression_0 : aliased constant Roman_Numeral_Progression :=
      (bIIImaj, IImin, bIImaj, Imaj);
@@ -950,126 +894,246 @@ package WNM.Chord_Settings is
    --  bVIIM bIIM bIIIM im
 
    Modal_Progression_4 : aliased constant Roman_Numeral_Progression :=
+     (bVImaj, bIIImaj, bVIImaj, IVmaj, Imaj);
+   --  bVIM bIIIM bVIIM IV I
+
+   Modal_Progression_5 : aliased constant Roman_Numeral_Progression :=
      (bVImaj, bVIImin, Imin, bIImaj);
    --  bVIM bVIIm im bIIM
 
-   Modal_Progression_5 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_6 : aliased constant Roman_Numeral_Progression :=
+     (bVImaj, VImin, Imin, bVIImaj);
+   --  bVIM vi im bVIIM
+
+   Modal_Progression_7 : aliased constant Roman_Numeral_Progression :=
+     (Imaj, bIIImaj, bVIImaj, Imaj);
+   --  I bIIIM bVIIM I
+
+   Modal_Progression_8 : aliased constant Roman_Numeral_Progression :=
      (Imaj, bIIImaj, bVIImaj, IVmaj);
    --  I bIIIM bVIIM IV
 
-   Modal_Progression_6 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_9 : aliased constant Roman_Numeral_Progression :=
      (Imaj, bIIImaj, bVImaj, bVIImaj);
    --  I bIIIM bVIM bVIIM
 
-   Modal_Progression_7 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_10 : aliased constant Roman_Numeral_Progression :=
+     (Imaj, bIIImaj, IVmaj, Imaj);
+   --  I bIIIM IV I
+
+   Modal_Progression_11 : aliased constant Roman_Numeral_Progression :=
      (Imaj, bIImaj, Imaj, IIImin);
    --  I bIIM I iii
 
-   Modal_Progression_8 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_12 : aliased constant Roman_Numeral_Progression :=
+     (Imaj, bIImaj, bIIImaj, bIImaj, Imaj, Imin, bVIImaj, bIImaj);
+   --  I bIIM7 bIIIM6 bIIM7 I im bVIIM bIIM
+
+   Modal_Progression_13 : aliased constant Roman_Numeral_Progression :=
      (Imaj, bVIImaj, bVImaj, bIImaj);
    --  I bVIIM bVIM bIIM
 
-   Modal_Progression_9 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_14 : aliased constant Roman_Numeral_Progression :=
+     (Imaj, bVIImaj, bVImaj, IVmaj, IVsus4, IVmaj);
+   --  I bVIIM bVIM IV IVsus4 IV
+
+   Modal_Progression_15 : aliased constant Roman_Numeral_Progression :=
+     (Imaj, bVIImaj, Imaj, Imaj, bVImaj, Vmaj);
+   --  I bVIIM I I bVIM V
+
+   Modal_Progression_16 : aliased constant Roman_Numeral_Progression :=
      (Imaj, bVIImaj, IVmaj, Vmaj);
    --  I bVIIM IV V
 
-   Modal_Progression_10 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_17 : aliased constant Roman_Numeral_Progression :=
      (Imaj, bVImaj, Imaj, bIImaj);
    --  I bVIM I bIIM
 
-   Modal_Progression_11 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_18 : aliased constant Roman_Numeral_Progression :=
+     (Imaj, bVImaj, IVmaj, bIIImaj, bVIImaj);
+   --  I bVIM IV bIIIM bVIIM
+
+   Modal_Progression_19 : aliased constant Roman_Numeral_Progression :=
+     (Imaj, IIImaj, VImin, Vmaj);
+   --  I IIIM vi V
+
+   Modal_Progression_20 : aliased constant Roman_Numeral_Progression :=
      (Imaj, IImaj, IIImin, Vmaj);
    --  I IIM iii V6
 
-   Modal_Progression_12 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_21 : aliased constant Roman_Numeral_Progression :=
      (Imaj, IImaj, IVmaj, Imaj);
    --  I IIM IV I
 
-   Modal_Progression_13 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_22 : aliased constant Roman_Numeral_Progression :=
      (Imaj, IVmaj, bIIImaj, bVImaj);
    --  I IV bIIIM bVIM
 
-   Modal_Progression_14 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_23 : aliased constant Roman_Numeral_Progression :=
      (Imaj, IVmaj, bVIImaj, IVmaj);
    --  I IV bVIIM IV
 
-   Modal_Progression_15 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_24 : aliased constant Roman_Numeral_Progression :=
      (Imaj, IVmaj, Vmaj, bVIImaj);
    --  I IV V bVIIM
 
-   Modal_Progression_16 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_25 : aliased constant Roman_Numeral_Progression :=
+     (Imaj, IVmin, bIIImaj, bVIImaj);
+   --  I ivm bIIIM bVIIM
+
+   Modal_Progression_26 : aliased constant Roman_Numeral_Progression :=
      (Imaj, Vmaj, bVIImaj, IVmaj);
    --  I V bVIIM IV
 
-   Modal_Progression_17 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_27 : aliased constant Roman_Numeral_Progression :=
+     (Imaj, Vmaj, IVmin, bVImaj);
+   --  I V ivm bVIM
+
+   Modal_Progression_28 : aliased constant Roman_Numeral_Progression :=
      (I5, IIImin, II5, sIVmin, IV5, VImin, V5, VIImin);
    --  I5 iii II5 #IVm IV5 vi V5 viim
 
-   Modal_Progression_18 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_29 : aliased constant Roman_Numeral_Progression :=
      (IImin, bIImaj, Imaj, bVIImaj);
    --  ii bIIM I bVIIM
 
-   Modal_Progression_19 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_30 : aliased constant Roman_Numeral_Progression :=
      (IImin, bVIImaj, Imaj);
    --  ii bVIIM7 I
 
-   Modal_Progression_20 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_31 : aliased constant Roman_Numeral_Progression :=
+     (IImin, IVmaj, Vmin, bVIImaj);
+   --  ii IVM vm bVIIM
+
+   Modal_Progression_32 : aliased constant Roman_Numeral_Progression :=
      (IIImaj, Vmaj, VIsus4, VImaj, Imaj, IImaj);
    --  IIIM V VIsus4 VIM I IIM
 
-   Modal_Progression_21 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_33 : aliased constant Roman_Numeral_Progression :=
+     (Imin, bIIImaj, bVIImaj, IVmaj);
+   --  im bIIIM bVIIM IV
+
+   Modal_Progression_34 : aliased constant Roman_Numeral_Progression :=
+     (Imin, bIIImaj, bVImaj, Vmaj);
+   --  im bIIIM bVIM V
+
+   Modal_Progression_35 : aliased constant Roman_Numeral_Progression :=
+     (Imin, bIIImaj, IVmaj, bVImaj);
+   --  im bIIIM IV bVIM
+
+   Modal_Progression_36 : aliased constant Roman_Numeral_Progression :=
      (Imin, bIImaj, bIIImaj, bIImaj);
    --  im bIIM bIIIM bIIM
 
-   Modal_Progression_22 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_37 : aliased constant Roman_Numeral_Progression :=
+     (Imin, bIImaj, bIImin, IVmin);
+   --  im bIIM biim6 ivm
+
+   Modal_Progression_38 : aliased constant Roman_Numeral_Progression :=
+     (Imin, bIImaj, Im7, bVIImin);
+   --  im bIIM im7 bviim
+
+   Modal_Progression_39 : aliased constant Roman_Numeral_Progression :=
      (Imin, bIImaj, IVmin, IIImaj, bIImaj, IVmin, IIImaj, IIImaj);
    --  im bIIM ivm IIIM bIIM ivm IIIM IIIM
 
-   Modal_Progression_23 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_40 : aliased constant Roman_Numeral_Progression :=
+     (Imin, bIImaj, Vmin, Im7);
+   --  im bIIM vm im7
+
+   Modal_Progression_41 : aliased constant Roman_Numeral_Progression :=
+     (Imin, bVIImaj, bIImaj, Vmin);
+   --  im bVIIM bIIM vm
+
+   Modal_Progression_42 : aliased constant Roman_Numeral_Progression :=
+     (Imin, bVIImin, bVImaj, bIImaj);
+   --  im bviim bVIM bIIM
+
+   Modal_Progression_43 : aliased constant Roman_Numeral_Progression :=
+     (Imin, bVImaj, IVmin, Vmaj);
+   --  im bVIM ivm V
+
+   Modal_Progression_44 : aliased constant Roman_Numeral_Progression :=
+     (Imin, IImin, Vmin, IVmaj);
+   --  im ii vm IV
+
+   Modal_Progression_45 : aliased constant Roman_Numeral_Progression :=
+     (Imin, IVmin, bIImaj, Imin, Vmin, IVm7, bIImaj, Im7);
+   --  im ivm9 bIIM im vm ivm7 bIIM im7
+
+   Modal_Progression_46 : aliased constant Roman_Numeral_Progression :=
+     (Imin, IVmin, bIImaj, Imin);
+   --  im ivm9 bIIM im
+
+   Modal_Progression_47 : aliased constant Roman_Numeral_Progression :=
+     (Imin, Vmaj, bVIImaj, IVmaj, bVImaj, bIIImaj, IVmin, Vmaj);
+   --  im V bVIIM IV bVIM bIIIM ivm V
+
+   Modal_Progression_48 : aliased constant Roman_Numeral_Progression :=
      (Imin, VImaj, bImin, Vmaj);
    --  im VIM bi V
 
-   Modal_Progression_24 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_49 : aliased constant Roman_Numeral_Progression :=
      (Imin, VImaj, IIImaj, bIImaj);
    --  im VIM IIIM bIIM
 
-   Modal_Progression_25 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_50 : aliased constant Roman_Numeral_Progression :=
+     (Imin, Vmin, bVImaj, bIImaj);
+   --  im vm bVIM bIIM
+
+   Modal_Progression_51 : aliased constant Roman_Numeral_Progression :=
+     (Imin, Vmin, IVmin, bIImaj);
+   --  im vm ivm bIIM7
+
+   Modal_Progression_52 : aliased constant Roman_Numeral_Progression :=
+     (IVmaj, Vmaj, IImin, Imin, bIIImaj, IVmaj);
+   --  IV V ii im bIIIM IV
+
+   Modal_Progression_53 : aliased constant Roman_Numeral_Progression :=
+     (IVmin, bIIImaj, IIm7, Vmaj);
+   --  ivm bIIIM iim7 V
+
+   Modal_Progression_54 : aliased constant Roman_Numeral_Progression :=
+     (IVmin, Imin, bVIImin, bVImaj);
+   --  ivm im bviim bVIM
+
+   Modal_Progression_55 : aliased constant Roman_Numeral_Progression :=
      (Vdim, Vdim, IVmin, bIIImaj);
    --  vdim vdim ivm bIIIM
 
-   Modal_Progression_26 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_56 : aliased constant Roman_Numeral_Progression :=
      (VImin, bVImaj, bVIImaj, Imaj);
    --  vi bVIM bVIIM I
 
-   Modal_Progression_27 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_57 : aliased constant Roman_Numeral_Progression :=
      (VImin, VIImin, Vmaj, VImin, sIVdim, Vmaj);
    --  vi vii V vi #IVdim V
 
-   Modal_Progression_28 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_58 : aliased constant Roman_Numeral_Progression :=
      (VImaj, bVImaj, Imin, bVIImaj);
    --  VIM bVIM im bVIIM
 
-   Modal_Progression_29 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_59 : aliased constant Roman_Numeral_Progression :=
      (bIIImaj, V7, Imaj);
    --  bIIIM V7 I
 
-   Modal_Progression_30 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_60 : aliased constant Roman_Numeral_Progression :=
      (bVIImaj, V7, Imaj);
    --  bVIIM V7 I
 
-   Modal_Progression_31 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_61 : aliased constant Roman_Numeral_Progression :=
      (Imin, bVIImaj, IVmaj, Imin);
    --  im bVIIM IV im
 
-   Modal_Progression_32 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_62 : aliased constant Roman_Numeral_Progression :=
      (IVmin, bIIImaj, bIImaj, Imaj);
    --  ivm bIIIM bIIM I
 
-   Modal_Progression_33 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_63 : aliased constant Roman_Numeral_Progression :=
      (IVmin, IIImaj, bIImaj, Imaj);
    --  ivm IIIM bIIM I
 
-   Modal_Progression_34 : aliased constant Roman_Numeral_Progression :=
+   Modal_Progression_64 : aliased constant Roman_Numeral_Progression :=
      (IVmin, bIIImaj, bVImaj, Imaj);
    --  ivm bIIIM bVIM I
 
@@ -1108,7 +1172,37 @@ package WNM.Chord_Settings is
      Modal_Progression_31'Access,
      Modal_Progression_32'Access,
      Modal_Progression_33'Access,
-     Modal_Progression_34'Access
+     Modal_Progression_34'Access,
+     Modal_Progression_35'Access,
+     Modal_Progression_36'Access,
+     Modal_Progression_37'Access,
+     Modal_Progression_38'Access,
+     Modal_Progression_39'Access,
+     Modal_Progression_40'Access,
+     Modal_Progression_41'Access,
+     Modal_Progression_42'Access,
+     Modal_Progression_43'Access,
+     Modal_Progression_44'Access,
+     Modal_Progression_45'Access,
+     Modal_Progression_46'Access,
+     Modal_Progression_47'Access,
+     Modal_Progression_48'Access,
+     Modal_Progression_49'Access,
+     Modal_Progression_50'Access,
+     Modal_Progression_51'Access,
+     Modal_Progression_52'Access,
+     Modal_Progression_53'Access,
+     Modal_Progression_54'Access,
+     Modal_Progression_55'Access,
+     Modal_Progression_56'Access,
+     Modal_Progression_57'Access,
+     Modal_Progression_58'Access,
+     Modal_Progression_59'Access,
+     Modal_Progression_60'Access,
+     Modal_Progression_61'Access,
+     Modal_Progression_62'Access,
+     Modal_Progression_63'Access,
+     Modal_Progression_64'Access
      );
 
 end WNM.Chord_Settings;

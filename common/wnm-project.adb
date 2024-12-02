@@ -1744,6 +1744,7 @@ package body WNM.Project is
       Collection : access constant Progression_Collection := null;
       Scale : Scale_Name;
       Key  : MIDI.MIDI_Key;
+      Use_Modal : Boolean := False;
    begin
       case Scale_C is
          when Random =>
@@ -1756,6 +1757,9 @@ package body WNM.Project is
             Scale := Major_Scale;
          when Minor =>
             Scale := Minor_Scale;
+         when Modal =>
+            Scale := Major_Scale;
+            Use_Modal := True;
       end case;
 
       case Key_C is
@@ -1775,9 +1779,13 @@ package body WNM.Project is
       end case;
 
       case Scale is
-         when Major_Scale => Collection := Major_Progressions'Access;
+         when Major_Scale =>
+            if Use_Modal then
+               Collection := Modal_Progressions'Access;
+            else
+               Collection := Major_Progressions'Access;
+            end if;
          when Minor_Scale => Collection := Minor_Progressions'Access;
-         --  when ... => Collection := Modal_Progressions'Access;
       end case;
 
       declare

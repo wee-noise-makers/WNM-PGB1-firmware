@@ -36,6 +36,10 @@ package body WNM.GUI.Menu.Chord_Settings is
                                                     Wrap => False);
    use Part_Sub_Settings_Next;
 
+   package Scale_Choice_Next is new Enum_Next (Project.Scale_Choice,
+                                               Wrap => True);
+   use Scale_Choice_Next;
+
    Pattern_Menu_Singleton : aliased Pattern_Settings_Menu;
 
    -----------------
@@ -272,10 +276,11 @@ package body WNM.GUI.Menu.Chord_Settings is
             end case;
 
          when Magic_Hat =>
-            Draw_Title ("Magic Hat of Chords", "");
+            Draw_Title ("Magic Hat of Chords",
+                        "Scale: " & This.Hat_Scale'Img);
             Draw_Value ("Press A");
 
-            Draw_Magic_Hat (Box_Center.X + 15,
+            Draw_Magic_Hat (Box_Center.X + 25,
                             Box_Top + 13,
                             This.Hat_Anim_Step /= 0,
                             This.Hat_Anim_Step);
@@ -489,9 +494,17 @@ package body WNM.GUI.Menu.Chord_Settings is
             when Left_Press =>
                This.Top_Chord_Setting := Add_Remove;
 
+            when Up_Press =>
+               Next (This.Hat_Scale);
+
+            when Down_Press =>
+               Prev (This.Hat_Scale);
+
             when A_Press =>
                This.Hat_Anim_Step := HAL.UInt32 (30 * 1);
-               Project.Randomly_Pick_A_Progression (Prog, Random, Random);
+               Project.Randomly_Pick_A_Progression (Prog,
+                                                    This.Hat_Scale,
+                                                    Random);
 
             when others => null;
             end case;
