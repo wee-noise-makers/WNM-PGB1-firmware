@@ -20,7 +20,6 @@
 -------------------------------------------------------------------------------
 
 with System.Storage_Elements;
-with Interfaces;
 with Tresses.DSP;
 with HAL; use HAL;
 with WNM_HAL;
@@ -126,7 +125,6 @@ package body WNM.Mixer is
    is
       use Tresses;
       use Tresses.DSP;
-      use Interfaces;
       use BBqueue;
 
       Input_RG : BBqueue.Read_Grant;
@@ -162,7 +160,6 @@ package body WNM.Mixer is
    is
       use Tresses;
       use Tresses.DSP;
-      use Interfaces;
 
       L, R : S32;
    begin
@@ -227,7 +224,6 @@ package body WNM.Mixer is
                            Output : in out WNM_HAL.Stereo_Buffer)
    is
       use Tresses;
-      use Interfaces;
    begin
       --  Handle Audio Input
 

@@ -42,9 +42,7 @@ package body WNM.Sample_Library is
 
    function Entry_Name (Index : Sample_Index) return Sample_Entry_Name is
    begin
-      if Index = Invalid_Sample_Entry then
-         return "-- Invalid -- ";
-      elsif Entries (Index).Used then
+      if Entries (Index).Used then
          return Entries (Index).Name;
       else
          return "- No Sample - ";
@@ -57,7 +55,7 @@ package body WNM.Sample_Library is
 
    function Entry_Len (Index : Sample_Index) return Sample_Point_Count is
    begin
-      if Index /= Invalid_Sample_Entry and then Entries (Index).Used then
+      if Entries (Index).Used then
          return Entries (Index).Length;
       else
          return 0;
@@ -68,8 +66,7 @@ package body WNM.Sample_Library is
    -- Entry_Device_Address --
    --------------------------
 
-   function Entry_Device_Address (Index : Valid_Sample_Index)
-                                  return HAL.UInt32
+   function Entry_Device_Address (Index : Sample_Index) return HAL.UInt32
    is
       use WNM_Configuration.Storage;
       use HAL;
@@ -82,7 +79,7 @@ package body WNM.Sample_Library is
    -- Load --
    ----------
 
-   procedure Load (Id : Valid_Sample_Index) is
+   procedure Load (Id : Sample_Index) is
       use HAL;
       Len : UInt32;
    begin
@@ -109,7 +106,7 @@ package body WNM.Sample_Library is
 
    procedure Load is
    begin
-      for Sample_Id in Valid_Sample_Index loop
+      for Sample_Id in Sample_Index loop
          Load (Sample_Id);
       end loop;
    end Load;

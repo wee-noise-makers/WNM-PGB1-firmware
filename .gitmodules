@@ -1,0 +1,3 @@
+[submodule "simulator/share/wnm_ps1_simulator/samples/VSCO-2-CE"]
+	path = simulator/share/wnm_ps1_simulator/samples/VSCO-2-CE
+	url = https://github.com/sgossner/VSCO-2-CE.git

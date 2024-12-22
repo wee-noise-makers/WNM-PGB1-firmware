@@ -37,14 +37,13 @@ package WNM.Sample_Recording is
       "Shared buffer too small");
 
    procedure Reset;
-   procedure Init_From_Sample (Id : Valid_Sample_Index);
+   procedure Init_From_Sample (Id : Sample_Index);
 
    procedure Record_Buffer (Input : WNM_HAL.Mono_Buffer);
 
    function Recorded_Length return Sample_Point_Count;
 
-   procedure Save_Sample (Id   : Valid_Sample_Index;
-                          Name : String);
+   procedure Save_Sample (Id : Sample_Index; Name : String);
 
    type Waveform_Point is range 0 .. 20;
 

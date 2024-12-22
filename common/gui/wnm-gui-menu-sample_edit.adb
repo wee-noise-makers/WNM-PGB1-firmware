@@ -110,7 +110,7 @@ package body WNM.GUI.Menu.Sample_Edit is
 
             when Edit_Sample =>
                This.State := Select_Sample;
-               This.Sample_Entry := Invalid_Sample_Entry;
+               This.Sample_Entry := Sample_Index'First;
                Sample_Select.Push_Window ("Sample to edit");
             end case;
 

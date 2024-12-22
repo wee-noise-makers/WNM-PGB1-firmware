@@ -25,22 +25,22 @@ with Tresses.DSP;
 
 package body WNM.QOA is
 
-   function QOA_Predict (LMS : Work_LMS) return Integer_32
+   function QOA_Predict (LMS : Work_LMS) return S32
      with Inline_Always, Linker_Section => Code_Linker_Section;
 
-   function QOA_Clamp (V, Min, Max : Integer_32) return Integer_32
+   function QOA_Clamp (V, Min, Max : S32) return S32
      with Inline_Always, Linker_Section => Code_Linker_Section;
 
    procedure QOA_LMS_Update (LMS      : in out Work_LMS;
-                             Sample   : Integer_32;
-                             Residual : Integer_32)
+                             Sample   : S32;
+                             Residual : S32)
      with Linker_Section => Code_Linker_Section;
 
    -----------------
    -- QOA_Predict --
    -----------------
 
-   function QOA_Predict (LMS : Work_LMS) return Integer_32 is
+   function QOA_Predict (LMS : Work_LMS) return S32 is
       Prediction : Integer_64 := 0;
    begin
       for X in LMS_Array'Range loop
@@ -48,7 +48,7 @@ package body WNM.QOA is
            Integer_64 (LMS.Weight (X)) * Integer_64 (LMS.History (X));
          null;
       end loop;
-      return Integer_32
+      return S32
         ((Prediction - (Prediction mod 2**13)) / 2**13); -- Shift_Right
    end QOA_Predict;
 
@@ -56,11 +56,11 @@ package body WNM.QOA is
    -- QOA_Div --
    -------------
 
-   function QOA_Div (V, Scalefactor : Integer_32) return Integer_32 is
-      Reciprocal : constant Integer_32 := RECIPROCAL_TAB (Scalefactor);
-      Tmp : constant Integer_64 := Integer_64 (V) * Integer_64 (Reciprocal)
+   function QOA_Div (V, Scalefactor : S32) return S32 is
+      Reciprocal : constant S32 := RECIPROCAL_TAB (Scalefactor);
+      Tmp : constant S64 := S64 (V) * Integer_64 (Reciprocal)
         + (1 * (2 ** 15));
-      N : constant Integer_32 := Integer_32 ((Tmp - (Tmp mod 2**16)) / 2**16);
+      N : constant S32 := S32 ((Tmp - (Tmp mod 2**16)) / 2**16);
    begin
       if V > 0 and then N < 0 then
          return N + 2;
@@ -83,7 +83,7 @@ package body WNM.QOA is
    -- QOA_Clamp --
    ---------------
 
-   function QOA_Clamp (V, Min, Max : Integer_32) return Integer_32
+   function QOA_Clamp (V, Min, Max : S32) return S32
    is
    begin
       if V < Min then
@@ -102,10 +102,10 @@ package body WNM.QOA is
    --------------------
 
    procedure QOA_LMS_Update (LMS      : in out Work_LMS;
-                             Sample   : Integer_32;
-                             Residual : Integer_32)
+                             Sample   : S32;
+                             Residual : S32)
    is
-      D : constant Integer_32 := (Residual - (Residual mod 2**4)) / 2**4;
+      D : constant S32 := (Residual - (Residual mod 2**4)) / 2**4;
    begin
       for X in LMS_Array'Range loop
          if LMS.History (X) < 0 then
@@ -146,9 +146,11 @@ package body WNM.QOA is
          --  Write current LMS State
          for X in LMS_Array'Range loop
             Frame.History (X) :=
-              Mono_Point (Tresses.DSP.Clip_S16 (State.Base_LMS.History (X)));
+              Tresses.Mono_Point
+                (Tresses.DSP.Clip_S16 (State.Base_LMS.History (X)));
             Frame.Weight (X) :=
-              Mono_Point (Tresses.DSP.Clip_S16 (State.Base_LMS.Weight (X)));
+              Tresses.Mono_Point
+                (Tresses.DSP.Clip_S16 (State.Base_LMS.Weight (X)));
          end loop;
 
          Slice_Cnt := 0;
@@ -168,7 +170,7 @@ package body WNM.QOA is
                --  best scalefactor of the previous slice first.
 
                declare
-                  Scalefactor : constant Integer_32 :=
+                  Scalefactor : constant S32 :=
                     (Sfi + State.Prev_Scalefactor) mod 16;
 
                   --  We have to reset the LMS state to the last known good
@@ -183,31 +185,31 @@ package body WNM.QOA is
                   Current_Slice.Quantize_Scalefactor := UInt4 (Scalefactor);
                   for Res_Idx in Slice_Residuals'Range loop
                      declare
-                        Input_Sample : constant Integer_32 :=
-                          Integer_32 (Audio (In_Idx + Res_Idx));
+                        Input_Sample : constant S32 :=
+                          S32 (Audio (In_Idx + Res_Idx));
 
-                        Predicted : constant Integer_32 := QOA_Predict (LMS);
+                        Predicted : constant S32 := QOA_Predict (LMS);
 
-                        Residual : constant Integer_32 :=
+                        Residual : constant S32 :=
                           Input_Sample - Predicted;
 
-                        Scaled : constant Integer_32 :=
+                        Scaled : constant S32 :=
                           QOA_Div (Residual, Scalefactor);
 
-                        Clamped : constant Integer_32 :=
+                        Clamped : constant S32 :=
                           QOA_Clamp (Scaled, -8, 8);
 
-                        Quantized : constant Integer_32 :=
+                        Quantized : constant S32 :=
                           QUANT_TAB (Clamped);
 
-                        Dequantized : constant Integer_32 :=
+                        Dequantized : constant S32 :=
                           DEQUANT_TAB (UInt4 (Scalefactor),
                                        UInt3 (Quantized));
 
-                        Reconstructed : constant Integer_32 :=
+                        Reconstructed : constant S32 :=
                           QOA_Clamp (Predicted + Dequantized,
-                                     Integer_32 (Integer_16'First),
-                                     Integer_32 (Integer_16'Last));
+                                     S32 (Integer_16'First),
+                                     S32 (Integer_16'Last));
 
                         Error : constant Integer_64 :=
                           Integer_64 (Input_Sample) -
@@ -313,9 +315,11 @@ package body WNM.QOA is
       --  Write current LMS State
       for X in LMS_Array'Range loop
          Frame.History (X) :=
-           Mono_Point (Tresses.DSP.Clip_S16 (State.Base_LMS.History (X)));
+           Tresses.Mono_Point
+             (Tresses.DSP.Clip_S16 (State.Base_LMS.History (X)));
          Frame.Weight (X) :=
-           Mono_Point (Tresses.DSP.Clip_S16 (State.Base_LMS.Weight (X)));
+           Tresses.Mono_Point
+             (Tresses.DSP.Clip_S16 (State.Base_LMS.Weight (X)));
       end loop;
 
       Slice_Cnt := 0;
@@ -335,7 +339,7 @@ package body WNM.QOA is
             --  best scalefactor of the previous slice first.
 
             declare
-               Scalefactor : constant Integer_32 :=
+               Scalefactor : constant S32 :=
                  (Sfi + State.Prev_Scalefactor) mod 16;
 
                --  We have to reset the LMS state to the last known good
@@ -350,31 +354,31 @@ package body WNM.QOA is
                Current_Slice.Quantize_Scalefactor := UInt4 (Scalefactor);
                for Res_Idx in Slice_Residuals'Range loop
                   declare
-                     Input_Sample : constant Integer_32 :=
-                       Integer_32 (Audio (In_Idx + Res_Idx));
+                     Input_Sample : constant S32 :=
+                       S32 (Audio (In_Idx + Res_Idx));
 
-                     Predicted : constant Integer_32 := QOA_Predict (LMS);
+                     Predicted : constant S32 := QOA_Predict (LMS);
 
-                     Residual : constant Integer_32 :=
+                     Residual : constant S32 :=
                        Input_Sample - Predicted;
 
-                     Scaled : constant Integer_32 :=
+                     Scaled : constant S32 :=
                        QOA_Div (Residual, Scalefactor);
 
-                     Clamped : constant Integer_32 :=
+                     Clamped : constant S32 :=
                        QOA_Clamp (Scaled, -8, 8);
 
-                     Quantized : constant Integer_32 :=
+                     Quantized : constant S32 :=
                        QUANT_TAB (Clamped);
 
-                     Dequantized : constant Integer_32 :=
+                     Dequantized : constant S32 :=
                        DEQUANT_TAB (UInt4 (Scalefactor),
                                     UInt3 (Quantized));
 
-                     Reconstructed : constant Integer_32 :=
+                     Reconstructed : constant S32 :=
                        QOA_Clamp (Predicted + Dequantized,
-                                  Integer_32 (Integer_16'First),
-                                  Integer_32 (Integer_16'Last));
+                                  S32 (Integer_16'First),
+                                  S32 (Integer_16'Last));
 
                      Error : constant Integer_64 :=
                        Integer_64 (Input_Sample) -
@@ -465,8 +469,8 @@ package body WNM.QOA is
       Out_Idx : QOA_Sample_Point_Index := Audio'First;
    begin
       for X in LMS_Array'Range loop
-         LMS.History (X) := Integer_32 (Frame.History (X));
-         LMS.Weight (X)  := Integer_32 (Frame.Weight (X));
+         LMS.History (X) := S32 (Frame.History (X));
+         LMS.Weight (X)  := S32 (Frame.Weight (X));
       end loop;
 
       --  Put_Line ("lms: H(" &
@@ -484,13 +488,13 @@ package body WNM.QOA is
 
          for Quantized of Slice.Residuals loop
             declare
-               Predicted : constant Integer_32 := QOA_Predict (LMS);
-               Dequantized : constant Integer_32 :=
+               Predicted : constant S32 := QOA_Predict (LMS);
+               Dequantized : constant S32 :=
                  DEQUANT_TAB (Slice.Quantize_Scalefactor, Quantized);
-               Reconstructed : constant Integer_32 :=
+               Reconstructed : constant S32 :=
                  QOA_Clamp (Predicted + Dequantized,
-                            Integer_32 (Integer_16'First),
-                            Integer_32 (Integer_16'Last));
+                            S32 (Integer_16'First),
+                            S32 (Integer_16'Last));
             begin
                --  Put_Line ("-----");
                --  Put_Line ("predicted:" & Predicted'Img);
@@ -498,7 +502,7 @@ package body WNM.QOA is
                --  Put_Line ("quantized:" & Quantized'Img);
                --  Put_Line ("dequantized:" & Dequantized'Img);
                --  Put_Line ("reconstructed:" & Reconstructed'Img);
-               Audio (Out_Idx) := Mono_Point (Reconstructed);
+               Audio (Out_Idx) := Tresses.Mono_Point (Reconstructed);
                Out_Idx := Out_Idx + 1;
                QOA_LMS_Update (LMS, Reconstructed, Dequantized);
             end;
@@ -522,7 +526,7 @@ package body WNM.QOA is
    function Decode_Single_Sample (Cache    : in out Decoder_Cache;
                                   QOA_Data :        QOA_Sample;
                                   Idx      :        QOA_Sample_Point_Index)
-                                  return Mono_Point
+                                  return Tresses.Mono_Point
    is
       --  First we have to find in which frame and which slice the point is
       Frame_Idx : constant QOA_Sample_Point_Index := Idx / Points_Per_Frame;

@@ -406,7 +406,7 @@ package body ASFML_SIM_Storage is
       Img.Write_To_File (Path);
       Img.Write_UF2 (ROM_Dir);
 
-      for Id in WNM.Sample_Library.Valid_Sample_Index loop
+      for Id in WNM.Sample_Library.Sample_Index loop
          ROM_Builder.Sample_Library.Write_UF2_Single
            (Id,
             WNM.Sample_Library.Sample_Data.all (Id),

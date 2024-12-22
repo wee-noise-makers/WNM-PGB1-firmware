@@ -19,9 +19,9 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Interfaces;
 with HAL; use HAL;
 with WNM.Sample_Library;
+with Tresses;
 
 package WNM.QOA is
 
@@ -116,7 +116,7 @@ package WNM.QOA is
    function Decode_Single_Sample (Cache    : in out Decoder_Cache;
                                   QOA_Data :        QOA_Sample;
                                   Idx      :        QOA_Sample_Point_Index)
-                                  return Mono_Point
+                                  return  Tresses.Mono_Point
      with Linker_Section => QOA.Code_Linker_Section;
 
 private
@@ -127,20 +127,20 @@ private
       Frame_Points : Frame_Audio_Data;
    end record;
 
-   use Interfaces;
+   use Tresses;
 
-   subtype Scalefactor_Id is Integer_32 range 0 .. 15;
+   subtype Scalefactor_Id is Tresses.S32 range 0 .. 15;
 
    --  The decoder LMS data is 32 bits while the stored data is 16 bits
-   type Work_LMS_Array is array (LMS_Array'Range) of Integer_32;
+   type Work_LMS_Array is array (LMS_Array'Range) of Tresses.S32;
 
    type Work_LMS is record
       Weight : Work_LMS_Array := (others => 0);
       History : Work_LMS_Array := (others => 0);
    end record;
 
-   subtype Quant_Int is Interfaces.Integer_32 range 0 .. 7;
-   QUANT_TAB : constant array (Integer_32 range -8 .. 8) of Quant_Int :=
+   subtype Quant_Int is Tresses.S32 range 0 .. 7;
+   QUANT_TAB : constant array (Tresses.S32 range -8 .. 8) of Quant_Int :=
      (7, 7, 7, 5, 5, 3, 3,
       1, 0, 0, 2, 2, 4, 4,
       6, 6, 6);
@@ -151,12 +151,12 @@ private
    --    (1, 7, 21, 45, 84, 138, 211, 304, 421,
    --     562, 731, 928, 1157, 1419, 1715, 2048);
 
-   subtype Recip_Int is Integer_32 range 32 .. 65536;
-   RECIPROCAL_TAB : constant array (Integer_32 range 0 .. 15) of Recip_Int :=
+   subtype Recip_Int is S32 range 32 .. 65536;
+   RECIPROCAL_TAB : constant array (S32 range 0 .. 15) of Recip_Int :=
      (65536, 9363, 3121, 1457, 781, 475, 311,
       216, 156, 117, 90, 71, 57, 47, 39, 32);
 
-   subtype Dequant_Int is Integer_32 range -14336 .. 14336;
+   subtype Dequant_Int is S32 range -14336 .. 14336;
    DEQUANT_TAB : constant array (UInt4, UInt3) of Dequant_Int :=
      ((1,    -1,    3,    -3,    5,    -5,     7,     -7),
       (5,    -5,   18,   -18,   32,   -32,    49,    -49),
@@ -179,7 +179,7 @@ private
    type Encoder_State is record
       Base_LMS : Work_LMS := (Weight => (others => 0),
                               History => (others => 0));
-      Prev_Scalefactor : Integer_32 := 0;
+      Prev_Scalefactor : S32 := 0;
    end record;
 
    procedure Clamp_Weights (State : in out Encoder_State);

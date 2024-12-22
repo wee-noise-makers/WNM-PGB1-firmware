@@ -59,7 +59,7 @@ package WNM.Voices.Speech_Voice is
                                return Short_Label
    is (case Id is
           when P_Word => "WRD",
-          when P_Time => "Time",
+          when P_Time => "Tim",
           when 3      => "N/A",
           when 4      => "N/A");
 

@@ -47,7 +47,7 @@ package body WNM.GUI.Menu.Sample_Select is
    -- Selected --
    --------------
 
-   function Selected return Valid_Sample_Index
+   function Selected return Sample_Index
    is (Sample_Select.Index);
 
    ----------
@@ -64,7 +64,7 @@ package body WNM.GUI.Menu.Sample_Select is
              Y_Offset    => Drawing.Box_Top - 5,
              Str         => Dialog_Title);
 
-      Draw_Sample_Select (This.Index);
+      Draw_Sample_Select ((Sample => This.Index, Slice => 0));
    end Draw;
 
    --------------
@@ -83,11 +83,11 @@ package body WNM.GUI.Menu.Sample_Select is
          when B_Press =>
             Menu.Pop (Exit_Value => Failure);
          when Up_Press =>
-            if This.Index /= Valid_Sample_Index'Last then
+            if This.Index /= Sample_Index'Last then
                This.Index := This.Index + 1;
             end if;
          when Down_Press =>
-            if This.Index /= Valid_Sample_Index'First then
+            if This.Index /= Sample_Index'First then
                This.Index := This.Index - 1;
             end if;
          when others => null;

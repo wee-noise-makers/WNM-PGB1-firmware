@@ -28,13 +28,13 @@ package WNM.GUI.Menu.Sample_Select is
    procedure Push_Window (Title : String)
      with Pre => Title'Length <= Title_Max_Len;
 
-   function Selected return Valid_Sample_Index;
+   function Selected return Sample_Index;
 
 private
 
    type Sample_Select_Window is new Menu_Window with record
-      Index  : WNM.Sample_Library.Valid_Sample_Index :=
-        WNM.Sample_Library.Valid_Sample_Index'First;
+      Index  : WNM.Sample_Library.Sample_Index :=
+        WNM.Sample_Library.Sample_Index'First;
    end record;
 
    overriding

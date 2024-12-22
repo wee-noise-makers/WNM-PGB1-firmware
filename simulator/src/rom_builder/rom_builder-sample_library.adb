@@ -6,6 +6,7 @@ with HAL;
 with FSmaker.Source.File;
 with Simple_Logging;
 with WNM.Sample_Library; use WNM.Sample_Library;
+with WNM_Configuration;
 
 with Ada.Text_IO;
 with GNAT.OS_Lib;
@@ -20,7 +21,7 @@ package body ROM_Builder.Sample_Library is
    --------------------
 
    procedure Load_From_File (This     : in out Instance;
-                             Index    :        Valid_Sample_Index;
+                             Index    :        Sample_Index;
                              Filename :        String)
    is
       Src : FSmaker.Source.File.Instance :=
@@ -35,6 +36,14 @@ package body ROM_Builder.Sample_Library is
       Simple_Logging.Debug ("Load sample data:" & Len'Img);
 
       This.Data (Index).Audio := Points;
+      This.Data (Index).S1 := 0;
+      This.Data (Index).S2 := 0;
+      This.Data (Index).S3 := 0;
+      This.Data (Index).S4 := 0;
+      This.Data (Index).E1 := 0;
+      This.Data (Index).E2 := 0;
+      This.Data (Index).E3 := 0;
+      This.Data (Index).E4 := 0;
       This.Data (Index).Len := HAL.UInt32 (Len / 2);
 
    end Load_From_File;
@@ -44,12 +53,14 @@ package body ROM_Builder.Sample_Library is
    --------------
 
    procedure Set_Name (This  : in out Instance;
-                       Index :        Valid_Sample_Index;
+                       Index :        Sample_Index;
                        Name  :        String)
    is
+      use WNM_Configuration.Storage;
+
       Len : constant Natural := Natural'Min (Name'Length, Sample_Name_Length);
    begin
-      if Name'Length > Sample_Name_Length then
+      if Name'Length > WNM.Sample_Library.Sample_Entry_Name'Length then
          Simple_Logging.Warning ("Sample name too long: '" & Name  & "'");
       end if;
 
@@ -65,7 +76,7 @@ package body ROM_Builder.Sample_Library is
    ----------------
 
    procedure Set_Length (This  : in out Instance;
-                         Index :        Valid_Sample_Index;
+                         Index :        Sample_Index;
                          Len   :        Sample_Point_Count)
    is
    begin
@@ -83,7 +94,7 @@ package body ROM_Builder.Sample_Library is
       use TOML;
       Key : constant String := "samples";
 
-      procedure Load_Single (Index : Valid_Sample_Index; Table : TOML_Value) is
+      procedure Load_Single (Index : Sample_Index; Table : TOML_Value) is
          Name : constant TOML_Value := Table.Get_Or_Null ("name");
          File : constant TOML_Value := Table.Get_Or_Null ("file");
       begin
@@ -109,7 +120,7 @@ package body ROM_Builder.Sample_Library is
 
       Samples : constant TOML_Value := Root.Get_Or_Null (Key);
 
-      Index : Valid_Sample_Index;
+      Index : Sample_Index;
    begin
       for Elt of This.Data loop
          Elt.Len := 0;
@@ -127,10 +138,11 @@ package body ROM_Builder.Sample_Library is
       for Elt of Samples.Iterate_On_Table loop
          declare
             Key : constant String := To_String (Elt.Key);
+            Key_Int : constant Integer := Integer'Value (Key);
             Val : constant TOML_Value := Elt.Value;
          begin
             begin
-               Index := Valid_Sample_Index'Value (Key);
+               Index := Sample_Index (Key_Int - 1);
             exception
                when Constraint_Error =>
                   raise Program_Error
@@ -166,7 +178,7 @@ package body ROM_Builder.Sample_Library is
    -- Write_UF2_Single --
    ----------------------
 
-   procedure Write_UF2_Single (Id     : WNM.Sample_Library.Valid_Sample_Index;
+   procedure Write_UF2_Single (Id     : WNM.Sample_Library.Sample_Index;
                                Sample : WNM.Sample_Library.Single_Sample_Data;
                                Root_Dir : String)
    is

@@ -849,13 +849,9 @@ package body WNM.GUI.Menu.Drawing is
          declare
             use MIDI;
             use Sample_Library;
-            Id : constant Natural :=
-              (if Val_A > MIDI_Data (Valid_Sample_Index'Last - 1)
-               then Valid_Sample_Index'Last
-               else Natural (Val_A) + 1);
+            Id : constant Slice_Id := From_CC (Val_A);
          begin
-            Draw_Sample_Select
-              (Sample_Library.Valid_Sample_Index (Id));
+            Draw_Sample_Select (Id);
          end;
 
       elsif Mode = Speech_Mode
@@ -972,38 +968,39 @@ package body WNM.GUI.Menu.Drawing is
    -- Draw_Sample_Select --
    ------------------------
 
-   procedure Draw_Sample_Select (Val : Sample_Library.Valid_Sample_Index) is
+   procedure Draw_Sample_Select (Val : Sample_Library.Slice_Id) is
       use Sample_Library;
 
       X : Integer;
 
-      function Display_Text (Val : Valid_Sample_Index) return String is
-         Num : constant String := (if Val < 10 then " " else "") & Val'Img;
+      function Display_Text (Val : Sample_Index) return String is
+         Idx : constant Integer := Integer (Val) + 1;
+         Num : constant String := (if Idx < 10 then " " else "") & Idx'Img;
       begin
          return Num (Num'First + 1 .. Num'Last) & " " & Entry_Name (Val);
       end Display_Text;
 
    begin
 
-      if Val /= Valid_Sample_Index'Last then
+      if Val.Sample /= Sample_Index'Last then
          X := Box_Left + 2;
          Print (X_Offset => X,
                 Y_Offset => Value_Text_Y - 23,
-                Str      => Display_Text (Val + 1));
+                Str      => Display_Text (Val.Sample + 1));
       end if;
 
       X := Box_Left + 2;
       Print (X_Offset => X,
              Y_Offset => Value_Text_Y - 11,
-             Str      => Display_Text (Val),
+             Str      => Display_Text (Val.Sample),
              Invert_From => Box_Left,
              Invert_To   => Box_Right);
 
-      if Val /= Valid_Sample_Index'First then
+      if Val.Sample /= Sample_Index'First then
          X := Box_Left + 2;
          Print (X_Offset => X,
                 Y_Offset => Value_Text_Y + 1,
-                Str      => Display_Text (Val - 1));
+                Str      => Display_Text (Val.Sample - 1));
       end if;
    end Draw_Sample_Select;
 

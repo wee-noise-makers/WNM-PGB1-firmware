@@ -124,7 +124,7 @@ package WNM.GUI.Menu.Drawing is
    procedure Draw_Knob (Title : String;
                         Value : Natural);
 
-   procedure Draw_Sample_Select (Val : Sample_Library.Valid_Sample_Index);
+   procedure Draw_Sample_Select (Val : Sample_Library.Slice_Id);
 
    procedure Draw_Project_Select (Val : Project.Library.Valid_Prj_Index);
 

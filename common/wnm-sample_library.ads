@@ -19,6 +19,8 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with Ada.Unchecked_Conversion;
+
 with WNM_Configuration;
 
 with HAL;
@@ -63,7 +65,7 @@ is
 
    Sample_Metadata_Byte_Size : constant :=
      WNM_Configuration.Storage.Sample_Name_Length
-       + Sample_Storage_Len'Size / 8;
+       + (Sample_Storage_Len'Size / 8) * 9;
 
    Sample_Audio_Byte_Size : constant :=
      Single_Sample_Data_Byte_Size - Sample_Metadata_Byte_Size;
@@ -78,16 +80,15 @@ is
    type Sample_Audio_Data is array (Sample_Point_Index) of Mono_Point
      with Size => Points_Per_Sample * 16;
 
-   subtype Sample_Index is Natural range 0 .. Samples;
-   subtype Valid_Sample_Index is Sample_Index range 1 .. Sample_Index'Last;
-
-   Invalid_Sample_Entry : constant Sample_Index := Sample_Index'First;
+   Sample_Id_Last : constant := Samples - 1;
+   type Sample_Index is new HAL.UInt5 range 0 .. Sample_Id_Last;
 
    subtype Sample_Entry_Name
      is String (1 .. WNM_Configuration.Storage.Sample_Name_Length);
 
    type Single_Sample_Data is record
       Audio    : Sample_Audio_Data;
+      S1, E1, S2, E2, S3, E3, S4, E4 : Sample_Storage_Len := 0;
       Name     : Sample_Entry_Name;
       Len      : Sample_Storage_Len;
    end record
@@ -96,7 +97,7 @@ is
    type Single_Sample_Data_Access is access all Single_Sample_Data;
 
    type Global_Sample_Array
-   is array (Valid_Sample_Index) of aliased Single_Sample_Data
+   is array (Sample_Index) of aliased Single_Sample_Data
      with Size => Storage.Sample_Library_Byte_Size * 8;
 
    type Global_Sample_Array_Access is access all Global_Sample_Array;
@@ -107,12 +108,29 @@ is
 
    function Entry_Len (Index : Sample_Index) return Sample_Point_Count;
 
-   function Entry_Device_Address (Index : Valid_Sample_Index)
+   function Entry_Device_Address (Index : Sample_Index)
                                   return HAL.UInt32;
    --  Return the base address of an sample entry in the device memory space
 
-   procedure Load (Id : Valid_Sample_Index);
+   procedure Load (Id : Sample_Index);
    procedure Load;
+
+   type Slice_Index is new HAL.UInt2 range 0 .. 3;
+
+   function Has_Slice (Id : Sample_Index; Slice : Slice_Index)
+                       return Boolean
+   is (Slice = Slice_Index'First);
+
+   type Slice_Id is record
+      Slice : Slice_Index;
+      Sample : Sample_Index;
+   end record
+     with Pack, Size => 7;
+
+   function To_CC
+   is new Ada.Unchecked_Conversion (Slice_Id, MIDI.MIDI_Data);
+   function From_CC
+   is new Ada.Unchecked_Conversion (MIDI.MIDI_Data, Slice_Id);
 
    type Sample_Time is delta 0.01 range 0.0 .. 3.0;
 
@@ -126,6 +144,6 @@ private
       Length : Sample_Point_Count := 0;
    end record with Pack;
 
-   Entries : array (Valid_Sample_Index) of Sample_Entry;
+   Entries : array (Sample_Index) of Sample_Entry;
 
 end WNM.Sample_Library;

@@ -44,7 +44,7 @@ private
    type Edit_Sample_Menu is new Menu_Window with record
       Mode         : Main_Sample_Edit_Mode := New_Sample;
       State        : Edit_Sample_State;
-      Sample_Entry : Sample_Index := Invalid_Sample_Entry;
+      Sample_Entry : Sample_Index := Sample_Index'First;
    end record;
 
    overriding

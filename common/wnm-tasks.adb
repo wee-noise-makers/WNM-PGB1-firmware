@@ -195,9 +195,8 @@ package body WNM.Tasks is
          WNM.File_System.Mount;
          WNM.Persistent.Load;
          WNM.Project.Library.Load_Library;
+         WNM.Sample_Library.Load;
       end if;
-
-      WNM.Sample_Library.Load;
 
       WNM.GUI.Menu.Track_Settings.Push_Window;
 

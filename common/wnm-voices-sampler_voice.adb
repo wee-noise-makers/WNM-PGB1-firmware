@@ -21,8 +21,6 @@
 
 --  with Ada.Text_IO; use Ada.Text_IO;
 
-with Interfaces; use Interfaces;
-
 with Tresses.Envelopes.AR; use Tresses.Envelopes.AR;
 with Tresses.DSP;
 with Tresses.Resources;
@@ -182,10 +180,7 @@ package body WNM.Voices.Sampler_Voice is
    procedure Set_Sample (This : in out Instance; Id : MIDI.MIDI_Data) is
       use MIDI;
 
-      New_Sample : constant Valid_Sample_Index :=
-        (if Id > MIDI.MIDI_Data (Valid_Sample_Index'Last - 1)
-         then Valid_Sample_Index'Last
-         else Valid_Sample_Index (Integer (Id) + 1));
+      New_Sample : constant Sample_Index := From_CC (Id).Sample;
    begin
       if This.Sample_Id /= New_Sample then
          This.Sample_Id := New_Sample;

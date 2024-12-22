@@ -19,8 +19,6 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Interfaces;
-
 with Tresses;            use Tresses;
 with Tresses.Interfaces; use Tresses.Interfaces;
 with WNM.QOA;
@@ -81,7 +79,7 @@ package WNM.Voices.Sampler_Voice is
 
 private
 
-   subtype Sample_Phase is Standard.Interfaces.Unsigned_32;
+   subtype Sample_Phase is Tresses.U32;
    Phase_Integer_Bits : constant := 17;
    Phase_Frac_Bits : constant := Sample_Phase'Size - Phase_Integer_Bits;
 
@@ -92,8 +90,8 @@ private
    type Instance
    is new Four_Params_Voice
    with record
-      Sample_Id : Sample_Library.Valid_Sample_Index :=
-        Sample_Library.Valid_Sample_Index'First;
+      Sample_Id : Sample_Library.Sample_Index :=
+        Sample_Library.Sample_Index'First;
 
       Phase : Sample_Phase := 0;
       Phase_Increment : Sample_Phase := 0;

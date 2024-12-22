@@ -316,29 +316,6 @@ package body WNM.Project is
                       return MIDI.MIDI_Data
    is (G_Project.Steps (Editing_Track)(Editing_Pattern)(Step).CC_Val (Id));
 
-   ---------------
-   -- CC_Limits --
-   ---------------
-
-   function CC_Limits (Id : CC_Id) return MIDI_Data_Next.Limits is
-      use MIDI;
-   begin
-      if not G_Project.Tracks (Editing_Track).MIDI_Enabled then
-         case Mode is
-            when Sample1_Mode | Sample2_Mode =>
-               if Id = A then
-                  return (0,
-                          MIDI.MIDI_Data
-                            (Sample_Library.Valid_Sample_Index'Last) - 1);
-               end if;
-            when others =>
-               null;
-         end case;
-      end if;
-
-      return MIDI_Data_Next.Default_Limits;
-   end CC_Limits;
-
    -------------------
    -- Engine_Limits --
    -------------------
@@ -513,6 +490,130 @@ package body WNM.Project is
       end case;
    end Note_Set;
 
+   --------------------
+   -- Sample_Id_Next --
+   --------------------
+
+   procedure Sample_Id_Next (CC : in out MIDI.MIDI_Data) is
+      use WNM.Sample_Library;
+
+      Id : Slice_Id := From_CC (CC);
+   begin
+      if Id.Slice = Slice_Index'Last
+        or else
+          not Has_Slice (Id.Sample, Id.Slice + 1)
+      then
+         if Id.Sample /= Sample_Index'Last then
+            Id.Sample := Id.Sample + 1;
+         end if;
+
+      else
+         Id.Slice := Id.Slice + 1;
+      end if;
+
+      CC := To_CC (Id);
+   end Sample_Id_Next;
+
+   --------------------
+   -- Sample_Id_Prev --
+   --------------------
+
+   procedure Sample_Id_Prev (CC : in out MIDI.MIDI_Data) is
+      use WNM.Sample_Library;
+
+      Id : Slice_Id := From_CC (CC);
+   begin
+      if Id.Slice = Slice_Index'First
+        or else
+          not Has_Slice (Id.Sample, Id.Slice - 1)
+      then
+         if Id.Sample /= Sample_Index'First then
+            Id.Sample := Id.Sample - 1;
+         end if;
+
+      else
+         Id.Slice := Id.Slice - 1;
+      end if;
+
+      CC := To_CC (Id);
+   end Sample_Id_Prev;
+
+   -------------
+   -- CC_Next --
+   -------------
+
+   procedure CC_Next (T    :        Tracks;
+                      Id   :        CC_Id;
+                      CC   : in out MIDI.MIDI_Data;
+                      Fast :        Boolean := False)
+   is
+   begin
+      if Mode (T) in Sample1_Mode | Sample2_Mode
+        and then
+          Id = A
+        and then
+          not G_Project.Tracks (T).MIDI_Enabled
+      then
+         --  Special case for sample section
+         Sample_Id_Next (CC);
+      else
+         if Fast then
+            MIDI_Data_Next.Next_Fast (CC);
+         else
+            MIDI_Data_Next.Next (CC);
+         end if;
+      end if;
+   end CC_Next;
+
+   ------------
+   -- CC_Set --
+   ------------
+
+   procedure CC_Set (T  :        Tracks;
+                     Id :        CC_Id;
+                     CC : in out MIDI.MIDI_Data;
+                     V  :        WNM_HAL.Touch_Value)
+   is
+   begin
+      if Mode (T) in Sample1_Mode | Sample2_Mode
+        and then
+          Id = A
+        and then
+          not G_Project.Tracks (T).MIDI_Enabled
+      then
+         null;
+      else
+         MIDI_Data_Next.Set (CC, V);
+      end if;
+   end CC_Set;
+
+   -------------
+   -- CC_Prev --
+   -------------
+
+   procedure CC_Prev (T    :        Tracks;
+                      Id   :        CC_Id;
+                      CC   : in out MIDI.MIDI_Data;
+                      Fast :        Boolean := False)
+   is
+   begin
+      if Mode (T) in Sample1_Mode | Sample2_Mode
+        and then
+          Id = A
+        and then
+          not G_Project.Tracks (T).MIDI_Enabled
+      then
+         --  Special case for sample section
+         Sample_Id_Prev (CC);
+      else
+         if Fast then
+            MIDI_Data_Next.Prev_Fast (CC);
+         else
+            MIDI_Data_Next.Prev (CC);
+         end if;
+      end if;
+   end CC_Prev;
+
    ------------------
    -- CC_Value_Inc --
    ------------------
@@ -528,11 +629,7 @@ package body WNM.Project is
 
    begin
 
-      if Fast then
-         Next_Fast (CC, CC_Limits (Id));
-      else
-         Next (CC, CC_Limits (Id));
-      end if;
+      CC_Next (Editing_Track, Id, CC, Fast);
 
       --  Enable when the value is changed
       G_Project.Steps
@@ -552,11 +649,7 @@ package body WNM.Project is
       CC : MIDI.MIDI_Data renames
         G_Project.Steps (Editing_Track)(Editing_Pattern)(Step).CC_Val (Id);
    begin
-      if Fast then
-         Prev_Fast (CC, CC_Limits (Id));
-      else
-         Prev (CC, CC_Limits (Id));
-      end if;
+      CC_Prev (Editing_Track, Id, CC, Fast);
 
       --  Enable when the value is changed
       G_Project.Steps
@@ -568,8 +661,9 @@ package body WNM.Project is
    ---------
 
    procedure Set (S : User_Step_Settings; V : WNM_HAL.Touch_Value) is
+      T : constant Tracks := Editing_Track;
       Step : Step_Rec renames
-        G_Project.Steps (Editing_Track)(Editing_Pattern)(Editing_Step);
+        G_Project.Steps (T)(Editing_Pattern)(Editing_Step);
    begin
       case S is
          when Condition    => Set (Step.Trig, V);
@@ -579,16 +673,16 @@ package body WNM.Project is
          when Repeat       => Set (Step.Repeat, V);
          when Repeat_Rate  => Set (Step.Repeat_Rate, V);
          when CC_A         =>
-            Set (Step.CC_Val (A), V);
+            CC_Set (T, A, Step.CC_Val (A), V);
             Step.CC_Ena (A) := True;
          when CC_B         =>
-            Set (Step.CC_Val (B), V);
+            CC_Set (T, B, Step.CC_Val (B), V);
             Step.CC_Ena (B) := True;
          when CC_C         =>
-            Set (Step.CC_Val (C), V);
+            CC_Set (T, C, Step.CC_Val (C), V);
             Step.CC_Ena (C) := True;
          when CC_D         =>
-            Set (Step.CC_Val (D), V);
+            CC_Set (T, D, Step.CC_Val (D), V);
             Step.CC_Ena (D) := True;
       end case;
 
@@ -1252,10 +1346,10 @@ package body WNM.Project is
          when Notes_Per_Chord => Set (Track.Notes_Per_Chord, V);
          when MIDI_Chan       => Set (Track.Chan, V);
          when MIDI_Instrument => null;
-         when CC_Default_A    => Set (Track.CC (A).Value, V, CC_Limits (A));
-         when CC_Default_B    => Set (Track.CC (B).Value, V, CC_Limits (B));
-         when CC_Default_C    => Set (Track.CC (C).Value, V, CC_Limits (C));
-         when CC_Default_D    => Set (Track.CC (D).Value, V, CC_Limits (D));
+         when CC_Default_A    => CC_Set (T, A, Track.CC (A).Value, V);
+         when CC_Default_B    => CC_Set (T, B, Track.CC (B).Value, V);
+         when CC_Default_C    => CC_Set (T, C, Track.CC (C).Value, V);
+         when CC_Default_D    => CC_Set (T, D, Track.CC (D).Value, V);
          when CC_Ctrl_A       => Set (Track.CC (A).Controller, V);
          when CC_Ctrl_B       => Set (Track.CC (B).Controller, V);
          when CC_Ctrl_C       => Set (Track.CC (C).Controller, V);
@@ -1272,7 +1366,8 @@ package body WNM.Project is
    ----------------
 
    procedure Next_Value (S : User_Track_Settings) is
-      Track : Track_Rec renames G_Project.Tracks (Editing_Track);
+      T : constant Tracks := Editing_Track;
+      Track : Track_Rec renames G_Project.Tracks (T);
    begin
       case S is
          when Track_Mode      =>
@@ -1305,10 +1400,10 @@ package body WNM.Project is
          when Notes_Per_Chord => Next (Track.Notes_Per_Chord);
          when MIDI_Chan       => Next (Track.Chan);
          when MIDI_Instrument => null;
-         when CC_Default_A    => Next (Track.CC (A).Value, CC_Limits (A));
-         when CC_Default_B    => Next (Track.CC (B).Value, CC_Limits (B));
-         when CC_Default_C    => Next (Track.CC (C).Value, CC_Limits (C));
-         when CC_Default_D    => Next (Track.CC (D).Value, CC_Limits (D));
+         when CC_Default_A    => CC_Next (T, A, Track.CC (A).Value);
+         when CC_Default_B    => CC_Next (T, B, Track.CC (B).Value);
+         when CC_Default_C    => CC_Next (T, C, Track.CC (C).Value);
+         when CC_Default_D    => CC_Next (T, D, Track.CC (D).Value);
          when CC_Ctrl_A       => Next (Track.CC (A).Controller);
          when CC_Ctrl_B       => Next (Track.CC (B).Controller);
          when CC_Ctrl_C       => Next (Track.CC (C).Controller);
@@ -1325,7 +1420,8 @@ package body WNM.Project is
    ----------------
 
    procedure Prev_Value (S : User_Track_Settings) is
-      Track : Track_Rec renames G_Project.Tracks (Editing_Track);
+      T : constant Tracks := Editing_Track;
+      Track : Track_Rec renames G_Project.Tracks (T);
    begin
       case S is
          when Track_Mode      =>
@@ -1357,10 +1453,10 @@ package body WNM.Project is
          when Notes_Per_Chord => Prev (Track.Notes_Per_Chord);
          when MIDI_Chan       => Prev (Track.Chan);
          when MIDI_Instrument => null;
-         when CC_Default_A    => Prev (Track.CC (A).Value, CC_Limits (A));
-         when CC_Default_B    => Prev (Track.CC (B).Value, CC_Limits (B));
-         when CC_Default_C    => Prev (Track.CC (C).Value, CC_Limits (C));
-         when CC_Default_D    => Prev (Track.CC (D).Value, CC_Limits (D));
+         when CC_Default_A    => CC_Prev (T, A, Track.CC (A).Value);
+         when CC_Default_B    => CC_Prev (T, B, Track.CC (B).Value);
+         when CC_Default_C    => CC_Prev (T, C, Track.CC (C).Value);
+         when CC_Default_D    => CC_Prev (T, D, Track.CC (D).Value);
          when CC_Ctrl_A       => Prev (Track.CC (A).Controller);
          when CC_Ctrl_B       => Prev (Track.CC (B).Controller);
          when CC_Ctrl_C       => Prev (Track.CC (C).Controller);
@@ -1376,7 +1472,8 @@ package body WNM.Project is
    ---------------------
 
    procedure Next_Value_Fast (S : User_Track_Settings) is
-      Track : Track_Rec renames G_Project.Tracks (Editing_Track);
+      T : constant Tracks := Editing_Track;
+      Track : Track_Rec renames G_Project.Tracks (T);
    begin
       case S is
          when Track_Mode      =>
@@ -1409,10 +1506,10 @@ package body WNM.Project is
          when Notes_Per_Chord => Next_Fast (Track.Notes_Per_Chord);
          when MIDI_Chan       => Next_Fast (Track.Chan);
          when MIDI_Instrument => null;
-         when CC_Default_A    => Next_Fast (Track.CC (A).Value, CC_Limits (A));
-         when CC_Default_B    => Next_Fast (Track.CC (B).Value, CC_Limits (B));
-         when CC_Default_C    => Next_Fast (Track.CC (C).Value, CC_Limits (C));
-         when CC_Default_D    => Next_Fast (Track.CC (D).Value, CC_Limits (D));
+         when CC_Default_A    => CC_Next (T, A, Track.CC (A).Value, True);
+         when CC_Default_B    => CC_Next (T, B, Track.CC (B).Value, True);
+         when CC_Default_C    => CC_Next (T, C, Track.CC (C).Value, True);
+         when CC_Default_D    => CC_Next (T, D, Track.CC (D).Value, True);
          when CC_Ctrl_A       => Next_Fast (Track.CC (A).Controller);
          when CC_Ctrl_B       => Next_Fast (Track.CC (B).Controller);
          when CC_Ctrl_C       => Next_Fast (Track.CC (C).Controller);
@@ -1428,7 +1525,8 @@ package body WNM.Project is
    ---------------------
 
    procedure Prev_Value_Fast (S : User_Track_Settings) is
-      Track : Track_Rec renames G_Project.Tracks (Editing_Track);
+      T : constant Tracks := Editing_Track;
+      Track : Track_Rec renames G_Project.Tracks (T);
    begin
       case S is
          when Track_Mode      =>
@@ -1461,10 +1559,10 @@ package body WNM.Project is
          when Notes_Per_Chord => Prev_Fast (Track.Notes_Per_Chord);
          when MIDI_Chan       => Prev_Fast (Track.Chan);
          when MIDI_Instrument => null;
-         when CC_Default_A    => Prev_Fast (Track.CC (A).Value, CC_Limits (A));
-         when CC_Default_B    => Prev_Fast (Track.CC (B).Value, CC_Limits (B));
-         when CC_Default_C    => Prev_Fast (Track.CC (C).Value, CC_Limits (C));
-         when CC_Default_D    => Prev_Fast (Track.CC (D).Value, CC_Limits (D));
+         when CC_Default_A    => CC_Prev (T, A, Track.CC (A).Value, True);
+         when CC_Default_B    => CC_Prev (T, B, Track.CC (B).Value, True);
+         when CC_Default_C    => CC_Prev (T, C, Track.CC (C).Value, True);
+         when CC_Default_D    => CC_Prev (T, D, Track.CC (D).Value, True);
          when CC_Ctrl_A       => Prev_Fast (Track.CC (A).Controller);
          when CC_Ctrl_B       => Prev_Fast (Track.CC (B).Controller);
          when CC_Ctrl_C       => Prev_Fast (Track.CC (C).Controller);
