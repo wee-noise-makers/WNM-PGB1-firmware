@@ -1,5 +1,4 @@
 with System.Storage_Elements;
-with Ada.Synchronous_Task_Control;
 with GNAT.OS_Lib;
 with Interfaces;
 with Interfaces.C;
@@ -16,6 +15,7 @@ with MIDI.Decoder.Queue;
 with RtMIDI;
 
 with Wnm_Pgb1_Simulator_Config;
+with Ada.Numerics.Float_Random;
 
 package body WNM_HAL is
 
@@ -44,17 +44,27 @@ package body WNM_HAL is
    -- State --
    -----------
 
+   Gen : Ada.Numerics.Float_Random.Generator;
+
    function State return Buttons_State is
    begin
+      if ASFML_Sim.Fuzz_Key_Presses then
+         for B in Button loop
+            ASFML_Sim.Force_Pressed (B) :=
+              Ada.Numerics.Float_Random.Random (Gen) < 0.2;
+         end loop;
+      else
+         ASFML_Sim.Force_Pressed := (others => False);
+      end if;
+
       for B in Button loop
          Buttons_Internal (B) :=
-           (if ASFML_Sim.SFML_Pressed (B) or else ASFML_Sim.Force_Pressed (B)
+           (if ASFML_Sim.SFML_Pressed (B)
+            or else
+            ASFML_Sim.Force_Pressed (B)
             then Down
-            else Up);
+               else Up);
       end loop;
-
-      Ada.Synchronous_Task_Control.Set_True (ASFML_Sim.Button_Scan_Signal);
-
       return Buttons_Internal;
    end State;
 
@@ -408,6 +418,11 @@ package body WNM_HAL is
       Result : constant String :=
         ASFML_SIM_Storage.Save_ROM (ASFML_SIM_Storage.ROM_Path);
    begin
+      if ASFML_Sim.Fuzz_Key_Presses then
+         --  Don't shutdown during fuzzing
+         return;
+      end if;
+
       if Result /= "" then
          raise Program_Error with Result;
       end if;

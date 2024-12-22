@@ -162,7 +162,7 @@ package ASFML_Sim is
      (others => False);
    pragma Volatile_Components (Force_Pressed);
 
-   Button_Scan_Signal : Ada.Synchronous_Task_Control.Suspension_Object;
+   Fuzz_Key_Presses : Boolean := False;
 
    Strip_Touch : Boolean := False;
    Strip_Value : WNM_HAL.Touch_Value := 0.0;

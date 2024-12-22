@@ -215,6 +215,8 @@ package body ASFML_Sim is
                   elsif Event.key.code = Change_Keyboard_Layout_Key then
                      Next (Current_Layout);
 
+                  elsif Event.key.code = sfKeyF9 then
+                     Fuzz_Key_Presses := not Fuzz_Key_Presses;
                   elsif Event.key.code = sfKeyF10 then
                      Sim_Window.OLED_Screenshot ("PGB1-OLED-screenshot.png");
                   elsif Event.key.code = sfKeyF11 then
