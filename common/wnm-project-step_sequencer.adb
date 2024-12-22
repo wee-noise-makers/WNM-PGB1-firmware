@@ -712,24 +712,13 @@ package body WNM.Project.Step_Sequencer is
             Move_Playheads;
          end if;
 
-         --  if (for some B in B2 .. B5 => WNM.UI.FX_On (B)) then
-         --     if (WNM.UI.FX_On (B2) or else WNM.UI.FX_On (B3))
-         --       or else
-         --         (G_Roll_Step_Count >= 2 and then WNM.UI.FX_On (B4))
-         --         or else
-         --           (G_Roll_Step_Count >= 4 and then WNM.UI.FX_On (B5))
-         --     then
-         --        Restore_Play_State;
-         --        G_Roll_Step_Count := 1;
-         --     else
-         --        G_Roll_Step_Count := @ + 1;
-         --        WNM.Step_Event_Broadcast.Broadcast;
-         --        Move_Playheads;
-         --     end if;
-         --  else
-         --     WNM.Step_Event_Broadcast.Broadcast;
-         --     Move_Playheads;
-         --  end if;
+         --  Guard against bad timing of MIDI step event when playback just
+         --  started.
+         if (for some Track in Tracks =>
+               G_Play_State.Playheads (Track).Steps_Count = 0)
+         then
+            return;
+         end if;
 
          for Track in Tracks loop
             Process_Step (Track,
