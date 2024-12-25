@@ -211,7 +211,7 @@ package body WNM.Sample_Recording is
       Sector : Sector_Count := Sector_Count'First;
 
       Base_Sector : constant WNM_HAL.Sample_Sector_Id :=
-        ((WNM_HAL.Sample_Sector_Id (Id) - 1) * Sectors_Per_Sample);
+        (WNM_HAL.Sample_Sector_Id (Id) * Sectors_Per_Sample);
 
       Length : constant Sample_Point_Count :=
         Play_End_Offset - Play_Start_Offset;
