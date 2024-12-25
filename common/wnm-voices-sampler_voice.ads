@@ -24,6 +24,7 @@ with Tresses.Interfaces; use Tresses.Interfaces;
 with WNM.QOA;
 
 private with Tresses.Envelopes.AR;
+private with Tresses.FX.Bitcrusher;
 private with WNM.Sample_Library;
 
 package WNM.Voices.Sampler_Voice is
@@ -31,6 +32,16 @@ package WNM.Voices.Sampler_Voice is
    type Instance
    is new Four_Params_Voice
    with private;
+
+   type Sampler_Engine is (Overdrive, Crusher);
+
+   function Engine (This : Instance) return Sampler_Engine;
+   procedure Set_Engine (This : in out Instance; E : Sampler_Engine);
+
+   function Img (E : Sampler_Engine) return String
+   is (case E is
+          when Overdrive => "Overdrive",
+          when Crusher   => "Crusher");
 
    procedure Set_Sample (This : in out Instance; Id : MIDI.MIDI_Data);
 
@@ -43,9 +54,9 @@ package WNM.Voices.Sampler_Voice is
                              Key  :        MIDI.MIDI_Key);
 
    P_Sample  : constant Tresses.Param_Id := 1;
-   P_Start   : constant Tresses.Param_Id := 2;
-   P_Release : constant Tresses.Param_Id := 3;
-   P_Drive   : constant Tresses.Param_Id := 4;
+   P_Drive   : constant Tresses.Param_Id := 2;
+   P_Start   : constant Tresses.Param_Id := 3;
+   P_Release : constant Tresses.Param_Id := 4;
 
    --  Interfaces --
 
@@ -93,10 +104,13 @@ private
       Sample_Id : Sample_Library.Sample_Index :=
         Sample_Library.Sample_Index'First;
 
+      Engine : Sampler_Engine := Sampler_Engine'First;
+
       Phase : Sample_Phase := 0;
       Phase_Increment : Sample_Phase := 0;
 
       Env : Tresses.Envelopes.AR.Instance;
+      Bitcrusher : Tresses.FX.Bitcrusher.Instance;
 
       Do_Init : Boolean := True;
    end record;

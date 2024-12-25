@@ -19,27 +19,24 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Tresses.Drums.Clap;
 with Tresses.Macro;
-with Tresses.Drums.Snare;
-with Tresses.Drums.Sine_Snare;
-with Tresses.Drums.Saw_Snare;
-with Tresses.Drums.Triangle_Snare;
+with Tresses.Drums.HH_909_Sampled;
+with Tresses.Drums.HH_707_Sampled;
 
-package body WNM.Voices.Snare_Voice is
+package body WNM.Voices.Hihat_Voice is
 
    ------------
    -- Engine --
    ------------
 
-   function Engine (This : Instance) return Snare_Engine
+   function Engine (This : Instance) return HH_Engine
    is (This.Engine);
 
    ----------------
    -- Set_Engine --
    ----------------
 
-   procedure Set_Engine (This : in out Instance; E : Snare_Engine) is
+   procedure Set_Engine (This : in out Instance; E : HH_Engine) is
    begin
       if E /= This.Engine then
          This.Engine := E;
@@ -65,74 +62,37 @@ package body WNM.Voices.Snare_Voice is
    is
    begin
       case This.Engine is
-         when Sine_Snare =>
-            Drums.Sine_Snare.Render_Snare
+         when Cymbal =>
+            Drums.Cymbal.Render_Cymbal (Buffer,
+                                        Params  => This.Params,
+                                        Filter0 => This.Filter0,
+                                        Filter1 => This.Filter1,
+                                        Env => This.Env0,
+                                        State => This.Cym_State,
+                                        Phase => This.Phase,
+                                        Pitch => This.Pitch,
+                                        Do_Init => This.Do_Init,
+                                        Do_Strike => This.Do_Strike);
+
+         when HH909 =>
+            Drums.HH_909_Sampled.Render
               (Buffer,
                Params => This.Params,
-               Phase => This.Phase,
-               Phase_Increment => This.Phase_Increment,
-               Target_Phase_Increment => This.Target_Phase_Increment,
-               Tone_Env => This.Env0,
-               Noise_Env => This.Env1,
-               Rng => This.Rng,
-               Pitch => This.Pitch,
+               Filter => This.Filter0,
+               Env => This.Env0,
+               Phase =>  This.Phase,
                Do_Init => This.Do_Init,
                Do_Strike => This.Do_Strike);
 
-         when Saw_Snare =>
-            Drums.Saw_Snare.Render_Snare
+         when HH707 =>
+            Drums.HH_707_Sampled.Render
               (Buffer,
                Params => This.Params,
-               Phase => This.Phase,
-               Phase_Increment => This.Phase_Increment,
-               Target_Phase_Increment => This.Target_Phase_Increment,
-               Tone_Env => This.Env0,
-               Noise_Env => This.Env1,
-               Rng => This.Rng,
-               Pitch => This.Pitch,
+               Filter => This.Filter0,
+               Env => This.Env0,
+               Phase =>  This.Phase,
                Do_Init => This.Do_Init,
                Do_Strike => This.Do_Strike);
-
-         when Triangle_Snare =>
-            Drums.Triangle_Snare.Render_Snare
-              (Buffer,
-               Params => This.Params,
-               Phase => This.Phase,
-               Phase_Increment => This.Phase_Increment,
-               Target_Phase_Increment => This.Target_Phase_Increment,
-               Tone_Env => This.Env0,
-               Noise_Env => This.Env1,
-               Rng => This.Rng,
-               Pitch => This.Pitch,
-               Do_Init => This.Do_Init,
-               Do_Strike => This.Do_Strike);
-
-         when Virt_Analog =>
-            Tresses.Drums.Snare.Render_Snare
-              (Buffer,
-               Params => This.Params,
-               Pulse0 => This.Pulse0,
-               Pulse1 => This.Pulse1,
-               Pulse2 => This.Pulse2,
-               Pulse3 => This.Pulse3,
-               Filter0 => This.Filter0,
-               Filter1 => This.Filter1,
-               Filter2 => This.Filter2,
-               Rng => This.Rng,
-               Pitch =>  This.Pitch,
-               Do_Init => This.Do_Init,
-               Do_Strike => This.Do_Strike);
-
-         when Clap =>
-            Tresses.Drums.Clap.Render_Clap (Buffer,
-                                            Params => This.Params,
-                                            Filter => This.Filter0,
-                                            Rng =>  This.Rng,
-                                            Env => This.Env0,
-                                            Re_Trig => This.Re_Trig,
-                                            Pitch => This.Pitch,
-                                            Do_Init => This.Do_Init,
-                                            Do_Strike => This.Do_Strike);
       end case;
    end Render;
 
@@ -140,19 +100,17 @@ package body WNM.Voices.Snare_Voice is
    -- Tresse_Engine --
    -------------------
 
-   function Tresse_Engine (E : Snare_Engine) return Tresses.Engines
+   function Tresse_Engine (E : HH_Engine) return Tresses.Engines
    is (case E is
-          when Sine_Snare => Tresses.Drum_Sine_Snare,
-          when Saw_Snare => Tresses.Drum_Saw_Snare,
-          when Triangle_Snare => Tresses.Drum_Triangle_Snare,
-          when Virt_Analog => Tresses.Drum_Snare,
-          when Clap  => Tresses.Drum_Clap);
+          when Cymbal => Tresses.Drum_Cymbal,
+          when HH909  => Tresses.Drum_909_Hats,
+          when HH707  => Tresses.Drum_707_Hats);
 
    ---------
    -- Img --
    ---------
 
-   function Img (E : Snare_Engine) return String
+   function Img (E : HH_Engine) return String
    is (Tresses.Img (Tresse_Engine (E)));
 
    -----------------
@@ -172,4 +130,4 @@ package body WNM.Voices.Snare_Voice is
                                return Short_Label
    is (Tresses.Macro.Param_Short_Label (Tresse_Engine (This.Engine), Id));
 
-end WNM.Voices.Snare_Voice;
+end WNM.Voices.Hihat_Voice;

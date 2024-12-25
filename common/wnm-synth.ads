@@ -47,6 +47,9 @@ package WNM.Synth is
    Speech_Channel              : constant MIDI.MIDI_Channel := 13;
    Sample_Rec_Playback_Channel : constant MIDI.MIDI_Channel := 14;
 
+   subtype Sampler_Channels
+     is MIDI.MIDI_Channel range Sample1_Channel .. Sample2_Channel;
+
    Voice_Param_1_CC      : constant MIDI.MIDI_Data := 0;
    Voice_Param_2_CC      : constant MIDI.MIDI_Data := 1;
    Voice_Param_3_CC      : constant MIDI.MIDI_Data := 2;
@@ -106,6 +109,8 @@ package WNM.Synth is
                                     Id : Tresses.Param_Id)
                                     return Tresses.Short_Label;
 
+   function Kick_Engine_Last return MIDI.MIDI_Data;
+   function Kick_Engine_Img (Engine : MIDI.MIDI_Data) return String;
    function Kick_Param_Label (Id : Tresses.Param_Id)
                               return String;
    function Kick_Param_Short_Label (Id : Tresses.Param_Id)
@@ -118,14 +123,20 @@ package WNM.Synth is
    function Snare_Param_Short_Label (Id : Tresses.Param_Id)
                                      return Tresses.Short_Label;
 
+   function Hihat_Engine_Last return MIDI.MIDI_Data;
+   function Hihat_Engine_Img (Engine : MIDI.MIDI_Data) return String;
    function Hihat_Param_Label (Id : Tresses.Param_Id)
                                return String;
    function Hihat_Param_Short_Label (Id : Tresses.Param_Id)
                                      return Tresses.Short_Label;
 
-   function Sampler_Param_Label (Id : Tresses.Param_Id)
+   function Sampler_Engine_Last return MIDI.MIDI_Data;
+   function Sampler_Engine_Img (Engine : MIDI.MIDI_Data) return String;
+   function Sampler_Param_Label (Chan : Sampler_Channels;
+                                 Id   : Tresses.Param_Id)
                                  return String;
-   function Sampler_Param_Short_Label (Id : Tresses.Param_Id)
+   function Sampler_Param_Short_Label (Chan : Sampler_Channels;
+                                       Id   : Tresses.Param_Id)
                                        return Tresses.Short_Label;
 
    function Reverb_Param_Label (Id : Tresses.Param_Id)
@@ -153,6 +164,8 @@ package WNM.Synth is
    function Speech_Param_Short_Label (Id : Tresses.Param_Id)
                                       return Tresses.Short_Label;
 
+   function Chord_Engine_Last return MIDI.MIDI_Data;
+   function Chord_Engine_Img (Engine : MIDI.MIDI_Data) return String;
    function Chord_Param_Label (Id : Tresses.Param_Id)
                                return String;
    function Chord_Param_Short_Label (Id : Tresses.Param_Id)

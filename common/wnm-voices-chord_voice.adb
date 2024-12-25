@@ -19,11 +19,29 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Interfaces; use Interfaces;
 with Tresses.DSP;
 with Tresses.Envelopes.AR; use Tresses.Envelopes.AR;
 
 package body WNM.Voices.Chord_Voice is
+
+   ------------
+   -- Engine --
+   ------------
+
+   function Engine (This : Instance) return Chord_Engine
+   is (This.Engine);
+
+   ----------------
+   -- Set_Engine --
+   ----------------
+
+   procedure Set_Engine (This : in out Instance; E : Chord_Engine) is
+   begin
+      if This.Engine /= E then
+         This.Engine := E;
+         This.Do_Init := True;
+      end if;
+   end Set_Engine;
 
    ----------
    -- Init --

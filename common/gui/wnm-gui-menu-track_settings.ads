@@ -70,16 +70,10 @@ private
                   Track_Octave_Offset | Shuffle |
                   Arp_Notes | CC_Default_A .. CC_Default_B,
 
-          --  Single engine
-          when Project.Kick_Mode | Project.Hihat_Mode | Project.Chord_Mode |
-               Project.Sample1_Mode | Project.Sample2_Mode =>
-             S in Track_Mode | Volume | Pan | Master_FX | Arp_Mode |
-                  Track_Octave_Offset | Shuffle |
-                  Arp_Notes | CC_Default_A .. CC_Default_D |
-                  LFO_Rate | LFO_Amplitude | LFO_Target | LFO_Shape,
-
           --  Multi engines
-          when Project.Lead_Mode | Project.Bass_Mode | Project.Snare_Mode =>
+          when Project.Lead_Mode | Project.Bass_Mode | Project.Kick_Mode |
+               Project.Snare_Mode | Project.Hihat_Mode | Project.Chord_Mode |
+               Project.Sample1_Mode | Project.Sample2_Mode =>
              S in Track_Mode | Engine | Volume | Pan | Master_FX | Arp_Mode |
                   Track_Octave_Offset | Shuffle |
                   Arp_Notes | CC_Default_A .. CC_Default_D |

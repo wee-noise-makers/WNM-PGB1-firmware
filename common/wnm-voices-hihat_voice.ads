@@ -22,25 +22,22 @@
 with Tresses;            use Tresses;
 with Tresses.Interfaces; use Tresses.Interfaces;
 
-private with Tresses.Random;
 private with Tresses.Filters.SVF;
 private with Tresses.Envelopes.AR;
-private with Tresses.Excitation;
+private with Tresses.Drums.Cymbal;
 
-package WNM.Voices.Snare_Voice is
+package WNM.Voices.Hihat_Voice is
 
    type Instance
    is new Four_Params_Voice
    with private;
 
-   type Snare_Engine is (Sine_Snare, Saw_Snare, Triangle_Snare,
-                         Virt_Analog,
-                         Clap);
+   type HH_Engine is (Cymbal, HH909, HH707);
 
-   function Engine (This : Instance) return Snare_Engine;
-   procedure Set_Engine (This : in out Instance; E : Snare_Engine);
+   function Engine (This : Instance) return HH_Engine;
+   procedure Set_Engine (This : in out Instance; E : HH_Engine);
 
-   function Img (E : Snare_Engine) return String;
+   function Img (E : HH_Engine) return String;
 
    procedure Init (This : in out Instance);
 
@@ -62,17 +59,14 @@ private
    is new Four_Params_Voice
    with record
 
-      Engine : Snare_Engine := Snare_Engine'First;
+      Engine : HH_Engine := HH_Engine'First;
 
-      Phase, Target_Phase_Increment, Phase_Increment : U32 := 0;
+      Phase : U32 := 0;
 
-      Pulse0, Pulse1, Pulse2, Pulse3 : Tresses.Excitation.Instance;
-      Filter0, Filter1, Filter2 : Filters.SVF.Instance;
-      Rng : Tresses.Random.Instance;
-      Env0, Env1 : Tresses.Envelopes.AR.Instance;
-      Re_Trig : Tresses.U32;
-
+      Filter0, Filter1 : Filters.SVF.Instance;
+      Env0  : Tresses.Envelopes.AR.Instance;
+      Cym_State : Tresses.Drums.Cymbal.Cymbal_State;
       Do_Init : Boolean := True;
    end record;
 
-end WNM.Voices.Snare_Voice;
+end WNM.Voices.Hihat_Voice;

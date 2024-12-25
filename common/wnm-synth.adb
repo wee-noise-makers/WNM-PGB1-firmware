@@ -27,10 +27,10 @@ with WNM.Voices.Snare_Voice;
 with WNM.Voices.Sampler_Voice;
 with WNM.Voices.Speech_Voice;
 with WNM.Voices.Chord_Voice;
+with WNM.Voices.Hihat_Voice;
+with WNM.Voices.Kick_Voice;
 
 with Tresses; use Tresses;
-with Tresses.Drums.Kick;
-with Tresses.Drums.Cymbal;
 with Tresses.Voices.Macro;
 with Tresses.Macro;
 with Tresses.Interfaces;
@@ -39,9 +39,9 @@ with WNM.Generic_Queue;
 
 package body WNM.Synth is
 
-   TK          : aliased Tresses.Drums.Kick.Instance;
+   TK          : aliased WNM.Voices.Kick_Voice.Instance;
    TS          : aliased WNM.Voices.Snare_Voice.Instance;
-   HH          : aliased Tresses.Drums.Cymbal.Instance;
+   HH          : aliased WNM.Voices.Hihat_Voice.Instance;
    Lead        : aliased Tresses.Voices.Macro.Instance;
    Bass        : aliased Tresses.Voices.Macro.Instance;
    Chord       : aliased WNM.Voices.Chord_Voice.Instance;
@@ -57,7 +57,7 @@ package body WNM.Synth is
    subtype Voice_Class is Tresses.Interfaces.Four_Params_Voice'Class;
    type Voice_Access is access all Voice_Class;
 
-   subtype Lead_Engine_Range is MIDI.MIDI_Data range 0 .. 11;
+   subtype Lead_Engine_Range is MIDI.MIDI_Data range 0 .. 22;
    function Lead_Engines (V : MIDI.MIDI_Data) return Tresses.Engines
    is (case V is
           when 0  => Tresses.Voice_Saw_Swarm,
@@ -71,17 +71,58 @@ package body WNM.Synth is
           when 8  => Tresses.Voice_Pluck_Bass,
           when 9  => Tresses.Voice_Reese,
           when 10 => Tresses.Voice_Screech,
+          when 11 => Tresses.Voice_Plucked,
+          when 12 => Tresses.Voice_PDR_Sine,
+          when 13 => Tresses.Voice_PDR_Triangle,
+          when 14 => Tresses.Voice_PDR_Sine_Square,
+          when 15 => Tresses.Voice_PDR_Square_Sine,
+          when 16 => Tresses.Voice_PDL_Trig_Warp,
+          when 17 => Tresses.Voice_PDL_Triangle_Screech,
+          when 18 => Tresses.Voice_Chip_Glide,
+          when 19 => Tresses.Voice_Chip_Phaser,
+          when 20 => Tresses.Voice_Chip_Echo_Square,
+          when 21 => Tresses.Voice_Chip_Echo_Square_Saw,
           when Lead_Engine_Range'Last .. MIDI.MIDI_Data'Last
-                  => Tresses.Voice_Plucked);
+                  => Tresses.Voice_Chip_Bass);
 
-   subtype Snare_Engine_Range is MIDI.MIDI_Data range 0 .. 1;
+   subtype Kick_Engine_Range is MIDI.MIDI_Data range 0 .. 2;
+   function Kick_Engines (V : MIDI.MIDI_Data)
+                          return Voices.Kick_Voice.Kick_Engine
+   is (case V is
+          when 0 => Voices.Kick_Voice.Sine_Kick,
+          when 1 => Voices.Kick_Voice.Triangle_Kick,
+          when others => Voices.Kick_Voice.Chip_Kick);
+
+   subtype Snare_Engine_Range is MIDI.MIDI_Data range 0 .. 5;
    function Snare_Engines (V : MIDI.MIDI_Data)
                            return Voices.Snare_Voice.Snare_Engine
    is (case V is
-          --  when 0      => Voices.Snare_Voice.Snare,
-          when 0      => Voices.Snare_Voice.Analog_Snare,
-          when Snare_Engine_Range'Last .. MIDI.MIDI_Data'Last
-                      => Voices.Snare_Voice.Clap);
+          when 0 => Voices.Snare_Voice.Sine_Snare,
+          when 1 => Voices.Snare_Voice.Saw_Snare,
+          when 2 => Voices.Snare_Voice.Triangle_Snare,
+          when 3 => Voices.Snare_Voice.Virt_Analog,
+          when others => Voices.Snare_Voice.Clap);
+
+   subtype HH_Engine_Range is MIDI.MIDI_Data range 0 .. 2;
+   function HH_Engines (V : MIDI.MIDI_Data)
+                        return Voices.Hihat_Voice.HH_Engine
+   is (case V is
+          when 0 => Voices.Hihat_Voice.Cymbal,
+          when 1 => Voices.Hihat_Voice.HH909,
+          when others => Voices.Hihat_Voice.HH707);
+
+   subtype Sampler_Engine_Range is MIDI.MIDI_Data range 0 .. 1;
+   function Sampler_Engines (V : MIDI.MIDI_Data)
+                        return Voices.Sampler_Voice.Sampler_Engine
+   is (case V is
+          when 0     => Voices.Sampler_Voice.Overdrive,
+          when others => Voices.Sampler_Voice.Crusher);
+
+   subtype Chord_Engine_Range is MIDI.MIDI_Data range 0 .. 1;
+   function Chord_Engines (V : MIDI.MIDI_Data)
+                        return Voices.Chord_Voice.Chord_Engine
+   is (case V is
+          when others  => Voices.Chord_Voice.Sine_Fold);
 
    subtype Tresses_Channels
      is MIDI.MIDI_Channel range Kick_Channel .. Speech_Channel;
@@ -93,7 +134,7 @@ package body WNM.Synth is
         Sample2_Channel    => Sampler2'Access,
         Kick_Channel       => TK'Access,
         Snare_Channel      => TS'Access,
-        Hihat_Channel     => HH'Access,
+        Hihat_Channel      => HH'Access,
         Lead_Channel       => Lead'Access,
         Bass_Channel       => Bass'Access,
         Chord_Channel      => Chord'Access,
@@ -374,6 +415,10 @@ package body WNM.Synth is
                            when Voice_Engine_CC =>
 
                               case Msg.MIDI_Evt.Chan is
+                              when Kick_Channel =>
+                                 TK.Set_Engine
+                                   (Kick_Engines
+                                      (Msg.MIDI_Evt.Controller_Value));
                               when Lead_Channel =>
                                  Lead.Set_Engine
                                    (Lead_Engines
@@ -382,10 +427,26 @@ package body WNM.Synth is
                                  Bass.Set_Engine
                                    (Lead_Engines
                                       (Msg.MIDI_Evt.Controller_Value));
-                                 when Snare_Channel =>
-                                    TS.Set_Engine
-                                      (Snare_Engines
-                                         (Msg.MIDI_Evt.Controller_Value));
+                              when Snare_Channel =>
+                                 TS.Set_Engine
+                                   (Snare_Engines
+                                      (Msg.MIDI_Evt.Controller_Value));
+                              when Hihat_Channel =>
+                                 HH.Set_Engine
+                                   (HH_Engines
+                                      (Msg.MIDI_Evt.Controller_Value));
+                              when Chord_Channel =>
+                                 Chord.Set_Engine
+                                   (Chord_Engines
+                                      (Msg.MIDI_Evt.Controller_Value));
+                              when Sample1_Channel =>
+                                 Sampler1.Set_Engine
+                                   (Sampler_Engines
+                                      (Msg.MIDI_Evt.Controller_Value));
+                              when Sample2_Channel =>
+                                 Sampler2.Set_Engine
+                                   (Sampler_Engines
+                                      (Msg.MIDI_Evt.Controller_Value));
                               when others =>
                                  null;
                               end case;
@@ -670,11 +731,25 @@ package body WNM.Synth is
    end Lead_Param_Short_Label;
 
    ----------------------
+   -- Kick_Engine_Last --
+   ----------------------
+
+   function Kick_Engine_Last return MIDI.MIDI_Data
+   is (Kick_Engine_Range'Last);
+
+   ---------------------
+   -- Kick_Engine_Img --
+   ---------------------
+
+   function Kick_Engine_Img (Engine : MIDI.MIDI_Data) return String
+   is (WNM.Voices.Kick_Voice.Img (Kick_Engines (Engine)));
+
+   ----------------------
    -- Kick_Param_Label --
    ----------------------
 
    function Kick_Param_Label (Id : Tresses.Param_Id) return String
-   is (Tresses.Macro.Param_Label (Tresses.Drum_Kick, Id));
+   is (TK.Param_Label (Id));
 
    ----------------------------
    -- Kick_Param_Short_Label --
@@ -682,7 +757,7 @@ package body WNM.Synth is
 
    function Kick_Param_Short_Label (Id : Tresses.Param_Id)
                                     return Tresses.Short_Label
-   is (Tresses.Macro.Param_Short_Label (Tresses.Drum_Kick, Id));
+   is (TK.Param_Short_Label (Id));
 
    -----------------------
    -- Snare_Engine_Last --
@@ -713,12 +788,26 @@ package body WNM.Synth is
                                     return Tresses.Short_Label
    is (TS.Param_Short_Label (Id));
 
+   -----------------------
+   -- Hihat_Engine_Last --
+   -----------------------
+
+   function Hihat_Engine_Last return MIDI.MIDI_Data
+   is (HH_Engine_Range'Last);
+
+   ----------------------
+   -- Hihat_Engine_Img --
+   ----------------------
+
+   function Hihat_Engine_Img (Engine : MIDI.MIDI_Data) return String
+   is (WNM.Voices.Hihat_Voice.Img (HH_Engines (Engine)));
+
    ------------------------
    -- Cymbal_Param_Label --
    ------------------------
 
    function Hihat_Param_Label (Id : Tresses.Param_Id) return String
-   is (Tresses.Macro.Param_Label (Tresses.Drum_Cymbal, Id));
+   is (HH.Param_Label (Id));
 
    ------------------------------
    -- Cymbal_Param_Short_Label --
@@ -726,23 +815,43 @@ package body WNM.Synth is
 
    function Hihat_Param_Short_Label (Id : Tresses.Param_Id)
                                       return Tresses.Short_Label
-   is (Tresses.Macro.Param_Short_Label (Tresses.Drum_Cymbal, Id));
+   is (HH.Param_Short_Label (Id));
+
+   -------------------------
+   -- Sampler_Engine_Last --
+   -------------------------
+
+   function Sampler_Engine_Last return MIDI.MIDI_Data
+   is (Sampler_Engine_Range'Last);
+
+   ------------------------
+   -- Sampler_Engine_Img --
+   ------------------------
+
+   function Sampler_Engine_Img (Engine : MIDI.MIDI_Data) return String
+   is (Voices.Sampler_Voice.Img (Sampler_Engines (Engine)));
 
    -------------------------
    -- Sampler_Param_Label --
    -------------------------
 
-   function Sampler_Param_Label (Id : Tresses.Param_Id)
+   function Sampler_Param_Label (Chan : Sampler_Channels;
+                                 Id   : Tresses.Param_Id)
                                  return String
-   is (Sampler1.Param_Label (Id));
+   is (case Chan is
+          when Sample1_Channel => Sampler1.Param_Label (Id),
+          when Sample2_Channel => Sampler2.Param_Label (Id));
 
    -------------------------------
    -- Sampler_Param_Short_Label --
    -------------------------------
 
-   function Sampler_Param_Short_Label (Id : Tresses.Param_Id)
+   function Sampler_Param_Short_Label (Chan : Sampler_Channels;
+                                       Id   : Tresses.Param_Id)
                                        return Tresses.Short_Label
-   is (Sampler1.Param_Short_Label (Id));
+   is (case Chan is
+          when Sample1_Channel => Sampler1.Param_Short_Label (Id),
+          when Sample2_Channel => Sampler2.Param_Short_Label (Id));
 
    ------------------------
    -- Reverb_Param_Label --
@@ -823,6 +932,20 @@ package body WNM.Synth is
    function Speech_Param_Short_Label (Id : Tresses.Param_Id)
                                       return Tresses.Short_Label
    is (Speech.Param_Short_Label (Id));
+
+   -----------------------
+   -- Chord_Engine_Last --
+   -----------------------
+
+   function Chord_Engine_Last return MIDI.MIDI_Data
+   is (Chord_Engine_Range'Last);
+
+   ----------------------
+   -- Chord_Engine_Img --
+   ----------------------
+
+   function Chord_Engine_Img (Engine : MIDI.MIDI_Data) return String
+   is (Voices.Chord_Voice.Img (Chord_Engines (Engine)));
 
    -----------------------
    -- Chord_Param_Label --

@@ -328,8 +328,16 @@ package body WNM.Project is
             return (MIDI_Data'First, Synth.Lead_Engine_Last);
          when Bass_Mode =>
             return (MIDI_Data'First, Synth.Lead_Engine_Last);
+         when Kick_Mode =>
+            return (MIDI_Data'First, Synth.Kick_Engine_Last);
          when Snare_Mode =>
             return (MIDI_Data'First, Synth.Snare_Engine_Last);
+         when Hihat_Mode =>
+            return (MIDI_Data'First, Synth.Hihat_Engine_Last);
+         when Chord_Mode =>
+            return (MIDI_Data'First, Synth.Chord_Engine_Last);
+         when Sample1_Mode | Sample2_Mode  =>
+            return (MIDI_Data'First, Synth.Sampler_Engine_Last);
          when others =>
             return (MIDI_Data'First, MIDI_Data'First);
       end case;
@@ -994,8 +1002,14 @@ package body WNM.Project is
                             Result);
             return Result;
 
-         when Sample1_Mode | Sample2_Mode =>
-            Utils.Copy_Str (Synth.Sampler_Param_Label (Tresses_Id), Result);
+         when Sample1_Mode =>
+            Utils.Copy_Str (Synth.Sampler_Param_Label
+                            (Synth.Sample1_Channel, Tresses_Id), Result);
+            return Result;
+
+         when Sample2_Mode =>
+            Utils.Copy_Str (Synth.Sampler_Param_Label
+                            (Synth.Sample2_Channel, Tresses_Id), Result);
             return Result;
 
          when Reverb_Mode =>
@@ -1054,8 +1068,13 @@ package body WNM.Project is
             return Synth.Lead_Param_Short_Label (Selected_Engine (T),
                                                  Tresses_Id);
 
-         when Sample1_Mode | Sample2_Mode =>
-            return Synth.Sampler_Param_Short_Label (Tresses_Id);
+         when Sample1_Mode =>
+            return Synth.Sampler_Param_Short_Label
+              (Synth.Sample1_Channel, Tresses_Id);
+
+         when Sample2_Mode =>
+            return Synth.Sampler_Param_Short_Label
+              (Synth.Sample2_Channel, Tresses_Id);
 
          when Reverb_Mode =>
             return Synth.Reverb_Param_Short_Label (Tresses_Id);
@@ -1093,8 +1112,16 @@ package body WNM.Project is
       case Mode (T) is
          when Lead_Mode | Bass_Mode =>
             return Synth.Lead_Engine_Img (Selected_Engine (T));
+         when Kick_Mode =>
+            return Synth.Kick_Engine_Img (Selected_Engine (T));
          when Snare_Mode =>
             return Synth.Snare_Engine_Img (Selected_Engine (T));
+         when Hihat_Mode =>
+            return Synth.Hihat_Engine_Img (Selected_Engine (T));
+         when Chord_Mode =>
+            return Synth.Chord_Engine_Img (Selected_Engine (T));
+         when Sample1_Mode | Sample2_Mode =>
+            return Synth.Sampler_Engine_Img (Selected_Engine (T));
          when others =>
             return "No Engine";
       end case;

@@ -22,25 +22,20 @@
 with Tresses;            use Tresses;
 with Tresses.Interfaces; use Tresses.Interfaces;
 
-private with Tresses.Random;
-private with Tresses.Filters.SVF;
 private with Tresses.Envelopes.AR;
-private with Tresses.Excitation;
 
-package WNM.Voices.Snare_Voice is
+package WNM.Voices.Kick_Voice is
 
    type Instance
    is new Four_Params_Voice
    with private;
 
-   type Snare_Engine is (Sine_Snare, Saw_Snare, Triangle_Snare,
-                         Virt_Analog,
-                         Clap);
+   type Kick_Engine is (Sine_Kick, Triangle_Kick, Chip_Kick);
 
-   function Engine (This : Instance) return Snare_Engine;
-   procedure Set_Engine (This : in out Instance; E : Snare_Engine);
+   function Engine (This : Instance) return Kick_Engine;
+   procedure Set_Engine (This : in out Instance; E : Kick_Engine);
 
-   function Img (E : Snare_Engine) return String;
+   function Img (E : Kick_Engine) return String;
 
    procedure Init (This : in out Instance);
 
@@ -62,17 +57,11 @@ private
    is new Four_Params_Voice
    with record
 
-      Engine : Snare_Engine := Snare_Engine'First;
+      Engine : Kick_Engine := Kick_Engine'First;
 
-      Phase, Target_Phase_Increment, Phase_Increment : U32 := 0;
-
-      Pulse0, Pulse1, Pulse2, Pulse3 : Tresses.Excitation.Instance;
-      Filter0, Filter1, Filter2 : Filters.SVF.Instance;
-      Rng : Tresses.Random.Instance;
-      Env0, Env1 : Tresses.Envelopes.AR.Instance;
-      Re_Trig : Tresses.U32;
-
+      Phase, Phase_Increment, Target_Phase_Increment : U32 := 0;
+      Env0, Env1  : Tresses.Envelopes.AR.Instance;
       Do_Init : Boolean := True;
    end record;
 
-end WNM.Voices.Snare_Voice;
+end WNM.Voices.Kick_Voice;

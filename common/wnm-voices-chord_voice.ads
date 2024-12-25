@@ -31,6 +31,15 @@ package WNM.Voices.Chord_Voice is
    is new Four_Params_Voice
    with private;
 
+   type Chord_Engine is (Sine_Fold);
+
+   function Engine (This : Instance) return Chord_Engine;
+   procedure Set_Engine (This : in out Instance; E : Chord_Engine);
+
+   function Img (E : Chord_Engine) return String
+   is (case E is
+          when Sine_Fold => "Sine Fold");
+
    procedure Init (This : in out Instance);
 
    procedure Render (This   : in out Instance;
@@ -74,6 +83,7 @@ private
 
       Env : Tresses.Envelopes.AR.Instance;
       Osc : Tresses.Analog_Oscillator.Instance;
+
    end record;
 
    Chord_Voices : constant := 4;
@@ -85,6 +95,8 @@ private
    with record
       Next : Voice_Id := Voice_Id'First;
       Voices : Voice_Array;
+
+      Engine : Chord_Engine := Chord_Engine'First;
 
       Do_Init : Boolean := True;
    end record;
