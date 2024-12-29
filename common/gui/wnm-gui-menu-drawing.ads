@@ -49,6 +49,9 @@ package WNM.GUI.Menu.Drawing is
                        Str       : String;
                        Underline : Boolean := False);
 
+   procedure Draw_Str_Center (Y   : Integer;
+                              Str : String);
+
    procedure Draw_Menu_Box (Title : String;
                             Count : Natural;
                             Index : Natural)

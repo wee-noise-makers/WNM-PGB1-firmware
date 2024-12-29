@@ -27,7 +27,6 @@ private
 
    type Menu_Items is (Projects,
                        Inputs,
-                       Test_Text_Input,
                        DFU_Mode,
                        System_Info);
 

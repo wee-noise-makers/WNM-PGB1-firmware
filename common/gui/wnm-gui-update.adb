@@ -58,6 +58,11 @@ package body WNM.GUI.Update is
       Print (X_Offset    => B,
              Y_Offset    => 0,
              Str         => Project.Track_Name);
+      B := 79;
+      Print (X_Offset    => B,
+             Y_Offset    => 0,
+             Str         => 'P' & Img (Project.Editing_Pattern) &
+                            "S" & Img (Project.Editing_Step));
       Menu.Drawing.Draw_Battery (Anim_Step);
       Screen.Draw_H_Line (8);
 

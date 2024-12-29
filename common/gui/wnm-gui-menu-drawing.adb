@@ -83,6 +83,20 @@ package body WNM.GUI.Menu.Drawing is
       end if;
    end Draw_Str;
 
+
+   ---------------------
+   -- Draw_Str_Center --
+   ---------------------
+
+   procedure Draw_Str_Center (Y   : Integer;
+                              Str : String)
+   is
+      Width : constant Natural := Str'Length * Bitmap_Fonts.Width;
+      X : Natural := Box_Center.X - (Width / 2);
+   begin
+      Bitmap_Fonts.Print (X, Y, Str);
+   end Draw_Str_Center;
+
    -------------------
    -- Draw_Menu_Box --
    -------------------
@@ -1303,7 +1317,7 @@ package body WNM.GUI.Menu.Drawing is
    procedure Draw_Battery (Step : HAL.UInt32) is
       use HAL;
 
-      X : constant Integer := Screen_Width - battery_100.Data.W - 1;
+      X : constant Integer := Screen_Width - battery_100.Data.W;
       Y : constant Integer := 0;
 
       Blink_Rate_0 : constant := 10;

@@ -19,12 +19,9 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.GUI.Menu.Drawing;           use WNM.GUI.Menu.Drawing;
---  with WNM.GUI.Menu.Sample_Select;     use WNM.GUI.Menu.Sample_Select;
-with WNM.GUI.Menu.Text_Dialog;       use WNM.GUI.Menu.Text_Dialog;
+with WNM.GUI.Menu.Drawing;       use WNM.GUI.Menu.Drawing;
 with WNM.GUI.Menu.Yes_No_Dialog;
---  with WNM.GUI.Menu.Create_Sample;
---  with WNM.GUI.Menu.Passthrough;
+with WNM.GUI.Bitmap_Fonts;
 with WNM.GUI.Menu.Projects;
 with WNM.GUI.Menu.Inputs;
 with WNM.GUI.Menu.System_Info;
@@ -40,7 +37,6 @@ package body WNM.GUI.Menu.Root is
    is (case Item is
           when Projects        => "Projects",
           when Inputs          => "Inputs",
-          when Test_Text_Input => "Test text input",
           when DFU_Mode        => "Update Mode",
           when System_Info     => "System Info");
 
@@ -68,7 +64,9 @@ package body WNM.GUI.Menu.Root is
       Draw_Menu_Box ("Menu",
                      Count => Menu_Items_Count,
                      Index => Menu_Items'Pos (This.Item));
-      Draw_Title (Menu_Item_Text (This.Item), "");
+
+      Draw_Str_Center (Box_Center.Y - (Bitmap_Fonts.Height / 2),
+                       Menu_Item_Text (This.Item));
    end Draw;
 
    --------------
@@ -89,10 +87,6 @@ package body WNM.GUI.Menu.Root is
 
                when Inputs =>
                   Menu.Inputs.Push_Window;
-
-               when Test_Text_Input =>
-                  Text_Dialog.Set_Title ("Enter some text");
-                  Text_Dialog.Push_Window;
 
                when DFU_Mode =>
                   Yes_No_Dialog.Set_Title ("Enter Update Mode?");

@@ -27,9 +27,9 @@ private
 
    type Menu_Items is (Save_Project,
                        Load_Project,
+                       Clear_Project,
                        Rename_Project,
-                       Delete_Project,
-                       Clear_Project);
+                       Delete_Project);
 
    function Menu_Items_Count is new Enum_Count (Menu_Items);
 

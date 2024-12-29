@@ -106,18 +106,6 @@ package body WNM.Sample_Recording is
 
       First : constant Sample_Point_Index := Sample_Point_Index'First;
       Last  : constant Sample_Point_Index := First + Entry_Len (Id);
-      --  wnm-project-step_sequencer.adb:724:60 range check failed
-      --  value 0 not in 1..16
-      --  EXCEPTION INFORMATION
-      --  raised CONSTRAINT_ERROR : wnm-project-step_sequencer.adb:724:60 range check failed
-      --  value 0 not in 1..16
-      --  [/home/chouteau/src/github/WNM-PS1-firmware/simulator/bin/wnm-pgb1-simulator]
-      --  0x48c250 Wnm.Project.Step_Sequencer.Execute_Step at wnm-project-step_sequencer.adb:724
-      --  0x48c309 Wnm.Project.Step_Sequencer.Midi_Clock_Tick at wnm-project-step_sequencer.adb:768
-      --  0x489585 Wnm.Midi_Clock.Update at midi-time-generic_clock.adb:61
-      --  0x4c88c2 Wnm.Tasks.Sequencer_1khz_Tick at wnm-tasks.adb:103
-      --  0x4d6d62 Asfml_Sim.Seq_1khz_Task at asfml_sim.adb:156
-      --  0x59cc25 System.Tasking.Stages.Task_Wrapper at s-tassta.adb:1211
 
       Buff_Idx : Natural;
    begin

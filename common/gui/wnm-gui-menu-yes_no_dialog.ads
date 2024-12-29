@@ -23,7 +23,7 @@ package WNM.GUI.Menu.Yes_No_Dialog is
 
    procedure Push_Window;
 
-   Title_Max_Len : constant := 15;
+   Title_Max_Len : constant := 20;
 
    procedure Set_Title (Title : String)
      with Pre => Title'Length <= Title_Max_Len;

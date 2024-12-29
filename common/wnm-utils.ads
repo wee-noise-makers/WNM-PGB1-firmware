@@ -24,8 +24,8 @@ package WNM.Utils is
    procedure Copy_Str (From :     String;
                        To   : out String;
                        Fill :     Character := ' ');
-   --  Copy sting From in To. If the length doesn't match, either trucate From
-   --  or fill the remaining characters of To with Fill.
+   --  Copy string From in To. If the length doesn't match, either trucate
+   --  From or fill the remaining characters of To with Fill.
 
    function Starts_With (Full, Prefix : String) return Boolean is
      (Full'Length >= Prefix'Length

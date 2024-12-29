@@ -19,15 +19,34 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with HAL; use HAL;
+
 with WNM.GUI.Menu.Drawing;           use WNM.GUI.Menu.Drawing;
 with WNM.GUI.Menu.Yes_No_Dialog;
 with WNM.GUI.Menu.Text_Dialog;
 with WNM.GUI.Popup;
 with WNM.GUI.Menu.Project_Select;
+with WNM.GUI.Bitmap_Fonts;
 
 with WNM.Project.Library;
 with WNM.File_System;
 with WNM.Utils;
+with WNM.Screen;
+
+with edit_project_icon;
+with edit_project_icon_2;
+with edit_project_icon_3;
+with load_project_icon;
+with load_project_icon_2;
+with load_project_icon_3;
+with save_project_icon;
+with save_project_icon_2;
+with save_project_icon_3;
+with delete_project_icon;
+with delete_project_icon_2;
+with clear_project_icon;
+with clear_project_icon_2;
+with clear_project_icon_3;
 
 package body WNM.GUI.Menu.Projects is
 
@@ -54,15 +73,57 @@ package body WNM.GUI.Menu.Projects is
    -- Draw --
    ----------
 
+   Anim_Step : HAL.UInt32 := 0;
+
    overriding
    procedure Draw
      (This   : in out Instance)
    is
+      Step : constant HAL.UInt32 := Anim_Step / 6;
    begin
       Draw_Menu_Box ("Menu",
                      Count => Menu_Items_Count,
                      Index => Menu_Items'Pos (This.Item));
-      Draw_Title (Menu_Item_Text (This.Item), "");
+
+      Screen.Copy_Bitmap
+        ((case This.Item is
+            when Load_Project =>
+           (case Step  mod 3 is
+               when 0      => load_project_icon.Data,
+               when 1      => load_project_icon_2.Data,
+               when others => load_project_icon_3.Data),
+
+            when Save_Project =>
+           (case Step mod 3 is
+               when 0      => save_project_icon.Data,
+               when 1      => save_project_icon_2.Data,
+               when others => save_project_icon_3.Data),
+
+            when Rename_Project =>
+           (case Step mod 3 is
+               when 0 => edit_project_icon.Data,
+               when 1 => edit_project_icon_2.Data,
+               when 2 => edit_project_icon_3.Data,
+               when others => edit_project_icon_2.Data),
+
+            when Delete_Project =>
+           (case Step mod 8 is
+               when 0 .. 3      => delete_project_icon.Data,
+               when others => delete_project_icon_2.Data),
+
+            when Clear_Project =>
+           (case Step mod 4 is
+               when 0      => clear_project_icon.Data,
+               when 1      => clear_project_icon_2.Data,
+               when 2      => clear_project_icon_3.Data,
+               when others => clear_project_icon_2.Data)),
+         Box_Center.X - (load_project_icon.Data.W / 2),
+         Box_Top + 2);
+
+      Anim_Step := Anim_Step + 1;
+
+      Draw_Str_Center (Box_Bottom - Bitmap_Fonts.Height - 1,
+                       Menu_Item_Text (This.Item));
    end Draw;
 
    --------------
@@ -85,7 +146,7 @@ package body WNM.GUI.Menu.Projects is
                   This.State := Select_Project;
 
                when Clear_Project =>
-                  Yes_No_Dialog.Set_Title ("Clear current project?");
+                  Yes_No_Dialog.Set_Title ("Clear current?");
                   Yes_No_Dialog.Push_Window;
                   This.State := Confirm;
             end case;

@@ -20,7 +20,12 @@
 -------------------------------------------------------------------------------
 
 with WNM.Utils;
-with WNM.GUI.Menu.Drawing;
+with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
+with WNM.GUI.Bitmap_Fonts;
+with WNM.Screen;
+
+with dialog_yes;
+with dialog_no;
 
 package body WNM.GUI.Menu.Yes_No_Dialog is
 
@@ -45,6 +50,20 @@ package body WNM.GUI.Menu.Yes_No_Dialog is
       WNM.Utils.Copy_Str (Title, Dialog_Title);
    end Set_Title;
 
+   ----------------
+   -- Trim_Title --
+   ----------------
+
+   function Trim_Title return String is
+      Count : Natural := 0;
+   begin
+      for Elt of reverse Dialog_Title loop
+         exit when Elt /= ' ';
+         Count := Count + 1;
+      end loop;
+      return Dialog_Title (Dialog_Title'First .. Dialog_Title'Last - Count);
+   end Trim_Title;
+
    ----------
    -- Draw --
    ----------
@@ -52,9 +71,49 @@ package body WNM.GUI.Menu.Yes_No_Dialog is
    overriding
    procedure Draw (This : in out Yes_No_Dialog_Window)
    is
+      Space : constant := 6;
+      No_X  : constant Natural := Box_Center.X + Space;
+      Yes_X : constant Natural :=
+        Box_Center.X - Space
+          - dialog_yes.Data.W
+          - Bitmap_Fonts.Width * 3;
+
+      Y : constant Natural := Box_Bottom - 19;
+
+      X : Natural;
    begin
-      Drawing.Draw_Menu_Box (Dialog_Title, 0, 0);
-      Drawing.Draw_Value ("-> " & (if This.Yes then "Yes" else "No"));
+      Drawing.Draw_Menu_Box ("Confirm", 0, 0);
+
+      Draw_Str_Center (Box_Top + 4, Trim_Title);
+
+      Screen.Copy_Bitmap (dialog_yes.Data, Yes_X, Y,
+                          Invert_Color => This.Yes);
+      if This.Yes then
+         X := Yes_X + dialog_yes.Data.W + 3;
+         Bitmap_Fonts.Print
+           (X,
+            Y + dialog_yes.Data.W / 2 - Bitmap_Fonts.Height / 2,
+            "YES");
+
+         Screen.Draw_Rect (((Yes_X, Y),
+                           Box_Center.X - Yes_X,
+                           dialog_yes.Data.H));
+      end if;
+
+      Screen.Copy_Bitmap (dialog_no.Data, No_X, Y,
+                         Invert_Color => not This.Yes);
+      if not This.Yes then
+         X := No_X + dialog_no.Data.W + 3;
+         Bitmap_Fonts.Print
+           (X,
+            Y + dialog_no.Data.W / 2 - Bitmap_Fonts.Height / 2,
+            "NO");
+
+         Screen.Draw_Rect (((No_X, Y),
+                           dialog_no.Data.W + Bitmap_Fonts.Width * 3,
+                           dialog_no.Data.H));
+      end if;
+
    end Draw;
 
    --------------
