@@ -72,8 +72,8 @@ package body WNM.GUI.Menu.Yes_No_Dialog is
    procedure Draw (This : in out Yes_No_Dialog_Window)
    is
       Space : constant := 6;
-      No_X  : constant Natural := Box_Center.X + Space;
-      Yes_X : constant Natural :=
+      Yes_X  : constant Natural := Box_Center.X + Space;
+      No_X : constant Natural :=
         Box_Center.X - Space
           - dialog_yes.Data.W
           - Bitmap_Fonts.Width * 3;
@@ -96,22 +96,24 @@ package body WNM.GUI.Menu.Yes_No_Dialog is
             "YES");
 
          Screen.Draw_Rect (((Yes_X, Y),
-                           Box_Center.X - Yes_X,
+                           dialog_yes.Data.W + Bitmap_Fonts.Width * 4,
                            dialog_yes.Data.H));
+
       end if;
 
       Screen.Copy_Bitmap (dialog_no.Data, No_X, Y,
                          Invert_Color => not This.Yes);
       if not This.Yes then
-         X := No_X + dialog_no.Data.W + 3;
+         X := No_X + dialog_no.Data.W + 3 + Bitmap_Fonts.Width / 2;
          Bitmap_Fonts.Print
            (X,
             Y + dialog_no.Data.W / 2 - Bitmap_Fonts.Height / 2,
             "NO");
 
          Screen.Draw_Rect (((No_X, Y),
-                           dialog_no.Data.W + Bitmap_Fonts.Width * 3,
+                           dialog_no.Data.W + Bitmap_Fonts.Width * 4,
                            dialog_no.Data.H));
+
       end if;
 
    end Draw;
