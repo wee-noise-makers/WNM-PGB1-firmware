@@ -513,9 +513,6 @@ package body WNM.UI is
                   Mixer.Set_Stutter (Kind);
                end if;
             end;
-
-         when others =>
-            null;
       end case;
 
    end Toggle_FX;
@@ -676,11 +673,11 @@ package body WNM.UI is
          end if;
       end if;
 
-      --  --  The FX LED is on if there's at least one FX enabled
-      --  LEDs.Set_Hue (LEDs.FX);
-      --  if (for some B in Keyboard_Button => FX_Is_On (B)) then
-      --     LEDs.Turn_On (Func);
-      --  end if;
+      --  The FX LED is on if there's at least one FX enabled
+      LEDs.Set_Hue (LEDs.FX);
+      if Some_FX_On then
+         LEDs.Turn_On (Func);
+      end if;
 
       --  B1 .. B16 LEDs --
       case Current_Input_Mode is
@@ -953,6 +950,27 @@ package body WNM.UI is
    is (if In_Solo
        then Solo /= Track
        else Track_Muted (Track));
+
+   ----------------
+   -- Some_FX_On --
+   ----------------
+
+   function Some_FX_On return Boolean is
+      use type Project.Roll_Kind;
+      use type Project.Auto_Fill_Kind;
+      use type Voices.Auto_Filter_FX.Mode_Kind;
+      use type Voices.Stutter_FX.Mode_Kind;
+   begin
+      return Project.Roll_State /= Project.Off
+        or else
+          Project.Auto_Fill_State /= Project.Off
+          or else
+            Project.Step_Fill
+            or else
+              Mixer.Auto_Filter_Mode /= Voices.Auto_Filter_FX.Off
+              or else
+                Mixer.Stutter_Mode /= Voices.Stutter_FX.Off;
+   end Some_FX_On;
 
    -----------------
    -- Toggle_Solo --

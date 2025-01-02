@@ -60,6 +60,8 @@ package WNM.UI is
 
    function Muted (Track : WNM.Tracks) return Boolean;
 
+   function Some_FX_On return Boolean;
+
    Copy_T : WNM.Sequence_Copy.Copy_Transaction;
 
 private
