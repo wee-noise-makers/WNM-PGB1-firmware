@@ -58,8 +58,6 @@ package WNM.UI is
 
    function Recording return Boolean;
 
-   function FX_On (B : Keyboard_Button) return Boolean;
-
    function Muted (Track : WNM.Tracks) return Boolean;
 
    Copy_T : WNM.Sequence_Copy.Copy_Transaction;

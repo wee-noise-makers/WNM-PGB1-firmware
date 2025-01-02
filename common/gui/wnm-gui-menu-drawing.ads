@@ -104,7 +104,8 @@ package WNM.GUI.Menu.Drawing is
 
    procedure Draw_FX (Id       : WNM.Project.CC_Id;
                       Value    : FX_Kind;
-                      Selected : Boolean);
+                      Selected : Boolean;
+                      Label    : String := "FX");
 
    procedure Draw_CC_Control_Page
      (Mode        : WNM.Project.Track_Mode_Kind;

@@ -24,6 +24,7 @@ with MIDI;
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
 with WNM.GUI.Bitmap_Fonts;
 with WNM.Chord_Settings;
+with WNM.Project.Chord_Sequencer;
 with WNM.Screen;
 
 package body WNM.GUI.Menu.Chord_Settings is
@@ -66,7 +67,7 @@ package body WNM.GUI.Menu.Chord_Settings is
    Track_Box_Width  : constant := 8 * Track_Cell_Size;
    Track_Box_Height : constant := 2 * Track_Cell_Size;
    Track_Box_Left   : constant := (Screen.Width - Track_Box_Width) / 2;
-   Track_Box_Top    : constant := Drawing.Box_Top + 2;
+   Track_Box_Top    : constant := Drawing.Box_Top - 9;
    Track_Box_Bottom : constant := Track_Box_Top + Track_Box_Height;
    Track_Box_Right  : constant := Track_Box_Left + Track_Box_Width;
 
@@ -160,6 +161,43 @@ package body WNM.GUI.Menu.Chord_Settings is
       end;
    end Draw_Grid;
 
+   --------------------------
+   -- Draw_Chords_Progress --
+   --------------------------
+
+   procedure Draw_Chords_Progress is
+      use type Project.Roll_Kind;
+
+      Len : constant Natural :=
+        Natural (Project.Chord_Sequencer.Chords_In_Progression);
+      Index : constant Natural :=
+        Natural (Project.Chord_Sequencer.Current_Chord_Index) - 1;
+
+      Shadow_Index : constant Natural :=
+        Natural (Project.Chord_Sequencer.Shadow_Chord_Index) - 1;
+
+      Tick_W : constant Natural :=
+        (Screen.Width - 5) / Natural (Project.Chord_Slot_Id'Last);
+
+      Total_Width : constant Natural := Len * Tick_W;
+      Margin : constant Natural := (Screen.Width - Total_Width) / 2;
+
+      Y : constant := 44;
+   begin
+
+      for Idx in 0 .. Len - 1 loop
+         Screen.Draw_Line ((Margin + (Tick_W * Idx), Y),
+                           (Margin + (Tick_W * (Idx + 1) - 3), Y));
+      end loop;
+      Draw_Str (Margin + (Tick_W * Index), Y + 2, "^");
+
+      if Project.Roll_State /= Project.Off then
+         Screen.Draw_Line
+           ((Margin + (Tick_W * Shadow_Index) + 1, Y - 2),
+            (Margin + (Tick_W * (Shadow_Index + 1) - 3 - 1), Y - 2));
+      end if;
+   end Draw_Chords_Progress;
+
    --------------------
    -- Draw_Song_Part --
    --------------------
@@ -170,15 +208,24 @@ package body WNM.GUI.Menu.Chord_Settings is
       use WNM.Project;
 
       Sub : constant Part_Sub_Settings := This.Current_Part_Setting;
-      Top : constant Part_Top_Settings := To_Top (Sub);
+      Top : constant Part_Top_Settings := To_Top (Sub)
+        with Unreferenced;
    begin
 
-      Draw_Grid (This, Part,
+      Draw_Grid (This,
+                 Part,
                  Focus => Sub = Project.Part_Patterns);
 
-      Draw_Menu_Box ("Part settings",
-                     Count => Part_Top_Settings_Count,
-                     Index => Part_Top_Settings'Pos (Top));
+      Draw_Chords_Progress;
+
+      --  Draw_Menu_Box ("Part settings",
+      --                 Count => Part_Top_Settings_Count,
+      --                 Index => Part_Top_Settings'Pos (Top));
+
+      --  Draw_Menu_Box
+      --    ("Part settings",
+      --     Count => Natural (Chord_Sequencer.Chords_In_Progression),
+      --     Index => Natural (Chord_Sequencer.Current_Chord_Index) - 1);
 
       Draw_Step_Duration (Box_Left + 5,
                           Project.Part_Length (Part),

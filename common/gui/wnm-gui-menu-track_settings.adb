@@ -211,6 +211,11 @@ package body WNM.GUI.Menu.Track_Settings is
             Draw_Title ("FX send:", "");
             Draw_Value (Img (Project.Master_FX));
 
+            Draw_FX (Id => WNM.Project.A,
+                     Value => Project.Master_FX,
+                     Selected => False,
+                     Label => "");
+
          when Octave_Offset =>
             Draw_Title ("Octave offset:", "");
             Draw_Value (Project.Track_Offset'Img);

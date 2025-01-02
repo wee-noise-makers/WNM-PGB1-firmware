@@ -49,40 +49,60 @@ package body WNM.Project.Song_Part_Sequencer is
       WNM.Part_Event_Broadcast.Broadcast;
    end Song_Start_Callback;
 
-   -------------------
-   -- Step_Callback --
-   -------------------
+   ---------------
+   -- Next_Step --
+   ---------------
 
-   procedure Step_Callback is
-      Current_Part : constant Parts := G_Play_State.Playing_Part;
+   procedure Next_Step (State : in out Play_State; Roll : Roll_Kind) is
+      Current_Part : constant Parts := State.Playing_Part;
       New_Part : Parts;
    begin
-      G_Play_State.Part_Steps_Count := @ + 1; -- The Step we're about to play
 
-      if G_Play_State.Part_Steps_Count >
-        Natural (G_Project.Parts (G_Play_State.Playing_Part).Len)
+      if Roll /= Off then
+         --  Freeze progression
+         return;
+      end if;
+
+      State.Part_Steps_Count := @ + 1; -- The Step we're about to play
+
+      if State.Part_Steps_Count >
+        Natural (G_Project.Parts (State.Playing_Part).Len)
       then
-         if G_Project.Part_Origin /= G_Play_State.Origin then
+         if G_Project.Part_Origin /= State.Origin then
             --  New origin part, play this next
-            G_Play_State.Origin := G_Project.Part_Origin;
-            New_Part := G_Play_State.Origin;
+            State.Origin := G_Project.Part_Origin;
+            New_Part := State.Origin;
 
-         elsif G_Project.Parts (G_Play_State.Playing_Part).Link then
+         elsif G_Project.Parts (State.Playing_Part).Link then
             --  There's a link to the next part
-            New_Part := G_Play_State.Playing_Part + 1;
+            New_Part := State.Playing_Part + 1;
          else
             --  Start back to origin part
             New_Part := G_Project.Part_Origin;
          end if;
 
          --  We're going to play the first step of the new part
-         G_Play_State.Part_Steps_Count := 1;
+         State.Part_Steps_Count := 1;
 
          if New_Part /= Current_Part then
-            G_Play_State.Playing_Part := New_Part;
+            State.Playing_Part := New_Part;
             --  Broadcast the change of part
             WNM.Part_Event_Broadcast.Broadcast;
          end if;
+      end if;
+   end Next_Step;
+
+   -------------------
+   -- Step_Callback --
+   -------------------
+
+   procedure Step_Callback is
+   begin
+      Next_Step (G_Play_State, G_Roll_State);
+
+      if G_Roll_State /= Off then
+         --  Keep the saved state going without rolls
+         Next_Step (G_Play_State_Save, Off);
       end if;
    end Step_Callback;
 

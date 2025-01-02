@@ -23,6 +23,12 @@ with WNM.Audio_Routing;
 with WNM.Mixer;
 with WNM.Project;
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
+with WNM.Screen;
+with WNM.GUI.Bitmap_Fonts;
+
+with line_in_icon;
+with internal_mic_icon;
+with headset_icon;
 
 package body WNM.GUI.Menu.Inputs is
 
@@ -55,6 +61,34 @@ package body WNM.GUI.Menu.Inputs is
    procedure Draw (This   : in out Instance) is
       Sub : constant Sub_Settings := This.Current_Setting;
       Top : constant Top_Settings := To_Top (Sub);
+
+      Icon_Size : constant := 16;
+
+      Icons_Y : constant :=
+        Drawing.Box_Bottom - Bitmap_Fonts.Height - Icon_Size - 2;
+
+      Spacing : constant := 32;
+      L_Icon_X : constant := Drawing.Box_Left + 6;
+      M_Icon_X : constant := L_Icon_X + Spacing;
+      R_Icon_X : constant := M_Icon_X + Spacing;
+
+      procedure Cross (X, Y : Integer; On : Boolean) is
+      begin
+         Screen.Draw_Line ((X, Y),
+                           (X + Icon_Size, Y + Icon_Size),
+                           On);
+         Screen.Draw_Line ((X + 1, Y),
+                           (X + Icon_Size + 1, Y + Icon_Size),
+                           On);
+
+         Screen.Draw_Line ((X + Icon_Size, Y),
+                           (X, Y + Icon_Size),
+                           On);
+         Screen.Draw_Line ((X + Icon_Size + 1, Y),
+                           (X + 1, Y + Icon_Size),
+                           On);
+      end Cross;
+
    begin
       Draw_Menu_Box
         ("Inputs settings",
@@ -78,30 +112,57 @@ package body WNM.GUI.Menu.Inputs is
             end case;
 
             Draw_Volume (Id => WNM.Project.A,
-                         Value => (if Audio_Routing.Get_Line_In_Mute
-                                   then 0
-                                   else WNM_HAL.Audio_Volume'Last),
-                         Label => "LIN",
-                         Selected => Sub = Line_In_Mute);
+                         Value => 0,
+                         Label => (if Audio_Routing.Get_Line_In_Mute
+                                   then "Off"
+                                   else "On"),
+                         Selected => False);
 
             Draw_Volume (Id => WNM.Project.B,
-                         Value => (if Audio_Routing.Get_Internal_Mic_Mute
-                                   then 0
-                                   else WNM_HAL.Audio_Volume'Last),
-                         Label => "MIC",
-                         Selected => Sub = Internal_Mic_Mute);
+                         Value => 0,
+                         Label => (if Audio_Routing.Get_Internal_Mic_Mute
+                                   then "Off"
+                                   else "On"),
+                         Selected => False);
 
             Draw_Volume (Id => WNM.Project.C,
-                         Value => (if Audio_Routing.Get_Headset_Mic_Mute
-                                   then 0
-                                   else WNM_HAL.Audio_Volume'Last),
-                         Label => "HSM",
-                         Selected => Sub = Headset_Mic_Mute);
+                         Value => 0,
+                         Label => (if Audio_Routing.Get_Headset_Mic_Mute
+                                   then "Off"
+                                   else "On"),
+                         Selected => False);
 
             Draw_Volume (Id => WNM.Project.D,
                          Value => Audio_Routing.Get_ADC_Volume,
                          Label => "VOL",
                          Selected => Sub = Input_Volume);
+
+            Screen.Copy_Bitmap
+              (line_in_icon.Data,
+               L_Icon_X, Icons_Y,
+               Invert_Color => Sub = Line_In_Mute);
+
+            if Audio_Routing.Get_Line_In_Mute then
+               Cross (L_Icon_X, Icons_Y, Sub /= Line_In_Mute);
+            end if;
+
+            Screen.Copy_Bitmap
+              (internal_mic_icon.Data,
+               M_Icon_X, Icons_Y,
+               Invert_Color => Sub = Internal_Mic_Mute);
+
+            if Audio_Routing.Get_Internal_Mic_Mute then
+               Cross (M_Icon_X, Icons_Y, Sub /= Internal_Mic_Mute);
+            end if;
+
+            Screen.Copy_Bitmap
+              (headset_icon.Data,
+               R_Icon_X, Icons_Y,
+               Invert_Color =>  Sub = Headset_Mic_Mute);
+
+            if Audio_Routing.Get_Headset_Mic_Mute then
+               Cross (R_Icon_X, Icons_Y, Sub /= Headset_Mic_Mute);
+            end if;
 
          when Audio_In_FX =>
 

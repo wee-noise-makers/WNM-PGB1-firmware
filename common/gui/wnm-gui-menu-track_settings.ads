@@ -80,8 +80,8 @@ private
                   LFO_Rate | LFO_Amplitude | LFO_Target | LFO_Shape,
 
           --  Effects
-          when Project.Reverb_Mode | Project.Filter_Mode |
-               Project.Drive_Mode | Project.Bitcrush_Mode =>
+          when Project.Reverb_Mode | Project.Drive_Mode |
+               Project.Bitcrush_Mode =>
              S in Track_Mode | CC_Default_A .. CC_Default_D | Shuffle |
                   LFO_Rate | LFO_Amplitude | LFO_Target | LFO_Shape
       );

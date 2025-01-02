@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2023 Fabien Chouteau                    --
+--                     Copyright (C) 2024 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,45 +19,38 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Tresses.Filters.SVF; use Tresses.Filters.SVF;
+with Tresses;            use Tresses;
 
-package body WNM.Voices.Filter_Voice is
+private with Tresses.Filters.SVF;
+private with Tresses.LFO;
 
-   ------------
-   -- Render --
-   ------------
+package WNM.Voices.Auto_Filter_FX is
+
+   type Mode_Kind is (Off,
+                      Sweep_Low_Pass, Sweep_Band_Pass, Sweep_High_Pass,
+                      Fix_Low_Pass,   Fix_Band_Pass,   Fix_High_Pass);
+
+   type Instance is private;
+
+   procedure Set_Mode (This   : in out Instance;
+                       Mode :        Mode_Kind);
+
+   function Mode (This : Instance) return Mode_Kind;
 
    procedure Render (This   : in out Instance;
-                     Left   : in out Tresses.Mono_Buffer;
-                     Right  : in out Tresses.Mono_Buffer)
-   is
-   begin
-      Set_Frequency (This.Left, This.Params (P_Cutoff));
-      Set_Frequency (This.Right, This.Params (P_Cutoff));
+                     Buffer : in out WNM_HAL.Stereo_Buffer);
 
-      Set_Resonance (This.Left, This.Params (P_Resonance));
-      Set_Resonance (This.Right, This.Params (P_Resonance));
+private
 
-      declare
-         Third : constant Tresses.Param_Range := Tresses.Param_Range'Last / 3;
-         Filter_Mode : constant Mode_Kind :=
-           (case This.Params (P_Mode) is
-               when 0 .. Third => Low_Pass,
-               when Third + 1 .. 2 * Third => Band_Pass,
-               when others => High_Pass);
-      begin
-         Tresses.Filters.SVF.Set_Mode (This.Left, Filter_Mode);
-         Tresses.Filters.SVF.Set_Mode (This.Right, Filter_Mode);
-      end;
+   type Instance is record
+      Do_Init : Boolean := True;
 
-      for Elt of Left loop
-         Elt := S16 (Tresses.Filters.SVF.Process (This.Left, S32 (Elt)));
-      end loop;
+      Mode : Mode_Kind := Off;
 
-      for Elt of Right loop
-         Elt := S16 (Tresses.Filters.SVF.Process (This.Right, S32 (Elt)));
-      end loop;
+      Left  : Tresses.Filters.SVF.Instance;
+      Right : Tresses.Filters.SVF.Instance;
 
-   end Render;
+      LFO : Tresses.LFO.Instance;
+   end record;
 
-end WNM.Voices.Filter_Voice;
+end WNM.Voices.Auto_Filter_FX;

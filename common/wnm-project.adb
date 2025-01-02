@@ -354,7 +354,7 @@ package body WNM.Project is
    begin
       case Mode (Editing_Track) is
          when MIDI_Mode | Kick_Mode | Snare_Mode | Hihat_Mode | Lead_Mode |
-              Chord_Mode | Bass_Mode | Reverb_Mode | Filter_Mode |
+              Chord_Mode | Bass_Mode | Reverb_Mode |
               Drive_Mode | Bitcrush_Mode =>
             return CC_Value (Step, Id)'Img;
 
@@ -818,7 +818,6 @@ package body WNM.Project is
                     --  when Speech_Track   => Speech_Mode,
                     when Chord_Track    => Chord_Mode,
                     when Reverb_Track   => Reverb_Mode,
-                    when Filter_Track   => Filter_Mode,
                     when Drive_Track    => Drive_Mode,
                     when Bitcrush_Track => Bitcrush_Mode,
                     when others         => MIDI_Mode);
@@ -1016,10 +1015,6 @@ package body WNM.Project is
             Utils.Copy_Str (Synth.Reverb_Param_Label (Tresses_Id), Result);
             return Result;
 
-         when Filter_Mode =>
-            Utils.Copy_Str (Synth.Filter_Param_Label (Tresses_Id), Result);
-            return Result;
-
          when Drive_Mode =>
             Utils.Copy_Str (Synth.Drive_Param_Label (Tresses_Id), Result);
             return Result;
@@ -1078,9 +1073,6 @@ package body WNM.Project is
 
          when Reverb_Mode =>
             return Synth.Reverb_Param_Short_Label (Tresses_Id);
-
-         when Filter_Mode =>
-            return Synth.Filter_Param_Short_Label (Tresses_Id);
 
          when Drive_Mode =>
             return Synth.Drive_Param_Short_Label (Tresses_Id);
@@ -1316,8 +1308,7 @@ package body WNM.Project is
                        when Bypass     => Synth.FX_Select_Bypass,
                        when Overdrive  => Synth.FX_Select_Overdrive,
                        when Bitcrusher => Synth.FX_Select_Bitcrusher,
-                       when Reverb     => Synth.FX_Select_Reverb,
-                       when Filter     => Synth.FX_Select_Filter),
+                       when Reverb     => Synth.FX_Select_Reverb),
                     when LFO_Rate        => Track.LFO_Rate,
                     when LFO_Amplitude   => Track.LFO_Amp,
                     when LFO_Amp_Mode    => Track.LFO_Amp_Mode'Enum_Rep,
@@ -2152,6 +2143,12 @@ package body WNM.Project is
 
    procedure Set_Origin (P : Parts) is
    begin
+
+      --  Turn off roll when actively switching to a new part
+      if P /= G_Project.Part_Origin and then Roll_State /= Off then
+         Roll (Off);
+      end if;
+
       G_Project.Part_Origin := P;
    end Set_Origin;
 
@@ -2289,26 +2286,6 @@ package body WNM.Project is
       end case;
    end Handle_MIDI;
 
-   ----------
-   -- Roll --
-   ----------
-
-   procedure Roll (Kind : Roll_Kind) is
-   begin
-      if Kind /= Off and then G_Roll_State = Off then
-         Save_Play_State;
-         G_Roll_Step_Count := 1;
-      end if;
-      G_Roll_State := Kind;
-   end Roll;
-
-   ----------------
-   -- Roll_State --
-   ----------------
-
-   function Roll_State return Roll_Kind
-   is (G_Roll_State);
-
    ---------------------
    -- Save_Play_State --
    ---------------------
@@ -2326,6 +2303,58 @@ package body WNM.Project is
    begin
       G_Play_State := G_Play_State_Save;
    end Restore_Play_State;
+
+   ----------
+   -- Roll --
+   ----------
+
+   procedure Roll (Kind : Roll_Kind) is
+   begin
+      G_Roll_Next_State := Kind;
+   end Roll;
+
+   ----------------
+   -- Roll_State --
+   ----------------
+
+   function Roll_State return Roll_Kind
+   is (G_Roll_State);
+
+   ---------------
+   -- Auto_Fill --
+   ---------------
+
+   procedure Auto_Fill (Kind : Auto_Fill_Kind) is
+   begin
+      if Kind = Auto_Buildup and then G_Auto_Fill_State /= Auto_Buildup then
+         G_Fill_Buildup_Proba := 1;
+      end if;
+
+      G_Auto_Fill_State := Kind;
+   end Auto_Fill;
+
+   ---------------------
+   -- Auto_Fill_State --
+   ---------------------
+
+   function Auto_Fill_State return Auto_Fill_Kind
+   is (G_Auto_Fill_State);
+
+   ----------------------
+   -- Step_Fill_Toogle --
+   ----------------------
+
+   procedure Step_Fill_Toogle is
+   begin
+      G_Step_Fill := not G_Step_Fill;
+   end Step_Fill_Toogle;
+
+   ---------------
+   -- Step_Fill --
+   ---------------
+
+   function Step_Fill return Boolean
+   is (G_Step_Fill);
 
    -------------
    -- Add_Sat --

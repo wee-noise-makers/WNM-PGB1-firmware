@@ -41,11 +41,10 @@ package WNM.Synth is
    Sample1_Channel             : constant MIDI.MIDI_Channel := 7;
    Sample2_Channel             : constant MIDI.MIDI_Channel := 8;
    Reverb_Channel              : constant MIDI.MIDI_Channel := 9;
-   Filter_Channel              : constant MIDI.MIDI_Channel := 10;
-   Drive_Channel               : constant MIDI.MIDI_Channel := 11;
-   Bitcrusher_Channel          : constant MIDI.MIDI_Channel := 12;
-   Speech_Channel              : constant MIDI.MIDI_Channel := 13;
-   Sample_Rec_Playback_Channel : constant MIDI.MIDI_Channel := 14;
+   Drive_Channel               : constant MIDI.MIDI_Channel := 10;
+   Bitcrusher_Channel          : constant MIDI.MIDI_Channel := 11;
+   Speech_Channel              : constant MIDI.MIDI_Channel := 12;
+   Sample_Rec_Playback_Channel : constant MIDI.MIDI_Channel := 13;
 
    subtype Sampler_Channels
      is MIDI.MIDI_Channel range Sample1_Channel .. Sample2_Channel;
@@ -142,11 +141,6 @@ package WNM.Synth is
    function Reverb_Param_Label (Id : Tresses.Param_Id)
                                 return String;
    function Reverb_Param_Short_Label (Id : Tresses.Param_Id)
-                                      return Tresses.Short_Label;
-
-   function Filter_Param_Label (Id : Tresses.Param_Id)
-                                return String;
-   function Filter_Param_Short_Label (Id : Tresses.Param_Id)
                                       return Tresses.Short_Label;
 
    function Drive_Param_Label (Id : Tresses.Param_Id)

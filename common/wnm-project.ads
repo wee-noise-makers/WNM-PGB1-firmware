@@ -212,7 +212,7 @@ package WNM.Project is
    type Track_Mode_Kind is (MIDI_Mode, Sample1_Mode, Sample2_Mode,
                             Speech_Mode, Kick_Mode, Snare_Mode, Hihat_Mode,
                             Bass_Mode, Lead_Mode, Chord_Mode, Reverb_Mode,
-                            Filter_Mode, Drive_Mode, Bitcrush_Mode);
+                            Drive_Mode, Bitcrush_Mode);
 
    function Img (M : Track_Mode_Kind) return String
    is (case M is
@@ -227,7 +227,6 @@ package WNM.Project is
           when Bass_Mode     => "Bass",
           when Chord_Mode    => "Chord",
           when Reverb_Mode   => "FX Reverb",
-          when Filter_Mode   => "FX Filter",
           when Drive_Mode    => "FX Overdrive",
           when Bitcrush_Mode => "FX Bitcrusher");
 
@@ -242,12 +241,11 @@ package WNM.Project is
           when Speech_Mode   => Synth.Speech_Channel,
           when Kick_Mode     => Synth.Kick_Channel,
           when Snare_Mode    => Synth.Snare_Channel,
-          when Hihat_Mode   => Synth.Hihat_Channel,
+          when Hihat_Mode    => Synth.Hihat_Channel,
           when Bass_Mode     => Synth.Bass_Channel,
           when Lead_Mode     => Synth.Lead_Channel,
           when Chord_Mode    => Synth.Chord_Channel,
           when Reverb_Mode   => Synth.Reverb_Channel,
-          when Filter_Mode   => Synth.Filter_Channel,
           when Drive_Mode    => Synth.Drive_Channel,
           when Bitcrush_Mode => Synth.Bitcrusher_Channel);
 
@@ -609,6 +607,16 @@ package WNM.Project is
    procedure Roll (Kind : Roll_Kind);
    function Roll_State return Roll_Kind;
 
+   ----------
+   -- Fill --
+   ----------
+
+   type Auto_Fill_Kind is (Off, Auto_Low, Auto_High, Auto_Buildup);
+   procedure Auto_Fill (Kind : Auto_Fill_Kind);
+   function Auto_Fill_State return Auto_Fill_Kind;
+
+   procedure Step_Fill_Toogle;
+   function Step_Fill return Boolean;
 private
 
    type Global_Settings is (BPM);
@@ -795,9 +803,8 @@ private
    Sample2_Track  : constant Tracks := 8;
    --  Speech_Track   : constant Tracks := 8;
    Reverb_Track   : constant Tracks := 9;
-   Filter_Track   : constant Tracks := 10;
-   Drive_Track    : constant Tracks := 11;
-   Bitcrush_Track : constant Tracks := 12;
+   Drive_Track    : constant Tracks := 10;
+   Bitcrush_Track : constant Tracks := 11;
 
    type Track_Arr is array (Tracks) of Track_Rec;
 
@@ -1006,12 +1013,15 @@ private
       Chord       : WNM.Chord_Settings.Chord_Notes := (others => 1);
    end record;
 
-   G_Play_State      : Play_State := (others => <>);
+   G_Play_State   : Play_State := (others => <>);
    G_Play_State_Save : Play_State := (others => <>);
 
    procedure Save_Play_State;
    procedure Restore_Play_State;
 
-   G_Roll_State      : Roll_Kind := Off;
-   G_Roll_Step_Count : Natural := 0;
+   G_Roll_State        : Roll_Kind := Off with Atomic;
+   G_Roll_Next_State   : Roll_Kind := Off with Atomic;
+   G_Auto_Fill_State   : Auto_Fill_Kind := Off with Atomic;
+   G_Fill_Buildup_Proba : Rand_Percent := Rand_Percent'First with Atomic;
+   G_Step_Fill : Boolean := False with Atomic;
 end WNM.Project;

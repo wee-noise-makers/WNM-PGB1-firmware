@@ -47,15 +47,14 @@ package WNM is
    is Song_Element range Parts'Last + 1 .. Song_Element'Last;
 
    -- Mixer --
-   type FX_Kind is (Bypass, Overdrive, Reverb, Filter, Bitcrusher);
+   type FX_Kind is (Bypass, Overdrive, Bitcrusher, Reverb);
 
    function Img (M : FX_Kind) return String
    is (case M is
           when Bypass     => "Bypass",
           when Overdrive  => "Overdrive",
           when Bitcrusher => "Bitcrusher",
-          when Reverb     => "Reverb",
-          when Filter     => "Filter");
+          when Reverb     => "Reverb");
 
    type Mixer_Buffer_Index is range 1 .. Audio.Mixer_Buffer_Count
      with Size => 8;

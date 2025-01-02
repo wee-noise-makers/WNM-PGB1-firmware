@@ -29,6 +29,9 @@ with WNM.LEDs;
 with WNM.Time;
 with WNM.UI.Logs;
 with WNM.Audio_Routing;
+with WNM.Voices.Auto_Filter_FX;
+with WNM.Voices.Stutter_FX;
+with WNM.Mixer;
 
 with HAL; use HAL;
 
@@ -44,7 +47,6 @@ package body WNM.UI is
    function In_Solo return Boolean;
    function Solo return WNM.Tracks;
 
-   FX_Is_On : array (Keyboard_Button) of Boolean := (others => False);
    Last_Main_Mode : Main_Modes := Track_Mode;
    Current_Input_Mode : Input_Mode_Type := Last_Main_Mode;
 
@@ -433,47 +435,90 @@ package body WNM.UI is
    procedure Toggle_FX (B : Keyboard_Button) is
    begin
 
-      if B in B2 .. B5 then
-         declare
-            use Project;
-            Kind : constant Roll_Kind :=
-              (case B is
-                  when B2 => Eighth,
-                  when B3 => Quarter,
-                  when B4 => Half,
-                  when B5 => Beat,
-                  when others => Off);
+      case B is
+         when B1 .. B4 =>
+            declare
+               use Project;
+               Kind : constant Roll_Kind :=
+                 (case B is
+                     when B1     => Eighth,
+                     when B2     => Quarter,
+                     when B3     => Half,
+                     when B4     => Beat,
+                     when others => Off);
 
-         begin
-            if Kind = Roll_State then
-               Roll (Project.Off);
-            else
-               Roll (Kind);
-            end if;
+            begin
+               if Kind = Roll_State then
+                  Roll (Project.Off);
+               else
+                  Roll (Kind);
+               end if;
+            end;
 
-            for X in B2 .. B5 loop
-               FX_Is_On (X) := False;
-            end loop;
-            case Roll_State is
-               when Off => null;
-               when Beat => FX_Is_On (B5) := True;
-               when Half => FX_Is_On (B4) := True;
-               when Quarter => FX_Is_On (B3) := True;
-               when Eighth => FX_Is_On (B2) := True;
-            end case;
-         end;
+         when B9 =>
+            Project.Step_Fill_Toogle;
 
-      else
-         FX_Is_On (B) := not FX_Is_On (B);
-      end if;
+         when B10 .. B12 =>
+            declare
+               use Project;
+               Kind : constant Auto_Fill_Kind :=
+                 (case B is
+                     when B10    => Auto_Low,
+                     when B11    => Auto_High,
+                     when B12    => Auto_Buildup,
+                     when others => Off);
+
+            begin
+               if Kind = Auto_Fill_State then
+                  Auto_Fill (Project.Off);
+               else
+                  Auto_Fill (Kind);
+               end if;
+            end;
+
+         when B5 .. B7 | B13 .. B15 =>
+            declare
+               use Voices.Auto_Filter_FX;
+               Kind : constant Mode_Kind :=
+                 (case B is
+                     when B5  => Fix_Low_Pass,
+                     when B6  => Fix_Band_Pass,
+                     when B7  => Fix_High_Pass,
+                     when B13 => Sweep_Low_Pass,
+                     when B14 => Sweep_Band_Pass,
+                     when B15 => Sweep_High_Pass,
+                     when others => Off);
+
+            begin
+               if Kind = Mixer.Auto_Filter_Mode then
+                  Mixer.Set_Auto_Filter (Off);
+               else
+                  Mixer.Set_Auto_Filter (Kind);
+               end if;
+            end;
+
+         when B8 | B16 =>
+            declare
+               use Voices.Stutter_FX;
+               Kind : constant Mode_Kind :=
+                 (case B is
+                     when B8  => On_Short,
+                     when B16 => On_Trip,
+                     when others => Off);
+
+            begin
+               if Kind = Mixer.Stutter_Mode then
+                  Mixer.Set_Stutter (Off);
+               else
+                  Mixer.Set_Stutter (Kind);
+               end if;
+            end;
+
+         when others =>
+            null;
+      end case;
+
    end Toggle_FX;
-
-   -----------
-   -- FX_On --
-   -----------
-
-   function FX_On (B : Keyboard_Button) return Boolean
-   is (FX_Is_On (B));
 
    --------------------
    -- Has_Long_Press --
@@ -503,7 +548,7 @@ package body WNM.UI is
           when Step_Button    => False,
           when Track_Button   => False,
           when Pattern_Button => False,
-          when Song_Button   => False,
+          when Song_Button    => False,
           when Menu           => False,
           when PAD_Up         => True,
           when PAD_Down       => True,
@@ -613,6 +658,7 @@ package body WNM.UI is
    procedure Update_LEDs is
       Beat_Step : constant Boolean :=
         WNM.MIDI_Clock.Step in 1 .. 6 | 24 .. 30;
+
    begin
       LEDs.Turn_Off_All;
 
@@ -630,11 +676,11 @@ package body WNM.UI is
          end if;
       end if;
 
-      --  The FX LED is on if there's at least one FX enabled
-      LEDs.Set_Hue (LEDs.FX);
-      if (for some B in Keyboard_Button => FX_Is_On (B)) then
-         LEDs.Turn_On (Func);
-      end if;
+      --  --  The FX LED is on if there's at least one FX enabled
+      --  LEDs.Set_Hue (LEDs.FX);
+      --  if (for some B in Keyboard_Button => FX_Is_On (B)) then
+      --     LEDs.Turn_On (Func);
+      --  end if;
 
       --  B1 .. B16 LEDs --
       case Current_Input_Mode is
@@ -643,11 +689,60 @@ package body WNM.UI is
          when FX_Alt =>
 
             LEDs.Set_Hue (LEDs.FX);
-            for B in Keyboard_Button loop
-               if FX_Is_On (B) then
-                  LEDs.Turn_On (B);
-               end if;
-            end loop;
+
+            case Project.Roll_State is
+               when Project.Off =>
+                  null;
+               when Project.Beat =>
+                  LEDs.Turn_On (B4);
+               when Project.Half =>
+                  LEDs.Turn_On (B3);
+               when Project.Quarter =>
+                  LEDs.Turn_On (B2);
+               when Project.Eighth =>
+                  LEDs.Turn_On (B1);
+            end case;
+
+            if Project.Step_Fill then
+               LEDs.Turn_On (B9);
+            end if;
+
+            case Project.Auto_Fill_State is
+               when Project.Off =>
+                  null;
+               when Project.Auto_Low =>
+                  LEDs.Turn_On (B10);
+               when Project.Auto_High =>
+                  LEDs.Turn_On (B11);
+               when Project.Auto_Buildup =>
+                  LEDs.Turn_On (B12);
+            end case;
+
+            case Mixer.Auto_Filter_Mode is
+               when Voices.Auto_Filter_FX.Off =>
+                  null;
+               when Voices.Auto_Filter_FX.Fix_Low_Pass =>
+                  LEDs.Turn_On (B5);
+               when Voices.Auto_Filter_FX.Fix_Band_Pass =>
+                  LEDs.Turn_On (B6);
+               when Voices.Auto_Filter_FX.Fix_High_Pass =>
+                  LEDs.Turn_On (B7);
+               when Voices.Auto_Filter_FX.Sweep_Low_Pass =>
+                  LEDs.Turn_On (B13);
+               when Voices.Auto_Filter_FX.Sweep_Band_Pass =>
+                  LEDs.Turn_On (B14);
+               when Voices.Auto_Filter_FX.Sweep_High_Pass =>
+                  LEDs.Turn_On (B15);
+            end case;
+
+            case Mixer.Stutter_Mode is
+               when Voices.Stutter_FX.Off =>
+                  null;
+               when Voices.Stutter_FX.On_Short =>
+                  LEDs.Turn_On (B8);
+               when Voices.Stutter_FX.On_Trip =>
+                  LEDs.Turn_On (B16);
+            end case;
 
             -- Step select mode --
          when Step_Select =>

@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2023 Fabien Chouteau                    --
+--                     Copyright (C) 2024 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -20,51 +20,32 @@
 -------------------------------------------------------------------------------
 
 with Tresses;            use Tresses;
-with Tresses.Interfaces; use Tresses.Interfaces;
 
-private with Tresses.Filters.SVF;
+private with Tresses.Envelopes.AR;
 
-package WNM.Voices.Filter_Voice is
+package WNM.Voices.Stutter_FX is
 
-   type Instance
-   is new Four_Params_Voice
-   with private;
+   type Mode_Kind is (Off, On_Short, On_Trip);
+
+   type Instance is private;
+
+   procedure Set_Mode (This   : in out Instance;
+                       Mode :        Mode_Kind);
+
+   function Mode (This : Instance) return Mode_Kind;
 
    procedure Render (This   : in out Instance;
-                     Left   : in out Tresses.Mono_Buffer;
-                     Right  : in out Tresses.Mono_Buffer);
-
-   P_Mode      : constant Tresses.Param_Id := 1;
-   P_Cutoff    : constant Tresses.Param_Id := 2;
-   P_Resonance : constant Tresses.Param_Id := 3;
-   P_Nope      : constant Tresses.Param_Id := 4;
-
-   --  Interfaces --
-
-   overriding
-   function Param_Label (This : Instance; Id : Param_Id) return String
-   is (case Id is
-          when P_Mode      => "Mode",
-          when P_Cutoff    => "Cutoff",
-          when P_Resonance => "Resonance",
-          when P_Nope      => "N/A");
-
-   overriding
-   function Param_Short_Label (This : Instance; Id : Param_Id)
-                               return Short_Label
-   is (case Id is
-          when P_Mode      => "MOD",
-          when P_Cutoff    => "CTF",
-          when P_Resonance => "RES",
-          when P_Nope      => "N/A");
+                     Buffer : in out WNM_HAL.Stereo_Buffer);
 
 private
 
-   type Instance
-   is new Four_Params_Voice
-   with record
-      Left  : Tresses.Filters.SVF.Instance;
-      Right : Tresses.Filters.SVF.Instance;
+   type Instance is record
+      Do_Init : Boolean := True;
+
+      Mute : Boolean := True;
+      Mode : Mode_Kind := Off;
+
+      Env : Tresses.Envelopes.AR.Instance;
    end record;
 
-end WNM.Voices.Filter_Voice;
+end WNM.Voices.Stutter_FX;

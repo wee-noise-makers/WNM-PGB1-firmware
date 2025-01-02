@@ -37,7 +37,6 @@ with filter_lp;
 with filter_hp;
 with fx_bypass;
 with fx_bitcrusher;
-with fx_filter;
 with fx_overdrive;
 with fx_reverb;
 with cut_2;
@@ -83,7 +82,6 @@ package body WNM.GUI.Menu.Drawing is
       end if;
    end Draw_Str;
 
-
    ---------------------
    -- Draw_Str_Center --
    ---------------------
@@ -92,7 +90,7 @@ package body WNM.GUI.Menu.Drawing is
                               Str : String)
    is
       Width : constant Natural := Str'Length * Bitmap_Fonts.Width;
-      X : Natural := Box_Center.X - (Width / 2);
+      X : Integer := Box_Center.X - (Width / 2);
    begin
       Bitmap_Fonts.Print (X, Y, Str);
    end Draw_Str_Center;
@@ -780,7 +778,8 @@ package body WNM.GUI.Menu.Drawing is
 
    procedure Draw_FX (Id       : WNM.Project.CC_Id;
                       Value    : FX_Kind;
-                      Selected : Boolean)
+                      Selected : Boolean;
+                      Label    : String := "FX")
    is
       use WNM.Project;
 
@@ -804,8 +803,6 @@ package body WNM.GUI.Menu.Drawing is
       --  Bar_Center : constant Screen.Point :=
       --    (Bar_Left + Bar_Width / 2,
       --     Bar_Bottom - Bar_Height / 2);
-
-      Label : constant String := "FX";
    begin
 
       Y := Bar_Bottom;
@@ -829,8 +826,6 @@ package body WNM.GUI.Menu.Drawing is
             Screen.Copy_Bitmap (fx_bypass.Data, X, Y);
          when Overdrive =>
             Screen.Copy_Bitmap (fx_overdrive.Data, X, Y);
-         when Filter =>
-            Screen.Copy_Bitmap (fx_filter.Data, X, Y);
          when Bitcrusher =>
             Screen.Copy_Bitmap (fx_bitcrusher.Data, X, Y);
          when Reverb =>
@@ -1107,40 +1102,56 @@ package body WNM.GUI.Menu.Drawing is
       use WNM.Utils;
 
       Pt    : constant WNM.Screen.Point := (Pos, Value_Text_Y);
-      Bar   : constant Natural := Natural (D) / 16;
-      Beat  : constant Natural := (Natural (D) mod 16) / 4;
-      Step  : constant Natural := Natural (D) mod 4;
+      --  Bar   : constant Natural := Natural (D) / 16;
+      --  Beat  : constant Natural := (Natural (D) mod 16) / 4;
+      --  Step  : constant Natural := Natural (D) mod 4;
       X_Str : Natural;
 
    begin
-      --  BAR:BEAT:STEP
-      X_Str := Pt.X;
-      Print (X_Str, Pt.Y, Trim (Bar'Img));
 
-      Set_Pixel (Pix_X (X_Str), Pix_Y (Pt.Y + 1));
-      Set_Pixel (Pix_X (X_Str), Pix_Y (Pt.Y + 5));
+      declare
+         Bar   : constant Natural := Natural (D) / 16;
+         Step  : constant Natural := Natural (D) mod 16;
+         Str   : constant String := Trim (Bar'Img) & ":" & Trim (Step'Img);
+         Len   : constant Natural := Bitmap_Fonts.Width * Str'Length;
+      begin
+         X_Str := Pos;
+         Print (X_Str, Pt.Y, Str);
 
-      X_Str := @ + 2;
-      Print (X_Str, Pt.Y, Trim (Beat'Img));
-
-      Set_Pixel (Pix_X (X_Str), Pix_Y (Pt.Y + 1));
-      Set_Pixel (Pix_X (X_Str), Pix_Y (Pt.Y + 5));
-
-      X_Str := @ + 2;
-      Print (X_Str, Pt.Y, Trim (Step'Img));
-
-      if Selected then
-         declare
-            Len : constant Natural := (if Bar < 10
-                                       then 20
-                                       else 25);
-         begin
-            Screen.Draw_Line ((Pos, Select_Line_Y),
-                              (Pos + Len, Select_Line_Y));
-         end;
-      end if;
+         if Selected then
+            Screen.Draw_Line ((Pos - 1, Select_Line_Y),
+                              (Pos + Len - 1, Select_Line_Y));
+         end if;
+      end;
 
       --  Commented below are alternative step duration drawings
+
+      --  --  BAR:BEAT:STEP
+      --  X_Str := Pt.X;
+      --  Print (X_Str, Pt.Y, Trim (Bar'Img));
+      --
+      --  Set_Pixel (Pix_X (X_Str), Pix_Y (Pt.Y + 1));
+      --  Set_Pixel (Pix_X (X_Str), Pix_Y (Pt.Y + 5));
+      --
+      --  X_Str := @ + 2;
+      --  Print (X_Str, Pt.Y, Trim (Beat'Img));
+      --
+      --  Set_Pixel (Pix_X (X_Str), Pix_Y (Pt.Y + 1));
+      --  Set_Pixel (Pix_X (X_Str), Pix_Y (Pt.Y + 5));
+      --
+      --  X_Str := @ + 2;
+      --  Print (X_Str, Pt.Y, Trim (Step'Img));
+      --
+      --  if Selected then
+      --     declare
+      --        Len : constant Natural := (if Bar < 10
+      --                                   then 20
+      --                                   else 25);
+      --     begin
+      --        Screen.Draw_Line ((Pos, Select_Line_Y),
+      --                          (Pos + Len, Select_Line_Y));
+      --     end;
+      --  end if;
 
       --  --  BAR and steps as dots in a 4x4 grid
       --  declare

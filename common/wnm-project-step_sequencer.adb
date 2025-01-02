@@ -19,6 +19,8 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+--  with GNAT.IO; use GNAT.IO;
+
 with MIDI;
 
 with WNM.Short_Term_Sequencer;
@@ -144,7 +146,7 @@ package body WNM.Project.Step_Sequencer is
               Keyboard_Value (WNM.Parts'First) ..
               Keyboard_Value (WNM.Parts'Last)
             then
-               G_Project.Part_Origin := Parts (V);
+               Set_Origin (Parts (V));
             end if;
             Editing_Song_Elt := Song_Element (V);
 
@@ -603,9 +605,9 @@ package body WNM.Project.Step_Sequencer is
                when Always =>
                   Condition := True;
                when Fill =>
-                  Condition := WNM.UI.FX_On (B1);
+                  Condition := G_Step_Fill;
                when Not_Fill =>
-                  Condition := not WNM.UI.FX_On (B1);
+                  Condition := not G_Step_Fill;
                when Percent_25 =>
                   Condition := Random <= 25;
                when Percent_50 =>
@@ -622,16 +624,18 @@ package body WNM.Project.Step_Sequencer is
                   Condition := Pattern_Counter (Track, Pattern) mod 5 = 0;
             end case;
 
+            --  Auto fill
             if not Condition and then Track in 1 .. 3 then
-               if WNM.UI.FX_On (B9) then
-                  Condition := Random <= 5;
-               elsif WNM.UI.FX_On (B10) then
-                  Condition := Random <= 50;
-               elsif WNM.UI.FX_On (B11) then
-                  Condition := Random <= 75;
-               elsif WNM.UI.FX_On (B12) then
-                  Condition := True;
-               end if;
+               case G_Auto_Fill_State is
+                  when Off =>
+                     null;
+                  when Auto_Low =>
+                     Condition := Random <= 25;
+                  when Auto_High =>
+                     Condition := True;
+                  when Auto_Buildup =>
+                     Condition := Random <= G_Fill_Buildup_Proba;
+               end case;
             end if;
 
             --  Play step?
@@ -646,17 +650,49 @@ package body WNM.Project.Step_Sequencer is
    -- Move_Playheads --
    --------------------
 
-   procedure Move_Playheads is
+   procedure Move_Playheads (State : in out Play_State; Roll : Roll_Kind) is
       Current_Part : constant Parts := Song_Part_Sequencer.Playing;
    begin
       --  Put_Line ("Move Playheads!");
       for Track_Id in Tracks loop
          declare
-            PH    : Playhead renames G_Play_State.Playheads (Track_Id);
+            PH    : Playhead renames State.Playheads (Track_Id);
             Pat   : Pattern_Rec renames G_Project.Patterns (Track_Id)(PH.P);
+
+            procedure Reset_Pattern is
+            begin
+               PH.Steps_Count := 1;
+               Arpeggiator.Signal_Start_Of_Pattern (Track_Id);
+            end Reset_Pattern;
          begin
+
             --  The Step we're about to play
-            PH.Steps_Count := @ + 1;
+            case Roll is
+               when Off =>
+                  PH.Steps_Count := @ + 1;
+
+               when Beat =>
+                  case PH.Steps_Count is
+                     when 8 | 16 => Reset_Pattern;
+                     when others => PH.Steps_Count := @ + 1;
+                  end case;
+
+               when Half =>
+                  case PH.Steps_Count is
+                     when 4 | 8 | 12 | 16 => Reset_Pattern;
+                     when others          => PH.Steps_Count := @ + 1;
+                  end case;
+
+               when Quarter =>
+                  case PH.Steps_Count is
+                  when 2 | 4 | 6 | 8 | 10 | 12 | 14 | 16
+                                => Reset_Pattern;
+                  when others   => PH.Steps_Count := @ + 1;
+                  end case;
+
+               when Eighth =>
+                  Reset_Pattern;
+            end case;
 
             if PH.Steps_Count > Natural (Pat.Length) then
                --  We are at the end of the pattern, what do we do next?
@@ -665,7 +701,7 @@ package body WNM.Project.Step_Sequencer is
                --  Check if there's a pattern link
                if PH.P /= Patterns'Last
                  and then
-                  Pat.Has_Link
+                   Pat.Has_Link
                then
                   --  Use pattern link
                   PH.P := @ + 1;
@@ -676,10 +712,13 @@ package body WNM.Project.Step_Sequencer is
                     G_Project.Parts (Current_Part).Pattern_Select (Track_Id);
                end if;
 
-               --  We're about to play the first step of this new pattern
+                  --  We're about to play the first step of this new pattern
                PH.Steps_Count := 1;
                Arpeggiator.Signal_Start_Of_Pattern (Track_Id);
             end if;
+
+            --  Put_Line (Track_Id'Img & " step count:" & PH.Steps_Count'Img);
+
          end;
       end loop;
    end Move_Playheads;
@@ -689,27 +728,33 @@ package body WNM.Project.Step_Sequencer is
    ------------------
 
    procedure Execute_Step is
+      Build_Up_Step : constant := 4;
    begin
+
+      if G_Roll_Next_State /= Off and then G_Roll_State = Off then
+         Save_Play_State;
+      elsif G_Roll_Next_State = Off and then G_Roll_State /= Off then
+         Restore_Play_State;
+      end if;
+
+      G_Roll_State := G_Roll_Next_State;
 
       if Playing then
 
+         WNM.Step_Event_Broadcast.Broadcast;
+
+         Move_Playheads (G_Play_State, G_Roll_State);
+
          if G_Roll_State /= Off then
-            if (G_Roll_State in Quarter | Eighth)
-              or else
-                (G_Roll_State = Half and then G_Roll_Step_Count >= 2)
-              or else
-                (G_Roll_State = Beat and then G_Roll_Step_Count >= 4)
-            then
-               Restore_Play_State;
-               G_Roll_Step_Count := 1;
-            else
-               G_Roll_Step_Count := @ + 1;
-               WNM.Step_Event_Broadcast.Broadcast;
-               Move_Playheads;
-            end if;
-         else
-            WNM.Step_Event_Broadcast.Broadcast;
-            Move_Playheads;
+            --  Keep the saved state going without rolls
+            Move_Playheads (G_Play_State_Save, Off);
+         end if;
+
+         if G_Auto_Fill_State = Auto_Buildup
+           and then
+            G_Fill_Buildup_Proba <= (Rand_Percent'Last - Build_Up_Step)
+         then
+            G_Fill_Buildup_Proba := @ + Build_Up_Step;
          end if;
 
          --  Guard against bad timing of MIDI step event when playback just
@@ -759,8 +804,7 @@ package body WNM.Project.Step_Sequencer is
    procedure MIDI_Clock_Tick (Step : MIDI.Time.Step_Count) is
       use MIDI.Time;
 
-      Clock_Div : constant MIDI.Time.Step_Count :=
-        (if G_Roll_State = Eighth then 3 else 6);
+      Clock_Div : constant MIDI.Time.Step_Count := 6;
 
       S : constant MIDI.Time.Step_Count := Step mod Clock_Div;
    begin
@@ -825,6 +869,7 @@ package body WNM.Project.Step_Sequencer is
    begin
       Playing := False;
       G_Roll_State := Off;
+      G_Auto_Fill_State := Off;
    end Song_Stop_Callback;
 
    ----------------------------

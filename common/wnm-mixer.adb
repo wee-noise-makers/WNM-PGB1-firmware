@@ -180,13 +180,6 @@ package body WNM.Mixer is
       FX_Reverb.Set_Param (4, Input.Parameters (Reverb)(Voice_Param_4_CC));
       FX_Reverb.Render (Input.L (Reverb), Input.R (Reverb));
 
-      --  Filter
-      FX_Filter.Set_Param (1, Input.Parameters (Filter)(Voice_Param_1_CC));
-      FX_Filter.Set_Param (2, Input.Parameters (Filter)(Voice_Param_2_CC));
-      FX_Filter.Set_Param (3, Input.Parameters (Filter)(Voice_Param_3_CC));
-      FX_Filter.Set_Param (4, Input.Parameters (Filter)(Voice_Param_4_CC));
-      FX_Filter.Render (Input.L (Filter), Input.R (Filter));
-
       --  Bitcrush
       FX_Bitcrush.Set_Param (1,
                              Input.Parameters (Bitcrusher)(Voice_Param_1_CC));
@@ -202,18 +195,20 @@ package body WNM.Mixer is
          L := S32 (Input.L (Bypass)(Index)) +
            S32 (Input.L (Overdrive)(Index)) +
              S32 (Input.L (Reverb)(Index)) +
-               S32 (Input.L (Bitcrusher)(Index)) +
-                 S32 (Input.L (Filter)(Index));
+               S32 (Input.L (Bitcrusher)(Index));
 
          R := S32 (Input.R (Bypass)(Index)) +
            S32 (Input.R (Overdrive)(Index)) +
              S32 (Input.R (Reverb)(Index)) +
-               S32 (Input.R (Bitcrusher)(Index)) +
-                 S32 (Input.R (Filter)(Index));
+               S32 (Input.R (Bitcrusher)(Index));
 
          Output (Index).L := S16 (Clip_S16 (L));
          Output (Index).R := S16 (Clip_S16 (R));
       end loop;
+
+      Voices.Auto_Filter_FX.Render (FX_Auto_Filter, Output);
+
+      Voices.Stutter_FX.Render (FX_Stutter, Output);
    end Mix_Regular;
 
    ------------------
@@ -392,6 +387,38 @@ package body WNM.Mixer is
 
    function Input_FX return FX_Kind
    is (WNM.Persistent.Data.Input_FX);
+
+   ---------------------
+   -- Set_Auto_Filter --
+   ---------------------
+
+   procedure Set_Auto_Filter (Mode : Voices.Auto_Filter_FX.Mode_Kind) is
+   begin
+      Voices.Auto_Filter_FX.Set_Mode (FX_Auto_Filter, Mode);
+   end Set_Auto_Filter;
+
+   ----------------------
+   -- Auto_Filter_Mode --
+   ----------------------
+
+   function Auto_Filter_Mode return Voices.Auto_Filter_FX.Mode_Kind
+   is (Voices.Auto_Filter_FX.Mode (FX_Auto_Filter));
+
+   -----------------
+   -- Set_Stutter --
+   -----------------
+
+   procedure Set_Stutter (Mode : Voices.Stutter_FX.Mode_Kind) is
+   begin
+      Voices.Stutter_FX.Set_Mode (FX_Stutter, Mode);
+   end Set_Stutter;
+
+   ------------------
+   -- Stutter_Mode --
+   ------------------
+
+   function Stutter_Mode return Voices.Stutter_FX.Mode_Kind
+   is (Voices.Stutter_FX.Mode (FX_Stutter));
 
    ---------------------------
    -- Enter_Sample_Rec_Mode --

@@ -139,7 +139,6 @@ package body WNM.Synth is
         Bass_Channel       => Bass'Access,
         Chord_Channel      => Chord'Access,
         Reverb_Channel     => WNM.Mixer.FX_Reverb'Access,
-        Filter_Channel     => WNM.Mixer.FX_Filter'Access,
         Drive_Channel      => WNM.Mixer.FX_Drive'Access,
         Bitcrusher_Channel => WNM.Mixer.FX_Bitcrush'Access);
 
@@ -147,8 +146,8 @@ package body WNM.Synth is
      (others => Voice_Pan_CC);
      --  (others => MIDI.MIDI_Data'Last);
 
-   LFOs : array (Tresses_Channels) of Tresses.LFO.Instance;
-   LFO_Syncs : array (Tresses_Channels) of Boolean := (others => False);
+   LFOs       : array (Tresses_Channels) of Tresses.LFO.Instance;
+   LFO_Syncs  : array (Tresses_Channels) of Boolean := (others => False);
    LFO_Values : array (Tresses_Channels) of Tresses.S16;
 
    type Voice_Parameters_Array is array (Tresses_Channels) of
@@ -457,7 +456,6 @@ package body WNM.Synth is
                                     when FX_Select_Bypass     => Bypass,
                                     when FX_Select_Overdrive  => Overdrive,
                                     when FX_Select_Reverb     => Reverb,
-                                    when FX_Select_Filter     => Filter,
                                     when FX_Select_Bitcrusher => Bitcrusher,
                                     when others => Bypass);
 
@@ -583,7 +581,6 @@ package body WNM.Synth is
       Output.Parameters (Overdrive) := Out_Voice_Parameters (Drive_Channel);
       Output.Parameters (Bitcrusher) :=
         Out_Voice_Parameters (Bitcrusher_Channel);
-      Output.Parameters (Filter) := Out_Voice_Parameters (Filter_Channel);
       Output.Parameters (Reverb) := Out_Voice_Parameters (Reverb_Channel);
 
       if WNM.Mixer.Get_Sample_Rec_Mode in WNM.Mixer.Play then
@@ -868,22 +865,6 @@ package body WNM.Synth is
    function Reverb_Param_Short_Label (Id : Tresses.Param_Id)
                                        return Tresses.Short_Label
    is (Mixer.FX_Reverb.Param_Short_Label (Id));
-
-   ------------------------
-   -- Filter_Param_Label --
-   ------------------------
-
-   function Filter_Param_Label (Id : Tresses.Param_Id)
-                                return String
-   is (Mixer.FX_Filter.Param_Label (Id));
-
-   ------------------------------
-   -- Filter_Param_Short_Label --
-   ------------------------------
-
-   function Filter_Param_Short_Label (Id : Tresses.Param_Id)
-                                      return Tresses.Short_Label
-   is (Mixer.FX_Filter.Param_Short_Label (Id));
 
    -----------------------
    -- Drive_Param_Label --

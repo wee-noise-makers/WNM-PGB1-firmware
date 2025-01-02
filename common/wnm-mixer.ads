@@ -24,9 +24,10 @@ with HAL;
 
 with WNM.Synth;
 with WNM.Voices.Reverb_Voice;
-with WNM.Voices.Filter_Voice;
 with WNM.Voices.Drive_Voice;
 with WNM.Voices.Bitcrusher_Voice;
+with WNM.Voices.Auto_Filter_FX;
+with WNM.Voices.Stutter_FX;
 
 package WNM.Mixer is
 
@@ -63,9 +64,16 @@ package WNM.Mixer is
    procedure Clear_Missed_Input_Deadlines;
 
    FX_Reverb   : aliased WNM.Voices.Reverb_Voice.Instance;
-   FX_Filter   : aliased WNM.Voices.Filter_Voice.Instance;
    FX_Drive    : aliased WNM.Voices.Drive_Voice.Instance;
    FX_Bitcrush : aliased WNM.Voices.Bitcrusher_Voice.Instance;
+   FX_Stutter  : WNM.Voices.Stutter_FX.Instance;
+   FX_Auto_Filter : WNM.Voices.Auto_Filter_FX.Instance;
+
+   procedure Set_Auto_Filter (Mode : Voices.Auto_Filter_FX.Mode_Kind);
+   function Auto_Filter_Mode return Voices.Auto_Filter_FX.Mode_Kind;
+
+   procedure Set_Stutter (Mode : Voices.Stutter_FX.Mode_Kind);
+   function Stutter_Mode return Voices.Stutter_FX.Mode_Kind;
 
    type Sample_Rec_Mode is (None, Preview, Rec, Play, Saving);
 

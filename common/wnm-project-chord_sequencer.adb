@@ -61,47 +61,70 @@ package body WNM.Project.Chord_Sequencer is
       Update_Current;
    end Song_Start_Callback;
 
+   ---------------
+   -- Next_Step --
+   ---------------
+
+   procedure Next_Step (State : in out Play_State; Roll : Roll_Kind) is
+      Part : constant Parts := Project.Song_Part_Sequencer.Playing;
+      New_Prog : constant WNM.Chord_Progressions :=
+        G_Project.Parts (Part).Progression;
+   begin
+
+      if Roll /= Off then
+         --  Freeze progression
+         return;
+      end if;
+
+      if New_Prog /= G_Play_State.Progression then
+
+         --  There's a new progression in town
+         State.Chord_Steps_Count := 1;
+         State.Progression := New_Prog;
+         State.Chord_Id := Chord_Slot_Id'First;
+         Update_Current;
+      else
+
+         --  The Step we're about to play
+         State.Chord_Steps_Count := @ + 1;
+
+         declare
+            Prog : Chord_Progression_Rec renames
+              G_Project.Progressions (State.Progression);
+            Chord : Chord_Rec renames Prog.Chords (State.Chord_Id);
+         begin
+            if State.Chord_Steps_Count > Natural (Chord.Duration) then
+               --  End of this chord, going to the next one
+
+               if State.Chord_Id >= Prog.Len then
+                  State.Chord_Id := Chord_Slot_Id'First;
+               else
+                  State.Chord_Id := @ + 1;
+               end if;
+
+               --  We're about to play the first step of the new chord
+               State.Chord_Steps_Count := 1;
+
+               Update_Current;
+            end if;
+         end;
+      end if;
+
+      --  Put_Line ("Chord step count:" & G_Play_State.Chord_Steps_Count'Img);
+
+   end Next_Step;
+
    -------------------
    -- Step_Callback --
    -------------------
 
    procedure Step_Callback is
-      Part : constant Parts := Project.Song_Part_Sequencer.Playing;
-      New_Prog : constant WNM.Chord_Progressions :=
-        G_Project.Parts (Part).Progression;
    begin
-      if New_Prog /= G_Play_State.Progression then
+      Next_Step (G_Play_State, G_Roll_State);
 
-         --  There's a new progression in town
-         G_Play_State.Chord_Steps_Count := 1;
-         G_Play_State.Progression := New_Prog;
-         G_Play_State.Chord_Id := Chord_Slot_Id'First;
-         Update_Current;
-      else
-
-         --  The Step we're about to play
-         G_Play_State.Chord_Steps_Count := @ + 1;
-
-         declare
-            Prog : Chord_Progression_Rec renames
-              G_Project.Progressions (G_Play_State.Progression);
-            Chord : Chord_Rec renames Prog.Chords (G_Play_State.Chord_Id);
-         begin
-            if G_Play_State.Chord_Steps_Count > Natural (Chord.Duration) then
-               --  End of this chord, going to the next one
-
-               if G_Play_State.Chord_Id >= Prog.Len then
-                  G_Play_State.Chord_Id := Chord_Slot_Id'First;
-               else
-                  G_Play_State.Chord_Id := @ + 1;
-               end if;
-
-               --  We're about to play the first step of the new chord
-               G_Play_State.Chord_Steps_Count := 1;
-
-               Update_Current;
-            end if;
-         end;
+      if G_Roll_State /= Off then
+         --  Keep the saved state going without rolls
+         Next_Step (G_Play_State_Save, Off);
       end if;
    end Step_Callback;
 
@@ -143,6 +166,29 @@ package body WNM.Project.Chord_Sequencer is
 
    function Current_Chord return Chord_Notes
    is (G_Play_State.Chord);
+
+   ---------------------------
+   -- Chords_In_Progression --
+   ---------------------------
+
+   function Chords_In_Progression return Chord_Slot_Id
+   is (G_Project.Progressions (G_Play_State.Progression).Len);
+
+   -------------------------
+   -- Current_Chord_Index --
+   -------------------------
+
+   function Current_Chord_Index return Chord_Slot_Id
+   is (G_Play_State.Chord_Id);
+
+   ------------------------
+   -- Shadow_Chord_Index --
+   ------------------------
+
+   function Shadow_Chord_Index return Chord_Slot_Id
+   is (if G_Roll_State = Off
+       then G_Play_State.Chord_Id
+       else G_Play_State_Save.Chord_Id);
 
    --------------------
    -- Update_Current --

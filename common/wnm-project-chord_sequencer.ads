@@ -28,6 +28,10 @@ package WNM.Project.Chord_Sequencer is
    function Current_Chord_Intervals return Chord_Intervals;
    function Current_Chord return Chord_Notes;
 
+   function Chords_In_Progression return Chord_Slot_Id;
+   function Current_Chord_Index return Chord_Slot_Id;
+   function Shadow_Chord_Index return Chord_Slot_Id;
+
    pragma Inline (Current_Tonic);
    pragma Inline (Current_Chord_Name);
    pragma Inline (Current_Chord_Intervals);
