@@ -80,6 +80,14 @@ package body WNM.GUI.Menu.Projects is
      (This   : in out Instance)
    is
       Step : constant HAL.UInt32 := Anim_Step / 6;
+
+      Icon_W : constant Natural := load_project_icon.Data.W;
+      Icon_H : constant Natural := load_project_icon.Data.H;
+      Icon_Left : constant Natural :=
+        Box_Center.X - (Icon_W / 2);
+
+      Icon_Top : constant Natural :=
+        Box_Top + 2;
    begin
       Draw_Menu_Box ("Menu",
                      Count => Menu_Items_Count,
@@ -108,7 +116,7 @@ package body WNM.GUI.Menu.Projects is
 
             when Delete_Project =>
            (case Step mod 8 is
-               when 0 .. 3      => delete_project_icon.Data,
+               when 0 .. 3 => delete_project_icon.Data,
                when others => delete_project_icon_2.Data),
 
             when Clear_Project =>
@@ -117,9 +125,17 @@ package body WNM.GUI.Menu.Projects is
                when 1      => clear_project_icon_2.Data,
                when 2      => clear_project_icon_3.Data,
                when others => clear_project_icon_2.Data)),
-         Box_Center.X - (load_project_icon.Data.W / 2),
-         Box_Top + 2);
+         Icon_Left,
+         Icon_Top);
 
+      Draw_Str (Icon_Left + Icon_W / 2 - Bitmap_Fonts.Width / 2,
+                Icon_Top + Icon_H / 2,
+                (case This.Item is
+                   when Load_Project => "L",
+                   when Save_Project => "S",
+                   when Clear_Project => "C",
+                   when Delete_Project => "D",
+                   when Rename_Project => "R"));
       Anim_Step := Anim_Step + 1;
 
       Draw_Str_Center (Box_Bottom - Bitmap_Fonts.Height - 1,
