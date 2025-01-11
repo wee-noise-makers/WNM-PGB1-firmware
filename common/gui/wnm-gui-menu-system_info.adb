@@ -55,7 +55,13 @@ package body WNM.GUI.Menu.System_Info is
 
       case This.K is
 
-      when Synth_CPU_Load =>
+         when Version =>
+            Drawing.Draw_Title ("Firmware Version", "");
+            Drawing.Draw_Lines_Center
+              (Drawing.Box_Top + 13,
+               WNM_HAL.Firmware_Version);
+
+         when Synth_CPU_Load =>
             Drawing.Draw_Title ("Synth CPU Load", "");
             Drawing.Draw_Value (Img (Synth.Last_CPU_Load));
 
@@ -174,9 +180,9 @@ package body WNM.GUI.Menu.System_Info is
 
                when Touch =>
                   --  Set new threshold values
-                  WNM.Persistent.Data.TP1_Threshold := WNM_HAL.TP1 + 150;
-                  WNM.Persistent.Data.TP2_Threshold := WNM_HAL.TP2 + 150;
-                  WNM.Persistent.Data.TP3_Threshold := WNM_HAL.TP3 + 150;
+                  WNM.Persistent.Data.TP1_Threshold := WNM_HAL.TP1 + 200;
+                  WNM.Persistent.Data.TP2_Threshold := WNM_HAL.TP2 + 200;
+                  WNM.Persistent.Data.TP3_Threshold := WNM_HAL.TP3 + 200;
 
                   WNM_HAL.Set_Thresholds (WNM.Persistent.Data.TP1_Threshold,
                                           WNM.Persistent.Data.TP2_Threshold,

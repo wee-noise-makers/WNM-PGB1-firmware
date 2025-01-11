@@ -51,6 +51,9 @@ with Noise_Nugget_SDK.Screen.SSD1306;
 with Noise_Nugget_SDK.MIDI;
 with Noise_Nugget_SDK.Audio.PIO_I2S_ASM;
 
+with Wnm_Pgb1_Device_Config;
+with Tresses_Config;
+with GNAT.Source_Info;
 with Atomic.Critical_Section;
 
 with Cortex_M.Systick;
@@ -177,6 +180,16 @@ package body WNM_HAL is
    begin
       WNM.Tasks.Sequencer_1khz_Tick;
    end Systick;
+
+   ----------------------
+   -- Firmware_Version --
+   ----------------------
+
+   function Firmware_Version return String
+   is ("PGB-1:" & WNM_PGB1_Device_Config.Crate_Version & ASCII.LF &
+       "Tresses:" & Tresses_Config.Crate_Version & ASCII.LF &
+         GNAT.Source_Info.Compilation_ISO_Date & " " &
+         GNAT.Source_Info.Compilation_Time);
 
    -----------
    -- State --

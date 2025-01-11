@@ -10,6 +10,8 @@ with Tresses;
 
 package WNM_HAL is
 
+   function Firmware_Version return String;
+
    -------------
    -- Buttons --
    -------------

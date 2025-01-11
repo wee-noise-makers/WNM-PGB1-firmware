@@ -25,7 +25,8 @@ package WNM.GUI.Menu.System_Info is
 
 private
 
-   type Info_Kind is (Synth_CPU_Load,
+   type Info_Kind is (Version,
+                      Synth_CPU_Load,
                       Synth_Max_CPU_Load,
                       Synth_Missed_Deadlines,
                       DAC_Missed_Deadlines,

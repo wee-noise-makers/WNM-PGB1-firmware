@@ -15,6 +15,9 @@ with MIDI.Decoder.Queue;
 with RtMIDI;
 
 with Wnm_Pgb1_Simulator_Config;
+with Tresses_Config;
+with GNAT.Source_Info;
+
 with Ada.Numerics.Float_Random;
 
 package body WNM_HAL is
@@ -39,6 +42,16 @@ package body WNM_HAL is
       Message_Size : Interfaces.C.size_t;
       User_Data    : System.Address)
      with Convention => C;
+
+   ----------------------
+   -- Firmware_Version --
+   ----------------------
+
+   function Firmware_Version return String
+   is ("PGB-1 sim:" & Wnm_Pgb1_Simulator_Config.Crate_Version & ASCII.LF &
+       "Tresses:" & Tresses_Config.Crate_Version & ASCII.LF &
+         GNAT.Source_Info.Compilation_ISO_Date & " " &
+         GNAT.Source_Info.Compilation_Time);
 
    -----------
    -- State --

@@ -95,6 +95,32 @@ package body WNM.GUI.Menu.Drawing is
       Bitmap_Fonts.Print (X, Y, Str);
    end Draw_Str_Center;
 
+   -----------------------
+   -- Draw_Lines_Center --
+   -----------------------
+
+   procedure Draw_Lines_Center (Y   : Integer;
+                                Str : String)
+   is
+      First : Integer := Str'First;
+      Last : Integer := First;
+      PY : Integer := Y;
+   begin
+      loop
+         --  Find new line
+         while Last <= Str'Last and then Str (Last) /= ASCII.LF loop
+            Last := @ + 1;
+         end loop;
+
+         Draw_Str_Center (PY, Str (First .. Last - 1));
+         PY := @ + Bitmap_Fonts.Height;
+         First := Last + 1;
+         Last := First;
+
+         exit when Last > Str'Last;
+      end loop;
+   end Draw_Lines_Center;
+
    -------------------
    -- Draw_Menu_Box --
    -------------------
