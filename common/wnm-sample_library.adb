@@ -72,7 +72,7 @@ package body WNM.Sample_Library is
       use HAL;
    begin
       return Sample_Library_Base_Addr +
-        (UInt32 (Index) - 1) * Sectors_Per_Sample * Sector_Byte_Size;
+        UInt32 (Index) * Sectors_Per_Sample * Sector_Byte_Size;
    end Entry_Device_Address;
 
    ----------
