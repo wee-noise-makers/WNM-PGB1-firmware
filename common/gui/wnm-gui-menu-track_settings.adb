@@ -222,7 +222,18 @@ package body WNM.GUI.Menu.Track_Settings is
 
          when Shuffle =>
             Draw_Title ("Shuffle:", "");
-            Draw_Value (Project.Track_Shuffle'Img);
+            declare
+               Shuffle : constant Project.Shuffle_Value :=
+                 Project.Track_Shuffle;
+
+               Linn : constant Integer :=
+                 50 + Integer (Shuffle) / 2;
+
+               Str : constant String :=
+                 Linn'Img & (if Shuffle mod 2 = 1 then ".5" else ".0");
+            begin
+               Draw_Value (Str);
+            end;
 
          when Arp_Mode =>
             Draw_Title ("Arpeggiator mode:", "");
