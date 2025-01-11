@@ -5,6 +5,10 @@
 \usepackage{mdframed}
 \usepackage{qrcode}
 \usepackage[inkscapeformat=png]{svg}
+\usepackage{enumitem}
+
+\newlist{notes}{enumerate}{1}
+\setlist[notes]{label=Note: ,leftmargin=*}
 
 \newenvironment{important}[1][]{%
    \begin{mdframed}[%
@@ -23,4 +27,5 @@
 }{\end{mdframed}}
 
 \newcommand{\kbd}[1]{\keys{#1}}
-\newcommand{\pgbmenu}[1]{\emph{#1}}
+\newcommand{\pgbmenu}[1]{\textbf{\emph{#1}}}
+\newcommand{\pgbmode}[1]{\underline{\emph{#1}}}

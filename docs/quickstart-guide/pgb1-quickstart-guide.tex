@@ -1,16 +1,17 @@
-\documentclass[10pt]{article}
+
+\documentclass[8pt]{extarticle}
 \usepackage{amssymb,amsmath,amsthm,amsfonts}
 \usepackage{multicol,multirow}
 \usepackage{calc}
 \usepackage{ifthen}
-\usepackage[portrait]{geometry}
+\usepackage[a4paper, landscape]{geometry}
 \usepackage[hidelinks,colorlinks=false]{hyperref}
 \usepackage{tcolorbox}
 \usepackage{graphicx}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,
     positioning,
-    quotes, shapes, spy}
+    quotes, shapes, spy, matrix}
 \usepackage[percent]{overpic}
 \usepackage{../wnm-latex-utils}
 
@@ -27,8 +28,11 @@
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0pt plus 0.5ex}
 
+\def\device{PGB-1 }
+\def\WNM{Wee Noise Makers }
 \def\fulldocurl{https://weenoisemakers.com/pgb-1}
 \def\firmwareupdatesurl{https://weenoisemakers.com/pgb-1}
+\def\discordurl{https://discord.gg/EAmAgsmV5V}
 \def\doctitle{WNM PGB-1 Quick Start Guide}
 
 \newcommand{\OLEDscreenshot}[1]{
@@ -49,9 +53,12 @@
 \footnotesize
 
 \begin{center}
-     \Large{\textbf{\doctitle}} \\
+    \Huge{\textbf{\doctitle}}
 \end{center}
-\begin{multicols*}{2}
+
+\rule{\paperwidth}{0.4pt}
+
+\begin{multicols*}{3}
 \setlength{\premulticols}{1pt}
 \setlength{\postmulticols}{1pt}
 \setlength{\multicolsep}{1pt}
@@ -59,22 +66,50 @@
 
 \section{Complete User Guide}
 
-This document provides the essential information to start using the PGB-1.
+This document provides the essential information to start using the \device.
 The complete user guide is available at: \url{\fulldocurl} \qrcode[height=40pt]{\fulldocurl}
 
 \section{Hardware Layout}
 
-\includesvg[width=250pt]{../assets/PGB1-front-black-n-white-with-labels.svg}
+\includesvg[width=240pt]{../assets/PGB1-front-black-n-white-with-labels.svg}
 
-\section{Powering Up}
+\section{Powering Up and charging}
 
 To power up the device, slide the Power Switch to the left. The device will power up and the status LED will glow cyan blue. 
 
-\section{Charging}
+The internal battery can be charged by connecting \device with a USB type C cable to a standard USB port on a computer, a USB power adapter, or USB power bank. Always use good quality equipment and cables to charge the device. The status LED will glow red when charging.
 
-\section{Navigation}
+A full charge takes about 1h20. The red status LED will turn off when the charge is complete.
 
-Use \kbd{Left}, \kbd{Right}, \kbd{Up}, \kbd{Down}, \kbd{A}, and \kbd{B} buttons to navigate inside the PGB-1 menus.
+\begin{notes}
+    \item During charging operation, the on-screen battery level indicator does not provide valid information on the state of charge. Only the red status LED will tell you if the battery is still charging or not.
+\end{notes}
+
+\section{Firmware Updates}
+\label{procedure:firmware_update}
+
+Regularly check for firmware update on the \WNM website at
+\url{\firmwareupdatesurl} \qrcode[height=40pt]{\firmwareupdatesurl}
+
+You call also join the discord server (\url{\discordurl}) or follow us on social media to receive notifications of firmware updates. 
+
+\begin{important}
+    Never turn-off \device or unplug the USB cable during a firmware update. This may leave the device in an invalid state and will require you to follow the \reflabel{procedures:forced_firmware_update}{Forced Firmware Update Procedure}.
+\end{important}
+
+First, connect \device to your computer using a good quality USB cable. Then, to start firmware update mode, turn on the device and press \kbd{Menu}, use \kbd{Left} or \kbd{Right} to reach the \pgbmenu{Update Mode} entry, press \kbd{A} to enter, press \kbd{Right} and then \kbd{A} to accept. The device should now be in Firmware Update mode as indicated by the letters "UP" displayed on the keyboard LEDs.
+
+The device should appear as a removable drive called "RPI-RP2" on your computer. Drag and drop the UF2 firmware file into the "RPI-RP2" removable drive. The update will proceed and \device will automatically reboot when finished.
+
+\section{Audio In/Out and Volume}
+
+Audio output will automatically switch from internal speaker to headset output when a jack is inserted. To change the output volume, hold the \kbd{Play} button down and press or hold \kbd{Up} or \kbd{down}. Max volume can be very loud, especially with headphones or earbuds. Be careful, high volume for a long time may damage your hearing.
+
+Audio input is disabled by default. To configure audio input, open the main menu with \kbd{Menu}, then select \pgbmenu{Inputs}. You will be able to unmute/mute for each input (Line-in, internal microphone, headset microphone), and set a common volume. On the second page. You can select a common effect for audio input.
+
+\section{Menus and Navigation}
+
+Use \kbd{Left}, \kbd{Right}, \kbd{Up}, \kbd{Down}, \kbd{A}, and \kbd{B} buttons to navigate inside the \device settings and menus.
 
 The \kbd{Left} and \kbd{Right} buttons select between the different settings.
 The \kbd{Up} and \kbd{Down} buttons change the value of the selected setting.
@@ -96,22 +131,141 @@ For example, looking at the track settings:
     \node[image] (A) {\OLEDscreenshot{../assets/OLED-screenshots/PGB1-OLED-track-LFO.png}};
     
     % Page indicator
-    \spy [black, size=2cm] on (-0.62,0.35) in node [left] at (-2.5,-0.5);
+    \spy [black, size=2cm] on (-0.62,0.35) in node [left] at (-2.1,-0.5);
 
     % Right arrow
-    \spy [black, size=2cm] on (1.68, 0.45) in node [right] at (2.5,-0.5);
+    \spy [black, size=2cm] on (1.68, 0.45) in node [right] at (2.1,-0.5);
 \end{tikzpicture}
 \end{center}
 
-\section{Firmware Updates}
+\section{Main Modes}
 
-\url{\firmwareupdatesurl} \qrcode[height=40pt]{\firmwareupdatesurl}
+The \device interface can operate in 4 main modes that will affect the information displayed on the screen and the keyboard LEDs, as well as the function of the buttons.
+The main modes are:
+\begin{itemize}
+    \item \pgbmode{Track} Mode
+    \item \pgbmode{Step} Mode
+    \item \pgbmode{Pattern} Mode
+    \item \pgbmode{Song} Mode
+\end{itemize}
 
-\section{Audio In/Out and Volume}
+To enter one of the main mode, press and release the mode buttons (\kbd{Track}, \kbd{Step}, \kbd{Pattern}, \kbd{Song}). The corresponding LED will turn on and the screen will display settings for this mode.
 
-Audio output will automatically switch from internal speaker to headset output when a jack is inserted. To change the output volume, hold the \kbd{Play} button down and press or hold \kbd{Up} or \kbd{down}. Max volume can be very loud, especially with headphones or earbuds. Be careful, high volume for a long time may damage your hearing.
+\begin{notes}
+    \item A fifth mode is available: Sample Mode. This mode allows you to create and edit samples directly on the device. To enter sample mode, hold the \kbd{Cpy/FX} button and press \kbd{Edit}.
+\end{notes}
 
-Audio input is disabled by default. To configure audio input, open the main menu with \kbd{Menu}, then select \pgbmenu{Inputs}. You will be able to unmute/mute for each input (Line-in, internal microphone, headset microphone), and set a common volume. On the second page. You can select a common effect for audio input.
+\subsection{\pgbmode{Track} Mode}
+
+\pgbmode{Track} mode allows you to configure one of the 16 tracks of the \device. By default, tracks 1 to 6 are synths tracks (Kick, Snare, Hihat, Bass, Lead, Chords), tracks 7 and 8 are sample tracks, tracks 9 to 11 are audio FX tracks, and tracks 12 to 16 are MIDI tracks. Note that all tracks can be configured to MIDI mode and control external devices.
+
+In \pgbmode{Track} mode, pressing one of the \kbd{1} to \kbd{16} buttons will select the corresponding track and trigger a "preview" note for this track. The name of the selected track is shown at the top left of the screen. To select a track without playing it, hold the \kbd{Track} button and then press one of the \kbd{1} to \kbd{16} buttons. Note that you can use the same method to change the selected track from one of the other main mode without switching to \pgbmode{Track} mode.
+
+On the screen, the track settings menu allows you to configure the selected track (synth engine, synth parameters, LFO, volume, shuffle, arpeggiator, etc.).
+
+\subsection{\pgbmode{Step} Mode}
+
+\pgbmode{Step} mode allows you to configure each of the 16 steps for the selected track and pattern. 
+
+In \pgbmode{Step} mode, pressing one of the \kbd{1} to \kbd{16} buttons will select the corresponding step and trigger it at the same time. The number of the selected step is shown at the top right of the screen. To select a step without playing it, hold the \kbd{Step} button and then press one of the \kbd{1} to \kbd{16} buttons. Note that you can use the same method to change the selected step from one of the other main mode without switching to \pgbmode{Step} mode.
+
+On the screen, the step settings menu allows you to configure the selected step (Trigger condition, note, duration, velocity, repeats, etc.).
+
+\subsection{\pgbmode{Pattern} Mode}
+
+\pgbmode{Pattern} mode allows you to configure each of the 16 patterns for the selected track. 
+
+In \pgbmode{Pattern} mode, pressing one of the \kbd{1} to \kbd{16} buttons will select the corresponding pattern. The number of the selected pattern is shown at the top right of the screen.
+To change the selected pattern from one of the other main mode without switching to \pgbmode{Pattern} mode, hold the \kbd{Pattern} button and then press one of the \kbd{1} to \kbd{16} buttons.
+
+\begin{important}
+    Selecting a pattern will not play this pattern.
+    Which pattern is playing for each track is decided in \pgbmode{Song} mode.
+\end{important}
+
+On the screen, the pattern settings menu allows you to configure the selected pattern (Length and link).
+
+\subsection{\pgbmode{Song} Mode}
+
+\pgbmode{Song} mode is different from the other modes because it controls two different things: Song Parts and Chord Progressions. 
+
+In \pgbmode{Song} mode, pressing one of the \kbd{1} to \kbd{12} buttons will select and queue in the corresponding Song Part. To select a Song Part without queuing it, hold the \kbd{Song} button and then press one of the \kbd{1} to \kbd{12} buttons.
+
+On the screen, the Song Part settings menu allows you to configure the selected part, in particular for each track which pattern to play, if any.
+
+Press \kbd{13} to \kbd{16} to select the corresponding Chord Progression. On the screen, the Chord Settings menu allows you to program a chord progression by specifying root note, quality and duration of chords. You also have the option to generate a random chord progression.
+
+\section{Playing Demo Projects} 
+
+\device comes with built-in demo projects that you can play to get familiar with the device’s capabilities.
+
+To load a project, press the \kbd{Menu} button, then press \kbd{A} to enter the \pgbmenu{Projects} sub-menu. Go right to select \pgbmenu{Load} and press \kbd{A}. You should see a list of projects saved on the device, use the \kbd{Up} and \kbd{Down} buttons to select a project, then press \kbd{A} again to load it.
+
+Once the project is loaded, you can press the \kbd{Play} button to start the sequencer.
+
+Most demo projects contain several “song parts”, these are sections of a song with different patterns, chords, or instruments enabled (intro, chorus, break, outro, etc.).
+
+To change the song part, press the \kbd{Song} button to enter \pgbmode{Song} mode, then press button \kbd{2} to queue part two. It can take some time for the new part to start playing as the sequencer will wait for the full run of the current part before switching to the new one.
+
+Get familiar with each part and perform your own version of the track. You can also jump in \pgbmode{Track} mode and tweak the synths parameters.
+
+\section{Live FX}
+
+\device features 16 live effects that can be enabled at any time during playback. They are split in two categories: sequencing effects and mixing effects.
+
+To toggle a live FX, hold the \kbd{Cpy/FX} button and press one of the \kbd{1} to \kbd{16} buttons.
+
+Sequencing Effects are located on the left side of the keyboard, in slots \kbd{1} to \kbd{4} and \kbd{9} to \kbd{12}.
+Mixing Effects are located on the right side of the keyboard, in slots \kbd{5} to \kbd{8} and \kbd{9} to \kbd{12}.
+
+\begin{multicols}{2}
+    Sequencing Effects :
+    \begin{itemize}
+    \item[\kbd{1}] Roll 16th
+    \item[\kbd{2}] Roll 8th
+    \item[\kbd{3}] Roll Quarter
+    \item[\kbd{4}] Roll Beat
+    \item[\kbd{9}] Fill Steps
+    \item[\kbd{10}] Auto-fill Low
+    \item[\kbd{11}] Auto-fill High
+    \item[\kbd{12}] Auto-fill Build-up
+    \end{itemize}
+    
+    \columnbreak
+    
+    Mixing Effects :
+    \begin{itemize}
+    \item[\kbd{5}] Low Pass Filter
+    \item[\kbd{6}] Band Pass Filter
+    \item[\kbd{7}] High Pass Filter
+    \item[\kbd{8}] Stutter 1
+    \item[\kbd{13}] Low Pass Filter Sweep
+    \item[\kbd{14}] Band Pass Filter Sweep
+    \item[\kbd{15}] High Pass Filter Sweep
+    \item[\kbd{16}] Stutter 2
+    \end{itemize}
+\end{multicols}
+
+There can be only one effect of the same category enabled at a time (Filter, Auto Fill, Stutter, Roll), they cancel each other when enabled.
+
+\section{Create Your First Project}
+
+In this section we will see all the basic steps to create a simple song on the \device.
+
+TODO:
+ - Clear project
+ - Select Kick
+ - Enter steps
+ - Select Snare
+ - Enter steps
+ - Select HiHat
+ - Enable all steps
+ - Go to Step mode
+ - Change velocity of first step
+ - Copy to other steps
+ - Select Bass
+ - Enter Steps
+
 
 \section{Shortcuts}
 
@@ -122,14 +276,20 @@ Audio input is disabled by default. To configure audio input, open the main menu
     \item[] Decrease BPM \dotfill Hold \kbd{Play} + Press \kbd{Left}
     \item[] Mute Track \dotfill Hold \kbd{Play} + Press \kbd{1} to \kbd{16}
     \item[] Solo Track \dotfill Hold \kbd{Play} + Press \kbd{Track}, then Press \kbd{1} to \kbd{16}
-    \item[] Enter Sampling Mode \dotfill Hold \kbd{CPY/FX} + Press \kbd{Edit}
+    \item[] Enter Sampling Mode \dotfill Hold \kbd{Cpy/FX} + Press \kbd{Edit}
 \end{itemize}
 
 \section{Tips and Tricks}
 
-\section{Troubleshooting}
+\begin{itemize}
+    \item[] By combining pattern length and pattern link features, you can create sequences from 1 step to 256 steps
 
-\subsection{Situation}
+    \item[] Use step velocity setting to trigger synths at different intensity. For example, on the HiHat to improve the groove, or on the Snare to simulate ghost notes. 
+
+    \item[] To create Open HiHat steps, increase the "Release" synth parameter of a given step.   
+\end{itemize}
+
+\section{Troubleshooting}
 
 \subsubsection{Device won't turn off}
 
@@ -149,14 +309,27 @@ Changes to the current project, if any, will not be saved.
 Use a paperclip to press the reset button (leftmost hole at the bottom right of the front panel).
 
 \subsubsection{Forced Firmware Update Procedure}
+\label{procedures:forced_firmware_update}
 
-First, make sure the device is off (power switch to the right). If the device doesn't turn off, follow the \reflabel{procedures:reset}{Reset Procedure}.
+First, make sure the device is off (power switch to the right, and cyan blue status LED is off). If the device doesn't turn off, follow the \reflabel{procedures:reset}{Reset Procedure}.
 
 Connect the device to your computer using a good quality USB cable.
 
-Use a paperclip to hold the `boot` button down (rightmost hole at the bottom right of the front panel).
+Use a paperclip to hold the `boot` button down (rightmost hole at the bottom right of the front panel). While holding the `boot` button down, turn on the device (power switch to the left).
 
-While holding the `boot` button down, turn on the device (power switch to the left).
+The device should appear as a removable drive called "RPI-RP2" on your computer. Drag and drop the UF2 firmware file into the "RPI-RP2" removable drive. The update will proceed and \device will automatically reboot when finished.
+    
+\section{Warranty} 
+
+Devices purchased directly from \WNM have a warranty of six months from the date of purchase. This warranty can be extended depending on local regulations.
+
+This warranty covers any manufacturing defects in the device. It does not cover damage due to incorrect handling, storage, power, overvoltage events, or modifications.
+
+Please use the Support form on our website if you are experiencing issues with your device. Devices returned under warranty will either be refunded, replaced, or repaired at our discretion. User data may not be preserved. You will be responsible for the cost of returning the device to \WNM.
+
+\section{Modding and Hacking} 
+
+\device is open source and designed to be extended and modified by users, however, hardware modification or installation of third party firmware can lead to irreversible damage to the device. \WNM will not be accountable for those damages and any modification will void the warranty. We will not refund, repair, or replace any products that have been modified.
 
 \end{multicols*}
 
