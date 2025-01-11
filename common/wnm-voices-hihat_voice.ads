@@ -21,6 +21,7 @@
 
 with Tresses;            use Tresses;
 with Tresses.Interfaces; use Tresses.Interfaces;
+with Tresses.Random;
 
 private with Tresses.Filters.SVF;
 private with Tresses.Envelopes.AR;
@@ -64,7 +65,8 @@ private
       Phase : U32 := 0;
 
       Filter0, Filter1 : Filters.SVF.Instance;
-      Env0  : Tresses.Envelopes.AR.Instance;
+      Env0 : Tresses.Envelopes.AR.Instance;
+      Rng : Tresses.Random.Instance;
       Cym_State : Tresses.Drums.Cymbal.Cymbal_State;
       Do_Init : Boolean := True;
    end record;

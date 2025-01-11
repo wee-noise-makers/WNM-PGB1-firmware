@@ -80,6 +80,7 @@ package body WNM.Voices.Hihat_Voice is
                Params => This.Params,
                Filter => This.Filter0,
                Env => This.Env0,
+               Rng => This.Rng,
                Phase =>  This.Phase,
                Do_Init => This.Do_Init,
                Do_Strike => This.Do_Strike);
@@ -90,6 +91,7 @@ package body WNM.Voices.Hihat_Voice is
                Params => This.Params,
                Filter => This.Filter0,
                Env => This.Env0,
+               Rng => This.Rng,
                Phase =>  This.Phase,
                Do_Init => This.Do_Init,
                Do_Strike => This.Do_Strike);
