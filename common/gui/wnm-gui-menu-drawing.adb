@@ -137,34 +137,6 @@ package body WNM.GUI.Menu.Drawing is
              Y_Offset    => Title_Y_Offset,
              Str         => Title);
 
-      if Count > 0 then
-         declare
-            Item_width   : constant := 4;
-            Item_Spacing : constant := Item_width + 2;
-            X_Offset : constant Natural :=
-              (Screen.Width - Count * Item_Spacing) / 2;
-         begin
-            for Item in 0 .. Count - 1 loop
-               Screen.Draw_Line ((X_Offset + Item * Item_Spacing,
-                                 Scroll_Bar_Y_Offset),
-                                 (X_Offset + Item * Item_Spacing + Item_width,
-                                  Scroll_Bar_Y_Offset));
-            end loop;
-
-            Screen.Draw_Line ((X_Offset + Index * Item_Spacing,
-                              Scroll_Bar_Y_Offset + 1),
-                              (X_Offset + Index * Item_Spacing + Item_width,
-                               Scroll_Bar_Y_Offset + 1));
-         end;
-
-         if Index < Count - 1 then
-            X := Box_Right - Bitmap_Fonts.Width;
-            Print (X_Offset => X,
-                   Y_Offset => Arrow_Y_Offset,
-                   C        => '>');
-         end if;
-      end if;
-
       --  Top line
       Screen.Draw_Line (Start => (Box_Left + 2, Box_Top),
                         Stop  => (Box_Right - 2, Box_Top));
@@ -178,6 +150,48 @@ package body WNM.GUI.Menu.Drawing is
       --  Side right
       Screen.Draw_Line (Start => (Box_Right, Box_Top + 2),
                         Stop  => (Box_Right, Box_Bottom - 2));
+
+      if Count > 0 then
+         declare
+            Item_width   : constant := 7;
+            Item_Spacing : constant := Item_width + 2;
+            X_Offset : constant Natural :=
+              (Screen.Width - Count * Item_Spacing) / 2;
+         begin
+            for Item in 0 .. Count - 1 loop
+               declare
+                  Tab_Left : constant Natural :=
+                    X_Offset + Item * Item_Spacing;
+                  Tab_Right : constant Natural := Tab_Left + Item_width;
+               begin
+
+                  Screen.Draw_Line ((Tab_Left, Scroll_Bar_Y_Offset),
+                                    (Tab_Right, Scroll_Bar_Y_Offset));
+
+                  Screen.Draw_Line ((Tab_Left - 1, Scroll_Bar_Y_Offset + 1),
+                                    (Tab_Left - 1, Box_Top - 1));
+                  if Item = Count - 1 then
+                     Screen.Draw_Line
+                       ((Tab_Right + 1, Scroll_Bar_Y_Offset + 1),
+                        (Tab_Right + 1, Box_Top - 1));
+                  end if;
+               end;
+            end loop;
+
+            Screen.Draw_Line ((X_Offset + Index * Item_Spacing,
+                              Box_Top),
+                              (X_Offset + Index * Item_Spacing + Item_width,
+                               Box_Top),
+                              On => False);
+         end;
+
+         if Index < Count - 1 then
+            X := Box_Right - Bitmap_Fonts.Width;
+            Print (X_Offset => X,
+                   Y_Offset => Arrow_Y_Offset,
+                   C        => '>');
+         end if;
+      end if;
 
       Screen.Set_Pixel ((Box_Left + 1, Box_Top + 1));
       Screen.Set_Pixel ((Box_Left + 1, Box_Bottom - 1));
