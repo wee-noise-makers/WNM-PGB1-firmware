@@ -133,7 +133,8 @@ package WNM.GUI.Menu.Drawing is
 
    procedure Draw_Sample_Select (Val : Sample_Library.Slice_Id);
 
-   procedure Draw_Project_Select (Val : Project.Library.Valid_Prj_Index);
+   procedure Draw_Project_Select (Val        : Project.Library.Valid_Prj_Index;
+                                  Show_Empty : Boolean := True);
 
    procedure Draw_Word_Select (Word : Speech.Word);
 

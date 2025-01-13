@@ -58,7 +58,7 @@ package body WNM.GUI.Menu.Projects is
           when Load_Project   => "Load",
           when Rename_Project => "Rename",
           when Delete_Project => "Delete",
-          when Clear_Project  => "Clear");
+          when New_Project    => "New");
 
    -----------------
    -- Push_Window --
@@ -119,7 +119,7 @@ package body WNM.GUI.Menu.Projects is
                when 0 .. 3 => delete_project_icon.Data,
                when others => delete_project_icon_2.Data),
 
-            when Clear_Project =>
+            when New_Project =>
            (case Step mod 4 is
                when 0      => clear_project_icon.Data,
                when 1      => clear_project_icon_2.Data,
@@ -131,9 +131,9 @@ package body WNM.GUI.Menu.Projects is
       Draw_Str (Icon_Left + Icon_W / 2 - Bitmap_Fonts.Width / 2,
                 Icon_Top + Icon_H / 2,
                 (case This.Item is
-                   when Load_Project => "L",
-                   when Save_Project => "S",
-                   when Clear_Project => "C",
+                   when Load_Project   => "L",
+                   when Save_Project   => "S",
+                   when New_Project    => "N",
                    when Delete_Project => "D",
                    when Rename_Project => "R"));
       Anim_Step := Anim_Step + 1;
@@ -155,13 +155,17 @@ package body WNM.GUI.Menu.Projects is
       case Event.Kind is
          when A_Press =>
             case This.Item is
-               when Save_Project | Load_Project |
-                    Rename_Project | Delete_Project =>
+               when Load_Project | Rename_Project | Delete_Project =>
 
-                  Menu.Project_Select.Push_Window;
+                  Menu.Project_Select.Push_Window (Show_Empty => False);
                   This.State := Select_Project;
 
-               when Clear_Project =>
+               when Save_Project =>
+
+                  Menu.Project_Select.Push_Window (Show_Empty => True);
+                  This.State := Select_Project;
+
+               when New_Project =>
                   Yes_No_Dialog.Set_Title ("Clear current?");
                   Yes_No_Dialog.Push_Window;
                   This.State := Confirm;
@@ -201,10 +205,8 @@ package body WNM.GUI.Menu.Projects is
    procedure On_Pushed
      (This  : in out Instance)
    is
-      --  pragma Unreferenced (This);
    begin
       This.Item := Menu_Items'First;
-      --  Menu.System_Info.Push_Window;
    end On_Pushed;
 
    -------------
@@ -351,7 +353,7 @@ package body WNM.GUI.Menu.Projects is
                         New_State := Idle;
                      end if;
 
-                  when Clear_Project =>
+                  when New_Project =>
                      New_State := Idle;
 
                end case;
@@ -396,7 +398,7 @@ package body WNM.GUI.Menu.Projects is
                      Do_Delete (Project_Select.Selected);
                      New_State := Idle;
 
-                  when Clear_Project =>
+                  when New_Project =>
                      Project.Clear;
                      New_State := Idle;
                      Menu.Exit_Menu;

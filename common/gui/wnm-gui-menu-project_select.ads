@@ -23,13 +23,15 @@ with WNM.Project.Library; use WNM.Project.Library;
 
 package WNM.GUI.Menu.Project_Select is
 
-   procedure Push_Window;
+   procedure Push_Window (Show_Empty : Boolean := True);
 
    function Selected return Valid_Prj_Index;
 
 private
 
-   type Project_Select_Window is new Menu_Window with null record;
+   type Project_Select_Window is new Menu_Window with record
+      Show_Empty : Boolean := True;
+   end record;
 
    overriding
    procedure Draw (This : in out Project_Select_Window);

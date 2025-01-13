@@ -36,6 +36,9 @@ package WNM.Project.Library is
 
    function Entry_Name (Index : Valid_Prj_Index) return Prj_Entry_Name;
 
+   function Find_Prev_Available (Index : Valid_Prj_Index) return Prj_Index;
+   function Find_Next_Available (Index : Valid_Prj_Index) return Prj_Index;
+
    procedure Rename (Index : Valid_Prj_Index; Name : String);
 
    procedure Delete (Index : Valid_Prj_Index);

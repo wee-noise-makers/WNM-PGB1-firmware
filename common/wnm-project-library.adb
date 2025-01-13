@@ -93,6 +93,52 @@ package body WNM.Project.Library is
       end if;
    end Entry_Name;
 
+   -------------------------
+   -- Find_Prev_Available --
+   -------------------------
+
+   function Find_Prev_Available (Index : Valid_Prj_Index) return Prj_Index is
+      Candidate : Valid_Prj_Index;
+   begin
+      if Index = Valid_Prj_Index'First then
+         return Invalid_Prj_Entry;
+      end if;
+
+      Candidate := Index - 1;
+      loop
+         if Has_Project (Candidate) then
+            return Candidate;
+         elsif Candidate = Valid_Prj_Index'First then
+            return Invalid_Prj_Entry;
+         else
+            Candidate := Candidate - 1;
+         end if;
+      end loop;
+   end Find_Prev_Available;
+
+   -------------------------
+   -- Find_Next_Available --
+   -------------------------
+
+   function Find_Next_Available (Index : Valid_Prj_Index) return Prj_Index is
+      Candidate : Valid_Prj_Index;
+   begin
+      if Index = Valid_Prj_Index'Last then
+         return Invalid_Prj_Entry;
+      end if;
+
+      Candidate := Index + 1;
+      loop
+         if Has_Project (Candidate) then
+            return Candidate;
+         elsif Candidate = Valid_Prj_Index'Last then
+            return Invalid_Prj_Entry;
+         else
+            Candidate := Candidate + 1;
+         end if;
+      end loop;
+   end Find_Next_Available;
+
    ------------
    -- Rename --
    ------------

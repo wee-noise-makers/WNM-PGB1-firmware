@@ -1043,7 +1043,10 @@ package body WNM.GUI.Menu.Drawing is
    -- Draw_Project_Select --
    -------------------------
 
-   procedure Draw_Project_Select (Val : Project.Library.Valid_Prj_Index) is
+   procedure Draw_Project_Select
+     (Val        : Project.Library.Valid_Prj_Index;
+      Show_Empty : Boolean := True)
+   is
       use Project.Library;
 
       X : Integer;
@@ -1054,13 +1057,31 @@ package body WNM.GUI.Menu.Drawing is
          return Num (Num'First + 1 .. Num'Last) & " " & Entry_Name (Val);
       end Display_Text;
 
+      Prev, Next : Project.Library.Prj_Index := Invalid_Prj_Entry;
+
    begin
 
       if Val /= Valid_Prj_Index'First then
+         if not Show_Empty then
+            Prev := Project.Library.Find_Prev_Available (Val);
+         else
+            Prev := Val - 1;
+         end if;
+      end if;
+
+      if Val /= Valid_Prj_Index'Last then
+         if not Show_Empty then
+            Next := Project.Library.Find_Next_Available (Val);
+         else
+            Next := Val + 1;
+         end if;
+      end if;
+
+      if Prev /= Invalid_Prj_Entry then
          X := Box_Left + 2;
          Print (X_Offset => X,
                 Y_Offset => Value_Text_Y - 23,
-                Str      => Display_Text (Val - 1));
+                Str      => Display_Text (Prev));
       end if;
 
       X := Box_Left + 2;
@@ -1070,11 +1091,11 @@ package body WNM.GUI.Menu.Drawing is
              Invert_From => Box_Left,
              Invert_To   => Box_Right);
 
-      if Val /= Valid_Prj_Index'Last then
+      if Next /= Invalid_Prj_Entry then
          X := Box_Left + 2;
          Print (X_Offset => X,
                 Y_Offset => Value_Text_Y + 1,
-                Str      => Display_Text (Val + 1));
+                Str      => Display_Text (Next));
       end if;
    end Draw_Project_Select;
 

@@ -27,7 +27,7 @@ private
 
    type Menu_Items is (Save_Project,
                        Load_Project,
-                       Clear_Project,
+                       New_Project,
                        Rename_Project,
                        Delete_Project);
 
