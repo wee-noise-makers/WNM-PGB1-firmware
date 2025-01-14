@@ -153,8 +153,9 @@ package body WNM.GUI.Menu.Drawing is
 
       if Count > 0 then
          declare
-            Item_width   : constant := 7;
-            Item_Spacing : constant := Item_width + 2;
+            Item_width   : constant Natural :=
+              Natural'Min ((Box_Width / (Count + 2)) - 1, 15);
+            Item_Spacing : constant Natural := Item_width + 2;
             X_Offset : constant Natural :=
               (Screen.Width - Count * Item_Spacing) / 2;
          begin
