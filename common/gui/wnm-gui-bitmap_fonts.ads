@@ -26,6 +26,11 @@ package WNM.GUI.Bitmap_Fonts is
    Width : constant := 6;
    Height : constant := 8;
 
+   Arrow_Up    : constant Character := Character'Val (127);
+   Arrow_Down  : constant Character := Character'Val (128);
+   Arrow_Left  : constant Character := Character'Val (129);
+   Arrow_Right : constant Character := Character'Val (130);
+
    procedure Print (X_Offset    : in out Integer;
                     Y_Offset    : Integer;
                     C           : Character;

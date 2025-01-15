@@ -591,7 +591,9 @@ package WNM.Project is
        when Alt_Sld_Shuffle       => Shuffle);
 
    function Alt_Slider_Target return Alt_Slider_Control;
-   function Alt_Slider_Target_Img return String;
+   function Alt_Slider_Value return MIDI.MIDI_Data;
+   function Alt_Slider_Target_Label return String;
+
    function Alt_Slider_Track return Tracks;
 
    procedure Alt_Slider_Set (Val : WNM_HAL.Touch_Value);

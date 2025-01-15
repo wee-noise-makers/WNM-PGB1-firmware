@@ -1931,25 +1931,50 @@ package body WNM.Project is
    function Alt_Slider_Target return Alt_Slider_Control
    is (G_Project.Alt_Slider_Target);
 
+   ----------------------
+   -- Alt_Slider_Value --
+   ----------------------
+
+   function Alt_Slider_Value return MIDI.MIDI_Data is
+      use MIDI;
+      T : constant Tracks := G_Project.Alt_Slider_Track;
+   begin
+      return
+        (case Alt_Slider_Target is
+            when Alt_Sld_CC_Default_A  => CC_Default (T, A),
+            when Alt_Sld_CC_Default_B  => CC_Default (T, B),
+            when Alt_Sld_CC_Default_C  => CC_Default (T, C),
+            when Alt_Sld_CC_Default_D  => CC_Default (T, D),
+            when Alt_Sld_LFO_Rate      => LFO_Rate (T),
+            when Alt_Sld_LFO_Amplitude => LFO_Amp (T),
+            when Alt_Sld_Volume        => MIDI.MIDI_Data (Track_Volume (T)),
+            when Alt_Sld_Pan           => MIDI.MIDI_Data (Track_Pan (T)),
+            when Alt_Sld_Shuffle       =>
+              50 + MIDI.MIDI_Data (Track_Shuffle (T)) / 2
+        );
+   end Alt_Slider_Value;
+
    ---------------------------
    -- Alt_Slider_Target_Img --
    ---------------------------
 
-   function Alt_Slider_Target_Img return String is
+   function Alt_Slider_Target_Label return String is
       T : constant Tracks := G_Project.Alt_Slider_Track;
    begin
-      case Alt_Slider_Target is
-         when Alt_Sld_CC_Default_A  => return CC_Controller_Label (T, A);
-         when Alt_Sld_CC_Default_B  => return CC_Controller_Label (T, B);
-         when Alt_Sld_CC_Default_C  => return CC_Controller_Label (T, C);
-         when Alt_Sld_CC_Default_D  => return CC_Controller_Label (T, D);
-         when Alt_Sld_LFO_Rate      => return "LFO Rate";
-         when Alt_Sld_LFO_Amplitude => return "LFO Amplitude";
-         when Alt_Sld_Volume        => return "Volume";
-         when Alt_Sld_Pan           => return "Pan";
-         when Alt_Sld_Shuffle       => return "Shuffle";
-      end case;
-   end Alt_Slider_Target_Img;
+      return Utils.Trim
+        (
+         case Alt_Slider_Target is
+            when Alt_Sld_CC_Default_A  => CC_Controller_Label (T, A),
+            when Alt_Sld_CC_Default_B  => CC_Controller_Label (T, B),
+            when Alt_Sld_CC_Default_C  => CC_Controller_Label (T, C),
+            when Alt_Sld_CC_Default_D  => CC_Controller_Label (T, D),
+            when Alt_Sld_LFO_Rate      => "LFO Rate",
+            when Alt_Sld_LFO_Amplitude => "LFO Amp",
+            when Alt_Sld_Volume        => "Volume",
+            when Alt_Sld_Pan           => "Pan",
+            when Alt_Sld_Shuffle       => "Shuffle"
+        );
+   end Alt_Slider_Target_Label;
 
    ----------------------
    -- Alt_Slider_Track --
@@ -1963,12 +1988,10 @@ package body WNM.Project is
    --------------------
 
    procedure Alt_Slider_Set (Val : WNM_HAL.Touch_Value) is
+      S : constant User_Track_Settings :=
+        To_Track_Setting (G_Project.Alt_Slider_Target);
    begin
-      Set (G_Project.Alt_Slider_Track,
-           To_Track_Setting (G_Project.Alt_Slider_Target),
-           Val);
-
-      Synchronize_Synth_Setting (G_Project.Alt_Slider_Track, CC_Default_A);
+      Set (G_Project.Alt_Slider_Track, S, Val);
    end Alt_Slider_Set;
 
    ----------------------------

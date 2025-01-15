@@ -156,4 +156,6 @@ package WNM.GUI.Menu.Drawing is
 
    procedure Draw_Battery (Step : HAL.UInt32);
 
+   procedure Draw_Alt_Slider;
+
 end WNM.GUI.Menu.Drawing;

@@ -107,19 +107,7 @@ package body WNM.GUI.Update is
                    Y_Offset => Box_Top,
                    Str      => "FX/Copy");
 
-            B := 1;
-            declare
-               T : constant Tracks := WNM.Project.Alt_Slider_Track;
-               Name : constant String := WNM.Project.Track_Name (T);
-            begin
-               Print (X_Offset => B,
-                      Y_Offset => Box_Top + 12,
-                      Str      => Name & "(" & Img (T) & ")");
-            end;
-            B := 1;
-            Print (X_Offset => B,
-                   Y_Offset => Box_Top + 22,
-                   Str      => "Ctrl: " & WNM.Project.Alt_Slider_Target_Img);
+            Draw_Alt_Slider;
 
          when WNM.UI.Copy =>
             declare

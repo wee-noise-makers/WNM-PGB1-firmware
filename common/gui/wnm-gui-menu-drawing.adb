@@ -1434,4 +1434,33 @@ package body WNM.GUI.Menu.Drawing is
       end if;
    end Draw_Battery;
 
+   ---------------------
+   -- Draw_Alt_Slider --
+   ---------------------
+
+   procedure Draw_Alt_Slider is
+      T : constant Tracks := WNM.Project.Alt_Slider_Track;
+      Name : constant String := WNM.Project.Track_Name (T);
+
+      Text_Bottom : constant := Box_Bottom - 7;
+   begin
+      Draw_Str_Center
+        (Text_Bottom - Bitmap_Fonts.Height * 2,
+         Str      =>
+           Arrow_Left & " "  & Name & "(" & Utils.Trim (T'Img) & ") " &
+           Arrow_Right);
+
+      Draw_Str_Center
+        (Text_Bottom - Bitmap_Fonts.Height * 1,
+         Str      => Arrow_Up & " " &
+           WNM.Project.Alt_Slider_Target_Label & " " & Arrow_Down);
+
+      for Cnt in 1 .. 5 loop
+         Screen.Draw_Line
+           ((0, Box_Bottom - Cnt),
+            (Natural (WNM.Project.Alt_Slider_Value), Box_Bottom - Cnt));
+      end loop;
+
+   end Draw_Alt_Slider;
+
 end WNM.GUI.Menu.Drawing;
