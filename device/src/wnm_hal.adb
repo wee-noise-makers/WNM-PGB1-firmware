@@ -40,6 +40,7 @@ with RP.ROM;
 with RP.PIO;
 with RP.ADC;
 with RP.Clock;
+with RP.PIO.Touch_Sense;
 --  with RP.Watchdog;
 with RP2040_SVD.Interrupts;
 
@@ -1088,7 +1089,8 @@ begin
    Touch_Sensor_1.Initialize
      (ASM_Offset =>
         Noise_Nugget_SDK.Audio.
-          PIO_I2S_ASM.Audio_I2s_Program_Instructions'Length);
+          PIO_I2S_ASM.Audio_I2s_Program_Instructions'Length,
+      Mode => RP.PIO.Touch_Sense.Charge);
    --  Touch_Sensor_1.Set_Alpha (0.03);
 
    Touch_PIO.Clear_FIFOs (Touch_SM_2);
@@ -1096,7 +1098,8 @@ begin
    Touch_Sensor_2.Initialize
      (ASM_Offset =>
         Noise_Nugget_SDK.Audio.
-          PIO_I2S_ASM.Audio_I2s_Program_Instructions'Length);
+          PIO_I2S_ASM.Audio_I2s_Program_Instructions'Length,
+      Mode => RP.PIO.Touch_Sense.Charge);
    --  Touch_Sensor_2.Set_Alpha (0.03);
 
    Touch_PIO.Clear_FIFOs (Touch_SM_3);
@@ -1104,7 +1107,8 @@ begin
    Touch_Sensor_3.Initialize
      (ASM_Offset =>
         Noise_Nugget_SDK.Audio.
-          PIO_I2S_ASM.Audio_I2s_Program_Instructions'Length);
+          PIO_I2S_ASM.Audio_I2s_Program_Instructions'Length,
+      Mode => RP.PIO.Touch_Sense.Charge);
    --  Touch_Sensor_3.Set_Alpha (0.03);
 
    RP.ADC.Enable;

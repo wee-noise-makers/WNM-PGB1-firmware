@@ -45,9 +45,9 @@ package WNM.Persistent is
       Headset_Mic_Mute    => True,
       ADC_Volume          => Init_Input_Volume,
       Input_FX            => FX_Kind'First,
-      TP1_Threshold       => 1250,
-      TP2_Threshold       => 1500,
-      TP3_Threshold       => 1250);
+      TP1_Threshold       => 700,
+      TP2_Threshold       => 800,
+      TP3_Threshold       => 730);
 
    Data : Persistent_Data := Default;
 
