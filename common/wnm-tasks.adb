@@ -45,7 +45,7 @@ package body WNM.Tasks is
 
    Systick_Count : UInt32 := 0;
    UI_Period_Miliseconds  : constant := 20;
-   LED_Period_Miliseconds : constant := 100;
+   LED_Period_Miliseconds : constant := 30;
    HP_Detect_Period_Miliseconds : constant := 250;
    Rand_Update_Period : Rand_Percent := 0;
 

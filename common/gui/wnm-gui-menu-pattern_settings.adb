@@ -22,6 +22,7 @@
 with HAL; use HAL;
 
 with WNM.Project; use WNM.Project;
+with WNM.Project.Step_Sequencer;
 with WNM.Screen;
 
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
@@ -53,6 +54,45 @@ package body WNM.GUI.Menu.Pattern_Settings is
           when Length   => Only_This,
           when Has_Link => Only_This);
 
+   ---------------
+   -- Draw_Icon --
+   ---------------
+
+   procedure Draw_Icon (P        : Patterns;
+                        Selected : Boolean;
+                        Playing  : Boolean;
+                        Link     : Boolean)
+   is
+      Rect_Size : constant := 6;
+      Space : constant := 4;
+      Top : constant := Drawing.Box_Top + Space;
+      Left : constant := Drawing.Box_Right - 8 * (Rect_Size + Space);
+
+      X : constant Integer := Left +
+        (if P < 9
+         then (Integer (P) - 1)
+         else (Integer (P) - 9)) * (Rect_Size + Space);
+
+      Y : constant Integer := Top +
+        (if P < 9 then 0 else Rect_Size + Space);
+   begin
+
+      if Playing and then Update.Anim_Step mod 14 > 7 then
+         Screen.Fill_Rect (((X, Y), Rect_Size, Rect_Size));
+      else
+         Screen.Draw_Rect (((X, Y), Rect_Size, Rect_Size));
+      end if;
+
+      if Selected then
+         Screen.Draw_Rect (((X - 1, Y - 1), Rect_Size + 2, Rect_Size + 2));
+      end if;
+
+      if Link then
+         Screen.Fill_Rect (((X + Rect_Size, Y + 1),
+                           Space, Rect_Size - 2));
+      end if;
+   end Draw_Icon;
+
    ----------
    -- Draw --
    ----------
@@ -62,7 +102,9 @@ package body WNM.GUI.Menu.Pattern_Settings is
    is
       Sub : constant Sub_Settings := This.Current_Setting;
       Top : constant Top_Settings := To_Top (Sub);
+      T  : constant Tracks := Project.Editing_Track;
       EP : constant Patterns := Project.Editing_Pattern;
+      PP : constant Patterns := Project.Step_Sequencer.Playing_Step (T).P;
    begin
       Draw_Menu_Box ("Pattern settings",
                      Count => Top_Settings_Count,
@@ -89,30 +131,7 @@ package body WNM.GUI.Menu.Pattern_Settings is
       end case;
 
       for P in Patterns loop
-         declare
-            Rect_Size : constant := 6;
-            Space : constant := 4;
-            Top : constant := Drawing.Box_Top + Space;
-            Left : constant := Drawing.Box_Right - 8 * (Rect_Size + Space);
-
-            X : constant Integer := Left +
-              (if P < 9
-               then (Integer (P) - 1)
-               else (Integer (P) - 9)) * (Rect_Size + Space);
-
-            Y : constant Integer := Top +
-              (if P < 9 then 0 else Rect_Size + Space);
-         begin
-            if P = EP and then Update.Anim_Step mod 14 < 7 then
-               Screen.Fill_Rect (((X, Y), Rect_Size, Rect_Size));
-            else
-               Screen.Draw_Rect (((X, Y), Rect_Size, Rect_Size));
-            end if;
-            if Project.Link (P => P) then
-               Screen.Fill_Rect (((X + Rect_Size, Y + 1),
-                                 Space, Rect_Size - 2));
-            end if;
-         end;
+         Draw_Icon (P, P = EP, P = PP, Project.Link (P => P));
       end loop;
 
    end Draw;

@@ -41,6 +41,7 @@ package WNM.LEDs is
    Play         : constant Hue := Green;
    Recording    : constant Hue := Red;
    Step         : constant Hue := Magenta;
+   Step_Select  : constant Hue := Azure;
    Track        : constant Hue := Azure;
    Pattern      : constant Hue := Blue;
    Pattern_Link : constant Hue := Azure;
