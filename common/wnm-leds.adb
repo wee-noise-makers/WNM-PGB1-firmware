@@ -19,9 +19,27 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with WNM.Persistent;
+
 package body WNM.LEDs is
 
    G_Color : RGB_Rec := (255, 255, 255);
+
+   ------------
+   -- Dimmed --
+   ------------
+
+   function Dimmed (H : Hue) return RGB_Rec is
+      C : constant RGB_Rec := Hue_To_RGB (H);
+   begin
+      return
+        (case WNM.Persistent.Data.LED_Brightness is
+          when 5 => C,
+          when 4 => (C.R / 2, C.G / 2, C.B / 2),
+          when 3 => (C.R / 4, C.G / 4, C.B / 4),
+          when 2 => (C.R / 8, C.G / 8, C.B / 8),
+          when 1 => (C.R / 16, C.G / 16, C.B / 16));
+   end Dimmed;
 
    -------------
    -- Set_Hue --
@@ -29,7 +47,7 @@ package body WNM.LEDs is
 
    procedure Set_Hue (H : Hue) is
    begin
-      G_Color := Hue_To_RGB (H);
+      G_Color := Dimmed (H);
    end Set_Hue;
 
    -------------
@@ -47,7 +65,7 @@ package body WNM.LEDs is
 
    procedure Turn_On (B : LED; H : Hue) is
    begin
-      Set (B, Hue_To_RGB (H));
+      Set (B, Dimmed (H));
    end Turn_On;
 
    --------------

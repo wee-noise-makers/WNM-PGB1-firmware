@@ -19,10 +19,14 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with HAL; use HAL;
+
 package WNM.LEDs is
 
+   type Brightness is range 1 .. 5;
+
    type Hue is (Red, Rose, Magenta, Violet, Blue, Azure, Cyan, Spring_Green,
-                Green, Chartreuse, Yellow, Orange);
+                Green, Dim_Green, Chartreuse, Yellow, Orange);
 
    Hue_To_RGB : constant array (Hue) of RGB_Rec :=
      (Red          => (255, 000, 000),
@@ -34,19 +38,21 @@ package WNM.LEDs is
       Cyan         => (000, 255, 255),
       Spring_Green => (000, 255, 128),
       Green        => (000, 255, 000),
+      Dim_Green    => (000, 255 / 4, 000),
       Chartreuse   => (128, 255, 000),
       Yellow       => (255, 255, 000),
       Orange       => (255, 128, 000));
 
    Play         : constant Hue := Green;
+   Playing      : constant Hue := Dim_Green;
    Recording    : constant Hue := Red;
    Step         : constant Hue := Magenta;
-   Step_Select  : constant Hue := Azure;
+   Active_Step  : constant Hue := Play;
    Track        : constant Hue := Azure;
    Pattern      : constant Hue := Blue;
    Pattern_Link : constant Hue := Azure;
    Chord        : constant Hue := Orange;
-   Part         : constant Hue := Chartreuse;
+   Part         : constant Hue := Yellow;
    FX           : constant Hue := Violet;
 
    procedure Set_Hue (H : Hue);

@@ -21,8 +21,10 @@
 
 with WNM.Project.Library;
 with HAL;
+with WNM.LEDs;
 
 package WNM.Persistent is
+   use type WNM.LEDs.Brightness;
 
    type Persistent_Data is record
       Last_Project        : WNM.Project.Library.Valid_Prj_Index;
@@ -35,6 +37,7 @@ package WNM.Persistent is
       TP1_Threshold       : HAL.UInt32;
       TP2_Threshold       : HAL.UInt32;
       TP3_Threshold       : HAL.UInt32;
+      LED_Brightness      : WNM.LEDs.Brightness;
    end record;
 
    Default : constant Persistent_Data :=
@@ -47,7 +50,8 @@ package WNM.Persistent is
       Input_FX            => FX_Kind'First,
       TP1_Threshold       => 700,
       TP2_Threshold       => 800,
-      TP3_Threshold       => 730);
+      TP3_Threshold       => 730,
+      LED_Brightness      => WNM.LEDs.Brightness'Last - 1);
 
    Data : Persistent_Data := Default;
 

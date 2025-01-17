@@ -28,6 +28,7 @@ with WNM.Mixer;
 with WNM.Project.Library;
 with WNM.Persistent;
 with WNM.Screen;
+with WNM.LEDs;
 
 package body WNM.GUI.Menu.System_Info is
 
@@ -60,6 +61,10 @@ package body WNM.GUI.Menu.System_Info is
             Drawing.Draw_Lines_Center
               (Drawing.Box_Top + 13,
                WNM_HAL.Firmware_Version);
+
+         when LED_Brightness =>
+            Drawing.Draw_Title ("LED Brightness", "");
+            Drawing.Draw_Value (WNM.Persistent.Data.LED_Brightness'Img);
 
          when Synth_CPU_Load =>
             Drawing.Draw_Title ("Synth CPU Load", "");
@@ -160,6 +165,9 @@ package body WNM.GUI.Menu.System_Info is
    procedure On_Event (This  : in out Instance;
                        Event : Menu_Event)
    is
+      package LED_Dim_Next is new Enum_Next (WNM.LEDs.Brightness);
+      use LED_Dim_Next;
+
       use HAL;
 
    begin
@@ -198,6 +206,22 @@ package body WNM.GUI.Menu.System_Info is
             Next (This.K);
          when Left_Press =>
             Prev (This.K);
+
+         when Up_Press =>
+            case This.K is
+               when LED_Brightness =>
+                  Next (WNM.Persistent.Data.LED_Brightness);
+               when others =>
+                  null;
+            end case;
+
+         when Down_Press =>
+            case This.K is
+               when LED_Brightness =>
+                  Prev (WNM.Persistent.Data.LED_Brightness);
+               when others =>
+                  null;
+            end case;
 
          when others =>
             null;
