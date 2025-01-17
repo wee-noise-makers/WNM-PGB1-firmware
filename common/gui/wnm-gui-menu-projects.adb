@@ -166,7 +166,7 @@ package body WNM.GUI.Menu.Projects is
                   This.State := Select_Project;
 
                when New_Project =>
-                  Yes_No_Dialog.Set_Title ("Clear current?");
+                  Yes_No_Dialog.Set_Title ("Discard current?");
                   Yes_No_Dialog.Push_Window;
                   This.State := Confirm;
             end case;
