@@ -662,6 +662,7 @@ package body WNM.UI is
       Beat_Step : constant Boolean :=
         WNM.MIDI_Clock.Step in 1 .. 12 | 24 .. 36;
 
+      Select_Blink : constant Boolean := Anim_Step mod 6 < 2;
    begin
       Anim_Step := Anim_Step + 1;
 
@@ -673,18 +674,13 @@ package body WNM.UI is
       end if;
 
       -- Play LED --
-      if WNM.MIDI_Clock.Running  then
-         --  LEDs.Turn_On (Play);
-
-         if Beat_Step then
-            LEDs.Turn_On (Play, LEDs.Play);
-         end if;
+      if WNM.MIDI_Clock.Running and then Beat_Step then
+         LEDs.Turn_On (Play, LEDs.Play);
       end if;
 
       --  The FX LED is on if there's at least one FX enabled
-      LEDs.Set_Hue (LEDs.FX);
       if Some_FX_On then
-         LEDs.Turn_On (Func);
+         LEDs.Turn_On (Func, LEDs.FX);
       end if;
 
       --  B1 .. B16 LEDs --
@@ -826,7 +822,7 @@ package body WNM.UI is
                         LEDs.Turn_On
                           (To_Button
                              (Project.Step_Sequencer.Playing_Step (T).P),
-                           LEDs.Play);
+                           LEDs.Playing);
                      end if;
                   end if;
 
@@ -840,15 +836,16 @@ package body WNM.UI is
                   LEDs.Set_Hue (LEDs.Chord);
                end case;
 
+               --  Blink selected song part
                LEDs.Turn_On (Song_Button);
                LEDs.Turn_On (To_Button (Project.Editing_Song_Elt));
 
-               --  Blinking playing Chord
+               --  Blinking playing part
                if WNM.MIDI_Clock.Running then
                   if Beat_Step then
                      LEDs.Turn_On
                        (To_Button (Project.Song_Part_Sequencer.Playing),
-                        LEDs.Violet);
+                        LEDs.Playing);
                   end if;
                end if;
 
@@ -868,20 +865,29 @@ package body WNM.UI is
                   end loop;
                else
 
-                  for B in Keyboard_Button loop
-                     declare
-                        Track : constant Tracks := To_Value (B);
-                        PH    : constant Project.Playhead :=
-                          Project.Step_Sequencer.Playing_Step (Track);
-                     begin
-                        if not Track_Muted (Track)
-                          and then
-                           Project.Set (Track, PH)
-                        then
-                           LEDs.Turn_On (B);
-                        end if;
-                     end;
-                  end loop;
+                  --  Selected track
+                  LEDs.Turn_On (To_Button (Project.Editing_Track),
+                                LEDs.Track);
+
+                  --  Triggered tracks
+                  if WNM.MIDI_Clock.Running then
+                     LEDs.Set_Hue (LEDs.Playing);
+                     for B in Keyboard_Button loop
+                        declare
+                           Track : constant Tracks := To_Value (B);
+                           PH    : constant Project.Playhead :=
+                             Project.Step_Sequencer.Playing_Step (Track);
+                        begin
+                           if not Track_Muted (Track)
+                             and then
+                               Project.Set (Track, PH)
+                           then
+                              LEDs.Turn_On (B);
+                           end if;
+                        end;
+                     end loop;
+                  end if;
+
                end if;
 
             when Step_Mode =>
@@ -891,6 +897,8 @@ package body WNM.UI is
                if Recording then
                   --  Red means editing
                   LEDs.Set_Hue (LEDs.Recording);
+               else
+                  LEDs.Set_Hue (LEDs.Active_Step);
                end if;
 
                --  Active steps
@@ -900,10 +908,15 @@ package body WNM.UI is
                   end if;
                end loop;
 
-               --  Blink Selected step
-               if Anim_Step mod 3 < 1 then
+               if Project.Set (Step => Project.Editing_Step) then
+                  if Select_Blink then
+                     --  Blink Selected step
+                     LEDs.Turn_On (To_Button (Project.Editing_Step),
+                                   LEDs.Step);
+                  end if;
+               else
                   LEDs.Turn_On (To_Button (Project.Editing_Step),
-                                LEDs.Step_Select);
+                                LEDs.Step);
                end if;
 
                --  Playing step
@@ -924,7 +937,7 @@ package body WNM.UI is
                   then
                      LEDs.Turn_On
                        (To_Button (Keyboard_Value (PH.Steps_Count)),
-                        LEDs.Play);
+                        LEDs.Playing);
                   end if;
                end;
 
