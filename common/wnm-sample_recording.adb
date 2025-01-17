@@ -105,7 +105,8 @@ package body WNM.Sample_Recording is
       Buffer : WNM_HAL.Mono_Buffer;
 
       First : constant Sample_Point_Index := Sample_Point_Index'First;
-      Last  : constant Sample_Point_Index := First + Entry_Len (Id);
+      Len   : constant Sample_Point_Count := Entry_Len (Id);
+      Last  : constant Sample_Point_Index := First + Len - 1;
 
       Buff_Idx : Natural;
    begin

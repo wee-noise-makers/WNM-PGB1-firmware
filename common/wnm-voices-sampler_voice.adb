@@ -395,35 +395,37 @@ package body WNM.Voices.Sampler_Voice is
          Sample_Point : S32;
       begin
 
-         loop
-            exit when Out_Index > Buffer'Last;
+         if Sample_Len > 0 then
+            loop
+               exit when Out_Index > Buffer'Last;
 
-            P := Shift_Right (This.Phase, Phase_Frac_Bits);
+               P := Shift_Right (This.Phase, Phase_Frac_Bits);
 
-            exit when P > Sample_Len - 1;
+               exit when P > Sample_Len - 1;
 
-            --  Interpolation between two sample points
-            declare
-               V : constant S32 :=
-                 S32 (Shift_Right
-                      (This.Phase, Phase_Frac_Bits - 15) and 16#7FFF#);
+               --  Interpolation between two sample points
+               declare
+                  V : constant S32 :=
+                    S32 (Shift_Right
+                         (This.Phase, Phase_Frac_Bits - 15) and 16#7FFF#);
 
-               A : constant S32 := S32 (Points (Sample_Point_Index (P)));
-               B : constant S32 := S32 (Points (Sample_Point_Index (P) + 1));
-            begin
-               Sample_Point := A + ((B - A) * V) / 2**15;
-            end;
+                  A : constant S32 := S32 (Points (Sample_Point_Index (P)));
+                  B : constant S32 := S32 (Points (Sample_Point_Index (P) + 1));
+               begin
+                  Sample_Point := A + ((B - A) * V) / 2**15;
+               end;
 
-            This.Phase := This.Phase + This.Phase_Increment;
+               This.Phase := This.Phase + This.Phase_Increment;
 
-            --  Amplitude envelope
-            Render (This.Env);
-            Sample_Point := (Sample_Point * Low_Pass (This.Env)) / 2**15;
+               --  Amplitude envelope
+               Render (This.Env);
+               Sample_Point := (Sample_Point * Low_Pass (This.Env)) / 2**15;
 
-            Buffer (Out_Index) := S16 (Sample_Point);
+               Buffer (Out_Index) := S16 (Sample_Point);
 
-            Out_Index := Out_Index + 1;
-         end loop;
+               Out_Index := Out_Index + 1;
+            end loop;
+         end if;
 
          --  Fill remaining point, if any...
          Buffer (Out_Index .. Buffer'Last) := (others => 0);
@@ -479,35 +481,43 @@ package body WNM.Voices.Sampler_Voice is
       Sample_Len : constant U32 := U32 (WNM.Sample_Recording.Recorded_Length);
       P : U32;
    begin
-      loop
 
-         P := Shift_Right (This.Phase, Phase_Frac_Bits);
-         This.On := P <= Sample_Len - 1;
+      if Sample_Len > 0 then
+         loop
 
-         exit when not This.On or else Out_Index > Buffer'Last;
+            P := Shift_Right (This.Phase, Phase_Frac_Bits);
+            This.On := P <= Sample_Len - 1;
 
-         --  Interpolation between two sample points
-         declare
-            V : constant S32 :=
-              S32 (Shift_Right
-                   (This.Phase, Phase_Frac_Bits - 15) and 16#7FFF#);
+            exit when
+                not This.On
+              or else
+                Out_Index > Buffer'Last
+              or else
+                P > Sample_Len - 1;
 
-            A : constant S32 :=
-              S32 (Sample_Recording.Get_Point (This.Cache,
-                   Sample_Point_Index (P)));
-            B : constant S32 :=
-              S32 (Sample_Recording.Get_Point (This.Cache,
-                   Sample_Point_Index (P) + 1));
-         begin
-            Sample_Point := A + ((B - A) * V) / 2**15;
-         end;
+            --  Interpolation between two sample points
+            declare
+               V : constant S32 :=
+                 S32 (Shift_Right
+                      (This.Phase, Phase_Frac_Bits - 15) and 16#7FFF#);
 
-         This.Phase := This.Phase + This.Phase_Increment;
+               A : constant S32 :=
+                 S32 (Sample_Recording.Get_Point (This.Cache,
+                      Sample_Point_Index (P)));
+               B : constant S32 :=
+                 S32 (Sample_Recording.Get_Point (This.Cache,
+                      Sample_Point_Index (P) + 1));
+            begin
+               Sample_Point := A + ((B - A) * V) / 2**15;
+            end;
 
-         Buffer (Out_Index) := S16 (Sample_Point);
+            This.Phase := This.Phase + This.Phase_Increment;
 
-         Out_Index := Out_Index + 1;
-      end loop;
+            Buffer (Out_Index) := S16 (Sample_Point);
+
+            Out_Index := Out_Index + 1;
+         end loop;
+      end if;
 
       --  Fill remaining point, if any...
       Buffer (Out_Index .. Buffer'Last) := (others => 0);
