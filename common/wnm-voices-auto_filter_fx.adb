@@ -19,16 +19,13 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Ada.Text_IO; use Ada.Text_IO;
-
 with Tresses.Filters.SVF; use Tresses.Filters.SVF;
-with Tresses.Envelopes.AR; use Tresses.Envelopes.AR;
 with Tresses.LFO; use Tresses.LFO;
 
 package body WNM.Voices.Auto_Filter_FX is
 
    Low_Pass_Cutoff : constant Param_Range :=
-     Param_Range (MIDI_Pitch (MIDI.C3));
+     Param_Range (MIDI_Pitch (MIDI.C4));
 
    Band_Pass_Cutoff : constant Param_Range :=
      Param_Range (MIDI_Pitch (MIDI.C4));
