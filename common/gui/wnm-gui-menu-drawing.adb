@@ -703,14 +703,14 @@ package body WNM.GUI.Menu.Drawing is
          Screen.Copy_Bitmap
            (lfo_sync.Data,
             Bar_Left,
-            Value_Text_Y - 2);
+            Value_Text_Y - 3);
       end if;
 
       if Loo = On then
          Screen.Copy_Bitmap
            (lfo_loop.Data,
             Bar_Left + 5,
-            Value_Text_Y - 2);
+            Value_Text_Y - 3);
       end if;
 
       X := Bar_Left - 1;
