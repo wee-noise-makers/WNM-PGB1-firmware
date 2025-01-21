@@ -39,7 +39,7 @@ package WNM.QOA is
    Slices_Per_Frame  : constant := 8;
    --  To get smaller frames to decode
 
-   Frames_Per_Sample : constant := 564;
+   Frames_Per_Sample : constant := 410;
    --  To be able to encode a full sample of
    --  WNM.Sample_Library.Points_Per_Sample points in QOA.
 

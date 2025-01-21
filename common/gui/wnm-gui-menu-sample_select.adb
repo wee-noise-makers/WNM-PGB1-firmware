@@ -64,7 +64,7 @@ package body WNM.GUI.Menu.Sample_Select is
              Y_Offset    => Drawing.Box_Top - 5,
              Str         => Dialog_Title);
 
-      Draw_Sample_Select ((Sample => This.Index, Slice => 0));
+      Draw_Sample_Select (This.Index);
    end Draw;
 
    --------------

@@ -24,9 +24,9 @@ with HAL; use HAL;
 with WNM.Coproc;
 with WNM.Utils;
 with WNM.Speech;
-with WNM.Sample_Library;
 with WNM.UI;
 with WNM.Project_Load_Broadcast;
+with WNM.Sample_Library;
 
 package body WNM.Project is
 
@@ -503,23 +503,15 @@ package body WNM.Project is
    --------------------
 
    procedure Sample_Id_Next (CC : in out MIDI.MIDI_Data) is
+      use MIDI;
       use WNM.Sample_Library;
 
-      Id : Slice_Id := From_CC (CC);
    begin
-      if Id.Slice = Slice_Index'Last
-        or else
-          not Has_Slice (Id.Sample, Id.Slice + 1)
-      then
-         if Id.Sample /= Sample_Index'Last then
-            Id.Sample := Id.Sample + 1;
-         end if;
-
+      if CC < MIDI_Data (Sample_Index'Last) then
+         CC := CC + 1;
       else
-         Id.Slice := Id.Slice + 1;
+         CC := MIDI_Data (Sample_Index'Last);
       end if;
-
-      CC := To_CC (Id);
    end Sample_Id_Next;
 
    --------------------
@@ -527,23 +519,16 @@ package body WNM.Project is
    --------------------
 
    procedure Sample_Id_Prev (CC : in out MIDI.MIDI_Data) is
+      use MIDI;
       use WNM.Sample_Library;
-
-      Id : Slice_Id := From_CC (CC);
    begin
-      if Id.Slice = Slice_Index'First
-        or else
-          not Has_Slice (Id.Sample, Id.Slice - 1)
-      then
-         if Id.Sample /= Sample_Index'First then
-            Id.Sample := Id.Sample - 1;
-         end if;
-
+      if CC > MIDI_Data (Sample_Index'Last) then
+         CC := MIDI_Data (Sample_Index'Last);
+      elsif CC > MIDI_Data (Sample_Index'First) then
+         CC := CC - 1;
       else
-         Id.Slice := Id.Slice - 1;
+         CC := MIDI_Data (Sample_Index'First);
       end if;
-
-      CC := To_CC (Id);
    end Sample_Id_Prev;
 
    -------------
@@ -614,6 +599,7 @@ package body WNM.Project is
          --  Special case for sample section
          Sample_Id_Prev (CC);
       else
+
          if Fast then
             MIDI_Data_Next.Prev_Fast (CC);
          else

@@ -19,8 +19,6 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Ada.Unchecked_Conversion;
-
 with WNM_Configuration;
 
 with HAL;
@@ -81,7 +79,7 @@ is
      with Size => Points_Per_Sample * 16;
 
    Sample_Id_Last : constant := Samples - 1;
-   type Sample_Index is new HAL.UInt5 range 0 .. Sample_Id_Last;
+   type Sample_Index is new HAL.UInt7 range 0 .. Sample_Id_Last;
 
    subtype Sample_Entry_Name
      is String (1 .. WNM_Configuration.Storage.Sample_Name_Length);
@@ -114,23 +112,6 @@ is
 
    procedure Load (Id : Sample_Index);
    procedure Load;
-
-   type Slice_Index is new HAL.UInt2 range 0 .. 3;
-
-   function Has_Slice (Id : Sample_Index; Slice : Slice_Index)
-                       return Boolean
-   is (Slice = Slice_Index'First);
-
-   type Slice_Id is record
-      Slice : Slice_Index;
-      Sample : Sample_Index;
-   end record
-     with Pack, Size => 7;
-
-   function To_CC
-   is new Ada.Unchecked_Conversion (Slice_Id, MIDI.MIDI_Data);
-   function From_CC
-   is new Ada.Unchecked_Conversion (MIDI.MIDI_Data, Slice_Id);
 
    type Sample_Time is delta 0.01 range 0.0 .. 3.0;
 

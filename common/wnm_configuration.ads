@@ -42,7 +42,7 @@ package WNM_Configuration is
       Step_Button    => 15,
       Track_Button   => 5,
       Pattern_Button => 3,
-      Song_Button   => 2);
+      Song_Button    => 2);
 
    package Audio is
       Sample_Frequency   : constant := Tresses.Resources.SAMPLE_RATE;
@@ -66,17 +66,18 @@ package WNM_Configuration is
       Total_Sectors : constant := Total_Storage_Byte_Size / Sector_Byte_Size;
       --  That's 3072 sectors
 
-      Code_Sectors : constant := 1204;
+      Code_Sectors : constant := 256;
       Code_Byte_Size : constant := Sector_Byte_Size * Code_Sectors;
 
-      FS_Sectors : constant := 1484;
+      --  A worst case project is about 103662 bytes, that's 25.3 sectors.
+      --  Let's round it to 30 sectors for good measure. With 20 project
+      --  slots we can get up to 600 sectors for projects.
+      FS_Sectors : constant := 1792;
       FS_Byte_Size : constant := Sector_Byte_Size * FS_Sectors;
 
-      Nbr_Samples              : constant := 32;
-      Sample_Library_Sectors   : constant := 44 * Nbr_Samples;
+      Nbr_Samples              : constant := 64;
+      Sample_Library_Sectors   : constant := 32 * Nbr_Samples;
       Sample_Library_Byte_Size : constant := Sector_Byte_Size * Sample_Library_Sectors;
-      --  Comes from the required sectors to store ~2 seconds of audio in QOA
-      --  format.
 
       Code_Offset           : constant := 0;
       FS_Offset             : constant := Code_Offset + Code_Byte_Size;

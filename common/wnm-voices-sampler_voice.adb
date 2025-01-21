@@ -199,8 +199,14 @@ package body WNM.Voices.Sampler_Voice is
    procedure Set_Sample (This : in out Instance; Id : MIDI.MIDI_Data) is
       use MIDI;
 
-      New_Sample : constant Sample_Index := From_CC (Id).Sample;
+      New_Sample : Sample_Index;
    begin
+      if Id > MIDI.MIDI_Data (Sample_Index'Last) then
+         New_Sample := Sample_Index'Last;
+      else
+         New_Sample := Sample_Index (Id);
+      end if;
+
       if This.Sample_Id /= New_Sample then
          This.Sample_Id := New_Sample;
          This.Init;

@@ -1,16 +1,17 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
-sample_rate=44100
-
+sample_rate=32000
 
 waveform_picture () {
     ffmpeg -i "$1" -filter_complex "showwavespic=s=640x320:colors=black:split_channels=1" -frames:v 1 "$2"
 }
 
-# find . -name *.wav -type f -print0 | while IFS= read -r -d '' src_path; do
-for src_path in `find . -name "*.wav" -type f`; do
+rm -f normalized.wav resample.tmp
+
+find ./ -name *.wav -type f -print0 | while IFS= read -r -d '' src_path; do
+# for src_path in `find Foley_Hats -name "*.wav" -type f`; do
     rm -f normalized.wav resample.tmp
 
     echo "========= ${src_path} =========="

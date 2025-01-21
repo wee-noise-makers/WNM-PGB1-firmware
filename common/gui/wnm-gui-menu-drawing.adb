@@ -897,11 +897,16 @@ package body WNM.GUI.Menu.Drawing is
          First := B;
 
          declare
-            use MIDI;
             use Sample_Library;
-            Id : constant Slice_Id := From_CC (Val_A);
          begin
-            Draw_Sample_Select (Id);
+            if Val_A in
+              MIDI.MIDI_Data (Sample_Index'First) ..
+              MIDI.MIDI_Data (Sample_Index'Last)
+            then
+               Draw_Sample_Select (Sample_Index (Val_A));
+            else
+               Draw_Sample_Select (Sample_Index'Last);
+            end if;
          end;
 
       elsif Mode = Speech_Mode
@@ -1018,7 +1023,7 @@ package body WNM.GUI.Menu.Drawing is
    -- Draw_Sample_Select --
    ------------------------
 
-   procedure Draw_Sample_Select (Val : Sample_Library.Slice_Id) is
+   procedure Draw_Sample_Select (Val : Sample_Library.Sample_Index) is
       use Sample_Library;
 
       X : Integer;
@@ -1032,25 +1037,25 @@ package body WNM.GUI.Menu.Drawing is
 
    begin
 
-      if Val.Sample /= Sample_Index'Last then
+      if Val /= Sample_Index'Last then
          X := Box_Left + 2;
          Print (X_Offset => X,
                 Y_Offset => Value_Text_Y - 23,
-                Str      => Display_Text (Val.Sample + 1));
+                Str      => Display_Text (Val + 1));
       end if;
 
       X := Box_Left + 2;
       Print (X_Offset => X,
              Y_Offset => Value_Text_Y - 11,
-             Str      => Display_Text (Val.Sample),
+             Str      => Display_Text (Val),
              Invert_From => Box_Left,
              Invert_To   => Box_Right);
 
-      if Val.Sample /= Sample_Index'First then
+      if Val /= Sample_Index'First then
          X := Box_Left + 2;
          Print (X_Offset => X,
                 Y_Offset => Value_Text_Y + 1,
-                Str      => Display_Text (Val.Sample - 1));
+                Str      => Display_Text (Val - 1));
       end if;
    end Draw_Sample_Select;
 
