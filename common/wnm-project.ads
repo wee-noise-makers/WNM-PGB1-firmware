@@ -64,24 +64,38 @@ package WNM.Project is
 
    type Trigger_Kind is (None, Always, Fill, Not_Fill,
                          Percent_25, Percent_50, Percent_75,
-                         One_Of_Two, One_Of_Three, One_Of_Four, One_Of_Five);
+                         OO_12, OO_22,
+                         OO_13, OO_23, OO_33,
+                         OO_14, OO_24, OO_34, OO_44,
+                         OO_15, OO_25, OO_35, OO_45, OO_55);
 
    function Img (T : Trigger_Kind) return String
    is (case T is
-          when None         => "Never",
-          when Always       => "Always",
-          when Fill         => "Fill",
-          when Not_Fill     => "Not Fill",
-          when Percent_25   => "25%",
-          when Percent_50   => "50%",
-          when Percent_75   => "75%",
-          when One_Of_Two   => "1/2",
-          when One_Of_Three => "1/3",
-          when One_Of_Four  => "1/4",
-          when One_Of_Five  => "1/5");
+          when None       => "Never",
+          when Always     => "Always",
+          when Fill       => "Fill",
+          when Not_Fill   => "Not Fill",
+          when Percent_25 => "25%",
+          when Percent_50 => "50%",
+          when Percent_75 => "75%",
+          when OO_12      => "1/2",
+          when OO_22      => "2/2",
+          when OO_13      => "1/3",
+          when OO_23      => "2/3",
+          when OO_33      => "3/3",
+          when OO_14      => "1/4",
+          when OO_24      => "2/4",
+          when OO_34      => "3/4",
+          when OO_44      => "4/4",
+          when OO_15      => "1/5",
+          when OO_25      => "2/5",
+          when OO_35      => "3/5",
+          when OO_45      => "4/5",
+          when OO_55      => "5/5");
 
-   type Note_Duration is (Double, Whole, Half, Quarter, N_8th,
-                          N_16th, N_32nd);
+   type Note_Duration is (N_32nd, N_16th, N_8th,
+                          Quarter, Half, Whole, Double);
+
    function Img (D : Note_Duration) return String
    is (case D is
           when Double  => "Double",

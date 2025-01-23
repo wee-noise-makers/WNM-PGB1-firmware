@@ -19,8 +19,6 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
---  with GNAT.IO; use GNAT.IO;
-
 with MIDI;
 
 with WNM.Short_Term_Sequencer;
@@ -591,6 +589,15 @@ package body WNM.Project.Step_Sequencer is
       declare
          S : Step_Rec renames
            G_Project.Steps (Track)(Pattern)(Step);
+
+         ------------
+         -- Out_Of --
+         ------------
+
+         function Out_Of (A, B : UInt32) return Boolean
+         is (((Pattern_Counter (Track, Pattern) - 1)  mod B) = (A - 1))
+           with Inline_Always;
+
       begin
          --  --  Send CC first
          --  Process_CC_Values (Pattern, Track, Step);
@@ -614,14 +621,22 @@ package body WNM.Project.Step_Sequencer is
                   Condition := Random <= 50;
                when Percent_75 =>
                   Condition := Random <= 75;
-               when One_Of_Two =>
-                  Condition := Pattern_Counter (Track, Pattern) mod 2 = 0;
-               when One_Of_Three =>
-                  Condition := Pattern_Counter (Track, Pattern) mod 3 = 0;
-               when One_Of_Four =>
-                  Condition := Pattern_Counter (Track, Pattern) mod 4 = 0;
-               when One_Of_Five =>
-                  Condition := Pattern_Counter (Track, Pattern) mod 5 = 0;
+
+               when OO_12 => Condition := Out_Of (1, 2);
+               when OO_22 => Condition := Out_Of (2, 2);
+               when OO_13 => Condition := Out_Of (1, 3);
+               when OO_23 => Condition := Out_Of (2, 3);
+               when OO_33 => Condition := Out_Of (3, 3);
+               when OO_14 => Condition := Out_Of (1, 4);
+               when OO_24 => Condition := Out_Of (2, 4);
+               when OO_34 => Condition := Out_Of (3, 4);
+               when OO_44 => Condition := Out_Of (4, 4);
+               when OO_15 => Condition := Out_Of (1, 5);
+               when OO_25 => Condition := Out_Of (2, 5);
+               when OO_35 => Condition := Out_Of (3, 5);
+               when OO_45 => Condition := Out_Of (4, 5);
+               when OO_55 => Condition := Out_Of (5, 5);
+
             end case;
 
             --  Auto fill
