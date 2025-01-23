@@ -659,6 +659,31 @@ package body WNM.UI is
       function Track_Muted (T : Tracks) return Boolean
       is (UI.Muted (T) or else Project.Song_Part_Sequencer.Muted (T));
 
+      ---------------------
+      -- On_Playing_Step --
+      ---------------------
+
+      procedure On_Playing_Step (H : LEDs.Hue) is
+         T : constant Tracks := Project.Editing_Track;
+         PH    : constant Project.Playhead :=
+           Project.Step_Sequencer.Playing_Step (T);
+      begin
+         if WNM.MIDI_Clock.Running
+           and then
+             not Track_Muted (T)
+           and then
+             Project.Editing_Pattern = PH.P
+             and then
+               PH.Steps_Count in
+                 Natural (Keyboard_Value'First) ..
+           Natural (Keyboard_Value'Last)
+         then
+            LEDs.Turn_On
+              (To_Button (Keyboard_Value (PH.Steps_Count)),
+               H);
+         end if;
+      end On_Playing_Step;
+
       Beat_Step : constant Boolean :=
         WNM.MIDI_Clock.Step in 1 .. 12 | 24 .. 36;
 
@@ -863,6 +888,9 @@ package body WNM.UI is
                         LEDs.Turn_On (B);
                      end if;
                   end loop;
+
+                  On_Playing_Step (LEDs.Playing);
+
                else
 
                   --  Selected track
@@ -920,26 +948,7 @@ package body WNM.UI is
                end if;
 
                --  Playing step
-               declare
-                  T : constant Tracks := Project.Editing_Track;
-                  PH    : constant Project.Playhead :=
-                    Project.Step_Sequencer.Playing_Step (T);
-               begin
-                  if WNM.MIDI_Clock.Running
-                    and then
-                     not Track_Muted (T)
-                    and then
-                     Project.Editing_Pattern = PH.P
-                    and then
-                        PH.Steps_Count in
-                          Natural (Keyboard_Value'First) ..
-                          Natural (Keyboard_Value'Last)
-                  then
-                     LEDs.Turn_On
-                       (To_Button (Keyboard_Value (PH.Steps_Count)),
-                        LEDs.Playing);
-                  end if;
-               end;
+               On_Playing_Step (LEDs.Playing);
 
             when FX_Mode =>
                LEDs.Set_Hue (LEDs.Violet);
