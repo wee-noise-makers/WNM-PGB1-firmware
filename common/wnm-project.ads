@@ -867,10 +867,11 @@ private
                                      ));
 
    Default_Cymbal_Track : constant Track_Rec :=
-     (Default_Track with delta CC => ((0, 127, "CC0              "),
-                                      (1, 16, "CC1              "),
-                                      (2, 0, "CC2              "),
-                                      (3, 0, "CC3              ")
+     (Default_Track with delta Engine => 1,
+                               CC => ((0, 127, "CC0              "),
+                                      (1, 100, "CC1              "),
+                                      (2, 29, "CC2              "),
+                                      (3, 15, "CC3              ")
                                      ));
 
    Default_Bass_Track : constant Track_Rec :=
@@ -879,7 +880,7 @@ private
                                FX => Reverb,
                                CC => ((0, 63, "CC0              "),
                                       (1, 63, "CC1              "),
-                                      (2,  0, "CC2              "),
+                                      (2, 10, "CC2              "),
                                       (3, 63, "CC3              ")
                                      ));
 
@@ -888,7 +889,7 @@ private
                                FX => Reverb,
                                CC => ((0, 60, "CC0              "),
                                       (1, 40, "CC1              "),
-                                      (2,  0, "CC2              "),
+                                      (2, 10, "CC2              "),
                                       (3, 60, "CC3              ")
                                      ));
 
@@ -915,8 +916,8 @@ private
 
    Default_Chord_Track : constant Track_Rec :=
      (Default_Track with delta CC => ((0, 0, "CC0              "),
-                                      (1, 63, "CC1              "),
-                                      (2, 0, "CC2              "),
+                                      (1, 10, "CC1              "),
+                                      (2, 10, "CC2              "),
                                       (3, 63, "CC3              ")
                                      ));
 
