@@ -23,7 +23,6 @@ with Tresses;            use Tresses;
 with Tresses.Interfaces; use Tresses.Interfaces;
 
 private with Tresses.Envelopes.AR;
-private with Tresses.Analog_Oscillator;
 
 package WNM.Voices.Chord_Voice is
 
@@ -31,14 +30,14 @@ package WNM.Voices.Chord_Voice is
    is new Four_Params_Voice
    with private;
 
-   type Chord_Engine is (Sine_Fold);
+   type Chord_Engine is (Waveform);
 
    function Engine (This : Instance) return Chord_Engine;
    procedure Set_Engine (This : in out Instance; E : Chord_Engine);
 
    function Img (E : Chord_Engine) return String
    is (case E is
-          when Sine_Fold => "Sine Fold");
+          when Waveform => "Chords - Waveform");
 
    procedure Init (This : in out Instance);
 
@@ -52,38 +51,39 @@ package WNM.Voices.Chord_Voice is
    procedure Key_Off (This : in out Instance;
                       Key  :        MIDI.MIDI_Key);
 
-   P_Shape   : constant Tresses.Param_Id := 1;
-   P_Color   : constant Tresses.Param_Id := 2;
-   P_Attack  : constant Tresses.Param_Id := 3;
-   P_Release : constant Tresses.Param_Id := 4;
+   P_Waveform : constant Tresses.Param_Id := 1;
+   P_Glide    : constant Tresses.Param_Id := 2;
+   P_Attack   : constant Tresses.Param_Id := 3;
+   P_Release  : constant Tresses.Param_Id := 4;
 
    --  Interfaces --
 
    overriding
    function Param_Label (This : Instance; Id : Param_Id) return String
    is (case Id is
-          when P_Color   => "Color",
-          when P_Shape   => "Shape",
-          when P_Attack  => "Attack",
-          when P_Release => "Release");
+          when P_Waveform => "Waveform",
+          when P_Glide    => "Glide",
+          when P_Attack   => "Attack",
+          when P_Release  => "Release");
 
    overriding
    function Param_Short_Label (This : Instance; Id : Param_Id)
                                return Short_Label
    is (case Id is
-          when P_Color   => "COL",
-          when P_Shape   => "SHP",
-          when P_Attack  => "ATK",
-          when P_Release => "REL");
+          when P_Waveform => "WAV",
+          when P_Glide    => "GLD",
+          when P_Attack   => "ATK",
+          when P_Release  => "REL");
 
 private
+
    type Voice is record
       On : Boolean;
       Note : MIDI.MIDI_Key;
-
-      Env : Tresses.Envelopes.AR.Instance;
-      Osc : Tresses.Analog_Oscillator.Instance;
-
+      Phase              : U32;
+      Start_Phase_Incr   : U32;
+      Current_Phase_Incr : U32;
+      Target_Phase_Incr  : U32;
    end record;
 
    Chord_Voices : constant := 4;
@@ -97,6 +97,8 @@ private
       Voices : Voice_Array;
 
       Engine : Chord_Engine := Chord_Engine'First;
+
+      Env, Glide_Env : Tresses.Envelopes.AR.Instance;
 
       Do_Init : Boolean := True;
    end record;

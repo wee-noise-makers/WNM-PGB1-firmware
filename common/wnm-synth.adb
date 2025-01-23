@@ -36,6 +36,7 @@ with Tresses.Macro;
 with Tresses.Interfaces;
 
 with WNM.Generic_Queue;
+with WNM.Utils;
 
 package body WNM.Synth is
 
