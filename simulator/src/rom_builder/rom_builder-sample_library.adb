@@ -36,14 +36,6 @@ package body ROM_Builder.Sample_Library is
       Simple_Logging.Debug ("Load sample data:" & Len'Img);
 
       This.Data (Index).Audio := Points;
-      This.Data (Index).S1 := 0;
-      This.Data (Index).S2 := 0;
-      This.Data (Index).S3 := 0;
-      This.Data (Index).S4 := 0;
-      This.Data (Index).E1 := 0;
-      This.Data (Index).E2 := 0;
-      This.Data (Index).E3 := 0;
-      This.Data (Index).E4 := 0;
       This.Data (Index).Len := HAL.UInt32 (Len / 2);
 
    end Load_From_File;

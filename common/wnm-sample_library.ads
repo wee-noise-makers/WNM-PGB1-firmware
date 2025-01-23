@@ -63,7 +63,7 @@ is
 
    Sample_Metadata_Byte_Size : constant :=
      WNM_Configuration.Storage.Sample_Name_Length
-       + (Sample_Storage_Len'Size / 8) * 9;
+       + (Sample_Storage_Len'Size / 8);
 
    Sample_Audio_Byte_Size : constant :=
      Single_Sample_Data_Byte_Size - Sample_Metadata_Byte_Size;
@@ -86,7 +86,6 @@ is
 
    type Single_Sample_Data is record
       Audio    : Sample_Audio_Data;
-      S1, E1, S2, E2, S3, E3, S4, E4 : Sample_Storage_Len := 0;
       Name     : Sample_Entry_Name;
       Len      : Sample_Storage_Len;
    end record
