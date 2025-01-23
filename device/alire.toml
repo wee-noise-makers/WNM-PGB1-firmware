@@ -6,14 +6,16 @@ authors = ["Fabien Chouteau"]
 maintainers = ["Fabien Chouteau <fabien.chouteau@gmail.com>"]
 maintainers-logins = ["Fabien-Chouteau"]
 
-executables = ["wnm_ps1_device"]
+executables = ["wnm_pgb1_device"]
+
 [[depends-on]]
-rp2040_hal = "^2.0.1"
 tresses = "*"
 lpc_synth = "~0.1.0-dev"
 littlefs = "~0.1.0"
 flux = "~0.1.0-dev"
 noise_nugget_sdk = "*"
+midi = "^1.0.0"
+
 [[pins]]
 flux = { url="https://github.com/Fabien-Chouteau/flux" }
 lpc_synth = { url="https://github.com/Fabien-Chouteau/lpc_synth" }
@@ -26,12 +28,8 @@ rp2040_hal = { url="https://github.com/JeremyGrosser/rp2040_hal" }
 [build-switches]
 "*".ada_version = "ada2022"
 
-[gpr-set-externals]
-BBQUEUE_COMPILE_CHECKS = "disabled"
-BBQUEUE_RUNTIME_CHECKS = "disabled"
-BBQUEUE_CONTRACTS = "disabled"
-
 [configuration.values]
+noise_nugget_sdk.System_Clock = "SYS_133MHz"
 littlefs.Assert = false
 littlefs.Debug = false
 littlefs.Warn = false
@@ -44,5 +42,6 @@ tresses.Sample_Rate = "SR32000"
 flux.Enable_File_IO = false
 
 [build-profiles]
+# noise_nugget_sdk = "development"
 # rp2040_hal = "development"
 # littlefs = "development"

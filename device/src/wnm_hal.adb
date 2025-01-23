@@ -19,7 +19,6 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Ada.Unchecked_Conversion;
 with Interfaces;
 with System.Machine_Code;
 with System.Storage_Elements;
@@ -55,6 +54,7 @@ with Noise_Nugget_SDK.Audio.PIO_I2S_ASM;
 with Wnm_Pgb1_Device_Config;
 with Tresses_Config;
 with GNAT.Source_Info;
+
 with Atomic.Critical_Section;
 
 with Cortex_M.Systick;
@@ -67,8 +67,9 @@ with RP.Flash;
 package body WNM_HAL is
 
    package BM_Definition is new Noise_Nugget_SDK.Button_Matrix_Definition
-     (Row_Count    => 6,
-      Column_Count => 5);
+     (Row_Count      => 6,
+      Column_Count   => 5,
+      Button_Id_Type => Button);
 
    package BM is new Noise_Nugget_SDK.Button_Matrix
      (Definition => BM_Definition,
@@ -82,7 +83,37 @@ package body WNM_HAL is
                       3 => 19,
                       4 => 24,
                       5 => 25,
-                      6 => 27)
+                      6 => 27),
+      Mapping     => (PAD_Left       => (1, 1),
+                      Track_Button   => (1, 2),
+                      Step_Button    => (1, 3),
+                      Rec            => (1, 4),
+                      Play           => (1, 5),
+                      PAD_A          => (1, 6),
+                      PAD_Down       => (2, 1),
+                      B1             => (2, 2),
+                      B9             => (2, 3),
+                      B16            => (2, 4),
+                      B8             => (2, 5),
+                      Func           => (2, 6),
+                      PAD_Up         => (3, 1),
+                      B2             => (3, 2),
+                      B10            => (3, 3),
+                      B15            => (3, 4),
+                      B7             => (3, 5),
+                      Pattern_Button => (3, 6),
+                      PAD_Right      => (4, 1),
+                      B3             => (4, 2),
+                      B11            => (4, 3),
+                      B14            => (4, 4),
+                      B6             => (4, 5),
+                      Song_Button    => (4, 6),
+                      Menu           => (5, 1),
+                      B4             => (5, 2),
+                      B12            => (5, 3),
+                      B13            => (5, 4),
+                      B5             => (5, 5),
+                      PAD_B          => (5, 6))
      );
 
    Keep_Power_On_Pin    : RP.GPIO.GPIO_Point := (Pin => 5);
@@ -187,7 +218,7 @@ package body WNM_HAL is
    ----------------------
 
    function Firmware_Version return String
-   is ("PGB-1:" & WNM_PGB1_Device_Config.Crate_Version & ASCII.LF &
+   is ("PGB-1:" & Wnm_Pgb1_Device_Config.Crate_Version & ASCII.LF &
        "Tresses:" & Tresses_Config.Crate_Version & ASCII.LF &
          GNAT.Source_Info.Compilation_ISO_Date & " " &
          GNAT.Source_Info.Compilation_Time);
@@ -208,74 +239,13 @@ package body WNM_HAL is
       BM.Update;
       declare
          IO : constant BM_Definition.Button_Pressed_Array := BM.State;
-         S_PAD_Left       : constant Boolean := IO (1, 1);
-         S_Track_Button   : constant Boolean := IO (1, 2);
-         S_Step_Button    : constant Boolean := IO (1, 3);
-         S_Rec            : constant Boolean := IO (1, 4);
-         S_Play           : constant Boolean := IO (1, 5);
-         S_PAD_A          : constant Boolean := IO (1, 6);
-
-         S_PAD_Down       : constant Boolean := IO (2, 1);
-         S_B1             : constant Boolean := IO (2, 2);
-         S_B9             : constant Boolean := IO (2, 3);
-         S_B16            : constant Boolean := IO (2, 4);
-         S_B8             : constant Boolean := IO (2, 5);
-         S_Func           : constant Boolean := IO (2, 6);
-
-         S_PAD_Up         : constant Boolean := IO (3, 1);
-         S_B2             : constant Boolean := IO (3, 2);
-         S_B10            : constant Boolean := IO (3, 3);
-         S_B15            : constant Boolean := IO (3, 4);
-         S_B7             : constant Boolean := IO (3, 5);
-         S_Pattern_Button : constant Boolean := IO (3, 6);
-
-         S_PAD_Right      : constant Boolean := IO (4, 1);
-         S_B3             : constant Boolean := IO (4, 2);
-         S_B11            : constant Boolean := IO (4, 3);
-         S_B14            : constant Boolean := IO (4, 4);
-         S_B6             : constant Boolean := IO (4, 5);
-         S_Chord_Button   : constant Boolean := IO (4, 6);
-
-         S_Menu           : constant Boolean := IO (5, 1);
-         S_B4             : constant Boolean := IO (5, 2);
-         S_B12            : constant Boolean := IO (5, 3);
-         S_B13            : constant Boolean := IO (5, 4);
-         S_B5             : constant Boolean := IO (5, 5);
-         S_PAD_B          : constant Boolean := IO (5, 6);
-
+         Result : Buttons_State;
       begin
 
-         return
-           (B1             => (if S_B1 then Down else Up),
-            B2             => (if S_B2 then Down else Up),
-            B3             => (if S_B3 then Down else Up),
-            B4             => (if S_B4 then Down else Up),
-            B5             => (if S_B5 then Down else Up),
-            B6             => (if S_B6 then Down else Up),
-            B7             => (if S_B7 then Down else Up),
-            B8             => (if S_B8 then Down else Up),
-            B9             => (if S_B9 then Down else Up),
-            B10            => (if S_B10 then Down else Up),
-            B11            => (if S_B11 then Down else Up),
-            B12            => (if S_B12 then Down else Up),
-            B13            => (if S_B13 then Down else Up),
-            B14            => (if S_B14 then Down else Up),
-            B15            => (if S_B15 then Down else Up),
-            B16            => (if S_B16 then Down else Up),
-            Rec            => (if S_Rec then Down else Up),
-            Play           => (if S_Play then Down else Up),
-            Menu           => (if S_Menu then Down else Up),
-            Func           => (if S_Func then Down else Up),
-            Step_Button    => (if S_Step_Button then Down else Up),
-            Track_Button   => (if S_Track_Button then Down else Up),
-            Pattern_Button => (if S_Pattern_Button then Down else Up),
-            Song_Button    => (if S_Chord_Button then Down else Up),
-            PAD_Up         => (if S_PAD_Up then Down else Up),
-            PAD_Down       => (if S_PAD_Down then Down else Up),
-            PAD_Left       => (if S_PAD_Left then Down else Up),
-            PAD_Right      => (if S_PAD_Right then Down else Up),
-            PAD_A          => (if S_PAD_A then Down else Up),
-            PAD_B          => (if S_PAD_B then Down else Up));
+         for B in Button loop
+            Result (B) := (if IO (B) then Down else Up);
+         end loop;
+         return Result;
       end;
    end State;
 
@@ -301,11 +271,14 @@ package body WNM_HAL is
 
       declare
          A : constant Float :=
-           (Float (Touch_Val_1) - Float (TP1_Threshold)) / Float (TP1_Threshold);
+           (Float (Touch_Val_1) - Float (TP1_Threshold)) /
+             Float (TP1_Threshold);
          B : constant Float :=
-           (Float (Touch_Val_2) - Float (TP2_Threshold)) / Float (TP2_Threshold);
+           (Float (Touch_Val_2) - Float (TP2_Threshold)) /
+             Float (TP2_Threshold);
          C : constant Float :=
-           (Float (Touch_Val_3) - Float (TP3_Threshold)) / Float (TP3_Threshold);
+           (Float (Touch_Val_3) - Float (TP3_Threshold)) /
+             Float (TP3_Threshold);
       begin
 
          if A > 0.0 or else B > 0.0 or else C > 0.0 then
@@ -473,17 +446,17 @@ package body WNM_HAL is
       case Kind is
          when Line_In =>
             if Mute then
-               Set_Line_Boost (1, L2L => 0, R2R => 0);
+               Set_Line_Boost (2, L2L => 0, R2R => 0);
             else
-               Set_Line_Boost (1, L2L => 1, R2R => 1);
+               Set_Line_Boost (2, L2L => 1, R2R => 1);
             end if;
 
          when Internal_Mic =>
 
             if Mute then
-               Set_Line_Boost (2, L2L => 0, L2R => 0);
+               Set_Line_Boost (1, L2L => 0, L2R => 0);
             else
-               Set_Line_Boost (2, L2L => 9, L2R => 9);
+               Set_Line_Boost (1, L2L => 9, L2R => 9);
             end if;
 
          when Headset_Mic =>
@@ -1036,6 +1009,7 @@ package body WNM_HAL is
       end if;
 
       Update_Screen;
+      Keep_Power_On_Pin.Clear;
 
       loop
          Watchdog_Check;
