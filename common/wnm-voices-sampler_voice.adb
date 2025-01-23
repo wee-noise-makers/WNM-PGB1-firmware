@@ -19,11 +19,13 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
---  with Ada.Text_IO; use Ada.Text_IO;
+with Interfaces;
+with Ada.Unchecked_Conversion;
 
 with Tresses.Envelopes.AR; use Tresses.Envelopes.AR;
 with Tresses.DSP;
 with Tresses.Resources;
+with Tresses.FX.Bitcrusher;
 
 with WNM.Sample_Library; use WNM.Sample_Library;
 with WNM.Sample_Recording;
@@ -299,45 +301,48 @@ package body WNM.Voices.Sampler_Voice is
          Drive_Amount := Shift_Right (Drive_Amount**2, 15);
          Drive_Amount := Drive_Amount * 2;
 
-         loop
-            exit when Out_Index > Buffer'Last;
+         if Sample_Len > 0 then
+            loop
+               exit when Out_Index > Buffer'Last;
 
-            P := Shift_Right (This.Phase, Phase_Frac_Bits);
+               P := Shift_Right (This.Phase, Phase_Frac_Bits);
 
-            exit when P > Sample_Len - 1;
+               exit when P > Sample_Len - 1;
 
-            --  Interpolation between two sample points
-            declare
-               V : constant S32 :=
-                 S32 (Shift_Right
-                      (This.Phase, Phase_Frac_Bits - 15) and 16#7FFF#);
+               --  Interpolation between two sample points
+               declare
+                  V : constant S32 :=
+                    S32 (Shift_Right
+                         (This.Phase, Phase_Frac_Bits - 15) and 16#7FFF#);
 
-               A : constant S32 := S32 (Points (Sample_Point_Index (P)));
-               B : constant S32 := S32 (Points (Sample_Point_Index (P) + 1));
-            begin
-               Sample_Point := A + ((B - A) * V) / 2**15;
-            end;
+                  A : constant S32 := S32 (Points (Sample_Point_Index (P)));
+                  B : constant S32 :=
+                    S32 (Points (Sample_Point_Index (P) + 1));
+               begin
+                  Sample_Point := A + ((B - A) * V) / 2**15;
+               end;
 
-            This.Phase := This.Phase + This.Phase_Increment;
+               This.Phase := This.Phase + This.Phase_Increment;
 
-            --  Symmetrical soft clipping
-            Fuzzed := DSP.Interpolate88
-              (Resources.WS_Extreme_Overdrive,
-               U16 (Sample_Point + 32_768));
+               --  Symmetrical soft clipping
+               Fuzzed := DSP.Interpolate88
+                 (Resources.WS_Extreme_Overdrive,
+                  U16 (Sample_Point + 32_768));
 
-            --  Mix clean and overdrive signals
-            Sample_Point := S32 (Tresses.DSP.Mix (S16 (Sample_Point),
-                                                  Fuzzed,
+               --  Mix clean and overdrive signals
+               Sample_Point := S32 (Tresses.DSP.Mix (S16 (Sample_Point),
+                                    Fuzzed,
                                                   U16 (Drive_Amount)));
 
-            --  Amplitude envelope
-            Render (This.Env);
-            Sample_Point := (Sample_Point * Low_Pass (This.Env)) / 2**15;
+               --  Amplitude envelope
+               Render (This.Env);
+               Sample_Point := (Sample_Point * Low_Pass (This.Env)) / 2**15;
 
-            Buffer (Out_Index) := S16 (Sample_Point);
+               Buffer (Out_Index) := S16 (Sample_Point);
 
-            Out_Index := Out_Index + 1;
-         end loop;
+               Out_Index := Out_Index + 1;
+            end loop;
+         end if;
 
          --  Fill remaining point, if any...
          Buffer (Out_Index .. Buffer'Last) := (others => 0);
@@ -351,6 +356,7 @@ package body WNM.Voices.Sampler_Voice is
    procedure Render_Crusher (This   : in out Instance;
                              Buffer :    out Tresses.Mono_Buffer)
    is
+      use Standard.Interfaces;
 
       Points : Sample_Audio_Data renames
         Sample_Data.all (This.Sample_Id).Audio;
@@ -359,9 +365,18 @@ package body WNM.Voices.Sampler_Voice is
         U32'Min (U32 (Sample_Point_Index'Last),
                  U32 (Sample_Data.all (This.Sample_Id).Len));
 
+      Depth : constant FX.Bitcrusher.Bitdepth :=
+        FX.Bitcrusher.Param_To_Depth (This.Params (P_Drive));
+      Shift : constant Natural := 16 - Natural (Depth);
+      Mask : constant U16 := Shift_Left (U16'Last, Shift);
+
+      function To_U16 is new Ada.Unchecked_Conversion (S16, U16);
+      function To_S16 is new Ada.Unchecked_Conversion (U16, S16);
+      function "and" (A : S16; B : U16) return S16
+      is (To_S16 (To_U16 (A) and B));
+
       P : U32;
    begin
-
       if This.Do_Init then
          This.Do_Init := False;
 
@@ -416,9 +431,12 @@ package body WNM.Voices.Sampler_Voice is
                          (This.Phase, Phase_Frac_Bits - 15) and 16#7FFF#);
 
                   A : constant S32 := S32 (Points (Sample_Point_Index (P)));
-                  B : constant S32 := S32 (Points (Sample_Point_Index (P) + 1));
+                  B : constant S32 :=
+                    S32 (Points (Sample_Point_Index (P) + 1));
                begin
                   Sample_Point := A + ((B - A) * V) / 2**15;
+
+                  Sample_Point := S32 (S16 (Sample_Point) and Mask);
                end;
 
                This.Phase := This.Phase + This.Phase_Increment;
@@ -436,16 +454,6 @@ package body WNM.Voices.Sampler_Voice is
          --  Fill remaining point, if any...
          Buffer (Out_Index .. Buffer'Last) := (others => 0);
       end;
-
-      Tresses.FX.Bitcrusher.Process
-        (This.Bitcrusher,
-         Buffer,
-         12,
-               Tresses.FX.Bitcrusher.Param_To_Downsampling
-           (This.Params (P_Drive)),
-         Amount => Param_Range'Last,
-         Cutoff => 2 * (Param_Range'Last / 5));
-
    end Render_Crusher;
 
    ------------

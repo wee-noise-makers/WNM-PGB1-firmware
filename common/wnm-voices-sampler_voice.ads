@@ -24,7 +24,6 @@ with Tresses.Interfaces; use Tresses.Interfaces;
 with WNM.QOA;
 
 private with Tresses.Envelopes.AR;
-private with Tresses.FX.Bitcrusher;
 private with WNM.Sample_Library;
 
 package WNM.Voices.Sampler_Voice is
@@ -110,7 +109,6 @@ private
       Phase_Increment : Sample_Phase := 0;
 
       Env : Tresses.Envelopes.AR.Instance;
-      Bitcrusher : Tresses.FX.Bitcrusher.Instance;
 
       Do_Init : Boolean := True;
    end record;

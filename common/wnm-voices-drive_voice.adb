@@ -19,8 +19,6 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Interfaces; use Interfaces;
-
 with Tresses.FX.Overdrive;
 with Tresses.DSP;
 

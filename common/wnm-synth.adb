@@ -123,7 +123,7 @@ package body WNM.Synth is
    function Chord_Engines (V : MIDI.MIDI_Data)
                         return Voices.Chord_Voice.Chord_Engine
    is (case V is
-          when others  => Voices.Chord_Voice.Sine_Fold);
+          when others  => Voices.Chord_Voice.Waveform);
 
    subtype Tresses_Channels
      is MIDI.MIDI_Channel range Kick_Channel .. Speech_Channel;
