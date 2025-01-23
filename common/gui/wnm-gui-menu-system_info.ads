@@ -19,6 +19,8 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with WNM.Project;
+
 package WNM.GUI.Menu.System_Info is
 
    procedure Push_Window;
@@ -28,10 +30,12 @@ private
    type Info_Kind is (Version,
                       LED_Brightness,
                       Synth_CPU_Load,
-                      Synth_Max_CPU_Load,
                       Synth_Missed_Deadlines,
+                      Single_Synth_Load,
+                      Mixer_CPU_Load,
                       DAC_Missed_Deadlines,
                       Input_Missed_Deadlines,
+                      System_Config,
                       Prj_Last_Load_Size,
                       Prj_Last_Save_Size,
                       Raise_Exception,
@@ -46,6 +50,10 @@ private
 
    type Instance is new Menu_Window with record
       K : Info_Kind := Info_Kind'First;
+
+      Selected_Load_Synth : Project.Synth_Track_Mode_Kind :=
+        Project.Synth_Track_Mode_Kind'First;
+      Mixer_Max_Load : CPU_Load := 0.0;
    end record;
 
    overriding

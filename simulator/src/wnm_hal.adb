@@ -53,6 +53,13 @@ package body WNM_HAL is
          GNAT.Source_Info.Compilation_ISO_Date & " " &
          GNAT.Source_Info.Compilation_Time);
 
+   --------------
+   -- CPU_Freq --
+   --------------
+
+   function CPU_Freq return Natural
+   is (0);
+
    -----------
    -- State --
    -----------

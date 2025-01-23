@@ -52,6 +52,9 @@ package WNM.GUI.Menu.Drawing is
    procedure Draw_Str_Center (Y   : Integer;
                               Str : String);
 
+   procedure Draw_Lines (X, Y : Integer;
+                         Str  : String);
+
    procedure Draw_Lines_Center (Y   : Integer;
                                 Str : String);
 

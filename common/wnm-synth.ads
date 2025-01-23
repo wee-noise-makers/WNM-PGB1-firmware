@@ -86,6 +86,9 @@ package WNM.Synth is
    function Last_CPU_Load return CPU_Load;
    function Max_CPU_Load return CPU_Load;
    function Missed_Deadlines return HAL.UInt32;
+   function Synth_CPU_Load (Chan : MIDI.MIDI_Channel) return CPU_Load;
+   function Synth_CPU_Max_Load (Chan : MIDI.MIDI_Channel) return CPU_Load;
+   procedure Synth_CPU_Load_Reset (Chan : MIDI.MIDI_Channel);
 
    procedure Clear_Max_CPU_Load;
    procedure Clear_Missed_Deadlines;
@@ -164,24 +167,5 @@ package WNM.Synth is
                                return String;
    function Chord_Param_Short_Label (Id : Tresses.Param_Id)
                                      return Tresses.Short_Label;
-
-   ---------------
-   -- Recording --
-   ---------------
-
-   type Rec_Source is (None, Line_In, Master_Output);
-
-   function Now_Recording return Rec_Source;
-
-   procedure Start_Recording (Filename : String;
-                              Source   : Rec_Source;
-                              Max_Size : Positive)
-     with Pre => Now_Recording = None and then Source /= None;
-
-   procedure Stop_Recording
-     with Post => Now_Recording = None;
-
-   function Record_Size return Natural;
-   --  with Pre => Now_Recording /= None;
 
 end WNM.Synth;

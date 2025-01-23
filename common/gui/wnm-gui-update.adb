@@ -32,6 +32,7 @@ with WNM.GUI.Popup;
 with WNM.Project;
 with WNM.Audio_Routing;
 with WNM.Time;
+with WNM.Synth;
 
 package body WNM.GUI.Update is
 
@@ -58,6 +59,17 @@ package body WNM.GUI.Update is
       Print (X_Offset    => B,
              Y_Offset    => 0,
              Str         => Project.Track_Name);
+      if WNM_Configuration.Individual_Synth_Perf_Enabled
+        and then
+          Project.Mode in Project.Synth_Track_Mode_Kind
+      then
+         Print (X_Offset    => B,
+                Y_Offset    => 0,
+                Str         =>
+                  Img (Synth.Synth_CPU_Load
+                    (Project.Voice_MIDI_Chan (Project.Mode))));
+      end if;
+
       B := 79;
       Print (X_Offset    => B,
              Y_Offset    => 0,

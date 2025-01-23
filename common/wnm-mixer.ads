@@ -57,6 +57,7 @@ package WNM.Mixer is
    procedure Input_FX_Prev;
    function Input_FX return FX_Kind;
 
+   function Mixer_CPU_Load return CPU_Load;
    function Missed_DAC_Deadlines return HAL.UInt32;
    procedure Clear_Missed_DAC_Deadlines;
 

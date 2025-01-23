@@ -29,6 +29,7 @@ with WNM.Generic_Queue;
 with WNM.Persistent;
 with WNM.Sample_Recording;
 with WNM.Audio_Routing;
+with WNM.Utils;
 with BBqueue;
 
 package body WNM.Mixer is
@@ -63,6 +64,7 @@ package body WNM.Mixer is
    Input_Queue : BBqueue.Offsets_Only (Input_Audio_Buffers'Length);
    Input_Queue_WG : BBqueue.Write_Grant;
 
+   Mixer_Perf : WNM.Utils.Perf_Timer;
    Count_Missed_DAC_Deadlines : HAL.UInt32 := 0 with Volatile, Atomic;
    Count_Missed_Input_Deadlines : HAL.UInt32 := 0 with Volatile, Atomic;
 
@@ -70,6 +72,13 @@ package body WNM.Mixer is
 
    Sample_Rec_State : Sample_Rec_Mode := None
      with Atomic, Volatile;
+
+   --------------------
+   -- Mixer_CPU_Load --
+   --------------------
+
+   function Mixer_CPU_Load return CPU_Load
+   is (WNM.Utils.Load (Mixer_Perf));
 
    --------------------------
    -- Missed_DAC_Deadlines --
@@ -272,6 +281,8 @@ package body WNM.Mixer is
       Input : FX_Send_Buffers renames Mixer_Buffers (Id);
       Output : WNM_HAL.Stereo_Buffer renames Output_Audio_Buffers (Id);
    begin
+      WNM.Utils.Start (Mixer_Perf);
+
       case Sample_Rec_State is
          when None =>
             Mix_Regular (Input, Output);
@@ -285,6 +296,8 @@ package body WNM.Mixer is
       --  Clear the FX buffer
       Input.R := (others => (others => 0));
       Input.L := (others => (others => 0));
+
+      WNM.Utils.Stop (Mixer_Perf);
    end Push_To_Mix;
 
    ---------------------

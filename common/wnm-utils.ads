@@ -19,6 +19,8 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with WNM_HAL;
+
 package WNM.Utils is
 
    procedure Copy_Str (From :     String;
@@ -36,5 +38,27 @@ package WNM.Utils is
       and then Full (Full'Last - Suffix'Length + 1 .. Full'Last) = Suffix);
 
    function Trim (Str : String) return String;
+
+   Buffer_Duration_Sec : constant Float :=
+     (1.0 / Float (WNM_Configuration.Audio.Sample_Frequency) *
+          Float (WNM_Configuration.Audio.Samples_Per_Buffer));
+
+   type Perf_Timer is record
+      Start_Time, Elapsed : WNM_HAL.Time_Microseconds;
+      Load, Max_Load : CPU_Load := 0.0;
+      Full_Load_Time : Float := Buffer_Duration_Sec;
+      Done : Boolean := False;
+   end record;
+
+   procedure Start (This : in out Perf_Timer);
+   procedure Stop (This : in out Perf_Timer);
+   procedure Reset (This : in out Perf_Timer;
+                    Full_Load_Time : Float := Buffer_Duration_Sec);
+
+   function Duration (This : Perf_Timer) return WNM_HAL.Time_Microseconds;
+
+   function Load (This : Perf_Timer) return CPU_Load;
+
+   function Max_Load (This : Perf_Timer) return CPU_Load;
 
 end WNM.Utils;

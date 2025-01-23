@@ -169,8 +169,8 @@ package body WNM.Synth is
    Volume_For_Chan : array (MIDI.MIDI_Channel) of WNM_HAL.Audio_Volume :=
      (others => WNM_HAL.Init_Volume);
 
-   Recording_Source : Rec_Source;
-   Recording_Size   : Natural;
+   Overall_Synth_Perf : WNM.Utils.Perf_Timer;
+   Synth_Perf : array (Tresses_Channels) of WNM.Utils.Perf_Timer;
 
    G_CPU_Load : CPU_Load := 0.0 with Volatile, Atomic;
    G_Max_CPU_Load : CPU_Load := 0.0 with Volatile, Atomic;
@@ -199,6 +199,28 @@ package body WNM.Synth is
    function To_Shape (V : MIDI.MIDI_Data)
                       return Tresses.LFO.Shape_Kind
      with Inline_Always;
+
+   -----------
+   -- Start --
+   -----------
+
+   procedure Start (This : in out WNM.Utils.Perf_Timer) is
+   begin
+      if WNM_Configuration.Individual_Synth_Perf_Enabled then
+         WNM.Utils.Start (This);
+      end if;
+   end Start;
+
+   ----------
+   -- Stop --
+   ----------
+
+   procedure Stop (This : in out WNM.Utils.Perf_Timer) is
+   begin
+      if WNM_Configuration.Individual_Synth_Perf_Enabled then
+         WNM.Utils.Stop (This);
+      end if;
+   end Stop;
 
    --------------
    -- To_Param --
@@ -263,6 +285,42 @@ package body WNM.Synth is
 
    function Missed_Deadlines return HAL.UInt32
    is (G_Count_Missed_Deadlines);
+
+   --------------------
+   -- Synth_CPU_Load --
+   --------------------
+
+   function Synth_CPU_Load (Chan : MIDI.MIDI_Channel) return CPU_Load
+   is (if WNM_Configuration.Individual_Synth_Perf_Enabled
+         and then
+          Chan in Synth_Perf'Range
+       then WNM.Utils.Load (Synth_Perf (Chan))
+       else 0.0);
+
+   ------------------------
+   -- Synth_CPU_Max_Load --
+   ------------------------
+
+   function Synth_CPU_Max_Load (Chan : MIDI.MIDI_Channel) return CPU_Load
+   is (if WNM_Configuration.Individual_Synth_Perf_Enabled
+         and then
+          Chan in Synth_Perf'Range
+       then WNM.Utils.Max_Load (Synth_Perf (Chan))
+       else 0.0);
+
+   --------------------------
+   -- Synth_CPU_Load_Reset --
+   --------------------------
+
+   procedure Synth_CPU_Load_Reset (Chan : MIDI.MIDI_Channel) is
+   begin
+      if WNM_Configuration.Individual_Synth_Perf_Enabled
+         and then
+          Chan in Synth_Perf'Range
+      then
+         WNM.Utils.Reset (Synth_Perf (Chan));
+      end if;
+   end Synth_CPU_Load_Reset;
 
    ------------------------
    -- Clear_Max_CPU_Load --
@@ -538,8 +596,8 @@ package body WNM.Synth is
          end if;
       end Add_Clip;
 
-      Synthesis_Start : constant WNM_HAL.Time_Microseconds := WNM_HAL.Clock;
    begin
+      Utils.Start (Overall_Synth_Perf);
 
       --  Take input params
       Out_Voice_Parameters := In_Voice_Parameters;
@@ -596,94 +654,99 @@ package body WNM.Synth is
 
          --  Regular synthesis of all channels
 
+         Start (Synth_Perf (Kick_Channel));
          TK.Render (Buffer);
          WNM_HAL.Mix (Output.L (FX_Send (Kick_Channel)),
                       Output.R (FX_Send (Kick_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Kick_Channel),
                       Pan => Pan_For_Chan (Kick_Channel));
+         Stop (Synth_Perf (Kick_Channel));
 
+         Start (Synth_Perf (Snare_Channel));
          TS.Render (Buffer);
          WNM_HAL.Mix (Output.L (FX_Send (Snare_Channel)),
                       Output.R (FX_Send (Snare_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Snare_Channel),
                       Pan => Pan_For_Chan (Snare_Channel));
+         Stop (Synth_Perf (Snare_Channel));
 
+         Start (Synth_Perf (Hihat_Channel));
          HH.Render (Buffer);
          WNM_HAL.Mix (Output.L (FX_Send (Hihat_Channel)),
                       Output.R (FX_Send (Hihat_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Hihat_Channel),
                       Pan => Pan_For_Chan (Hihat_Channel));
+         Stop (Synth_Perf (Hihat_Channel));
 
+         Start (Synth_Perf (Lead_Channel));
          Lead.Render (Buffer, Aux_Buffer);
          WNM_HAL.Mix (Output.L (FX_Send (Lead_Channel)),
                       Output.R (FX_Send (Lead_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Lead_Channel),
                       Pan => Pan_For_Chan (Lead_Channel));
+         Stop (Synth_Perf (Lead_Channel));
 
+         Start (Synth_Perf (Bass_Channel));
          Bass.Render (Buffer, Aux_Buffer);
          WNM_HAL.Mix (Output.L (FX_Send (Bass_Channel)),
                       Output.R (FX_Send (Bass_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Bass_Channel),
                       Pan => Pan_For_Chan (Bass_Channel));
+         Stop (Synth_Perf (Bass_Channel));
 
+         Start (Synth_Perf (Chord_Channel));
          Chord.Render (Buffer);
          WNM_HAL.Mix (Output.L (FX_Send (Chord_Channel)),
                       Output.R (FX_Send (Chord_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Chord_Channel),
                       Pan => Pan_For_Chan (Chord_Channel));
+         Stop (Synth_Perf (Chord_Channel));
 
+         Start (Synth_Perf (Sample1_Channel));
          Sampler1.Render (Buffer);
          WNM_HAL.Mix (Output.L (FX_Send (Sample1_Channel)),
                       Output.R (FX_Send (Sample1_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Sample1_Channel),
                       Pan => Pan_For_Chan (Sample1_Channel));
+         Stop (Synth_Perf (Sample1_Channel));
 
+         Start (Synth_Perf (Sample2_Channel));
          Sampler2.Render (Buffer);
          WNM_HAL.Mix (Output.L (FX_Send (Sample2_Channel)),
                       Output.R (FX_Send (Sample2_Channel)),
                       Input => Buffer,
                       Volume => Volume_For_Chan (Sample2_Channel),
                       Pan => Pan_For_Chan (Sample2_Channel));
+         Stop (Synth_Perf (Sample2_Channel));
 
+         --  Start (Synth_Perf (Speech_Channel));
          --  Speech.Render (Buffer);
          --  WNM_HAL.Mix (Output.L (FX_Send (Speech_Channel)),
          --               Output.R (FX_Send (Speech_Channel)),
          --               Input => Buffer,
          --               Volume => Volume_For_Chan (Speech_Channel),
          --               Pan => Pan_For_Chan (Speech_Channel));
+         --  Stop (Synth_Perf (Speech_Channel));
       end if;
 
-      declare
-         Synthesis_End      : constant WNM_HAL.Time_Microseconds :=
-           WNM_HAL.Clock;
-         Synthesis_Duration : constant WNM_HAL.Time_Microseconds :=
-           Synthesis_End - Synthesis_Start;
+      Utils.Stop (Overall_Synth_Perf);
 
-         Synthesis_Duration_Float : constant Float :=
-           Float (Synthesis_Duration) / 1_000_000.0;
+      G_CPU_Load := Utils.Load (Overall_Synth_Perf);
 
-         Synthesized_Time : constant Float :=
-           (1.0 / Float (WNM_Configuration.Audio.Sample_Frequency) *
-                Float (WNM_Configuration.Audio.Samples_Per_Buffer));
-      begin
-         G_CPU_Load :=
-           CPU_Load (Synthesis_Duration_Float / Synthesized_Time) * 100.0;
+      if G_CPU_Load > 100.0 then
+         G_Count_Missed_Deadlines := G_Count_Missed_Deadlines + 1;
+      end if;
 
-         if G_CPU_Load > 100.0 then
-            G_Count_Missed_Deadlines := G_Count_Missed_Deadlines + 1;
-         end if;
-
-         if G_CPU_Load > G_Max_CPU_Load then
-            G_Max_CPU_Load := G_CPU_Load;
-         end if;
-      end;
+      if G_CPU_Load > G_Max_CPU_Load then
+         G_Max_CPU_Load := G_CPU_Load;
+      end if;
 
    end Next_Points;
 
@@ -943,47 +1006,6 @@ package body WNM.Synth is
    function Chord_Param_Short_Label (Id : Tresses.Param_Id)
                                      return Tresses.Short_Label
    is (Chord.Param_Short_Label (Id));
-
-   -------------------
-   -- Now_Recording --
-   -------------------
-
-   function Now_Recording return Rec_Source
-   is (Recording_Source);
-
-   ---------------------
-   -- Start_Recording --
-   ---------------------
-
-   procedure Start_Recording (Filename : String;
-                              Source   : Rec_Source;
-                              Max_Size : Positive)
-   is
-      pragma Unreferenced (Max_Size, Filename);
-   begin
-      if Recording_Source /= None then
-         return;
-      end if;
-
-      Recording_Source := Source;
-      Recording_Size := 0;
-   end Start_Recording;
-
-   --------------------
-   -- Stop_Recording --
-   --------------------
-
-   procedure Stop_Recording is
-   begin
-      Recording_Source := None;
-   end Stop_Recording;
-
-   -----------------
-   -- Record_Size --
-   -----------------
-
-   function Record_Size return Natural
-   is (Recording_Size);
 
 begin
    Lead.Set_Engine (Voice_Saw_Swarm);

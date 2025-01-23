@@ -11,6 +11,7 @@ with Tresses;
 package WNM_HAL is
 
    function Firmware_Version return String;
+   function CPU_Freq return Natural;
 
    -------------
    -- Buttons --

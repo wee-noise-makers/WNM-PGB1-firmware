@@ -68,16 +68,44 @@ package body WNM.GUI.Menu.System_Info is
 
          when Synth_CPU_Load =>
             Drawing.Draw_Title ("Synth CPU Load", "");
-            Drawing.Draw_Value (Img (Synth.Last_CPU_Load));
-
-         when Synth_Max_CPU_Load =>
-            Drawing.Draw_Title ("Synth Max CPU Load", "");
-            Drawing.Draw_Value (Img (Synth.Max_CPU_Load));
+            Drawing.Draw_Value (Img (Synth.Last_CPU_Load) &
+                                  " (" & Img (Synth.Max_CPU_Load) & ")");
 
          when Synth_Missed_Deadlines =>
             Drawing.Draw_Title ("Synth Missed DL", "");
             Drawing.Draw_Value (Synth.Missed_Deadlines'Img);
 
+         when Single_Synth_Load =>
+            if WNM_Configuration.Individual_Synth_Perf_Enabled then
+               declare
+                  Chan : constant MIDI.MIDI_Channel :=
+                    Project.Voice_MIDI_Chan (This.Selected_Load_Synth);
+               begin
+
+                  Drawing.Draw_Title ("Synth Load",
+                                      This.Selected_Load_Synth'Img);
+                  Drawing.Draw_Value
+                    (Img (Synth.Synth_CPU_Load (Chan)) & "(" &
+                       Img (Synth.Synth_CPU_Max_Load (Chan)) & ")");
+               end;
+            else
+               Drawing.Draw_Title ("Synth Load", "");
+               Drawing.Draw_Value ("DISABLED");
+
+            end if;
+
+         when Mixer_CPU_Load =>
+            declare
+               Load : constant CPU_Load := Mixer.Mixer_CPU_Load;
+            begin
+
+               if Load > This.Mixer_Max_Load then
+                  This.Mixer_Max_Load := Load;
+               end if;
+               Drawing.Draw_Title ("Mixer Load", "");
+               Drawing.Draw_Value
+                 (Img (Load) & "(" & Img (This.Mixer_Max_Load) & ")");
+            end;
          when DAC_Missed_Deadlines =>
             Drawing.Draw_Title ("DAC Missed DL", "");
             Drawing.Draw_Value (Mixer.Missed_DAC_Deadlines'Img);
@@ -85,6 +113,14 @@ package body WNM.GUI.Menu.System_Info is
          when Input_Missed_Deadlines =>
             Drawing.Draw_Title ("Input Missed DL", "");
             Drawing.Draw_Value (Mixer.Missed_Input_Deadlines'Img);
+
+         when System_Config =>
+            Drawing.Draw_Title ("System info", "");
+            Drawing.Draw_Lines
+              (Drawing.Box_Left + 3,
+               Drawing.Box_Top + 15,
+               "SR:" & Audio.Sample_Frequency'Img & ASCII.LF &
+               "CPU:" & WNM_HAL.CPU_Freq'Img);
 
          when Prj_Last_Load_Size =>
             Drawing.Draw_Title ("Size of last loaded", "project");
@@ -95,7 +131,7 @@ package body WNM.GUI.Menu.System_Info is
             Drawing.Draw_Value (Project.Library.Last_Saved_Size'Img);
 
          when Raise_Exception =>
-            Drawing.Draw_Title ("Press A to raise", "an exception");
+            Drawing.Draw_Title ("Error handling", "test");
 
          when Touch =>
             declare
@@ -168,20 +204,28 @@ package body WNM.GUI.Menu.System_Info is
       package LED_Dim_Next is new Enum_Next (WNM.LEDs.Brightness);
       use LED_Dim_Next;
 
+      package Synth_Track_Mode_Kind_Next
+      is new Enum_Next (Project.Synth_Track_Mode_Kind);
+      use Synth_Track_Mode_Kind_Next;
+
       use HAL;
 
    begin
       case Event.Kind is
          when A_Press =>
             case This.K is
-               when Synth_Max_CPU_Load =>
+               when Synth_CPU_Load =>
                   Synth.Clear_Max_CPU_Load;
+               when Single_Synth_Load =>
+                  Synth.Synth_CPU_Load_Reset
+                    (Project.Voice_MIDI_Chan (This.Selected_Load_Synth));
                when Synth_Missed_Deadlines =>
                   Synth.Clear_Missed_Deadlines;
                when DAC_Missed_Deadlines =>
                   Mixer.Clear_Missed_DAC_Deadlines;
                when Input_Missed_Deadlines =>
                   Mixer.Clear_Missed_Input_Deadlines;
+
                when Raise_Exception =>
                   Yes_No_Dialog.Set_Title ("Raise exception?");
                   Yes_No_Dialog.Push_Window;
@@ -211,6 +255,9 @@ package body WNM.GUI.Menu.System_Info is
             case This.K is
                when LED_Brightness =>
                   Next (WNM.Persistent.Data.LED_Brightness);
+
+               when Single_Synth_Load =>
+                  Next (This.Selected_Load_Synth);
                when others =>
                   null;
             end case;
@@ -219,6 +266,10 @@ package body WNM.GUI.Menu.System_Info is
             case This.K is
                when LED_Brightness =>
                   Prev (WNM.Persistent.Data.LED_Brightness);
+
+               when Single_Synth_Load =>
+                  Prev (This.Selected_Load_Synth);
+
                when others =>
                   null;
             end case;
