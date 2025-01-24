@@ -23,7 +23,6 @@ with HAL; use HAL;
 
 with WNM.Coproc;
 with WNM.Utils;
-with WNM.Speech;
 with WNM.UI;
 with WNM.Project_Load_Broadcast;
 with WNM.Sample_Library;
@@ -360,21 +359,6 @@ package body WNM.Project is
 
          when Sample1_Mode | Sample2_Mode =>
             return "N/A";
-
-         when Speech_Mode =>
-            case Id is
-               when A =>
-                  declare
-                     type Stretch_Img is delta 0.01 range 0.0 .. 10.0;
-                     --  Use a fixed point time to get a 'Img without
-                     --  scientific notation and only two decimals ^^
-                  begin
-                     return Stretch_Img
-                       (Speech.MIDI_To_Stretch (CC_Value (Step, Id)))'Img;
-                  end;
-               when others =>
-                  return "N/A";
-            end case;
       end case;
    end CC_Image;
 
@@ -1008,10 +992,6 @@ package body WNM.Project is
          when Bitcrush_Mode =>
             Utils.Copy_Str (Synth.Bitcrush_Param_Label (Tresses_Id), Result);
             return Result;
-
-         when Speech_Mode =>
-            Utils.Copy_Str (Synth.Speech_Param_Label (Tresses_Id), Result);
-            return Result;
       end case;
    end CC_Controller_Label;
 
@@ -1066,8 +1046,6 @@ package body WNM.Project is
          when Bitcrush_Mode =>
             return Synth.Bitcrush_Param_Short_Label (Tresses_Id);
 
-         when Speech_Mode =>
-            return Synth.Speech_Param_Short_Label (Tresses_Id);
       end case;
    end CC_Controller_Short_Label;
 

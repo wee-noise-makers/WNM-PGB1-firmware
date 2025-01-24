@@ -24,7 +24,6 @@ with HAL;
 
 with WNM.Screen;
 with WNM.Sample_Library;
-with WNM.Speech;
 with WNM.Project;
 with WNM.Project.Library;
 with WNM.GUI.Bitmap_Fonts;
@@ -142,8 +141,6 @@ package WNM.GUI.Menu.Drawing is
 
    procedure Draw_Project_Select (Val        : Project.Library.Valid_Prj_Index;
                                   Show_Empty : Boolean := True);
-
-   procedure Draw_Word_Select (Word : Speech.Word);
 
    procedure Draw_Step_Duration (Pos      : Natural;
                                  D        : Duration_In_Steps;

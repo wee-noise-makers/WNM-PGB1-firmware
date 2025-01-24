@@ -64,12 +64,6 @@ private
                   Track_Octave_Offset | Shuffle |
                   Arp_Notes | Notes_Per_Chord | CC_Ctrl_A .. CC_Label_D,
 
-          --  Speech
-          when Project.Speech_Mode =>
-             S in Track_Mode | Volume | Pan | Master_FX | Arp_Mode |
-                  Track_Octave_Offset | Shuffle |
-                  Arp_Notes | CC_Default_A .. CC_Default_B,
-
           --  Multi engines
           when Project.Lead_Mode | Project.Bass_Mode | Project.Kick_Mode |
                Project.Snare_Mode | Project.Hihat_Mode | Project.Chord_Mode |

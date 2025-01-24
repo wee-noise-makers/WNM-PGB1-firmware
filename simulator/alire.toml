@@ -13,7 +13,6 @@ asfml = "^2.5.2"
 hal = "~1.0.0"
 resources = "~0.1.0"
 littlefs = "~0.1.0"
-lpc_synth = "~0.1.0-dev"
 rtmidi = "~0.1.0"
 fsmaker = "~0.0.0"
 flux = "~0.1.0-dev"
@@ -25,7 +24,6 @@ midi = "^1.0.0"
 [[pins]]
 fsmaker = { url="https://github.com/Fabien-Chouteau/fsmaker" }
 littlefs = { url = "https://github.com/Fabien-Chouteau/littlefs-ada", branch="release/0.3" }
-lpc_synth = { url="https://github.com/Fabien-Chouteau/lpc_synth" }
 flux = { url="https://github.com/Fabien-Chouteau/flux" }
 tresses = { url="https://github.com/wee-noise-maker/tresses" }
 midi = { url="https://github.com/Fabien-Chouteau/midi" }

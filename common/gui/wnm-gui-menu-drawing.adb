@@ -931,18 +931,6 @@ package body WNM.GUI.Menu.Drawing is
             end if;
          end;
 
-      elsif Mode = Speech_Mode
-        and then Selected = A
-        and then Ena_A
-      then
-         First := B;
-
-         declare
-            Id : constant Natural := Natural (Val_A);
-         begin
-            Draw_Word_Select (Speech.Word (Id));
-         end;
-
       else
 
          for Id in CC_Id range First .. CC_Id'Last loop
@@ -1140,45 +1128,6 @@ package body WNM.GUI.Menu.Drawing is
                 Str      => Display_Text (Next));
       end if;
    end Draw_Project_Select;
-
-   ----------------------
-   -- Draw_Word_Select --
-   ----------------------
-
-   procedure Draw_Word_Select (Word : Speech.Word) is
-      use Speech;
-
-      X : Integer;
-
-      function Display_Text (Val : Speech.Word) return String is
-      begin
-         return Speech.Img (Val);
-      end Display_Text;
-
-      Left_Pos : constant Integer := Box_Left + 5;
-   begin
-
-      if Word /= Speech.Word'First then
-         X := Left_Pos;
-         Print (X_Offset => X,
-                Y_Offset => Value_Text_Y - 23,
-                Str      => Display_Text (Word - 1));
-      end if;
-
-      X := Left_Pos;
-      Print (X_Offset => X,
-             Y_Offset => Value_Text_Y - 11,
-             Str      => Display_Text (Word),
-             Invert_From => Box_Left,
-             Invert_To   => Box_Right);
-
-      if Word /= Speech.Word'Last then
-         X := Left_Pos;
-         Print (X_Offset => X,
-                Y_Offset => Value_Text_Y + 1,
-                Str      => Display_Text (Word + 1));
-      end if;
-   end Draw_Word_Select;
 
    ------------------------
    -- Draw_Step_Duration --

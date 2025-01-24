@@ -43,7 +43,6 @@ package WNM.Synth is
    Reverb_Channel              : constant MIDI.MIDI_Channel := 9;
    Drive_Channel               : constant MIDI.MIDI_Channel := 10;
    Bitcrusher_Channel          : constant MIDI.MIDI_Channel := 11;
-   Speech_Channel              : constant MIDI.MIDI_Channel := 12;
    Sample_Rec_Playback_Channel : constant MIDI.MIDI_Channel := 13;
 
    subtype Sampler_Channels
@@ -155,11 +154,6 @@ package WNM.Synth is
                                   return String;
    function Bitcrush_Param_Short_Label (Id : Tresses.Param_Id)
                                         return Tresses.Short_Label;
-
-   function Speech_Param_Label (Id : Tresses.Param_Id)
-                                return String;
-   function Speech_Param_Short_Label (Id : Tresses.Param_Id)
-                                      return Tresses.Short_Label;
 
    function Chord_Engine_Last return MIDI.MIDI_Data;
    function Chord_Engine_Img (Engine : MIDI.MIDI_Data) return String;

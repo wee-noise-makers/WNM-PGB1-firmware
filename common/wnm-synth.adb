@@ -25,7 +25,6 @@ with Interfaces; use Interfaces;
 with WNM.Mixer;
 with WNM.Voices.Snare_Voice;
 with WNM.Voices.Sampler_Voice;
-with WNM.Voices.Speech_Voice;
 with WNM.Voices.Chord_Voice;
 with WNM.Voices.Hihat_Voice;
 with WNM.Voices.Kick_Voice;
@@ -46,7 +45,6 @@ package body WNM.Synth is
    Lead        : aliased Tresses.Voices.Macro.Instance;
    Bass        : aliased Tresses.Voices.Macro.Instance;
    Chord       : aliased WNM.Voices.Chord_Voice.Instance;
-   Speech      : aliased WNM.Voices.Speech_Voice.Instance;
    Sampler1    : aliased WNM.Voices.Sampler_Voice.Instance;
    Sampler2    : aliased WNM.Voices.Sampler_Voice.Instance;
 
@@ -126,12 +124,11 @@ package body WNM.Synth is
           when others  => Voices.Chord_Voice.Waveform);
 
    subtype Tresses_Channels
-     is MIDI.MIDI_Channel range Kick_Channel .. Speech_Channel;
+     is MIDI.MIDI_Channel range Kick_Channel .. Bitcrusher_Channel;
 
    Synth_Voices : constant array (Tresses_Channels) of
      Voice_Access :=
-       (Speech_Channel     => Speech'Access,
-        Sample1_Channel    => Sampler1'Access,
+       (Sample1_Channel    => Sampler1'Access,
         Sample2_Channel    => Sampler2'Access,
         Kick_Channel       => TK'Access,
         Snare_Channel      => TS'Access,
@@ -397,8 +394,6 @@ package body WNM.Synth is
                               Sampler1.Set_MIDI_Pitch (Key);
                            elsif Msg.MIDI_Evt.Chan = Sample2_Channel then
                               Sampler2.Set_MIDI_Pitch (Key);
-                           elsif Msg.MIDI_Evt.Chan = Speech_Channel then
-                              Speech.Set_MIDI_Pitch (Key);
                            elsif Msg.MIDI_Evt.Chan = Chord_Channel then
 
                               Chord.Key_On (Msg.MIDI_Evt.Key,
@@ -453,13 +448,6 @@ package body WNM.Synth is
                                   Msg.MIDI_Evt.Controller = Voice_Param_1_CC
                               then
                                  Sampler2.Set_Sample
-                                   (Msg.MIDI_Evt.Controller_Value);
-
-                              elsif Msg.MIDI_Evt.Chan = Speech_Channel
-                                and then
-                                  Msg.MIDI_Evt.Controller = Voice_Param_1_CC
-                              then
-                                 Speech.Set_Word
                                    (Msg.MIDI_Evt.Controller_Value);
 
                               else
@@ -961,22 +949,6 @@ package body WNM.Synth is
    function Bitcrush_Param_Short_Label (Id : Tresses.Param_Id)
                                         return Tresses.Short_Label
    is (Mixer.FX_Bitcrush.Param_Short_Label (Id));
-
-   ------------------------
-   -- Speech_Param_Label --
-   ------------------------
-
-   function Speech_Param_Label (Id : Tresses.Param_Id)
-                                return String
-   is (Speech.Param_Label (Id));
-
-   ------------------------------
-   -- Speech_Param_Short_Label --
-   ------------------------------
-
-   function Speech_Param_Short_Label (Id : Tresses.Param_Id)
-                                      return Tresses.Short_Label
-   is (Speech.Param_Short_Label (Id));
 
    -----------------------
    -- Chord_Engine_Last --

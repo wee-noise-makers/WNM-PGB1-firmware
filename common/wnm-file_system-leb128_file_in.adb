@@ -27,6 +27,8 @@ with Flux.Traits.LEB128;
 
 package body WNM.File_System.LEB128_File_In is
 
+   pragma Warnings (Off, "No_Exception_Propagation");
+
    procedure Decode is new Flux.Traits.LEB128.Decode
      (In_UInt, WNM.File_System.Flux_Source);
 

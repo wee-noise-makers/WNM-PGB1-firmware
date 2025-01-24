@@ -224,7 +224,7 @@ package WNM.Project is
    -----------
 
    type Track_Mode_Kind is (MIDI_Mode, Sample1_Mode, Sample2_Mode,
-                            Speech_Mode, Kick_Mode, Snare_Mode, Hihat_Mode,
+                            Kick_Mode, Snare_Mode, Hihat_Mode,
                             Bass_Mode, Lead_Mode, Chord_Mode, Reverb_Mode,
                             Drive_Mode, Bitcrush_Mode);
 
@@ -233,7 +233,6 @@ package WNM.Project is
           when Sample1_Mode  => "Sample 1",
           when Sample2_Mode  => "Sample 2",
           when MIDI_Mode     => "MIDI",
-          when Speech_Mode   => "Speech",
           when Kick_Mode     => "Kick",
           when Snare_Mode    => "Snare",
           when Hihat_Mode    => "Hi-hat",
@@ -252,7 +251,6 @@ package WNM.Project is
    is (case Voice is
           when Sample1_Mode  => Synth.Sample1_Channel,
           when Sample2_Mode  => Synth.Sample2_Channel,
-          when Speech_Mode   => Synth.Speech_Channel,
           when Kick_Mode     => Synth.Kick_Channel,
           when Snare_Mode    => Synth.Snare_Channel,
           when Hihat_Mode    => Synth.Hihat_Channel,
