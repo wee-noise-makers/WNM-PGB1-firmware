@@ -9,19 +9,18 @@ maintainers-logins = ["Fabien-Chouteau"]
 executables = ["wnm_pgb1_device"]
 
 [[depends-on]]
-tresses = "*"
+tresses = "^1.0.0"
 littlefs = "~0.1.0"
 flux = "~0.1.0-dev"
 noise_nugget_sdk = "*"
 midi = "^1.0.0"
 
 [[pins]]
-flux = { url="https://github.com/Fabien-Chouteau/flux" }
 littlefs = { url = "https://github.com/Fabien-Chouteau/littlefs-ada", branch="release/0.3" }
-tresses = { path = "../../tresses" }
-midi = { path = "../../midi" }
+tresses = { url = "git@github.com:wee-noise-makers/tresses.git", branch="release/1.0" }
+flux = { url="https://github.com/Fabien-Chouteau/flux" }
+# noise_nugget_sdk = { url = "git@github.com:wee-noise-maker/noise-nugget-ada-sdk.git" }
 noise_nugget_sdk = { path = "../../noise-nugget-ada-sdk" }
-rp2040_hal = { url="https://github.com/JeremyGrosser/rp2040_hal" }
 
 [build-switches]
 "*".ada_version = "ada2022"
