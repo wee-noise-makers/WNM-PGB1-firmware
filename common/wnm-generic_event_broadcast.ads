@@ -26,6 +26,7 @@ package WNM.Generic_Event_Broadcast is
 
    generic
       CB : not null Callback;
+      Priority : Natural := 0; -- Higher priority will be called first
    package Register is
    end Register;
 
@@ -33,15 +34,15 @@ package WNM.Generic_Event_Broadcast is
 
 private
 
-   type Listener (CB : not null Callback);
-   type Listener_Acess is access all Listener;
+   type Listener (CB : not null Callback; Priority : Natural);
+   type Listener_Access is access all Listener;
 
-   procedure Register_Listener (Acc : not null Listener_Acess);
+   procedure Register_Listener (Acc : not null Listener_Access);
 
-   type Listener (CB : not null Callback) is record
-      Next : Listener_Acess := null;
+   type Listener (CB : not null Callback; Priority : Natural) is record
+      Next : Listener_Access := null;
    end record;
 
-   Head : Listener_Acess := null;
+   Head : Listener_Access := null;
 
 end WNM.Generic_Event_Broadcast;

@@ -25,8 +25,9 @@ package body WNM.Generic_Event_Broadcast is
    -- Register_Listener --
    -----------------------
 
-   procedure Register_Listener (Acc : not null Listener_Acess) is
-      Ptr : Listener_Acess := Head;
+   procedure Register_Listener (Acc : not null Listener_Access)
+   is
+      Ptr : Listener_Access := Head;
    begin
 
       --  Check if node is already in the list
@@ -38,8 +39,22 @@ package body WNM.Generic_Event_Broadcast is
          Ptr := Ptr.Next;
       end loop;
 
-      Acc.Next := Head;
-      Head := Acc;
+      if Head = null or else Head.Priority < Acc.Priority then
+         --  Head insert
+         Acc.Next := Head;
+         Head := Acc;
+      else
+         Ptr := Head;
+         loop
+            if Ptr.Next = null or else Ptr.Next.Priority < Acc.Priority then
+               Acc.Next := Ptr.Next;
+               Ptr.Next := Acc;
+               return;
+            end if;
+
+            Ptr := Ptr.Next;
+         end loop;
+      end if;
    end Register_Listener;
 
    ---------------
@@ -47,7 +62,7 @@ package body WNM.Generic_Event_Broadcast is
    ---------------
 
    procedure Broadcast is
-      Ptr : Listener_Acess := Head;
+      Ptr : Listener_Access := Head;
    begin
       while Ptr /= null loop
          Ptr.CB.all;
@@ -60,7 +75,7 @@ package body WNM.Generic_Event_Broadcast is
    --------------
 
    package body Register is
-      Lis : aliased Listener (CB);
+      Lis : aliased Listener (CB, Priority);
    begin
       Register_Listener (Lis'Access);
    end Register;

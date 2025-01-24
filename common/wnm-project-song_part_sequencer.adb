@@ -27,12 +27,18 @@ package body WNM.Project.Song_Part_Sequencer is
 
    procedure Step_Callback;
    package Step_Listener
-   is new Step_Event_Broadcast.Register (Step_Callback'Access);
+   is new Step_Event_Broadcast.Register
+     (Step_Callback'Access,
+      Priority => Natural'Last);
+   --  This handler must be first to handle chord prog changes
    pragma Unreferenced (Step_Listener);
 
    procedure Song_Start_Callback;
    package Song_Start_Listener
-   is new Song_Start_Broadcast.Register (Song_Start_Callback'Access);
+   is new Song_Start_Broadcast.Register
+     (Song_Start_Callback'Access,
+      Priority => Natural'Last);
+   --  This handler must be first to handle chord prog changes
    pragma Unreferenced (Song_Start_Listener);
 
    -------------------------
@@ -68,6 +74,7 @@ package body WNM.Project.Song_Part_Sequencer is
       if State.Part_Steps_Count >
         Natural (G_Project.Parts (State.Playing_Part).Len)
       then
+
          if G_Project.Part_Origin /= State.Origin then
             --  New origin part, play this next
             State.Origin := G_Project.Part_Origin;
