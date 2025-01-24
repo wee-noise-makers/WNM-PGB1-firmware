@@ -59,7 +59,9 @@ package body WNM.Project.Song_Part_Sequencer is
    -- Next_Step --
    ---------------
 
-   procedure Next_Step (State : in out Play_State; Roll : Roll_Kind) is
+   procedure Next_Step (State : in out Play_State;
+                        Roll  :        Roll_Kind)
+   is
       Current_Part : constant Parts := State.Playing_Part;
       New_Part : Parts;
    begin
@@ -75,17 +77,30 @@ package body WNM.Project.Song_Part_Sequencer is
         Natural (G_Project.Parts (State.Playing_Part).Len)
       then
 
-         if G_Project.Part_Origin /= State.Origin then
+         if G_Project.Part_Origin /= State.Origin
+           or else G_Part_Origin_Query
+         then
+
+            G_Part_Origin_Query := False;
+
             --  New origin part, play this next
             State.Origin := G_Project.Part_Origin;
             New_Part := State.Origin;
 
-         elsif G_Project.Parts (State.Playing_Part).Link then
-            --  There's a link to the next part
-            New_Part := State.Playing_Part + 1;
          else
-            --  Start back to origin part
-            New_Part := G_Project.Part_Origin;
+            case G_Project.Parts (State.Playing_Part).Link is
+               when Go_Next =>
+                  --  There's a link to the next part
+                  if State.Playing_Part /= WNM.Parts'Last then
+                     New_Part := State.Playing_Part + 1;
+                  end if;
+               when Go_Back =>
+                  --  Start back to origin part
+                  New_Part := G_Project.Part_Origin;
+               when Go_Loop =>
+                  --  Stay on this part
+                  New_Part := State.Playing_Part;
+            end case;
          end if;
 
          --  We're going to play the first step of the new part

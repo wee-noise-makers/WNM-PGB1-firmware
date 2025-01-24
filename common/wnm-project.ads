@@ -554,7 +554,9 @@ package WNM.Project is
                         return Boolean;
 
    function Part_Chords (P : Parts) return Chord_Progressions;
-   function Part_Link (P : Parts) return Boolean;
+
+   type Part_Link_Kind is (Go_Loop, Go_Back, Go_Next);
+   function Part_Link (P : Parts) return Part_Link_Kind;
    function Part_Length (P : Parts) return Duration_In_Steps;
 
    procedure Toggle_Mute (P : Parts; T : Tracks);
@@ -564,7 +566,8 @@ package WNM.Project is
 
    procedure Part_Chords_Next (P : Parts);
    procedure Part_Chords_Prev (P : Parts);
-   procedure Toggle_Link (P : Parts);
+   procedure Part_Link_Next (P : Parts);
+   procedure Part_Link_Prev (P : Parts);
 
    procedure Part_Len_Next (P : Parts);
    procedure Part_Len_Prev (P : Parts);
@@ -723,6 +726,10 @@ private
    package Shuffle_Value_Next is new Enum_Next (T => Shuffle_Value,
                                                 Wrap => False);
    use Shuffle_Value_Next;
+
+   package Part_Link_Kind_Next is new Enum_Next (T => Part_Link_Kind,
+                                            Wrap => True);
+   use Part_Link_Kind_Next;
 
    type Step_Rec is record
       Trig        : Trigger_Kind;
@@ -971,7 +978,7 @@ private
       Pattern_Select : Pattern_Select_Arr := (others => 1);
       Track_Mute   : Track_Mute_Arr   := (others => False);
       Progression : Chord_Progressions := Chord_Progressions'First;
-      Link : Boolean := False;
+      Link : Part_Link_Kind := Go_Loop;
       Len : Duration_In_Steps := Steps_Per_Bar;
    end record;
 
@@ -1029,6 +1036,8 @@ private
         WNM.Chord_Settings.Chord_Name'First;
       Chord       : WNM.Chord_Settings.Chord_Notes := (others => 1);
    end record;
+
+   G_Part_Origin_Query : Boolean := False with Atomic;
 
    G_Play_State   : Play_State := (others => <>);
    G_Play_State_Save : Play_State := (others => <>);

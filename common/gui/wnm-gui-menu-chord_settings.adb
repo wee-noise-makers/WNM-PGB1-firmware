@@ -27,6 +27,10 @@ with WNM.Chord_Settings;
 with WNM.Project.Chord_Sequencer;
 with WNM.Screen;
 
+with go_back_icon;
+with go_next_icon;
+with loop_icon;
+
 package body WNM.GUI.Menu.Chord_Settings is
 
    package Chord_Sub_Settings_Next is new Enum_Next (Chord_Sub_Settings,
@@ -235,12 +239,16 @@ package body WNM.GUI.Menu.Chord_Settings is
                       Box_Left + 40,
                       Sub = Project.Part_Progression);
 
-      Draw_Value_Pos ((if Project.Part_Link (Part)
-                      then "->"
-                      else "X"),
-                      Box_Left + 110,
-                      Sub = Project.Part_Link);
+      Screen.Copy_Bitmap ((case Project.Part_Link (Part) is
+                             when Go_Next => go_next_icon.Data,
+                             when Go_Back => go_back_icon.Data,
+                             when Go_Loop => loop_icon.Data),
+                          Box_Left + 110, Value_Text_Y - 2);
 
+      if Sub = Project.Part_Link then
+         Screen.Draw_Line ((Box_Left + 110, Select_Line_Y),
+                           (Box_Left + 121, Select_Line_Y));
+      end if;
    end Draw_Song_Part;
 
    ---------------------
@@ -425,7 +433,7 @@ package body WNM.GUI.Menu.Chord_Settings is
                      when Project.Part_Progression =>
                         Project.Part_Chords_Next (Part);
                      when Project.Part_Link =>
-                        Project.Toggle_Link (Part);
+                        Project.Part_Link_Next (Part);
                      when Project.Part_Length =>
                         Project.Part_Len_Next (Part);
                      when others => null;
@@ -435,7 +443,7 @@ package body WNM.GUI.Menu.Chord_Settings is
                      when Project.Part_Progression =>
                         Project.Part_Chords_Prev (Part);
                      when Project.Part_Link =>
-                        Project.Toggle_Link (Part);
+                        Project.Part_Link_Prev (Part);
                      when Project.Part_Length =>
                         Project.Part_Len_Prev (Part);
                      when others => null;

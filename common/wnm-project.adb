@@ -2051,7 +2051,7 @@ package body WNM.Project is
    -- Part_Link --
    ---------------
 
-   function Part_Link (P : Parts) return Boolean
+   function Part_Link (P : Parts) return Part_Link_Kind
    is (G_Project.Parts (P).Link);
 
    -----------------
@@ -2119,14 +2119,23 @@ package body WNM.Project is
       end if;
    end Part_Chords_Prev;
 
-   -----------------
-   -- Toggle_Link --
-   -----------------
+   --------------------
+   -- Part_Link_Next --
+   --------------------
 
-   procedure Toggle_Link (P : Parts) is
+   procedure Part_Link_Next (P : Parts) is
    begin
-      G_Project.Parts (P).Link := not @;
-   end Toggle_Link;
+      Next (G_Project.Parts (P).Link);
+   end Part_Link_Next;
+
+   --------------------
+   -- Part_Link_Prev --
+   --------------------
+
+   procedure Part_Link_Prev (P : Parts) is
+   begin
+      Prev (G_Project.Parts (P).Link);
+   end Part_Link_Prev;
 
    -------------------
    -- Part_Len_Next --
@@ -2154,11 +2163,12 @@ package body WNM.Project is
    begin
 
       --  Turn off roll when actively switching to a new part
-      if P /= G_Project.Part_Origin and then Roll_State /= Off then
+      if Roll_State /= Off then
          Roll (Off);
       end if;
 
       G_Project.Part_Origin := P;
+      G_Part_Origin_Query := True;
    end Set_Origin;
 
    --------------------------------

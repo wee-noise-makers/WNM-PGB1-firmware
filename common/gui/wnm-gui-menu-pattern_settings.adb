@@ -28,6 +28,10 @@ with WNM.Screen;
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
 with WNM.GUI.Update;
 
+with go_next_icon;
+with go_back_icon;
+with loop_icon;
+
 package body WNM.GUI.Menu.Pattern_Settings is
 
    package Sub_Settings_Next is new Enum_Next (Sub_Settings,
@@ -123,11 +127,21 @@ package body WNM.GUI.Menu.Pattern_Settings is
                                  Project.Pattern_Length (P => EP),
                                  Selected => Sub = Length);
 
-            Draw_Value_Pos ((if Project.Link (P => EP)
-                            then "->"
-                            else "X"),
-                            70,
-                            Selected => Sub = Has_Link);
+            Screen.Copy_Bitmap
+              ((case Project.Link (P => EP) is
+                  when True => go_next_icon.Data,
+                  when False => (if EP = 1
+                                  or else
+                                    not Project.Link (P => EP - 1)
+                                 then loop_icon.Data
+                                 else go_back_icon.Data)),
+
+               Box_Left + 70, Value_Text_Y - 2);
+
+            if Sub = Has_Link then
+               Screen.Draw_Line ((Box_Left + 70, Select_Line_Y),
+                           (Box_Left + 81, Select_Line_Y));
+            end if;
       end case;
 
       for P in Patterns loop

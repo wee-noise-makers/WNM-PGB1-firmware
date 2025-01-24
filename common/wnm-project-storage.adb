@@ -441,7 +441,7 @@ package body WNM.Project.Storage is
                      Output.Push (Out_UInt (Part.Progression'Enum_Rep));
 
                   when Part_Link =>
-                     Output.Push (Part.Link);
+                     Output.Push (Out_UInt (Part.Link'Enum_Rep));
                end case;
             end loop;
             Output.End_Section;
@@ -678,7 +678,7 @@ package body WNM.Project.Storage is
    procedure Load_Part (Input : in out File_In.Instance) is
       procedure To_Part_Settings is new Convert_To_Enum (Part_Settings);
 
-      procedure Read is new File_In.Read_Gen_Enum (Boolean);
+      procedure Read is new File_In.Read_Gen_Enum (Part_Link_Kind);
       procedure Read is new File_In.Read_Gen_Int (Song_Element);
       procedure Read is new File_In.Read_Gen_Int (WNM.Duration_In_Steps);
 
