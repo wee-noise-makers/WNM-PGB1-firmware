@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2023 Fabien Chouteau                  --
+--                     Copyright (C) 2025 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,56 +19,26 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Project;
-
-package WNM.GUI.Menu.System_Info is
+package WNM.GUI.Menu.Self_Test is
 
    procedure Push_Window;
 
 private
 
-   type Info_Kind is (Version,
-                      LED_Brightness,
-                      Synth_CPU_Load,
-                      Synth_Missed_Deadlines,
-                      Single_Synth_Load,
-                      Mixer_CPU_Load,
-                      DAC_Missed_Deadlines,
-                      Input_Missed_Deadlines,
-                      System_Config,
-                      Prj_Last_Size,
-                      Raise_Exception,
-                      Touch,
-                      HP_Detect,
-                      Battery,
-                      Self_Test_Mode);
-
-   package Next_Info_Kind is new Enum_Next (Info_Kind, Wrap => True);
-   use Next_Info_Kind;
-
-   function Info_Kind_Count is new Enum_Count (Info_Kind);
-
-   type Instance is new Menu_Window with record
-      K : Info_Kind := Info_Kind'First;
-
-      Selected_Load_Synth : Project.Synth_Track_Mode_Kind :=
-        Project.Synth_Track_Mode_Kind'First;
-      Mixer_Max_Load : CPU_Load := 0.0;
-   end record;
+   type Self_Test_WIndow is new Menu_Window with null record;
 
    overriding
-   procedure Draw (This : in out Instance);
+   procedure Draw (This   : in out Self_Test_WIndow);
 
    overriding
-   procedure On_Event (This  : in out Instance;
+   procedure On_Event (This  : in out Self_Test_WIndow;
                        Event : Menu_Event);
 
    overriding
-   procedure On_Pushed (This : in out Instance)
-   is null;
+   procedure On_Pushed (This  : in out Self_Test_WIndow) is null;
 
    overriding
-   procedure On_Focus (This       : in out Instance;
-                       Exit_Value : Window_Exit_Value);
+   procedure On_Focus (This       : in out Self_Test_WIndow;
+                       Exit_Value : Window_Exit_Value) is null;
 
-end WNM.GUI.Menu.System_Info;
+end WNM.GUI.Menu.Self_Test;

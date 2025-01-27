@@ -29,6 +29,7 @@ with WNM.Project.Library;
 with WNM.Persistent;
 with WNM.Screen;
 with WNM.LEDs;
+with WNM.GUI.Menu.Self_Test;
 
 package body WNM.GUI.Menu.System_Info is
 
@@ -49,6 +50,7 @@ package body WNM.GUI.Menu.System_Info is
 
    overriding
    procedure Draw (This : in out Instance) is
+      use Drawing;
    begin
       Drawing.Draw_Menu_Box ("System info",
                              Info_Kind_Count,
@@ -122,20 +124,18 @@ package body WNM.GUI.Menu.System_Info is
                "SR:" & Audio.Sample_Frequency'Img & ASCII.LF &
                "CPU:" & WNM_HAL.CPU_Freq'Img);
 
-         when Prj_Last_Load_Size =>
-            Drawing.Draw_Title ("Size of last loaded", "project");
-            Drawing.Draw_Value (Project.Library.Last_Loaded_Size'Img);
-
-         when Prj_Last_Save_Size =>
-            Drawing.Draw_Title ("Size of last saved", "project");
-            Drawing.Draw_Value (Project.Library.Last_Saved_Size'Img);
+         when Prj_Last_Size =>
+            Draw_Title ("Size of last project", "");
+            Draw_Str (Box_Left + 3, Box_Bottom - 20,
+                      "Load:" & Project.Library.Last_Loaded_Size'Img);
+            Draw_Str (Box_Left + 3, Box_Bottom - 10,
+                      "Save:" & Project.Library.Last_Saved_Size 'Img);
 
          when Raise_Exception =>
             Drawing.Draw_Title ("Error handling", "test");
 
          when Touch =>
             declare
-               use WNM.GUI.Menu.Drawing;
 
                type TP_Img is delta 0.01 range 0.0 .. 10.0;
                --  Use a fixed point type to get a 'Img without
@@ -190,6 +190,13 @@ package body WNM.GUI.Menu.System_Info is
             Drawing.Draw_Title ("Battery", "");
             Drawing.Draw_Value (WNM_HAL.Battery_Millivolts'Img & " mV");
 
+         when Self_Test_Mode =>
+            Draw_Lines_Center
+              (Box_Top + 3,
+               "Self Test Mode" & ASCII.LF &
+                 "Warning, you won't" & ASCII.LF &
+                 "be able to comme back" & ASCII.LF &
+                 "Press A to enter");
       end case;
    end Draw;
 
@@ -239,6 +246,11 @@ package body WNM.GUI.Menu.System_Info is
                   WNM_HAL.Set_Thresholds (WNM.Persistent.Data.TP1_Threshold,
                                           WNM.Persistent.Data.TP2_Threshold,
                                           WNM.Persistent.Data.TP3_Threshold);
+
+               when Self_Test_Mode =>
+                  Yes_No_Dialog.Set_Title ("Enter test mode?");
+                  Yes_No_Dialog.Push_Window;
+
                when others =>
                   null;
             end case;
@@ -290,8 +302,9 @@ package body WNM.GUI.Menu.System_Info is
    begin
       case This.K is
          when Raise_Exception =>
+         when Self_Test_Mode =>
             if Exit_Value = Success then
-               raise Program_Error with "System info raise";
+               Self_Test.Push_Window;
             end if;
 
          when others =>
