@@ -56,31 +56,30 @@ package body WNM.Synth is
    subtype Voice_Class is Tresses.Interfaces.Four_Params_Voice'Class;
    type Voice_Access is access all Voice_Class;
 
-   subtype Lead_Engine_Range is MIDI.MIDI_Data range 0 .. 22;
-   function Lead_Engines (V : MIDI.MIDI_Data) return Tresses.Engines
+   subtype Lead_Engine_Range is MIDI.MIDI_Data range 0 .. 21;
+   function Lead_Engines (V : MIDI.MIDI_Data) return Tresses.Synth_Engines
    is (case V is
           when 0  => Tresses.Voice_Saw_Swarm,
-          when 1  => Tresses.Voice_Acid,
-          when 2  => Tresses.Voice_Analog_Buzz,
-          when 3  => Tresses.Voice_Analog_Morph,
-          when 4  => Tresses.Voice_FM2OP,
-          when 5  => Tresses.Voice_Sand,
-          when 6  => Tresses.Voice_Bass_808,
-          when 7  => Tresses.Voice_House_Bass,
-          when 8  => Tresses.Voice_Pluck_Bass,
-          when 9  => Tresses.Voice_Reese,
-          when 10 => Tresses.Voice_Screech,
-          when 11 => Tresses.Voice_Plucked,
-          when 12 => Tresses.Voice_PDR_Sine,
-          when 13 => Tresses.Voice_PDR_Triangle,
-          when 14 => Tresses.Voice_PDR_Sine_Square,
-          when 15 => Tresses.Voice_PDR_Square_Sine,
-          when 16 => Tresses.Voice_PDL_Trig_Warp,
-          when 17 => Tresses.Voice_PDL_Triangle_Screech,
-          when 18 => Tresses.Voice_Chip_Glide,
-          when 19 => Tresses.Voice_Chip_Phaser,
-          when 20 => Tresses.Voice_Chip_Echo_Square,
-          when 21 => Tresses.Voice_Chip_Echo_Square_Saw,
+          when 1  => Tresses.Voice_Analog_Buzz,
+          when 2  => Tresses.Voice_Analog_Morph,
+          when 3  => Tresses.Voice_FM2OP,
+          when 4  => Tresses.Voice_Sand,
+          when 5  => Tresses.Voice_Bass_808,
+          when 6  => Tresses.Voice_House_Bass,
+          when 7  => Tresses.Voice_Pluck_Bass,
+          when 8  => Tresses.Voice_Reese,
+          when 9  => Tresses.Voice_Screech,
+          when 10 => Tresses.Voice_Plucked,
+          when 11 => Tresses.Voice_PDR_Sine,
+          when 12 => Tresses.Voice_PDR_Triangle,
+          when 13 => Tresses.Voice_PDR_Sine_Square,
+          when 14 => Tresses.Voice_PDR_Square_Sine,
+          when 15 => Tresses.Voice_PDL_Trig_Warp,
+          when 16 => Tresses.Voice_PDL_Triangle_Screech,
+          when 17 => Tresses.Voice_Chip_Glide,
+          when 18 => Tresses.Voice_Chip_Phaser,
+          when 19 => Tresses.Voice_Chip_Echo_Square,
+          when 20 => Tresses.Voice_Chip_Echo_Square_Saw,
           when Lead_Engine_Range'Last .. MIDI.MIDI_Data'Last
                   => Tresses.Voice_Chip_Bass);
 
