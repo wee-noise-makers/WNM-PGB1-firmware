@@ -96,6 +96,8 @@ with WNM.File_System; use WNM.File_System;
 
 package body WNM.Project.Storage is
 
+   Format_Version : constant := 1;
+
    ----------------
    -- Save_Steps --
    ----------------
@@ -531,6 +533,9 @@ package body WNM.Project.Storage is
       Output.Open (Filename);
 
       Size := 0;
+
+      --  First, set the format version
+      Output.Push (Out_UInt (Format_Version));
 
       if Output.Status = Ok then
          Save_Global (Output);
@@ -1068,9 +1073,15 @@ package body WNM.Project.Storage is
    is
       Input : File_In.Instance;
       Token : Token_Kind;
+
+      Version : In_UInt;
    begin
       Input.Open (Filename);
       Size := 0;
+
+      --  The first data in a project file is a version number for the format.
+      --  Right now it should always be 1 and we don't use this information.
+      Input.Read (Version);
 
       loop
 
