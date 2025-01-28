@@ -302,6 +302,10 @@ package body WNM.GUI.Menu.System_Info is
    begin
       case This.K is
          when Raise_Exception =>
+            if Exit_Value = Success then
+               raise Program_Error with "Exception!";
+            end if;
+
          when Self_Test_Mode =>
             if Exit_Value = Success then
                Self_Test.Push_Window;
