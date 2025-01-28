@@ -48,7 +48,7 @@ package WNM_Configuration is
 
    package Audio is
       Sample_Frequency   : constant := Tresses.Resources.SAMPLE_RATE;
-      Samples_Per_Buffer : constant := 128;
+      Samples_Per_Buffer : constant := 256;
       Mixer_Buffer_Count : constant := HAL_Configuration.Mixer_Buffer_Count;
       Input_Buffer_Count : constant := HAL_Configuration.Input_Buffer_Count;
 
