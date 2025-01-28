@@ -1114,12 +1114,16 @@ package body WNM.GUI.Menu.Drawing is
                 Str      => Display_Text (Prev));
       end if;
 
-      X := Box_Left + 2;
-      Print (X_Offset => X,
-             Y_Offset => Value_Text_Y - 11,
-             Str      => Display_Text (Val),
-             Invert_From => Box_Left,
-             Invert_To   => Box_Right);
+      if not Show_Empty and then not Project.Library.Has_Project (Val) then
+         Draw_Str_Center (Value_Text_Y - 11, "-- No Project --");
+      else
+         X := Box_Left + 2;
+         Print (X_Offset => X,
+                Y_Offset => Value_Text_Y - 11,
+                Str      => Display_Text (Val),
+                Invert_From => Box_Left,
+                Invert_To   => Box_Right);
+      end if;
 
       if Next /= Invalid_Prj_Entry then
          X := Box_Left + 2;
