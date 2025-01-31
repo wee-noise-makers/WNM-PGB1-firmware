@@ -17,7 +17,7 @@ jobs:
         working-directory: simulator
     steps:
     
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Get date
         run: echo "BUILD_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
@@ -38,7 +38,7 @@ jobs:
         run: echo "RELEASE_NAME=wnm-ps1-simulator-${{github.sha}}-${{env.BUILD_DATE}}" >> $GITHUB_ENV
         shell: bash
 
-      - uses: alire-project/setup-alire@v2
+      - uses: alire-project/setup-alire@v4
         with:
           toolchain: gnat_native${{ matrix.gnat_version }} gprbuild --disable-assistant
 
@@ -56,16 +56,16 @@ jobs:
 
       - run: alr exec -- zip -r ${{env.RELEASE_NAME}}.zip ${{env.RELEASE_NAME}}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: windows-release-bundle
           path: simulator/${{env.RELEASE_NAME}}.zip
           
-      - name: Upload binaries to release
-        if: github.event_name == 'release'
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: simulator/${{env.RELEASE_NAME}}.zip
-          asset_name: ${{env.RELEASE_NAME}}
-          tag: ${{ github.ref }}    
+#      - name: Upload binaries to release
+#        if: github.event_name == 'release'
+#        uses: svenstaro/upload-release-action@v2
+#        with:
+#          repo_token: ${{ secrets.GITHUB_TOKEN }}
+#          file: simulator/${{env.RELEASE_NAME}}.zip
+#          asset_name: ${{env.RELEASE_NAME}}
+#          tag: ${{ github.ref }}    
