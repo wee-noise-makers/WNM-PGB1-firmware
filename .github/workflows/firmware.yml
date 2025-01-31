@@ -15,12 +15,15 @@ jobs:
       uses: alire-project/setup-alire@v4
       
     - name: Alire Update
+      working-directory: device/
       run: alr update
 
     - name: Alire Show
+      working-directory: device/
       run:  alr show --solve
 
     - name: Alire Build (release)
+      working-directory: device/
       run: alr build --release
 
     - name: Upload release ELF
