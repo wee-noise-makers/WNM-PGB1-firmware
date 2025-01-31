@@ -20,7 +20,9 @@ jobs:
 
     - name: Alire Show
       working-directory: device/
-      run:  alr show --solve
+      run: |
+        alr show --solve | tee dependencies.txt
+        git rev-parse HEAD | tee COMMIT-ID
 
     - name: Alire Build (release)
       working-directory: device/
@@ -29,21 +31,27 @@ jobs:
     - name: Upload release ELF
       uses: actions/upload-artifact@v4
       with:
-        name: Release Build Artifacts
+        name: Build Artifacts
         path: |
-          device/bin/*.elf
-          device/obj/release/map.txt
+          device/bin/WNM-*.elf
+          device/obj/release/*
+          dependencies.txt
+          COMMIT-ID
 
     - name: Build release UF2
       run: |
         wget https://github.com/raspberrypi/pico-sdk-tools/releases/download/v2.0.0-5/picotool-2.0.0-x86_64-lin.tar.gz
         tar xf picotool-2.0.0-x86_64-lin.tar.gz
-        ./picotool/picotool uf2 convert device/bin/*.elf  $(basename device/bin/*.elf .elf)-$(date +'%Y%m%d-%H%M').uf2
+        cp device/bin/*.elf .
+        ./picotool/picotool uf2 convert WNM-*.elf  $(basename WNM-*.elf .elf)-$(date +'%Y%m%d-%H%M').uf2
 
-    - name: Upload release EUF
+    - name: Upload release UF2
       uses: actions/upload-artifact@v4
       with:
-        name: Release UF2
+        name: Release Artifacts
         path: |
-          *.uf2
+          WNM-*.uf2
+          WNM-*.elf
+          dependencies.txt
+          COMMIT-ID
 
