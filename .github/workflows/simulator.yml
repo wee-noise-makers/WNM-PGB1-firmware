@@ -2,70 +2,20 @@ on:                    # Run the workflow for each of the following event:
   push:                # - A branch is pushed or updated.
   pull_request:        # - A pull-request is openned or updated.
   workflow_dispatch:   # - A manual run of the workflow is requested from the GitHub web interface.
-  release:
-    types: [created]   # - A release is created.
 
 jobs:
   build_native:
     strategy:
       matrix:
-        os: [windows-latest]
-        gnat_version: [^12]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     defaults:
       run:
         working-directory: simulator
     steps:
     
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - name: Get date
-        run: echo "BUILD_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
-        shell: bash
-
-      - name: Get release version
-        if: github.event_name == 'release'
-        id: get_version
-        uses: battila7/get-version-action@v2
-
-      - name: Set package name (release)
-        if: github.event_name == 'release'
-        run: echo "RELEASE_NAME=wnm-ps1-simulator-${{steps.get_version.outputs.version}}-${{env.BUILD_DATE}}" >> $GITHUB_ENV
-        shell: bash
-
-      - name: Set package name (release)
-        if: github.event_name != 'release'
-        run: echo "RELEASE_NAME=wnm-ps1-simulator-${{github.sha}}-${{env.BUILD_DATE}}" >> $GITHUB_ENV
-        shell: bash
-
-      - uses: alire-project/setup-alire@v2
-        with:
-          toolchain: gnat_native${{ matrix.gnat_version }} gprbuild --disable-assistant
-
-      - run: alr exec -- pacman --noconfirm -S mingw-w64-x86_64-rtaudio zip
-        if: startsWith(matrix.os, 'windows')
+      - uses: alire-project/setup-alire@v4
 
       - run: alr build
-      - run: alr exec -P -- gprinstall -p --prefix=${{env.RELEASE_NAME}}
-
-      - run: alr exec -- python ..\misc\dll_copy.py --copy .\${{env.RELEASE_NAME}}\bin\wnm_ps1_simulator.exe
-
-      - run: alr exec -- cp resources\README.txt ${{env.RELEASE_NAME}}\README.txt
-
-      - run: alr exec -- python3 ..\misc\alr_dependency_info.py ${{env.RELEASE_NAME}}\README.txt
-
-      - run: alr exec -- zip -r ${{env.RELEASE_NAME}}.zip ${{env.RELEASE_NAME}}
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: windows-release-bundle
-          path: simulator/${{env.RELEASE_NAME}}.zip
-          
-      - name: Upload binaries to release
-        if: github.event_name == 'release'
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: simulator/${{env.RELEASE_NAME}}.zip
-          asset_name: ${{env.RELEASE_NAME}}
-          tag: ${{ github.ref }}    
