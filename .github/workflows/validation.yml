@@ -23,6 +23,7 @@ jobs:
 
     - name: Alire Show
       working-directory: device/
+      run: alr show --solve
 
     - name: Alire Build (validation)
       working-directory: device/
