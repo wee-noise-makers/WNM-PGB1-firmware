@@ -42,7 +42,7 @@ jobs:
       run: |
         wget https://github.com/raspberrypi/pico-sdk-tools/releases/download/v2.0.0-5/picotool-2.0.0-x86_64-lin.tar.gz
         tar xf picotool-2.0.0-x86_64-lin.tar.gz
-        cp device/bin/*.elf .
+        cp device/bin/WNM-*.elf .
         ./picotool/picotool uf2 convert WNM-*.elf  $(basename WNM-*.elf .elf)-$(date +'%Y%m%d-%H%M').uf2
 
     - name: Upload release UF2
