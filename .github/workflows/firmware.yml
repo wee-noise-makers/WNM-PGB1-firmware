@@ -21,8 +21,8 @@ jobs:
     - name: Alire Show
       working-directory: device/
       run: |
-        alr show --solve | tee dependencies.txt
-        git rev-parse HEAD | tee COMMIT-ID
+        alr show --solve | tee ../dependencies.txt
+        git rev-parse HEAD | tee ../COMMIT-ID
 
     - name: Alire Build (release)
       working-directory: device/
