@@ -1,0 +1,45 @@
+name: Firmware
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Alire
+      uses: alire-project/setup-alire@v4
+      
+    - name: Alire Update
+      run: alr update
+
+    - name: Alire Show
+      run:  alr show --solve
+
+    - name: Alire Build (release)
+      run: alr build --release
+
+    - name: Upload release ELF
+      uses: actions/upload-artifact@v4
+      with:
+        name: Release Build Artifacts
+        path: |
+          device/bin/*.elf
+          device/obj/release/map.txt
+
+    - name: Build release UF2
+      run: |
+        wget https://github.com/raspberrypi/pico-sdk-tools/releases/download/v2.0.0-5/picotool-2.0.0-x86_64-lin.tar.gz
+        tar xf picotool-2.0.0-x86_64-lin.tar.gz
+        ./picotool/picotool uf2 convert device/bin/*.elf  $(basename device/bin/*.elf .elf)-$(date +'%Y%m%d-%H%M').uf2
+
+    - name: Upload release EUF
+      uses: actions/upload-artifact@v4
+      with:
+        name: Release UF2
+        path: *.uf2
+
