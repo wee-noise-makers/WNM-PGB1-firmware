@@ -41,5 +41,6 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: Release UF2
-        path: *.uf2
+        path: |
+          *.uf2
 
