@@ -91,7 +91,7 @@ package body WNM.Synth is
           when 1 => Voices.Kick_Voice.Triangle_Kick,
           when others => Voices.Kick_Voice.Chip_Kick);
 
-   subtype Snare_Engine_Range is MIDI.MIDI_Data range 0 .. 5;
+   subtype Snare_Engine_Range is MIDI.MIDI_Data range 0 .. 4;
    function Snare_Engines (V : MIDI.MIDI_Data)
                            return Voices.Snare_Voice.Snare_Engine
    is (case V is
