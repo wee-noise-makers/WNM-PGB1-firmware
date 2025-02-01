@@ -37,7 +37,9 @@ package body WNM.Persistent is
                              P_TP1_Threshold,
                              P_TP2_Threshold,
                              P_TP3_Threshold,
-                             P_LED_Dim);
+                             P_LED_Dim,
+                             P_MIDI_Clock_Input,
+                             P_MIDI_Clock_Output);
 
    for Persistent_Token use (P_Last_Project      => 0,
                              P_Main_Volume       => 1,
@@ -49,7 +51,9 @@ package body WNM.Persistent is
                              P_TP1_Threshold     => 7,
                              P_TP2_Threshold     => 8,
                              P_TP3_Threshold     => 9,
-                             P_LED_Dim           => 10);
+                             P_LED_Dim           => 10,
+                             P_MIDI_Clock_Input  => 11,
+                             P_MIDI_Clock_Output => 12);
 
    ----------
    -- Save --
@@ -89,6 +93,10 @@ package body WNM.Persistent is
                Output.Push (Out_UInt (Data.TP3_Threshold));
             when P_LED_Dim =>
                Output.Push (Out_UInt (Data.LED_Brightness));
+            when P_MIDI_Clock_Input =>
+               Output.Push (Data.MIDI_Clock_Input);
+            when P_MIDI_Clock_Output =>
+               Output.Push (Data.MIDI_Clock_Output);
          end case;
 
          exit when Output.Status /= Ok;
@@ -155,6 +163,10 @@ package body WNM.Persistent is
                Read_U32 (Input, Data.TP3_Threshold);
             when P_LED_Dim  =>
                Read_LED_Dim (Input, Data.LED_Brightness);
+            when P_MIDI_Clock_Input =>
+               Input.Read (Data.MIDI_Clock_Input);
+            when P_MIDI_Clock_Output =>
+               Input.Read (Data.MIDI_Clock_Output);
          end case;
 
          exit when Input.Status /= Ok;

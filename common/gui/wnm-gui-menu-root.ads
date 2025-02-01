@@ -27,6 +27,7 @@ private
 
    type Menu_Items is (Projects,
                        Inputs,
+                       MIDI_Settings,
                        DFU_Mode,
                        System_Info);
 

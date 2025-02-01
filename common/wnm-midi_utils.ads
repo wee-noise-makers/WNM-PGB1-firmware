@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                  Copyright (C) 2016-2023 Fabien Chouteau                  --
+--                     Copyright (C) 2025 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,45 +19,10 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-package WNM.GUI.Menu.Inputs is
+with MIDI;
 
-   procedure Push_Window;
+package WNM.MIDI_Utils is
 
-private
+   procedure Filter_External_Clock (Msg : MIDI.Message);
 
-   type Top_Settings is (Audio_In,
-                         Audio_In_FX);
-
-   function Top_Settings_Count is new Enum_Count (Top_Settings);
-
-   type Sub_Settings is
-     (Line_In_Mute,
-      Internal_Mic_Mute,
-      Headset_Mic_Mute,
-      Input_Volume,
-      Input_FX);
-
-   function Sub_Settings_Count is new Enum_Count (Sub_Settings);
-
-   package Sub_Settings_Next is new Enum_Next (Sub_Settings);
-   use Sub_Settings_Next;
-
-   type Instance is new Menu_Window with record
-      Current_Setting : Sub_Settings := Sub_Settings'First;
-   end record;
-
-   overriding
-   procedure Draw (This   : in out Instance);
-
-   overriding
-   procedure On_Event (This  : in out Instance;
-                       Event : Menu_Event);
-
-   overriding
-   procedure On_Pushed (This  : in out Instance) is null;
-
-   overriding
-   procedure On_Focus (This       : in out Instance;
-                       Exit_Value : Window_Exit_Value) is null;
-
-end WNM.GUI.Menu.Inputs;
+end WNM.MIDI_Utils;

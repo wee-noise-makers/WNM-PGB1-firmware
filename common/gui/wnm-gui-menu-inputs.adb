@@ -50,8 +50,7 @@ package body WNM.GUI.Menu.Inputs is
    function To_Top (S : Sub_Settings) return Top_Settings
    is (case S is
           when Line_In_Mute .. Input_Volume  => Audio_In,
-          when Input_FX                      => Audio_In_FX,
-          when MIDI_In_Mode .. MIDI_In_Clock => MIDI_In);
+          when Input_FX                      => Audio_In_FX);
 
    ----------
    -- Draw --
@@ -171,8 +170,6 @@ package body WNM.GUI.Menu.Inputs is
                      Value => Mixer.Input_FX,
                      Selected => Sub = Input_FX);
 
-         when MIDI_In =>
-            Draw_Title ("MIDI In", "");
       end case;
    end Draw;
 
@@ -203,8 +200,6 @@ package body WNM.GUI.Menu.Inputs is
                   Audio_Routing.Change_ADC_Volume (1);
                when Input_FX =>
                   Mixer.Input_FX_Next;
-               when others =>
-                  null;
             end case;
 
          when Down_Press =>
@@ -219,8 +214,6 @@ package body WNM.GUI.Menu.Inputs is
                   Audio_Routing.Change_ADC_Volume (-1);
                when Input_FX =>
                   Mixer.Input_FX_Prev;
-               when others =>
-                  null;
             end case;
 
          when B_Press =>

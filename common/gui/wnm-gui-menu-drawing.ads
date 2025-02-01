@@ -33,8 +33,8 @@ package WNM.GUI.Menu.Drawing is
    Title_Y_Offset : constant := 10;
    Box_Top    : constant := 22;
    Box_Bottom : constant := Screen.Height - 1;
-   Box_Left   : constant := 0; -- Bitmap_Fonts.Width;
-   Box_Right  : constant := Screen.Width - 1; -- Box_Left;
+   Box_Left   : constant := 0;
+   Box_Right  : constant := Screen.Width - 1;
 
    Box_Width : constant := Box_Right - Box_Left;
    Box_Height : constant := Box_Bottom - Box_Top;

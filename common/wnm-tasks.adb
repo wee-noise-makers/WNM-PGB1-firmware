@@ -66,11 +66,19 @@ package body WNM.Tasks is
             when MIDI.Sys =>
                case Msg.Cmd is
                   when MIDI.Start_Song =>
-                     WNM.MIDI_Clock.External_Start;
+
+                     if Persistent.Data.MIDI_Clock_Input then
+                        WNM.MIDI_Clock.External_Start;
+                     end if;
+
                   when MIDI.Stop_Song =>
                      WNM.MIDI_Clock.External_Stop;
                   when MIDI.Continue_Song =>
-                     WNM.MIDI_Clock.External_Continue;
+
+                     if Persistent.Data.MIDI_Clock_Input then
+                        WNM.MIDI_Clock.External_Continue;
+                     end if;
+
                   when MIDI.Timming_Tick =>
                      WNM.MIDI_Clock.External_Tick;
                   when others =>

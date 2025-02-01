@@ -38,6 +38,8 @@ package WNM.Persistent is
       TP2_Threshold       : HAL.UInt32;
       TP3_Threshold       : HAL.UInt32;
       LED_Brightness      : WNM.LEDs.Brightness;
+      MIDI_Clock_Input    : Boolean;
+      MIDI_Clock_Output   : Boolean;
    end record;
 
    Default : constant Persistent_Data :=
@@ -51,7 +53,9 @@ package WNM.Persistent is
       TP1_Threshold       => 700,
       TP2_Threshold       => 800,
       TP3_Threshold       => 730,
-      LED_Brightness      => WNM.LEDs.Brightness'Last - 1);
+      LED_Brightness      => WNM.LEDs.Brightness'Last - 1,
+      MIDI_Clock_Input    => True,
+      MIDI_Clock_Output   => True);
 
    Data : Persistent_Data := Default;
 

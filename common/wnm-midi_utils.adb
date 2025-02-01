@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                  Copyright (C) 2016-2023 Fabien Chouteau                  --
+--                     Copyright (C) 2025 Fabien Chouteau                    --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,45 +19,28 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-package WNM.GUI.Menu.Inputs is
+with MIDI; use MIDI;
 
-   procedure Push_Window;
+with WNM.Persistent;
 
-private
+package body WNM.MIDI_Utils is
 
-   type Top_Settings is (Audio_In,
-                         Audio_In_FX);
+   ---------------------------
+   -- Filter_External_Clock --
+   ---------------------------
 
-   function Top_Settings_Count is new Enum_Count (Top_Settings);
+   procedure Filter_External_Clock (Msg : MIDI.Message) is
+      Ext_Clock : constant Boolean :=
+          Msg.Kind = Sys
+        and then
+          Msg.Cmd in Start_Song | Continue_Song | Timming_Tick;
+   begin
 
-   type Sub_Settings is
-     (Line_In_Mute,
-      Internal_Mic_Mute,
-      Headset_Mic_Mute,
-      Input_Volume,
-      Input_FX);
+      --  Filter external clock events based on user settings
 
-   function Sub_Settings_Count is new Enum_Count (Sub_Settings);
+      if not Ext_Clock or else Persistent.Data.MIDI_Clock_Output then
+         WNM_HAL.Send_External (Msg);
+      end if;
+   end Filter_External_Clock;
 
-   package Sub_Settings_Next is new Enum_Next (Sub_Settings);
-   use Sub_Settings_Next;
-
-   type Instance is new Menu_Window with record
-      Current_Setting : Sub_Settings := Sub_Settings'First;
-   end record;
-
-   overriding
-   procedure Draw (This   : in out Instance);
-
-   overriding
-   procedure On_Event (This  : in out Instance;
-                       Event : Menu_Event);
-
-   overriding
-   procedure On_Pushed (This  : in out Instance) is null;
-
-   overriding
-   procedure On_Focus (This       : in out Instance;
-                       Exit_Value : Window_Exit_Value) is null;
-
-end WNM.GUI.Menu.Inputs;
+end WNM.MIDI_Utils;
