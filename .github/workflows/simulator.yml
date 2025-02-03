@@ -19,3 +19,13 @@ jobs:
       - uses: alire-project/setup-alire@v4
 
       - run: alr build
+
+      - name: Build ROM
+        run: ./simulator/bin/wnm-pgb1-rom-tool build simulator/share/wnm_pgb1_simulator/rom_desc.toml WNM-PGB1-factory
+
+      - name: Upload release UF2
+        uses: actions/upload-artifact@v4
+        with:
+          name: Factory filesystem and samples
+          path: |
+            WNM-*.uf2
