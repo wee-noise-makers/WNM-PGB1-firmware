@@ -1,8 +1,10 @@
+
 with FSmaker.Source;
 with FSmaker.Sink;
 
-with WNM_Configuration;
+with TOML;
 
+private with WNM_Configuration;
 private with FSmaker.Target.LittleFS;
 private with FSmaker.Block_Device.RAM;
 
@@ -25,6 +27,10 @@ package ROM_Builder.File_System is
 
    procedure Read_Data (This :        Instance;
                         File : in out FSmaker.Source.Class);
+
+   procedure Load_From_TOML (This     : in out Instance;
+                             Root     :        TOML.TOML_Value;
+                             TOML_Dir :        String);
 
    procedure Print_Tree (This : in out Instance);
 

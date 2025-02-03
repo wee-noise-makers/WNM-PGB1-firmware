@@ -97,6 +97,7 @@ package body ASFML_Sim.Coproc_Queues is
          end loop;
          delay 0.00001;
       end loop;
+
    exception
       when E : others =>
          Ada.Text_IO.Put_Line ("=== Copro Interrupts Task exception ===");

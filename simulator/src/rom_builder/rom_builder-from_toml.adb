@@ -1,6 +1,8 @@
-with System.Storage_Elements; use System.Storage_Elements;
 with Ada.Unchecked_Deallocation;
 with Ada.Directories;
+with Interfaces;
+with Interfaces.C;
+with Ada.Text_IO; use Ada.Text_IO;
 
 with ROM_Builder.Sample_Library;
 with ROM_Builder.File_System;
@@ -31,7 +33,7 @@ package body ROM_Builder.From_TOML is
 
    function FS_Addr (Img : RAM_Image) return System.Address is
    begin
-      return Img.Data (Img.Data'First)'Address;
+      return Img.Data (WNM_Configuration.Storage.FS_Base_Addr)'Address;
    end FS_Addr;
 
    ------------------
@@ -39,10 +41,9 @@ package body ROM_Builder.From_TOML is
    ------------------
 
    function Samples_Addr (Img : RAM_Image) return System.Address is
-      Offset : constant Storage_Offset :=
-        Img.Data'First + WNM_Configuration.Storage.FS_Byte_Size;
    begin
-      return Img.Data (Offset)'Address;
+      return Img.Data
+        (WNM_Configuration.Storage.Sample_Library_Base_Addr)'Address;
    end Samples_Addr;
 
    --------------------
@@ -59,6 +60,71 @@ package body ROM_Builder.From_TOML is
          raise Program_Error;
       end if;
    end Load_From_File;
+
+   -------------------
+   -- Load_From_UF2 --
+   -------------------
+
+   procedure Load_From_UF2 (Img : in out RAM_Image;
+                            Filename : String)
+   is
+      use UF2_Utils;
+      use Interfaces;
+
+      FD : constant File_Descriptor := Open_Read (Filename, Binary);
+      Block : aliased UF2_Utils.UF2_Block;
+      RD_Cnt : Integer;
+
+      Loaded_Bytes_Count : Natural := 0;
+   begin
+
+      if FD = Invalid_FD then
+         raise Program_Error with Errno_Message;
+      end if;
+
+      loop
+         RD_Cnt := Read (FD, Block'Address, Block'Size / 8);
+         case RD_Cnt is
+            when 0   => exit;
+            when 512 => null;
+            when others =>
+               raise Program_Error with "Errno: " & Errno_Message;
+         end case;
+
+         if Block.Magic_Start_0 /= 16#0A324655# then
+            raise Program_Error with "Invalid magic start 0 in " & Filename;
+         elsif Block.Magic_Start_1 /= 16#9E5D5157# then
+            raise Program_Error with "Invalid magic start 1 in " & Filename;
+         elsif Block.Magic_End /= 16#0AB16F30# then
+            raise Program_Error
+              with "Invalid magic end in " & Filename & " -" &
+              Block.Magic_End'Img;
+         elsif Storage_Offset (Block.Target_Address) not in ROM_Addr_Range then
+            --  Put_Line ("Block Addr (" &
+            --              Block.Target_Address'Img & ") not in ROM range");
+            null;
+         else
+
+            declare
+               Offset : constant Unsigned_32 := Block.Target_Address;
+            begin
+
+               --  Put_Line ("Loading UF2 block from " & Filename & " at" &
+               --              Block.Target_Address'Img);
+               for Idx in 0 .. Block.Payload_Size - 1 loop
+                  Img.Data (Storage_Offset (Offset + Idx)) :=
+                    Block.Data (UF2_Payload_Count (Idx));
+               end loop;
+               Loaded_Bytes_Count := @ + Natural (Block.Payload_Size);
+            end;
+         end if;
+
+      end loop;
+
+      Close (FD);
+
+      Put_Line (Loaded_Bytes_Count'Img & " bytes loaded from " & Filename);
+   end Load_From_UF2;
 
    ----------------
    -- Open_Image --
@@ -113,6 +179,8 @@ package body ROM_Builder.From_TOML is
 
       Lib.Load_From_TOML (Root, TOML_Dir);
 
+      FS.Load_From_TOML (Root, TOML_Dir);
+
       FS.Print_Tree;
 
       FS.Write_Data (Img);
@@ -163,21 +231,25 @@ package body ROM_Builder.From_TOML is
    -- Write_UF2 --
    ---------------
 
-   procedure Write_UF2 (Img : RAM_Image; Root_Dir : String) is
+   procedure Write_UF2 (Img : RAM_Image;
+                        Root_Dir : String;
+                        Sample_Lib_Filename : String := "sample_library.uf2";
+                        Filesystem_Filename : String := "file_system.uf2")
+   is
       use WNM_Configuration.Storage;
       use UF2_Utils.File_IO;
 
       Sample_Lib_Data : Storage_Array (1 .. Sample_Library_Byte_Size)
-        with Address => Img.Data (Sample_Library_Offset)'Address;
+        with Address => Img.Data (Sample_Library_Base_Addr)'Address;
 
       FS_Data : Storage_Array (1 .. FS_Byte_Size)
-        with Address => Img.Data (FS_Offset)'Address;
+        with Address => Img.Data (FS_Base_Addr)'Address;
 
       Sample_Lib_File : UF2_Sequential_IO.File_Type;
       FS_File : UF2_Sequential_IO.File_Type;
    begin
       UF2_Sequential_IO.Create (Sample_Lib_File,
-                                Name => Root_Dir & "/sample_library.uf2");
+                                Name => Root_Dir & "/" & Sample_Lib_Filename);
 
       Write_UF2
         (Data => Sample_Lib_Data,
@@ -190,7 +262,7 @@ package body ROM_Builder.From_TOML is
       UF2_Sequential_IO.Close (Sample_Lib_File);
 
       UF2_Sequential_IO.Create (FS_File,
-                                Name => Root_Dir & "/file_system.uf2");
+                                Name => Root_Dir & "/" & Filesystem_Filename);
 
       Write_UF2
         (Data => FS_Data,
@@ -241,5 +313,192 @@ package body ROM_Builder.From_TOML is
       This.Next_Out := This.Next_Out + Storage_Count (Len);
       return Len;
    end Read;
+
+   package RAM_Image_Backend is
+      function Create (Img : aliased ROM_Builder.From_TOML.RAM_Image)
+                       return LFS_Config_Access;
+
+   end RAM_Image_Backend;
+
+   package body RAM_Image_Backend is
+      use Littlefs;
+      use Interfaces;
+      use Interfaces.C;
+
+      pragma Warnings (Off, "lower bound test");
+
+      function Read (C      : access constant LFS_Config;
+                     Block  : LFS_Block;
+                     Off    : LFS_Offset;
+                     Buffer : System.Address;
+                     Size   : LFS_Size)
+                     return int
+        with Convention => C;
+
+      function Prog (C      : access constant LFS_Config;
+                     Block  : LFS_Block;
+                     Off    : LFS_Offset;
+                     Buffer : System.Address;
+                     Size   : LFS_Size)
+                     return int
+        with Convention => C;
+      function Erase (C     : access constant LFS_Config;
+                      Block : LFS_Block)
+                      return int
+        with Convention => C;
+      function Sync (C : access constant LFS_Config) return int
+        with Convention => C;
+
+      ----------
+      -- Read --
+      ----------
+
+      function Read (C      : access constant LFS_Config;
+                     Block  : LFS_Block;
+                     Off    : LFS_Offset;
+                     Buffer : System.Address;
+                     Size   : LFS_Size)
+                     return int
+      is
+         Offset : constant LFS_Offset := Off + C.Block_Size * LFS_Size (Block);
+
+         Dst : Storage_Array (1 .. Storage_Offset (Size))
+           with Address => Buffer;
+
+         Src : Storage_Array (1 .. WNM_Configuration.Storage.FS_Byte_Size)
+           with Address => C.Context;
+
+      begin
+         if Block not in 0 .. WNM_Configuration.Storage.FS_Sectors - 1 then
+            raise Program_Error with "Invalid block to read: " & Block'Img;
+         end if;
+
+         Dst := Src (Src'First + Storage_Count (Offset) ..
+                       Src'First + Storage_Count (Offset + Size - 1));
+         return 0;
+      end Read;
+
+      ----------
+      -- Prog --
+      ----------
+
+      function Prog (C      : access constant LFS_Config;
+                     Block  : LFS_Block;
+                     Off    : LFS_Offset;
+                     Buffer : System.Address;
+                     Size   : LFS_Size)
+                     return int
+      is
+         Offset : constant LFS_Offset := Off + C.Block_Size * LFS_Size (Block);
+         Src : Storage_Array (1 .. Storage_Offset (Size))
+           with Address => Buffer;
+
+         Dst : Storage_Array (1 .. WNM_Configuration.Storage.FS_Byte_Size)
+           with Address => C.Context;
+
+      begin
+
+         if Off /= 0 then
+            raise Program_Error;
+         end if;
+
+         if Block not in 0 .. WNM_Configuration.Storage.FS_Sectors - 1 then
+            raise Program_Error with "Invalid block to program: " & Block'Img;
+         end if;
+
+         Dst (Dst'First + Storage_Count (Offset) ..
+                Dst'First + Storage_Count (Offset + Size - 1)) := Src;
+         return 0;
+      end Prog;
+
+      -----------
+      -- Erase --
+      -----------
+
+      function Erase (C : access constant LFS_Config;
+                      Block : LFS_Block)
+                      return int
+      is
+         Size : constant LFS_Size := C.Block_Size;
+         Offset : constant LFS_Offset := C.Block_Size * LFS_Size (Block);
+         Src : constant Storage_Array (1 .. Storage_Offset (Size)) :=
+           (others => 16#FF#);
+
+         Dst : Storage_Array (1 .. WNM_Configuration.Storage.FS_Byte_Size)
+           with Address => C.Context;
+
+         First : constant Storage_Offset :=
+           Dst'First + Storage_Count (Offset);
+         Last : constant Storage_Offset :=
+           Dst'First + Storage_Count (Offset + Size - 1);
+      begin
+         if Block not in 0 .. WNM_Configuration.Storage.FS_Sectors - 1 then
+            raise Program_Error with "Invalid block to erase: " & Block'Img;
+         end if;
+         Dst (First .. Last) := Src;
+         return 0;
+      end Erase;
+
+      ----------
+      -- Sync --
+      ----------
+
+      function Sync (C : access constant LFS_Config) return int is
+         pragma Unreferenced (C);
+      begin
+         return 0;
+      end Sync;
+
+      ------------
+      -- Create --
+      ------------
+
+      function Create (Img : aliased ROM_Builder.From_TOML.RAM_Image)
+                       return LFS_Config_Access
+      is
+         Ret : constant LFS_Config_Access := new LFS_Config;
+
+         LFS_Block_Size : constant :=
+           WNM_Configuration.Storage.Sector_Byte_Size;
+
+         type Buffer is new Storage_Array (1 .. LFS_Block_Size);
+         type SA_Access is access all Buffer;
+         LFS_Read_Buffer : constant not null SA_Access := new Buffer;
+         LFS_Prog_Buffer : constant not null SA_Access := new Buffer;
+         LFS_Lookahead_Buffer : constant not null SA_Access := new Buffer;
+
+      begin
+         Ret.Context := Img.FS_Addr;
+         Ret.Read := Read'Access;
+         Ret.Prog := Prog'Access;
+         Ret.Erase := Erase'Access;
+         Ret.Sync := Sync'Access;
+         Ret.Block_Size := LFS_Block_Size;
+         Ret.Read_Size := LFS_Block_Size;
+         Ret.Prog_Size := LFS_Block_Size;
+
+         Ret.Block_Count := WNM_Configuration.Storage.FS_Sectors;
+
+         Ret.Block_Cycles := 700;
+         Ret.Cache_Size := LFS_Block_Size;
+         Ret.Lookahead_Size := LFS_Block_Size;
+         Ret.Read_Buffer := LFS_Read_Buffer.all'Address;
+         Ret.Prog_Buffer := LFS_Prog_Buffer.all'Address;
+         Ret.Lookahead_Buffer := LFS_Lookahead_Buffer.all'Address;
+         Ret.Name_Max := 0;
+         Ret.File_Max := 0;
+         Ret.Attr_Max := 0;
+         return Ret;
+      end Create;
+
+   end RAM_Image_Backend;
+
+   -----------------------
+   -- Create_LFS_Config --
+   -----------------------
+
+   function Create_LFS_Config (Img : aliased RAM_Image)
+                               return LFS_Config_Access
+   is (RAM_Image_Backend.Create (Img));
 
 end ROM_Builder.From_TOML;

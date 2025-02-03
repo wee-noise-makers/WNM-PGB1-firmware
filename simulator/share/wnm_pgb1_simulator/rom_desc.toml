@@ -67,3 +67,11 @@
 62 = { name = "Waterglass", file = "samples/avl_drumkits/Gimme-A-Hand-1.0/raw_32000/WaterglassHi-Soft.raw"}
 63 = { name = "Glass Break", file = "samples/VSCO-2-CE/raw_32000/glass_break5.raw"}
 64 = { name = "Cymb Timp", file = "samples/VSCO-2-CE/raw_32000/cymb_timp.raw"}
+
+[files]
+'shutdown.tmp_prj' = "projects/tech.wnm_prj" # project that will be loaded at boot
+'01Tech           .wnm_prj' = "projects/tech.wnm_prj"
+'02Attention      .wnm_prj' = "projects/attention.wnm_prj"
+'03Epoque         .wnm_prj' = "projects/epoque.wnm_prj"
+'04Trap           .wnm_prj' = "projects/trap.wnm_prj"
+'05Anymore        .wnm_prj' = "projects/anymore.wnm_prj"

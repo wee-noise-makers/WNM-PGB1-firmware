@@ -21,184 +21,11 @@ package body ASFML_SIM_Storage is
 
    Sample_Data : WNM.Sample_Library.Global_Sample_Array;
 
-   LFS_Block_Size : constant := WNM_Configuration.Storage.Sector_Byte_Size;
-   LFS_Read_Buffer : Storage_Array (1 .. LFS_Block_Size);
-   LFS_Prog_Buffer : Storage_Array (1 .. LFS_Block_Size);
-   LFS_Lookahead_Buffer : Storage_Array (1 .. LFS_Block_Size);
-
    procedure Load_Sample_Data (Img : ROM_Builder.From_TOML.RAM_Image);
    procedure Save_Sample_Data (Img : ROM_Builder.From_TOML.RAM_Image);
 
-   type LFS_Config_Access is access all Standard.Littlefs.LFS_Config;
-
-   Config : LFS_Config_Access := null;
+   Config : ROM_Builder.From_TOML.LFS_Config_Access := null;
    Img : aliased ROM_Builder.From_TOML.RAM_Image;
-
-   package RAM_Image_Backend is
-      function Create (Img : aliased ROM_Builder.From_TOML.RAM_Image)
-                       return LFS_Config_Access;
-
-   end RAM_Image_Backend;
-
-   package body RAM_Image_Backend is
-
-      pragma Warnings (Off, "lower bound test");
-
-      function Read (C      : access constant LFS_Config;
-                     Block  : LFS_Block;
-                     Off    : LFS_Offset;
-                     Buffer : System.Address;
-                     Size   : LFS_Size)
-                     return int
-        with Convention => C;
-
-      function Prog (C      : access constant LFS_Config;
-                     Block  : LFS_Block;
-                     Off    : LFS_Offset;
-                     Buffer : System.Address;
-                     Size   : LFS_Size)
-                     return int
-        with Convention => C;
-      function Erase (C     : access constant LFS_Config;
-                      Block : LFS_Block)
-                      return int
-        with Convention => C;
-      function Sync (C : access constant LFS_Config) return int
-        with Convention => C;
-
-      ----------
-      -- Read --
-      ----------
-
-      function Read (C      : access constant LFS_Config;
-                     Block  : LFS_Block;
-                     Off    : LFS_Offset;
-                     Buffer : System.Address;
-                     Size   : LFS_Size)
-                     return int
-      is
-         Offset : constant LFS_Offset := Off + C.Block_Size * LFS_Size (Block);
-
-         Dst : Storage_Array (1 .. Storage_Offset (Size))
-           with Address => Buffer;
-
-         Src : Storage_Array (1 .. WNM_Configuration.Storage.FS_Byte_Size)
-           with Address => C.Context;
-
-      begin
-         if Block not in 0 .. WNM_Configuration.Storage.FS_Sectors - 1 then
-            raise Program_Error with "Invalid block to read: " & Block'Img;
-         end if;
-
-         Dst := Src (Src'First + Storage_Count (Offset) ..
-                       Src'First + Storage_Count (Offset + Size - 1));
-         return 0;
-      end Read;
-
-      ----------
-      -- Prog --
-      ----------
-
-      function Prog (C      : access constant LFS_Config;
-                     Block  : LFS_Block;
-                     Off    : LFS_Offset;
-                     Buffer : System.Address;
-                     Size   : LFS_Size)
-                     return int
-      is
-         Offset : constant LFS_Offset := Off + C.Block_Size * LFS_Size (Block);
-         Src : Storage_Array (1 .. Storage_Offset (Size))
-           with Address => Buffer;
-
-         Dst : Storage_Array (1 .. WNM_Configuration.Storage.FS_Byte_Size)
-           with Address => C.Context;
-
-      begin
-
-         if Off /= 0 then
-            raise Program_Error;
-         end if;
-
-         if Block not in 0 .. WNM_Configuration.Storage.FS_Sectors - 1 then
-            raise Program_Error with "Invalid block to program: " & Block'Img;
-         end if;
-
-         Dst (Dst'First + Storage_Count (Offset) ..
-                Dst'First + Storage_Count (Offset + Size - 1)) := Src;
-         return 0;
-      end Prog;
-
-      -----------
-      -- Erase --
-      -----------
-
-      function Erase (C : access constant LFS_Config;
-                      Block : LFS_Block)
-                      return int
-      is
-         Size : constant LFS_Size := C.Block_Size;
-         Offset : constant LFS_Offset := C.Block_Size * LFS_Size (Block);
-         Src : constant Storage_Array (1 .. Storage_Offset (Size)) :=
-           (others => 16#FF#);
-
-         Dst : Storage_Array (1 .. WNM_Configuration.Storage.FS_Byte_Size)
-           with Address => C.Context;
-
-         First : constant Storage_Offset :=
-           Dst'First + Storage_Count (Offset);
-         Last : constant Storage_Offset :=
-           Dst'First + Storage_Count (Offset + Size - 1);
-      begin
-         if Block not in 0 .. WNM_Configuration.Storage.FS_Sectors - 1 then
-            raise Program_Error with "Invalid block to erase: " & Block'Img;
-         end if;
-         Dst (First .. Last) := Src;
-         return 0;
-      end Erase;
-
-      ----------
-      -- Sync --
-      ----------
-
-      function Sync (C : access constant LFS_Config) return int is
-         pragma Unreferenced (C);
-      begin
-         return 0;
-      end Sync;
-
-      ------------
-      -- Create --
-      ------------
-
-      function Create (Img : aliased ROM_Builder.From_TOML.RAM_Image)
-                       return LFS_Config_Access
-      is
-         Ret : constant LFS_Config_Access := new LFS_Config;
-      begin
-         Ret.Context := Img.FS_Addr;
-         Ret.Read := Read'Access;
-         Ret.Prog := Prog'Access;
-         Ret.Erase := Erase'Access;
-         Ret.Sync := Sync'Access;
-         Ret.Block_Size := LFS_Block_Size;
-         Ret.Read_Size := LFS_Block_Size;
-         Ret.Prog_Size := LFS_Block_Size;
-
-         Ret.Block_Count := WNM_Configuration.Storage.FS_Sectors;
-
-         Ret.Block_Cycles := 700;
-         Ret.Cache_Size := LFS_Block_Size;
-         Ret.Lookahead_Size := LFS_Block_Size;
-         Ret.Read_Buffer := LFS_Read_Buffer'Address;
-         Ret.Prog_Buffer := LFS_Prog_Buffer'Address;
-         Ret.Lookahead_Buffer := LFS_Lookahead_Buffer'Address;
-         Ret.Name_Max := 0;
-         Ret.File_Max := 0;
-         Ret.Attr_Max := 0;
-         return Ret;
-      end Create;
-
-   end RAM_Image_Backend;
 
    --------------------
    -- Get_LFS_Config --
@@ -377,7 +204,7 @@ package body ASFML_SIM_Storage is
       end if;
 
       Load_Sample_Data (Img);
-      Config := RAM_Image_Backend.Create (Img);
+      Config := Img.Create_LFS_Config;
 
       return "";
    end Load_ROM;
@@ -392,7 +219,7 @@ package body ASFML_SIM_Storage is
       ROM_Builder.From_TOML.Build_From_TOML (Img, TOML_Path,
                                              Format_FS => True);
       Load_Sample_Data (Img);
-      Config := RAM_Image_Backend.Create (Img);
+      Config := Img.Create_LFS_Config;
       return "";
    end Create_ROM;
 
