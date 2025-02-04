@@ -21,7 +21,7 @@ jobs:
       - run: alr build
 
       - name: Build ROM
-        run: ./bin/wnm-pgb1-rom-tool build share/wnm_pgb1_simulator/rom_desc.toml WNM-PGB1-factory
+        run: ./bin/wnm-pgb1-rom-tool build share/wnm_pgb1_simulator/rom_desc.toml ../WNM-PGB1-factory
 
       - name: Upload filesystem and samples UF2
         uses: actions/upload-artifact@v4

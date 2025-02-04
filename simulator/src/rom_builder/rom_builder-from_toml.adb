@@ -251,6 +251,7 @@ package body ROM_Builder.From_TOML is
       UF2_Sequential_IO.Create (Sample_Lib_File,
                                 Name => Root_Dir & "/" & Sample_Lib_Filename);
 
+      Put_Line ("Writing " & Sample_Lib_Filename);
       Write_UF2
         (Data => Sample_Lib_Data,
          Start_Address => Sample_Library_Base_Addr,
@@ -263,6 +264,7 @@ package body ROM_Builder.From_TOML is
 
       UF2_Sequential_IO.Create (FS_File,
                                 Name => Root_Dir & "/" & Filesystem_Filename);
+      Put_Line ("Writing " & Filesystem_Filename);
 
       Write_UF2
         (Data => FS_Data,
