@@ -26,6 +26,7 @@ with HAL;
 package WNM.Sample_Library
 with Elaborate_Body
 is
+   use WNM_Configuration.Samples;
 
    --  Audio samples are located in a dedicated part of the Flash. All the
    --  sample have the same amout of memory available which means that getting
@@ -55,21 +56,8 @@ is
 
    subtype Sample_Storage_Len is HAL.UInt32;
 
-   Samples                 : constant :=
-     WNM_Configuration.Storage.Nbr_Samples;
-
-   Single_Sample_Data_Byte_Size : constant :=
-     WNM_Configuration.Storage.Sample_Library_Byte_Size / Samples;
-
-   Sample_Metadata_Byte_Size : constant :=
-     WNM_Configuration.Storage.Sample_Name_Length
-       + (Sample_Storage_Len'Size / 8);
-
-   Sample_Audio_Byte_Size : constant :=
-     Single_Sample_Data_Byte_Size - Sample_Metadata_Byte_Size;
-
-   Points_Per_Sample : constant :=
-     Sample_Audio_Byte_Size / 2;
+   pragma Compile_Time_Error
+     (Sample_Storage_Len'Size /= Sample_Storage_Len_Size, "Invalid size");
 
    type Sample_Point_Count is range 0 .. Points_Per_Sample;
    subtype Sample_Point_Index
@@ -78,7 +66,7 @@ is
    type Sample_Audio_Data is array (Sample_Point_Index) of Mono_Point
      with Size => Points_Per_Sample * 16;
 
-   Sample_Id_Last : constant := Samples - 1;
+   Sample_Id_Last : constant := Sample_Count - 1;
    type Sample_Index is new HAL.UInt7 range 0 .. Sample_Id_Last;
 
    subtype Sample_Entry_Name
@@ -104,10 +92,6 @@ is
    function Entry_Name (Index : Sample_Index) return Sample_Entry_Name;
 
    function Entry_Len (Index : Sample_Index) return Sample_Point_Count;
-
-   function Entry_Device_Address (Index : Sample_Index)
-                                  return HAL.UInt32;
-   --  Return the base address of an sample entry in the device memory space
 
    procedure Load (Id : Sample_Index);
    procedure Load;

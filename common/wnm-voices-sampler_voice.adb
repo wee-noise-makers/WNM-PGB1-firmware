@@ -31,6 +31,7 @@ with WNM.Sample_Library; use WNM.Sample_Library;
 with WNM.Sample_Recording;
 
 package body WNM.Voices.Sampler_Voice is
+   use WNM_Configuration.Samples;
 
    C4_Phase_Incr : constant := 2.0**(Phase_Frac_Bits);
 

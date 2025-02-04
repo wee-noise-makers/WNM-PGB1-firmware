@@ -94,7 +94,7 @@ private
    Phase_Frac_Bits : constant := Sample_Phase'Size - Phase_Integer_Bits;
 
    pragma Compile_Time_Error
-     (2**Phase_Integer_Bits < WNM.Sample_Library.Points_Per_Sample,
+     (2**Phase_Integer_Bits < WNM_Configuration.Samples.Points_Per_Sample,
       "Interger part too small for sample point count");
 
    type Instance

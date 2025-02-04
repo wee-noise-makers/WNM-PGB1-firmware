@@ -20,7 +20,6 @@
 -------------------------------------------------------------------------------
 
 with HAL; use HAL;
-with WNM.Sample_Library;
 with Tresses;
 
 package WNM.QOA is
@@ -47,7 +46,7 @@ package WNM.QOA is
    Points_Per_Sample : constant := Frames_Per_Sample * Points_Per_Frame;
 
    pragma Compile_Time_Error
-     (Points_Per_Sample < WNM.Sample_Library.Points_Per_Sample,
+     (Points_Per_Sample < WNM_Configuration.Samples.Points_Per_Sample,
       "QOA sample too small");
 
    Slice_Bit_Size : constant := Points_Per_Slice * 3 + 4;

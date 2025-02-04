@@ -62,19 +62,6 @@ package body WNM.Sample_Library is
       end if;
    end Entry_Len;
 
-   --------------------------
-   -- Entry_Device_Address --
-   --------------------------
-
-   function Entry_Device_Address (Index : Sample_Index) return HAL.UInt32
-   is
-      use WNM_Configuration.Storage;
-      use HAL;
-   begin
-      return Sample_Library_Base_Addr +
-        UInt32 (Index) * Sectors_Per_Sample * Sector_Byte_Size;
-   end Entry_Device_Address;
-
    ----------
    -- Load --
    ----------
