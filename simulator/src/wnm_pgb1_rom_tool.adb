@@ -207,7 +207,7 @@ procedure WNM_PGB1_ROM_TOOL is
       Put_Line (" - " & Img (List));
       Put_Line (" - " & Img (Extract) & " UF2_FILE_IN FILE_TO_EXTRACT");
       Put_Line (" - " & Img (Extract_All) & "UF2_FILE_IN");
-      Put_Line (" - " & Img (Build)  & "TOML_DESC OUTPUT_PREFIX");
+      Put_Line (" - " & Img (Build)  & " TOML_DESC OUTPUT_PREFIX");
       GNAT.OS_Lib.OS_Exit (1);
    end Usage;
 
@@ -276,8 +276,6 @@ begin
                         Sample_Lib_Filename => Arg2 & "-sample-pack.uf2",
                         Filesystem_Filename => Arg2 & "-filesystem.uf2");
    end case;
-
-   GNAT.OS_Lib.OS_Exit (0);
 
 exception
    when E : others =>

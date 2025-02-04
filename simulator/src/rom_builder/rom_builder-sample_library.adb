@@ -1,12 +1,9 @@
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with System.Storage_Elements;
 with Interfaces; use Interfaces;
-with HAL;
 
 with FSmaker.Source.File;
 with Simple_Logging;
-with WNM.Sample_Library; use WNM.Sample_Library;
-with WNM_Configuration;
 
 with Ada.Text_IO;
 with GNAT.OS_Lib;
@@ -15,6 +12,19 @@ with Ada.Strings.Fixed;
 with UF2_Utils.File_IO;
 
 package body ROM_Builder.Sample_Library is
+
+   --------------------------
+   -- Entry_Device_Address --
+   --------------------------
+
+   function Entry_Device_Address (Index : Sample_Index) return HAL.UInt32
+   is
+      use WNM_Configuration.Storage;
+      use HAL;
+   begin
+      return Sample_Library_Base_Addr +
+        UInt32 (Index) * Sectors_Per_Sample * Sector_Byte_Size;
+   end Entry_Device_Address;
 
    --------------------
    -- Load_From_File --
@@ -27,7 +37,7 @@ package body ROM_Builder.Sample_Library is
       Src : FSmaker.Source.File.Instance :=
         FSmaker.Source.File.Create (Filename);
 
-      Points : WNM.Sample_Library.Sample_Audio_Data := (others => 0);
+      Points : Sample_Audio_Data := (others => 0);
       Len    : Natural;
    begin
 
@@ -52,7 +62,7 @@ package body ROM_Builder.Sample_Library is
 
       Len : constant Natural := Natural'Min (Name'Length, Sample_Name_Length);
    begin
-      if Name'Length > WNM.Sample_Library.Sample_Entry_Name'Length then
+      if Name'Length > Sample_Entry_Name'Length then
          Simple_Logging.Warning ("Sample name too long: '" & Name  & "'");
       end if;
 
@@ -170,61 +180,55 @@ package body ROM_Builder.Sample_Library is
    -- Write_UF2_Single --
    ----------------------
 
-   procedure Write_UF2_Single (Id     : WNM.Sample_Library.Sample_Index;
-                               Sample : WNM.Sample_Library.Single_Sample_Data;
+   procedure Write_UF2_Single (Id       : Sample_Index;
+                               Name     : String;
+                               Addr     : System.Address;
                                Root_Dir : String)
    is
-      use HAL;
-
+      use GNAT.OS_Lib;
       use UF2_Utils.File_IO;
       use Ada.Strings.Fixed;
       use System.Storage_Elements;
 
       Filename : constant String :=
         Root_Dir & "/" &
-        Trim (Id'Img & "-" & Sample.Name, Ada.Strings.Both) &
+        Trim (Id'Img & "-" & Name, Ada.Strings.Both) &
         ".uf2_wnm_sample";
 
       Filename_Bin : constant String :=
         Root_Dir & "/" &
-        Trim (Id'Img & "-" & Sample.Name, Ada.Strings.Both) &
+        Trim (Id'Img & "-" & Name, Ada.Strings.Both) &
         ".bin_wnm_sample";
 
       File : UF2_Sequential_IO.File_Type;
       Data : Storage_Array (1 .. Single_Sample_Data'Size / 8)
-        with Address => Sample'Address;
+        with Address => Addr;
+
+      FD : constant File_Descriptor :=
+        Create_File (Filename_Bin, Binary);
+      Len : Integer;
 
    begin
-      if Sample.Len /= 0 then
-
-         declare
-            use GNAT.OS_Lib;
-            FD : constant File_Descriptor :=
-              Create_File (Filename_Bin, Binary);
-            Len : Integer;
-         begin
-            Ada.Text_IO.Put_Line (Filename_Bin);
-            Len := Write (FD, Data'Address, Data'Size / 8);
-            if Len /= Data'Size / 8 then
-               Ada.Text_IO.Put_Line ("Cannot write '" & Filename_Bin & "'");
-            end if;
-            Close (FD);
-         end;
-
-         Ada.Text_IO.Put_Line (Filename);
-
-         UF2_Sequential_IO.Create (File, Name => Filename);
-
-         Write_UF2
-           (Data => Data,
-            Start_Address => Unsigned_32 (Entry_Device_Address (Id)),
-            File => File,
-            Max_Block_Size => 256,
-            Flags  => 16#00002000#,
-            Family => UF2_Family);
-
-         UF2_Sequential_IO.Close (File);
+      Ada.Text_IO.Put_Line (Filename_Bin);
+      Len := Write (FD, Data'Address, Data'Size / 8);
+      if Len /= Data'Size / 8 then
+         Ada.Text_IO.Put_Line ("Cannot write '" & Filename_Bin & "'");
       end if;
+      Close (FD);
+
+      Ada.Text_IO.Put_Line (Filename);
+
+      UF2_Sequential_IO.Create (File, Name => Filename);
+
+      Write_UF2
+        (Data => Data,
+         Start_Address => Unsigned_32 (Entry_Device_Address (Id)),
+         File => File,
+         Max_Block_Size => 256,
+         Flags  => 16#00002000#,
+         Family => UF2_Family);
+
+      UF2_Sequential_IO.Close (File);
    end Write_UF2_Single;
 
 end ROM_Builder.Sample_Library;

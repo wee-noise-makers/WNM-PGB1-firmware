@@ -99,4 +99,24 @@ package WNM_Configuration is
       Sample_Name_Length       : constant := 14;
 
    end Storage;
+
+   package Samples is
+      Sample_Count : constant :=
+        WNM_Configuration.Storage.Nbr_Samples;
+
+      Single_Sample_Data_Byte_Size : constant :=
+        WNM_Configuration.Storage.Sample_Library_Byte_Size / Sample_Count;
+
+      Sample_Storage_Len_Size : constant := 32;
+
+      Sample_Metadata_Byte_Size : constant :=
+        WNM_Configuration.Storage.Sample_Name_Length
+          + (Sample_Storage_Len_Size / 8);
+
+      Sample_Audio_Byte_Size : constant :=
+        Single_Sample_Data_Byte_Size - Sample_Metadata_Byte_Size;
+
+      Points_Per_Sample : constant :=
+        Sample_Audio_Byte_Size / 2;
+   end Samples;
 end WNM_Configuration;

@@ -228,16 +228,20 @@ package body ASFML_SIM_Storage is
    --------------
 
    function Save_ROM (Path : String) return String is
+      use WNM.Sample_Library;
    begin
       Save_Sample_Data (Img);
       Img.Write_To_File (Path);
       Img.Write_UF2 (ROM_Dir);
 
       for Id in WNM.Sample_Library.Sample_Index loop
-         ROM_Builder.Sample_Library.Write_UF2_Single
-           (Id,
-            WNM.Sample_Library.Sample_Data.all (Id),
-            ROM_Dir);
+         if WNM.Sample_Library.Entry_Len (Id) /= 0 then
+            ROM_Builder.Sample_Library.Write_UF2_Single
+              (ROM_Builder.Sample_Library.Sample_Index (Id),
+               String (WNM.Sample_Library.Entry_Name (Id)),
+               WNM.Sample_Library.Sample_Data.all (Id)'Address,
+               ROM_Dir);
+         end if;
       end loop;
 
       return "";
