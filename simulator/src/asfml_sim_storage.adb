@@ -267,7 +267,7 @@ package body ASFML_SIM_Storage is
                then Getenv ("HOMEDRIVE").all & Getenv ("HOMEPATH").all
                else Getenv ("HOME").all);
 
-            ROM_Dir : constant String := Home_Dir & "/.config/wnm-ps1/" &
+            ROM_Dir : constant String := Home_Dir & "/.config/wnm-pgb1/" &
               Wnm_Pgb1_Simulator_Config.Crate_Version & "/";
          begin
             Ada.Directories.Create_Path (ROM_Dir);

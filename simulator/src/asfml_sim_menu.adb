@@ -112,7 +112,7 @@ package body ASFML_SIM_Menu is
       setPosition (Text, Menu_Pos + (5.0, 5.0));
       setCharacterSize (Text, 20);
       setFont (Text, Font);
-      setString (Text, "WNM-PS1 Simulator Menu");
+      setString (Text, "WNM-PGB-1 Simulator Menu");
       setColor (Text, Sf.Graphics.Color.sfWhite);
       drawText (Window, Text);
 
