@@ -725,7 +725,6 @@ package body WNM_HAL is
    -------------------
 
    procedure Send_External (Msg : MIDI.Message) is
-      use MIDI;
    begin
       External_MIDI.Send (Msg);
    end Send_External;
