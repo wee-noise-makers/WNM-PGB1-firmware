@@ -6,67 +6,67 @@
 1 = { name = "Cowbell", file = "samples/VCSL/raw_32000/Cowbell2_Normal_v3_rr1_Mid.raw"}
 2 = { name = "Cowbell Double", file = "samples/VCSL/raw_32000/Cowbell2_Double_v2_rr1_Mid.raw"}
 3 = { name = "Cowbell Muted", file = "samples/VCSL/raw_32000/Cowbell2_Muted_v3_rr1_Mid.raw"}
-4 = { name = "Clap 1", file = "samples/avl_drumkits/Gimme-A-Hand-1.0/raw_32000/HandClap-Hard.raw"}
-5 = { name = "Clap 2", file = "samples/VCSL/raw_32000/Clap_rr4.raw"}
-6 = { name = "FingerSnap", file = "samples/avl_drumkits/Gimme-A-Hand-1.0/raw_32000/Fingersnap-Med.raw"}
-7 = { name = "Cabasa", file = "samples/VCSL/raw_32000/Cabasa1_Rub_v1_rr1_Mid.raw"}
-8 = { name = "Maraca", file = "samples/avl_drumkits/Gimme-A-Hand-1.0/raw_32000/Maraca-Med.raw"}
-9 = { name = "Anvil", file = "samples/VCSL/raw_32000/Anvil_Hit1_v2_rr1_Mid.raw"}
-10 = { name = "Mbira", file = "samples/VCSL/raw_32000/Mbira5_Normal_MainSpirit_C4_k19_vl2_rr1.raw"}
-11 = { name = "Marimba", file = "samples/VCSL/raw_32000/Marimba_hit_Outrigger_C4_loud_01.raw"}
-12 = { name = "Cajon", file = "samples/VCSL/raw_32000/Cajon_hit3_mp_rr1.raw"}
-13 = { name = "Tubular Bells", file = "samples/VCSL/raw_32000/TB_hit_C4_v2_1.raw"}
-14 = { name = "BellTree", file = "samples/VCSL/raw_32000/BellTree_Stroke_3_Mid.raw"}
-15 = { name = "Agogo", file = "samples/VCSL/raw_32000/Agogo_High_v3_rr1_Mid.raw"}
-16 = { name = "Chimes", file = "samples/VCSL/raw_32000/chimes_C4_p_rr1.raw"}
-17 = { name = "Vibraslap", file = "samples/VCSL/raw_32000/vibraslap_rr3.raw"}
-18 = { name = "Glockenspiel", file = "samples/VCSL/raw_32000/glock_medium_C5_01.raw"}
-19 = { name = "Kick", file = "samples/avl_drumkits/AVL-BlackPearl-5-1.1/raw_32000/36-Pearl22Kick-4.raw"}
-20 = { name = "Snare Hit", file = "samples/VCSL/raw_32000/Snare3M_HitSN_v3_rr2_Mid.raw"}
-21 = { name = "Snare Xstick", file = "samples/VCSL/raw_32000/Snare3M_Xstick_v2_rr2_Mid.raw"}
-22 = { name = "HiHat C 1", file = "samples/VCSL/raw_32000/HiHat_HitC_v2_rr1_Mid.raw"}
-23 = { name = "HiHat C 2", file = "samples/VCSL/raw_32000/HiHat_HitC_v3_rr1_Mid.raw"}
-24 = { name = "HiHat OC", file = "samples/VCSL/raw_32000/HiHat_HitOC_rr5_Mid.raw"}
-25 = { name = "HiHat Loose", file = "samples/VCSL/raw_32000/HiHat_HitLoose_rr2_Mid.raw"}
-26 = { name = "Tom", file = "samples/VCSL/raw_32000/TomH_HitS_v3_rr1_Mid.raw"}
-27 = { name = "Bongo Hi", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_32000/BongoHi-Med.raw"}
-28 = { name = "Bongo Lo", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_32000/BongoLo-Med.raw"}
-29 = { name = "Darbuka", file = "samples/VCSL/raw_32000/Darbuka_3_hit_vl2_rr1.raw"}
-30 = { name = "Tambourine 1", file = "samples/avl_drumkits/Gimme-A-Hand-1.0/raw_32000/Tambourine-Med.raw"}
-31 = { name = "Tambourine 2", file = "samples/VCSL/raw_32000/Tamb2_Hit_v2_rr2_Mid.raw"}
-32 = { name = "Cajon Slaps", file = "samples/avl_drumkits/Gimme-A-Hand-1.0/raw_32000/CajonSlaps-Med.raw" }
-33 = { name = "Contrabass", file = "samples/VSCO-2-CE/raw_32000/BKCtbss_Spic_C1_v3_rr2.raw"}
-34 = { name = "Violin Spic", file = "samples/VSCO-2-CE/raw_32000/LLVln_spic_C4_v2_rr2.raw"}
-35 = { name = "Violin Pizz", file = "samples/VSCO-2-CE/raw_32000/LLVln_Pizz_C4_f_RR1.raw"}
-36 = { name = "Violin Trem", file = "samples/VSCO-2-CE/raw_32000/LLVln_trem_C4_v2_rr1.raw"}
-37 = { name = "Violas Spic", file = "samples/VSCO-2-CE/raw_32000/Violas_spic_C4_v2_rr2.raw"}
-38 = { name = "Violas Trem", file = "samples/VSCO-2-CE/raw_32000/Violas_trem_C4_v2_rr1.raw"}
-39 = { name = "Violin Section", file = "samples/VSCO-2-CE/raw_32000/VlnEns_susVib_C4_v2.raw"}
-40 = { name = "Harp", file = "samples/VCSL/raw_32000/KSHarp_C5_f1.raw"}
-41 = { name = "Strumstick", file = "samples/VCSL/raw_32000/Strumstick_Finger_Str3_Main_C4_vl2_rr1.raw"}
-42 = { name = "Trombone", file = "samples/VSCO-2-CE/raw_32000/Trombone_Sustain_C3_v5_2.raw"}
-43 = { name = "Trombone Buzz", file = "samples/VSCO-2-CE/raw_32000/Trombone_Buzz_C3_v2_1.raw"}
-44 = { name = "Trombone Short", file = "samples/VSCO-2-CE/raw_32000/Trombone_Short_C3_v3_4.raw"}
-45 = { name = "Trumpet Stac", file = "samples/VSCO-2-CE/raw_32000/Sum_SHTrumpet_stac_C3_v1_rr2.raw"}
-46 = { name = "Trumpet Sus", file = "samples/VSCO-2-CE/raw_32000/Sum_SHTrumpet_sus_C3_v3_rr1.raw"}
-47 = { name = "Horn Stac", file = "samples/VSCO-2-CE/raw_32000/MOHorn_stac_C3_v3_rr2.raw"}
-48 = { name = "Horn Mute", file = "samples/VSCO-2-CE/raw_32000/MOHorn_mute_C3_v3_1.raw"}
-49 = { name = "Harmonica", file = "samples/VCSL/raw_32000/Hohner-Special20-F_Accented_C4.raw"}
-50 = { name = "Harmonica Vib", file = "samples/VCSL/raw_32000/Hohner-Special20-F_Vib_C4.raw"}
-51 = { name = "Saxophone", file = "samples/VCSL/raw_32000/BrettTenor_Staccato_Main_C4_vl1_rr7.raw"}
-52 = { name = "Bass Recorder", file = "samples/VCSL/raw_32000/BassRecorder_SusVib_C4_rr1_Main.raw"}
-53 = { name = "Train Whistle", file = "samples/VCSL/raw_32000/Main_TrainLow_Sus-001.raw"}
-54 = { name = "Grand Piano", file = "samples/VCSL/raw_32000/GPiano_sus_C4_v2_rr1_Player.raw"}
-55 = { name = "Upright Piano", file = "samples/VSCO-2-CE/raw_32000/Player_dyn3_rr1_020.raw"}
-56 = { name = "Upright NR1", file = "samples/VSCO-2-CE/raw_32000/UR1_C4_mf_RR1.raw"}
-57 = { name = "Organ", file = "samples/VSCO-2-CE/raw_32000/Rode_Pedal_16.raw"}
-58 = { name = "Pipe Organ", file = "samples/VCSL/raw_32000/Rode_Man3Open_C4.raw"}
-59 = { name = "Harpsichord", file = "samples/VCSL/raw_32000/ZuckermannKitHarpsi_Normal_Sus_C4_rr1.raw"}
-60 = { name = "Xylo 1", file = "samples/VSCO-2-CE/raw_32000/Xylo_Medium_C4_ff_01_far.raw"}
-61 = { name = "Xylo 2", file = "samples/VCSL/raw_32000/EthnicXylo_tradM_C4_vl3_rr1_Mid.raw"}
-62 = { name = "Waterglass", file = "samples/avl_drumkits/Gimme-A-Hand-1.0/raw_32000/WaterglassHi-Soft.raw"}
-63 = { name = "Glass Break", file = "samples/VSCO-2-CE/raw_32000/glass_break5.raw"}
-64 = { name = "Cymb Timp", file = "samples/VSCO-2-CE/raw_32000/cymb_timp.raw"}
+4 = { name = "Clap", file = "samples/avl_drumkits/Gimme-A-Hand-1.0/raw_32000/HandClap-Hard.raw"}
+5 = { name = "FingerSnap", file = "samples/avl_drumkits/Gimme-A-Hand-1.0/raw_32000/Fingersnap-Med.raw"}
+6 = { name = "Cabasa", file = "samples/VCSL/raw_32000/Cabasa1_Rub_v1_rr1_Mid.raw"}
+7 = { name = "Maraca", file = "samples/avl_drumkits/Gimme-A-Hand-1.0/raw_32000/Maraca-Med.raw"}
+8 = { name = "Anvil", file = "samples/VCSL/raw_32000/Anvil_Hit1_v2_rr1_Mid.raw"}
+9 = { name = "Mbira", file = "samples/VCSL/raw_32000/Mbira5_Normal_MainSpirit_C4_k19_vl2_rr1.raw"}
+10 = { name = "Marimba", file = "samples/VCSL/raw_32000/Marimba_hit_Outrigger_C4_loud_01.raw"}
+11 = { name = "Cajon", file = "samples/VCSL/raw_32000/Cajon_hit3_mp_rr1.raw"}
+12 = { name = "Tubular Bells", file = "samples/VCSL/raw_32000/TB_hit_C4_v2_1.raw"}
+13 = { name = "BellTree", file = "samples/VCSL/raw_32000/BellTree_Stroke_3_Mid.raw"}
+14 = { name = "Agogo", file = "samples/VCSL/raw_32000/Agogo_High_v3_rr1_Mid.raw"}
+15 = { name = "Chimes", file = "samples/VCSL/raw_32000/chimes_C4_p_rr1.raw"}
+16 = { name = "Vibraslap", file = "samples/VCSL/raw_32000/vibraslap_rr3.raw"}
+17 = { name = "Glockenspiel", file = "samples/VCSL/raw_32000/glock_medium_C5_01.raw"}
+18 = { name = "PGB-1", file = "samples/aabatterymusic/raw_32000/Vox_PGB-1.raw"}
+19 = { name = "Yeah ", file = "samples/aabatterymusic/raw_32000/Vox_Yeah.raw"}
+20 = { name = "Get Down", file = "samples/aabatterymusic/raw_32000/Vox_Get_Down.raw"}
+21 = { name = "FX Styro", file = "samples/aabatterymusic/raw_32000/FX_Styro.raw"}
+22 = { name = "FX Dirty Shake", file = "samples/aabatterymusic/raw_32000/FX_Dirty_Shake.raw"}
+23 = { name = "FX Stix", file = "samples/aabatterymusic/raw_32000/FX_Stix.raw"}
+24 = { name = "FX Bricks", file = "samples/aabatterymusic/raw_32000/FX_Bricks.raw"}
+25 = { name = "Bass Deep", file = "samples/aabatterymusic/raw_32000/Bass_Deep.raw"}
+26 = { name = "Bass Chord", file = "samples/aabatterymusic/raw_32000/Bass_Chord.raw"}
+27 = { name = "Bass Analog", file = "samples/aabatterymusic/raw_32000/Bass_Analog.raw"}
+28 = { name = "Kick", file = "samples/avl_drumkits/AVL-BlackPearl-5-1.1/raw_32000/36-Pearl22Kick-4.raw"}
+29 = { name = "Snare Hit", file = "samples/VCSL/raw_32000/Snare3M_HitSN_v3_rr2_Mid.raw"}
+30 = { name = "Snare Xstick", file = "samples/VCSL/raw_32000/Snare3M_Xstick_v2_rr2_Mid.raw"}
+31 = { name = "HH closed", file = "samples/aabatterymusic/raw_32000/Drum_HH_closed.raw"}
+32 = { name = "HH open", file = "samples/aabatterymusic/raw_32000/Drum_HH_open.raw"}
+33 = { name = "Tom", file = "samples/VCSL/raw_32000/TomH_HitS_v3_rr1_Mid.raw"}
+34 = { name = "Drum loop", file = "samples/aabatterymusic/raw_32000/Loop_Drums_120bpm_double_speed.raw"}
+35 = { name = "Bongo Hi", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_32000/BongoHi-Med.raw"}
+36 = { name = "Bongo Lo", file="samples/avl_drumkits/Gimme-A-Hand-1.0/raw_32000/BongoLo-Med.raw"}
+37 = { name = "Darbuka", file = "samples/VCSL/raw_32000/Darbuka_3_hit_vl2_rr1.raw"}
+38 = { name = "Tambourine", file = "samples/avl_drumkits/Gimme-A-Hand-1.0/raw_32000/Tambourine-Med.raw"}
+39 = { name = "Cajon Slaps", file = "samples/avl_drumkits/Gimme-A-Hand-1.0/raw_32000/CajonSlaps-Med.raw" }
+40 = { name = "Contrabass", file = "samples/VSCO-2-CE/raw_32000/BKCtbss_Spic_C1_v3_rr2.raw"}
+41 = { name = "Violin Spic", file = "samples/VSCO-2-CE/raw_32000/LLVln_spic_C4_v2_rr2.raw"}
+42 = { name = "Violin Trem", file = "samples/VSCO-2-CE/raw_32000/LLVln_trem_C4_v2_rr1.raw"}
+43 = { name = "Violin Section", file = "samples/VSCO-2-CE/raw_32000/VlnEns_susVib_C4_v2.raw"}
+44 = { name = "Harp", file = "samples/VCSL/raw_32000/KSHarp_C5_f1.raw"}
+45 = { name = "Strumstick", file = "samples/VCSL/raw_32000/Strumstick_Finger_Str3_Main_C4_vl2_rr1.raw"}
+46 = { name = "Trombone", file = "samples/VSCO-2-CE/raw_32000/Trombone_Sustain_C3_v5_2.raw"}
+47 = { name = "Trombone Buzz", file = "samples/VSCO-2-CE/raw_32000/Trombone_Buzz_C3_v2_1.raw"}
+48 = { name = "Trombone Short", file = "samples/VSCO-2-CE/raw_32000/Trombone_Short_C3_v3_4.raw"}
+49 = { name = "Trumpet Stac", file = "samples/VSCO-2-CE/raw_32000/Sum_SHTrumpet_stac_C3_v1_rr2.raw"}
+50 = { name = "Trumpet Sus", file = "samples/VSCO-2-CE/raw_32000/Sum_SHTrumpet_sus_C3_v3_rr1.raw"}
+51 = { name = "Horn Stac", file = "samples/VSCO-2-CE/raw_32000/MOHorn_stac_C3_v3_rr2.raw"}
+52 = { name = "Horn Mute", file = "samples/VSCO-2-CE/raw_32000/MOHorn_mute_C3_v3_1.raw"}
+53 = { name = "Harmonica", file = "samples/VCSL/raw_32000/Hohner-Special20-F_Accented_C4.raw"}
+54 = { name = "Harmonica Vib", file = "samples/VCSL/raw_32000/Hohner-Special20-F_Vib_C4.raw"}
+55 = { name = "Saxophone", file = "samples/VCSL/raw_32000/BrettTenor_Staccato_Main_C4_vl1_rr7.raw"}
+56 = { name = "Bass Recorder", file = "samples/VCSL/raw_32000/BassRecorder_SusVib_C4_rr1_Main.raw"}
+57 = { name = "Train Whistle", file = "samples/VCSL/raw_32000/Main_TrainLow_Sus-001.raw"}
+58 = { name = "Grand Piano", file = "samples/VCSL/raw_32000/GPiano_sus_C4_v2_rr1_Player.raw"}
+59 = { name = "Upright Piano", file = "samples/VSCO-2-CE/raw_32000/Player_dyn3_rr1_020.raw"}
+60 = { name = "Upright NR1", file = "samples/VSCO-2-CE/raw_32000/UR1_C4_mf_RR1.raw"}
+61 = { name = "Organ", file = "samples/VSCO-2-CE/raw_32000/Rode_Pedal_16.raw"}
+62 = { name = "Pipe Organ", file = "samples/VCSL/raw_32000/Rode_Man3Open_C4.raw"}
+63 = { name = "Harpsichord", file = "samples/VCSL/raw_32000/ZuckermannKitHarpsi_Normal_Sus_C4_rr1.raw"}
+64 = { name = "Xylo", file = "samples/VSCO-2-CE/raw_32000/Xylo_Medium_C4_ff_01_far.raw"}
 
 [files]
 'shutdown.tmp_prj' = "projects/tech.wnm_prj" # project that will be loaded at boot
