@@ -64,7 +64,7 @@ package body WNM.GUI.Menu.Inputs is
       Icon_Size : constant := 16;
 
       Icons_Y : constant :=
-        Drawing.Box_Bottom - Bitmap_Fonts.Height - Icon_Size - 2;
+        Drawing.Box_Bottom - Bitmap_Fonts.Height - Icon_Size - 3;
 
       Spacing : constant := 32;
       L_Icon_X : constant := Drawing.Box_Left + 6;

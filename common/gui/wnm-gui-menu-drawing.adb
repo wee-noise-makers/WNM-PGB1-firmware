@@ -109,7 +109,7 @@ package body WNM.GUI.Menu.Drawing is
          end loop;
 
          Draw_Str (X, PY, Str (First .. Last - 1));
-         PY := @ + Bitmap_Fonts.Height;
+         PY := @ + Bitmap_Fonts.Height + 1;
          First := Last + 1;
          Last := First;
 
@@ -135,7 +135,7 @@ package body WNM.GUI.Menu.Drawing is
          end loop;
 
          Draw_Str_Center (PY, Str (First .. Last - 1));
-         PY := @ + Bitmap_Fonts.Height;
+         PY := @ + Bitmap_Fonts.Height + 1;
          First := Last + 1;
          Last := First;
 
@@ -804,7 +804,7 @@ package body WNM.GUI.Menu.Drawing is
       --  Short label
       X := Left;
       Print (X_Offset => X,
-             Y_Offset => Value_Text_Y + 4,
+             Y_Offset => Value_Text_Y + 3,
              Str      => Label);
 
       if Enabled then
@@ -1045,26 +1045,34 @@ package body WNM.GUI.Menu.Drawing is
          return Num (Num'First + 1 .. Num'Last) & " " & Entry_Name (Val);
       end Display_Text;
 
+      Text_X : constant := Box_Left + 2;
+      Selected_Text_Y : constant := Value_Text_Y - 11;
    begin
 
       if Val /= Sample_Index'Last then
-         X := Box_Left + 2;
+         X := Text_X;
          Print (X_Offset => X,
-                Y_Offset => Value_Text_Y - 23,
+                Y_Offset => Selected_Text_Y - 12,
                 Str      => Display_Text (Val + 1));
       end if;
 
-      X := Box_Left + 2;
+      X := Text_X;
       Print (X_Offset => X,
-             Y_Offset => Value_Text_Y - 11,
+             Y_Offset => Selected_Text_Y,
              Str      => Display_Text (Val),
              Invert_From => Box_Left,
              Invert_To   => Box_Right);
 
+      Screen.Draw_Line ((Box_Left, Selected_Text_Y - 1),
+                         (Box_Right, Selected_Text_Y - 1));
+
+      Screen.Draw_Line ((Box_Left, Selected_Text_Y + Font_Height),
+                         (Box_Right, Selected_Text_Y + Font_Height));
+
       if Val /= Sample_Index'First then
          X := Box_Left + 2;
          Print (X_Offset => X,
-                Y_Offset => Value_Text_Y + 1,
+                Y_Offset => Selected_Text_Y + 12,
                 Str      => Display_Text (Val - 1));
       end if;
    end Draw_Sample_Select;

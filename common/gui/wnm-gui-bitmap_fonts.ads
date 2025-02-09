@@ -24,7 +24,7 @@ with WNM.Screen;
 package WNM.GUI.Bitmap_Fonts is
 
    Width : constant := 6;
-   Height : constant := 8;
+   Height : constant := 7;
 
    Arrow_Up    : constant Character := Character'Val (127);
    Arrow_Down  : constant Character := Character'Val (128);
