@@ -321,24 +321,13 @@ package body WNM.GUI.Menu.Projects is
                         New_State := Enter_Name;
                      end if;
 
-                  when Load_Project =>
-                     --  Load only if project exists
-                     if Project.Library.Has_Project (Project_Select.Selected)
-                     then
-                        Do_Load (Project_Select.Selected);
-                     end if;
+                  when Load_Project | Delete_Project =>
 
-                     New_State := Idle;
-                     Menu.Exit_Menu;
-
-                  when Delete_Project =>
-
-                     --  Delete only if project exists
+                     --  Only if project exists
                      if Project.Library.Has_Project (Project_Select.Selected)
                      then
                         New_State := Confirm;
                      else
-                        --  Cannot delete a project that doesn't exist
                         New_State := Idle;
                      end if;
 
@@ -389,6 +378,16 @@ package body WNM.GUI.Menu.Projects is
                      New_State := Idle;
                      Menu.Exit_Menu;
 
+                  when Load_Project =>
+
+                     if Project.Library.Has_Project (Project_Select.Selected)
+                     then
+                        Do_Load (Project_Select.Selected);
+                     end if;
+
+                     New_State := Idle;
+                     Menu.Exit_Menu;
+
                   when Rename_Project =>
                      Do_Rename (Project_Select.Selected,
                                 Text_Dialog.Value);
@@ -403,8 +402,6 @@ package body WNM.GUI.Menu.Projects is
                      New_State := Idle;
                      Menu.Exit_Menu;
 
-                  when others =>
-                     raise Program_Error;
                end case;
             else
                New_State := Idle;
@@ -433,6 +430,8 @@ package body WNM.GUI.Menu.Projects is
             case This.Item is
                when Save_Project =>
                   Yes_No_Dialog.Set_Title ("Replace project?");
+               when Load_Project =>
+                  Yes_No_Dialog.Set_Title ("Discard current?");
                when Rename_Project =>
                   Yes_No_Dialog.Set_Title ("Rename project?");
                when Delete_Project =>

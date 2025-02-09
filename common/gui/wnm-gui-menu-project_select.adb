@@ -139,7 +139,10 @@ package body WNM.GUI.Menu.Project_Select is
    is
    begin
       --  Find a project that is not empty
-      if not This.Show_Empty then
+      if not This.Show_Empty
+        and then
+         not Has_Project (Persistent.Data.Last_Project)
+      then
 
          Find_Prev;
 
