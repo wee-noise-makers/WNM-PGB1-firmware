@@ -69,9 +69,9 @@
 64 = { name = "Xylo", file = "samples/VSCO-2-CE/raw_32000/Xylo_Medium_C4_ff_01_far.raw"}
 
 [files]
-'shutdown.tmp_prj' = "projects/echo.wnm_prj" # project that will be loaded at boot
-'01Echo-Alice Efe .wnm_prj' = "projects/echo.wnm_prj"
-'02Tech           .wnm_prj' = "projects/tech.wnm_prj"
+'shutdown.tmp_prj' = "projects/tech.wnm_prj" # project that will be loaded at boot
+'01Tech           .wnm_prj' = "projects/tech.wnm_prj"
+'02Echo-Alice Efe .wnm_prj' = "projects/echo.wnm_prj"
 '03Attention      .wnm_prj' = "projects/attention.wnm_prj"
 '04Epoque         .wnm_prj' = "projects/epoque.wnm_prj"
 '05Dark-BroBeatzTV.wnm_prj' = "projects/trap.wnm_prj"
