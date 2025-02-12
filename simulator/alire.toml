@@ -17,13 +17,12 @@ rtmidi = "~0.1.0"
 fsmaker = "~0.0.0"
 flux = "~1.0.0"
 stopwatch = "~0.1.0"
-tresses = "*"
+tresses = "~1.0.0"
 uf2_utils = "*"
 midi = "^1.0.0"
 
 [[pins]]
 fsmaker = { url="https://github.com/Fabien-Chouteau/fsmaker" }
-tresses = { url="https://github.com/wee-noise-maker/tresses", branch="release/1.0"}
 uf2_utils = { url="https://github.com/Fabien-Chouteau/uf2_utils" }
 
 [configuration.values]
