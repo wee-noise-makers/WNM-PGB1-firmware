@@ -181,10 +181,28 @@ procedure WNM_PGB1_ROM_TOOL is
    -- Load_And_Mount --
    --------------------
 
-   procedure Load_And_Mount (UF2_Filename : String) is
+   procedure Load_And_Mount (Filename : String) is
+      use AAA.Strings;
       Err : Interfaces.C.int;
    begin
-      ROM.Load_From_UF2 (UF2_Filename);
+
+      if Has_Suffix (Filename, ".uf2")
+        or else
+         Has_Suffix (Filename, ".UF2")
+      then
+         ROM.Load_From_UF2 (Filename);
+
+      elsif Has_Suffix (Filename, ".bin")
+          or else
+            Has_Suffix (Filename, ".BIN")
+      then
+         ROM.Load_From_Bin
+           (Filename,
+            Offset_In_File => WNM_Configuration.Storage.Code_Byte_Size);
+
+      else
+         raise Program_Error with "Unknown ROM file type: " & Filename;
+      end if;
 
       Err := Littlefs.Mount (LFS, LFS_Config.all);
       if Err /= Littlefs.LFS_ERR_OK then
@@ -204,9 +222,9 @@ procedure WNM_PGB1_ROM_TOOL is
    procedure Usage is
    begin
       Put_Line ("Commands:");
-      Put_Line (" - " & Img (List));
-      Put_Line (" - " & Img (Extract) & " UF2_FILE_IN FILE_TO_EXTRACT");
-      Put_Line (" - " & Img (Extract_All) & "UF2_FILE_IN");
+      Put_Line (" - " & Img (List) & " ROM_FILE_IN");
+      Put_Line (" - " & Img (Extract) & " ROM_FILE_IN FILE_TO_EXTRACT");
+      Put_Line (" - " & Img (Extract_All) & "ROM_FILE_IN");
       Put_Line (" - " & Img (Build)  & " TOML_DESC OUTPUT_PREFIX");
       GNAT.OS_Lib.OS_Exit (1);
    end Usage;
@@ -236,7 +254,7 @@ begin
    case Cmd is
       when List | Extract | Extract_All =>
          if Arg1 = "" then
-            Put_Line ("Missing UF2 ROM image");
+            Put_Line ("Missing ROM image (.uf2 or .bin)");
             Usage;
          else
             Load_And_Mount (Arg1);

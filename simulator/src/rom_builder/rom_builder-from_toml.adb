@@ -126,6 +126,31 @@ package body ROM_Builder.From_TOML is
       Put_Line (Loaded_Bytes_Count'Img & " bytes loaded from " & Filename);
    end Load_From_UF2;
 
+   -------------------
+   -- Load_From_Bin --
+   -------------------
+
+   procedure Load_From_Bin (Img            : in out RAM_Image;
+                            Filename       :        String;
+                            Offset_In_File :        Storage_Count := 0)
+   is
+      FD : constant File_Descriptor := Open_Read (Filename, Binary);
+      RD_Cnt : Integer;
+   begin
+
+      if FD = Invalid_FD then
+         raise Program_Error with Errno_Message;
+      end if;
+
+      Lseek (FD, Long_Integer (Offset_In_File), Seek_Set);
+
+      RD_Cnt := Read (FD, Img.Data'Address, Img.Data'Length);
+
+      Close (FD);
+
+      Put_Line (RD_Cnt'Img & " bytes loaded from " & Filename);
+   end Load_From_Bin;
+
    ----------------
    -- Open_Image --
    ----------------
