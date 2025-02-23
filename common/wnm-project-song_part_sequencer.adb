@@ -65,7 +65,7 @@ package body WNM.Project.Song_Part_Sequencer is
                         Roll  :        Roll_Kind)
    is
       Current_Part : constant Parts := State.Playing_Part;
-      New_Part : Parts;
+      New_Part : Parts := Current_Part;
    begin
 
       if Roll /= Off then
