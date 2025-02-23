@@ -26,6 +26,10 @@ package ROM_Builder.From_TOML is
    procedure Load_From_UF2 (Img : in out RAM_Image;
                             Filename : String);
 
+   procedure Load_From_Bin (Img : in out RAM_Image;
+                            Filename : String;
+                            Offset_In_File : Storage_Count := 0);
+
    procedure Build_From_TOML (Img          : in out RAM_Image;
                               Path_To_TOML :        String;
                               Format_FS    :        Boolean);
