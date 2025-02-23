@@ -1,6 +1,6 @@
 name = "wnm_pgb1_device"
 description = "Firmware for the PGB-1 groovebox"
-version = "1.0.0"
+version = "1.0.1"
 
 authors = ["Fabien Chouteau"]
 maintainers = ["Fabien Chouteau <fabien.chouteau@gmail.com>"]
