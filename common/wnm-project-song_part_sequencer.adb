@@ -51,6 +51,8 @@ package body WNM.Project.Song_Part_Sequencer is
       G_Play_State.Playing_Part := G_Play_State.Origin;
       G_Play_State.Part_Steps_Count := 0;
 
+      G_Part_Origin_Query := False;
+
       --  Broadcast the change of part
       WNM.Part_Event_Broadcast.Broadcast;
    end Song_Start_Callback;
