@@ -30,21 +30,17 @@ pragma Warnings (On);
 
 package WNM is
 
-   subtype Keyboard_Button is Button range B1 .. B16;
+   subtype Keyboard_Button is Button range C1 .. L8;
+
+   subtype Chord_Button is Button range C1 .. C8;
+   subtype Lead_Button is Button range L1 .. L8;
 
    type Keyboard_Value is range 1 .. 16;
 
    function To_Value (B : Keyboard_Button) return Keyboard_Value;
    function To_Button (V : Keyboard_Value) return Keyboard_Button;
 
-   type Tracks is new Keyboard_Value;
-   type Patterns is new Keyboard_Value;
-   type Song_Element is new Keyboard_Value;
-
-   subtype Parts is Song_Element range Song_Element'First .. 12;
-
-   subtype Chord_Progressions
-   is Song_Element range Parts'Last + 1 .. Song_Element'Last;
+   type Tracks is new Keyboard_Value range 1 .. 11;
 
    -- Mixer --
    type FX_Kind is (Bypass, Overdrive, Bitcrusher, Reverb);
@@ -67,7 +63,7 @@ package WNM is
    Steps_Per_Bar  : constant := Steps_Per_Beat * Beats_Per_Bar;
 
    type Duration_In_Steps is range 1 .. 16 * 999; -- 999 Bars max
-   type Pattern_Length is range 1 .. Steps_Per_Bar;
+   type Pattern_Length is range 1 .. 128;
 
    Long_Press_Time_Span_Microseconds : constant := 300 * 1_000;
    --  How much time (in microseconds) users have to press a button to get the
@@ -99,12 +95,6 @@ package WNM is
 
    function Img (T : Tracks) return String
    is (Img (Keyboard_Value (T)));
-
-   function Img (P : Patterns) return String
-   is (Img (Keyboard_Value (P)));
-
-   function Img (E : Song_Element) return String
-   is (Img (Keyboard_Value (E)));
 
    type Rand_Percent is range 0 .. 100;
    function Random return Rand_Percent;

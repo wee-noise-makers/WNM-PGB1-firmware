@@ -43,54 +43,6 @@ package body WNM.Project.Storage.File_Out is
       This.Push (Out_UInt (T'Enum_Rep));
    end Start_Track_Settings;
 
-   ----------------------------
-   -- Start_Pattern_Settings --
-   ----------------------------
-
-   procedure Start_Pattern_Settings (This : in out Instance;
-                                     T    :        Tracks;
-                                     P    :        Patterns)
-   is
-   begin
-      This.Push (Pattern_Section);
-      This.Push (Out_UInt (T'Enum_Rep));
-      This.Push (Out_UInt (P'Enum_Rep));
-   end Start_Pattern_Settings;
-
-   -------------------------
-   -- Start_Part_Settings --
-   -------------------------
-
-   procedure Start_Part_Settings (This : in out Instance;
-                                  P : Parts)
-   is
-   begin
-      This.Push (Part_Section);
-      This.Push (Out_UInt (P'Enum_Rep));
-   end Start_Part_Settings;
-
-   -----------------------------
-   -- Start_Chord_Progression --
-   -----------------------------
-
-   procedure Start_Chord_Progression (This : in out Instance;
-                                      P : Chord_Progressions)
-   is
-   begin
-      This.Push (Chord_Progression_Section);
-      This.Push (Out_UInt (P'Enum_Rep));
-   end Start_Chord_Progression;
-
-   --------------------------
-   -- Start_Chord_Settings --
-   --------------------------
-
-   procedure Start_Chord_Settings (This : in out Instance)
-   is
-   begin
-      This.Push (Chord_Section);
-   end Start_Chord_Settings;
-
    --------------------
    -- Start_Sequence --
    --------------------
@@ -99,29 +51,6 @@ package body WNM.Project.Storage.File_Out is
    begin
       This.Push (Sequence_Section);
    end Start_Sequence;
-
-   -------------------------
-   -- Start_Step_Settings --
-   -------------------------
-
-   procedure Start_Step_Settings (This : in out Instance;
-                                  S : Sequencer_Steps)
-   is
-   begin
-      This.Push (Step_Section);
-      This.Push (Out_UInt (S'Enum_Rep));
-   end Start_Step_Settings;
-
-   ---------------------------
-   -- Change_Pattern_In_Seq --
-   ---------------------------
-
-   procedure Change_Pattern_In_Seq (This : in out Instance; P : Patterns)
-   is
-   begin
-      This.Push (Seq_Change_Pattern);
-      This.Push (Out_UInt (P'Enum_Rep));
-   end Change_Pattern_In_Seq;
 
    -------------------------
    -- Change_Track_In_Seq --
@@ -156,16 +85,6 @@ package body WNM.Project.Storage.File_Out is
    -- Push --
    ----------
 
-   procedure Push (This : in out Instance; A : Step_Settings) is
-      procedure Push_G is new Push_Gen (Step_Settings);
-   begin
-      Push_G (Parent (This), A);
-   end Push;
-
-   ----------
-   -- Push --
-   ----------
-
    procedure Push (This : in out Instance; A : Track_Settings) is
       procedure Push_G is new Push_Gen (Track_Settings);
    begin
@@ -178,26 +97,6 @@ package body WNM.Project.Storage.File_Out is
 
    procedure Push (This : in out Instance; A : Pattern_Settings) is
       procedure Push_G is new Push_Gen (Pattern_Settings);
-   begin
-      Push_G (Parent (This), A);
-   end Push;
-
-   ----------
-   -- Push --
-   ----------
-
-   procedure Push (This : in out Instance; A : Part_Settings) is
-      procedure Push_G is new Push_Gen (Part_Settings);
-   begin
-      Push_G (Parent (This), A);
-   end Push;
-
-   ----------
-   -- Push --
-   ----------
-
-   procedure Push (This : in out Instance; A : Chord_Setting_Kind) is
-      procedure Push_G is new Push_Gen (Chord_Setting_Kind);
    begin
       Push_G (Parent (This), A);
    end Push;

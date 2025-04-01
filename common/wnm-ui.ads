@@ -19,8 +19,6 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Sequence_Copy;
-
 package WNM.UI is
 
    type Button_Event is (On_Press,
@@ -32,37 +30,24 @@ package WNM.UI is
 
    procedure Update_LEDs;
 
-   type Input_Mode_Type is (Pattern_Mode,
-                            Track_Mode,
-                            Step_Mode,
-                            Song_Mode,
-                            FX_Mode,
-                            Sample_Edit_Mode,
-
-                            Pattern_Select,
-                            Track_Select,
-                            Step_Select,
-                            Song_Select,
+   type Input_Mode_Type is (Chord_Settings_Mode,
+                            Chord_Mode,
+                            Lead_Settings_Mode,
+                            Lead_Mode,
 
                             Volume_BPM_Mute,
-                            Volume_BPM_Solo,
-                            FX_Alt,
-                            Copy
+                            FX_Alt
                            );
 
    subtype Main_Modes
-     is Input_Mode_Type range Pattern_Mode .. Sample_Edit_Mode;
+     is Input_Mode_Type range Chord_Settings_Mode .. Lead_Mode;
 
    function Input_Mode return Input_Mode_Type;
    function Input_GUI_Mode return Input_Mode_Type;
 
-   function Recording return Boolean;
-
    function Muted (Track : WNM.Tracks) return Boolean;
 
    function Some_FX_On return Boolean;
-
-   Copy_T : WNM.Sequence_Copy.Copy_Transaction;
 
 private
 

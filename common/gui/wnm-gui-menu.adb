@@ -19,11 +19,10 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.GUI.Menu.Track_Settings;
-with WNM.GUI.Menu.Pattern_Settings;
-with WNM.GUI.Menu.Step_Settings;
-with WNM.GUI.Menu.Chord_Settings;
-with WNM.GUI.Menu.Sample_Edit;
+with WNM.GUI.Menu.Lead_Synth_Settings;
+with WNM.GUI.Menu.Chord_Synth_Settings;
+with WNM.GUI.Menu.Chord_Button_Settings;
+with WNM.GUI.Menu.Lead_Button_Settings;
 
 package body WNM.GUI.Menu is
 
@@ -40,16 +39,14 @@ package body WNM.GUI.Menu is
       end loop;
 
       case Kind is
-         when Step_Menu =>
-            GUI.Menu.Step_Settings.Push_Window;
-         when Track_Menu =>
-            GUI.Menu.Track_Settings.Push_Window;
-         when Pattern_Menu =>
-            GUI.Menu.Pattern_Settings.Push_Window;
+         when Chord_Synth_Menu =>
+            GUI.Menu.Chord_Synth_Settings.Push_Window;
+         when Lead_Synth_Menu =>
+            GUI.Menu.Lead_Synth_Settings.Push_Window;
          when Chord_Menu =>
-            GUI.Menu.Chord_Settings.Push_Window;
-         when Sample_Edit_Menu =>
-            GUI.Menu.Sample_Edit.Push_Window;
+            GUI.Menu.Chord_Button_Settings.Push_Window;
+         when Lead_Menu =>
+            GUI.Menu.Lead_Button_Settings.Push_Window;
       end case;
    end Open;
 

@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2022 Fabien Chouteau                    --
+--                  Copyright (C) 2016-2023 Fabien Chouteau                  --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,22 +19,51 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.Chord_Settings; use WNM.Chord_Settings;
+private with WNM.Project;
+private with HAL;
 
-package WNM.Project.Chord_Sequencer is
+package WNM.GUI.Menu.Magic_Hat is
 
-   function Current_Tonic return MIDI.MIDI_Key;
-   function Current_Chord_Name return Chord_Name;
-   function Current_Chord_Intervals return Chord_Intervals;
-   function Current_Chord return Chord_Notes;
+   procedure Push_Window;
 
-   function Chords_In_Progression return Chord_Slot_Id;
-   function Current_Chord_Index return Chord_Slot_Id;
-   function Shadow_Chord_Index return Chord_Slot_Id;
+private
 
-   pragma Inline (Current_Tonic);
-   pragma Inline (Current_Chord_Name);
-   pragma Inline (Current_Chord_Intervals);
-   pragma Inline (Current_Chord);
+   type Top_Settings is (Magic_Hat, Progression);
 
-end WNM.Project.Chord_Sequencer;
+   function Top_Settings_Count is new Enum_Count (Top_Settings);
+
+   type Sub_Settings is (Hat_Scale, Hat_Key, Prog_Scale, Prog_Key, Prog_Id);
+
+   function Sub_Settings_Count is new Enum_Count (Sub_Settings);
+
+   package Sub_Settings_Next is new Enum_Next (Sub_Settings);
+   use Sub_Settings_Next;
+
+   type Instance is new Menu_Window with record
+      Current_Setting : Sub_Settings :=  Prog_Scale; -- Sub_Settings'First;
+
+      Hat_Scale : Project.Scale_Choice := Project.Random;
+      Hat_Key : Project.Key_Choice := Project.Random;
+      Hat_Anim_Step : HAL.UInt32 := 0;
+
+      Prog_Scale : Project.Valid_Scale_Choice :=
+        Project.Valid_Scale_Choice'First;
+      Prog_Key   : MIDI.MIDI_Key := MIDI.C3;
+      Prog_Id : HAL.UInt16 := 0;
+   end record;
+
+   overriding
+   procedure Draw (This   : in out Instance);
+
+   overriding
+   procedure On_Event (This  : in out Instance;
+                       Event : Menu_Event);
+
+   overriding
+   procedure On_Pushed (This  : in out Instance) is null;
+
+   overriding
+   procedure On_Focus (This       : in out Instance;
+                       Exit_Value : Window_Exit_Value) is null;
+
+end WNM.GUI.Menu.Magic_Hat;

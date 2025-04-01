@@ -60,9 +60,9 @@ package body WNM.File_System is
       GUI.Bitmap_Fonts.Print (X, 1, "No file-system found");
 
       X := 1;
-      GUI.Bitmap_Fonts.Print (X, 9, "Press Menu to format");
+      GUI.Bitmap_Fonts.Print (X, 9, "Press A to format");
       X := 1;
-      GUI.Bitmap_Fonts.Print (X, 18, "Press Rec to shutdown");
+      GUI.Bitmap_Fonts.Print (X, 18, "Press B to shutdown");
 
       Screen.Update;
 
@@ -75,8 +75,8 @@ package body WNM.File_System is
          begin
             Last_Menu := Menu;
             Last_Rec := Rec;
-            Menu := State (WNM_Configuration.Menu) = Down;
-            Rec := State (WNM_Configuration.Rec) = Down;
+            Menu := State (WNM_Configuration.PAD_A) = Down;
+            Rec := State (WNM_Configuration.PAD_B) = Down;
             if Rec and then not Last_Rec then
                Screen.Clear;
                X := 1;

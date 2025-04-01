@@ -21,10 +21,10 @@
 
 with WNM.Project;
 with WNM.Project.Step_Sequencer;
-with WNM.Project.Song_Part_Sequencer;
 with WNM.MIDI_Clock; use WNM.MIDI_Clock;
 with WNM.GUI.Menu;
 with WNM.GUI.Menu.Root;
+with WNM.GUI.Menu.Drum_Settings;
 with WNM.LEDs;
 with WNM.Time;
 with WNM.UI.Logs;
@@ -35,28 +35,19 @@ with WNM.Mixer;
 
 with HAL; use HAL;
 
-with WNM.GUI.Popup;
-
 package body WNM.UI is
 
    procedure Signal_Event (B : Button; Evt : Button_Event);
 
    procedure Toggle_FX (B : Keyboard_Button);
    procedure Toggle_Mute (Track : WNM.Tracks);
-   procedure Toggle_Solo (Track : WNM.Tracks);
-   function In_Solo return Boolean;
-   function Solo return WNM.Tracks;
 
-   Last_Main_Mode : Main_Modes := Track_Mode;
+   Last_Main_Mode : Main_Modes := Chord_Mode;
    Current_Input_Mode : Input_Mode_Type := Last_Main_Mode;
 
-   Select_Done : Boolean := False;
-
-   Recording_On : Boolean := False;
+   --  Select_Done : Boolean := False;
 
    Track_Muted : array (WNM.Tracks) of Boolean := (others => False);
-   Solo_Mode_Enabled : Boolean := False;
-   Solo_Track : WNM.Tracks := 1;
 
    Anim_Step : UInt32 := 0;
 
@@ -75,19 +66,8 @@ package body WNM.UI is
 
    function Input_GUI_Mode return Input_Mode_Type is
    begin
-      if Current_Input_Mode in Pattern_Select |
-                               Track_Select |
-                               Step_Select |
-                               Song_Select
-      then
-         return Last_Main_Mode;
-      else
-         return Current_Input_Mode;
-      end if;
+      return Current_Input_Mode;
    end Input_GUI_Mode;
-
-   function Recording return Boolean
-   is (Recording_On);
 
    ------------------
    -- Signal_Event --
@@ -102,7 +82,7 @@ package body WNM.UI is
           Evt = On_Press
       then
          case Current_Input_Mode is
-            when Volume_BPM_Mute | Volume_BPM_Solo =>
+            when Volume_BPM_Mute =>
                case B is
                   when PAD_Up =>
                      WNM.Audio_Routing.Change_Main_Volume (1);
@@ -155,178 +135,71 @@ package body WNM.UI is
             case Evt is
                when On_Press =>
                   case B is
-                  when Pattern_Button =>
-                     Current_Input_Mode := Pattern_Select;
-                     Select_Done := False;
-                  when Track_Button =>
-                     Current_Input_Mode := Track_Select;
-                     Select_Done := False;
-                  when Step_Button =>
-                     Current_Input_Mode := Step_Select;
-                     Select_Done := False;
-                  when Song_Button =>
-                     Current_Input_Mode := Song_Select;
-                     Select_Done := False;
+                  when Chord_Select =>
+                     Current_Input_Mode := Chord_Settings_Mode;
+                     GUI.Menu.Open (GUI.Menu.Chord_Synth_Menu);
+                     Last_Main_Mode := Current_Input_Mode;
+
+                  when Lead_Select =>
+                     Current_Input_Mode := Lead_Settings_Mode;
+                     GUI.Menu.Open (GUI.Menu.Lead_Synth_Menu);
+                     Last_Main_Mode := Current_Input_Mode;
 
                   when Func =>
                      --  Switch to Func mode
                      Current_Input_Mode := FX_Alt;
-                     Select_Done := False;
+                     --  Select_Done := False;
 
                   when Menu =>
                      GUI.Menu.Root.Push_Root_Window;
 
-                  when Play =>
+                  when Drum_Edit =>
+                     GUI.Menu.Drum_Settings.Push_Window;
+
+                  when Drums_Play =>
                      Project.Step_Sequencer.Play_Pause;
-
-                  when Rec =>
-                     case Current_Input_Mode is
-                        when others =>
-                           null;
-                     end case;
-
-                     Recording_On := not Recording_On;
 
                   when Keyboard_Button =>
 
                      Project.Step_Sequencer.On_Press (B, Current_Input_Mode);
+
+                  when Chord_Alt =>
+                     Project.Chord_Play_Mode_Next;
+
+                  when Lead_Alt =>
+                     Project.Lead_Play_Mode_Next;
 
                   when others =>
                      null;
                   end case;
                when On_Long_Press =>
                   case B is
-                  when Play =>
+                  when Drums_Play =>
                      --  Switch to volume/BPM config mode
-                     if Solo_Mode_Enabled then
-                        Current_Input_Mode := Volume_BPM_Solo;
-                     else
-                        Current_Input_Mode := Volume_BPM_Mute;
-                     end if;
+                     Current_Input_Mode := Volume_BPM_Mute;
 
-                     --  when Rec =>
-                  --     --  Switch to squence edition mode
-                  --     Sequencer.Rec_Long;
-                  --  when B1 .. B16 =>
-                  --
-                  --     GUI.Menu.Open (GUI.Menu.Step_Menu);
-                  --     Editing_Step := To_Value (B);
-                  --
-                  --  when Pattern_Button =>
-                  --     GUI.Menu.Open (GUI.Menu.Pattern_Menu);
-                  --     Current_Input_Mode := Pattern_Select;
                   when others => null;
                   end case;
                when On_Release =>
                   case B is
-                  when Keyboard_Button =>
-                     Project.Step_Sequencer.On_Release (B, Current_Input_Mode);
+                  when Chord_Button =>
+                     Project.Editing_Chord := B;
+                     Current_Input_Mode := Chord_Mode;
+                     GUI.Menu.Open (GUI.Menu.Chord_Menu);
+                     Last_Main_Mode := Current_Input_Mode;
+
+                     Project.Step_Sequencer.On_Release (B,
+                                                        Current_Input_Mode);
+                  when Lead_Button =>
+                     Project.Editing_Lead := B;
+                     Current_Input_Mode := Lead_Mode;
+                     GUI.Menu.Open (GUI.Menu.Lead_Menu);
+                     Last_Main_Mode := Current_Input_Mode;
+
+                     Project.Step_Sequencer.On_Release (B,
+                                                        Current_Input_Mode);
                   when others => null;
                   end case;
-               when others => null;
-            end case;
-
-         when Pattern_Select =>
-            case B is
-               when Keyboard_Button =>
-                  Project.Editing_Pattern := To_Value (B);
-                  Select_Done := True;
-
-               when Pattern_Button =>
-                  if Evt = On_Release then
-                     if Select_Done then
-                        --  Go back a main mode
-                        Current_Input_Mode := Last_Main_Mode;
-
-                     else
-                        --  Switch to pattern mode
-                        Current_Input_Mode := Pattern_Mode;
-                        GUI.Menu.Open (GUI.Menu.Pattern_Menu);
-                        Last_Main_Mode := Current_Input_Mode;
-
-                        --  Switching mode disables recording.
-                        --  TODO: Is that a good thing?
-                        Recording_On := False;
-                     end if;
-                  end if;
-               when others => null;
-            end case;
-
-         when Track_Select =>
-            case B is
-               when Keyboard_Button =>
-                  Project.Editing_Track := To_Value (B);
-                  Select_Done := True;
-
-               when Track_Button =>
-                  if Evt = On_Release then
-                     if Select_Done then
-                        --  Go back a main mode
-                        Current_Input_Mode := Last_Main_Mode;
-
-                     else
-                        --  Switch to track mode
-                        Current_Input_Mode := Track_Mode;
-                        GUI.Menu.Open (GUI.Menu.Track_Menu);
-                        Last_Main_Mode := Current_Input_Mode;
-
-                        --  Switching mode disables recording.
-                        --  TODO: Is that a good thing?
-                        Recording_On := False;
-                     end if;
-                  end if;
-               when others => null;
-            end case;
-
-         when Step_Select =>
-            case B is
-               when Keyboard_Button =>
-                  Project.Editing_Step := To_Value (B);
-                  Select_Done := True;
-
-               when Step_Button =>
-                  if Evt = On_Release then
-                     if Select_Done then
-                        --  Go back a main mode
-                        Current_Input_Mode := Last_Main_Mode;
-
-                     else
-                        --  Switch to step mode
-                        Current_Input_Mode := Step_Mode;
-                        GUI.Menu.Open (GUI.Menu.Step_Menu);
-                        Last_Main_Mode := Current_Input_Mode;
-
-                        --  Switching mode disables recording.
-                        --  TODO: Is that a good thing?
-                        Recording_On := False;
-                     end if;
-                  end if;
-               when others => null;
-            end case;
-
-         when Song_Select =>
-            case B is
-               when Keyboard_Button =>
-                  Project.Editing_Song_Elt := To_Value (B);
-                  Select_Done := True;
-
-               when Song_Button =>
-                  if Evt = On_Release then
-                     if Select_Done then
-                        --  Go back a main mode
-                        Current_Input_Mode := Last_Main_Mode;
-
-                     else
-                        --  Switch to song mode
-                        Current_Input_Mode := Song_Mode;
-                        GUI.Menu.Open (GUI.Menu.Chord_Menu);
-                        Last_Main_Mode := Current_Input_Mode;
-
-                        --  Switching mode disables recording.
-                        --  TODO: Is that a good thing?
-                        Recording_On := False;
-                     end if;
-                  end if;
                when others => null;
             end case;
 
@@ -336,38 +209,7 @@ package body WNM.UI is
                   case B is
                      when Keyboard_Button =>
                         Toggle_FX (B);
-                        Select_Done := True;
-
-                     when Pattern_Button =>
-                        Copy_T := WNM.Sequence_Copy.Start_Copy_Pattern
-                          (Project.Editing_Track);
-                        Current_Input_Mode := Copy;
-                        Select_Done := True;
-
-                     when Track_Button =>
-                        Copy_T := WNM.Sequence_Copy.Start_Copy_Track;
-
-                        Current_Input_Mode := Copy;
-                        Select_Done := True;
-
-                     when Step_Button =>
-                        Copy_T := WNM.Sequence_Copy.Start_Copy_Step
-                          (Project.Editing_Track,
-                           Project.Editing_Pattern);
-
-                        Current_Input_Mode := Copy;
-                        Select_Done := True;
-
-                     when Song_Button =>
-                        Copy_T := WNM.Sequence_Copy.Start_Copy_Song;
-                        Current_Input_Mode := Copy;
-                        Select_Done := True;
-
-                     when Rec =>
-                        --  Switch to sample edit mode
-                        Current_Input_Mode := Sample_Edit_Mode;
-                        GUI.Menu.Open (GUI.Menu.Sample_Edit_Menu);
-                        Last_Main_Mode := Current_Input_Mode;
+                        --  Select_Done := True;
 
                      when others =>
                         null;
@@ -382,50 +224,16 @@ package body WNM.UI is
                   null;
             end case;
 
-         when Copy =>
-            if Evt = On_Release and then B = Func then
-               Current_Input_Mode := Last_Main_Mode;
-            elsif Evt = On_Press then
-               WNM.Sequence_Copy.Apply (Copy_T, B);
-               if WNM.Sequence_Copy.Is_Complete (Copy_T) then
-                  if WNM.Project.Do_Copy (Copy_T) then
-                     WNM.GUI.Popup.Display ("     copied     ", 500_000);
-                  end if;
-               end if;
-            end if;
+         when Volume_BPM_Mute =>
 
-         when Volume_BPM_Mute | Volume_BPM_Solo =>
-
-            if B = Play and then Evt = On_Release then
+            if B = Drums_Play and then Evt = On_Release then
                Current_Input_Mode := Last_Main_Mode;
             end if;
 
-            if Current_Input_Mode = Volume_BPM_Mute then
-
-               if B in Keyboard_Button and then Evt = On_Press then
-                  Toggle_Mute (To_Value (B));
-               end if;
-
-               if B = Track_Button and then Evt = On_Press then
-                  Current_Input_Mode := Volume_BPM_Solo;
-               end if;
-
-            else
-
-               if B = Track_Button and then Evt = On_Press then
-                  Current_Input_Mode := Volume_BPM_Mute;
-                  Solo_Mode_Enabled := False;
-               end if;
-
-               if B in Keyboard_Button and then Evt = On_Press then
-                  Toggle_Solo (To_Value (B));
-
-                  if not Solo_Mode_Enabled then
-                     --  We disabled solo so go back to mute mode
-                     Current_Input_Mode := Volume_BPM_Mute;
-                  end if;
-               end if;
+            if B in Keyboard_Button and then Evt = On_Press then
+               Toggle_Mute (To_Value (B));
             end if;
+
       end case;
 
    end Signal_Event;
@@ -438,15 +246,15 @@ package body WNM.UI is
    begin
 
       case B is
-         when B1 .. B4 =>
+         when C1 .. C4 =>
             declare
                use Project;
                Kind : constant Roll_Kind :=
                  (case B is
-                     when B1     => Eighth,
-                     when B2     => Quarter,
-                     when B3     => Half,
-                     when B4     => Beat,
+                     when C1     => Eighth,
+                     when C2     => Quarter,
+                     when C3     => Half,
+                     when C4     => Beat,
                      when others => Off);
 
             begin
@@ -457,17 +265,17 @@ package body WNM.UI is
                end if;
             end;
 
-         when B9 =>
+         when C5 =>
             Project.Step_Fill_Toogle;
 
-         when B10 .. B12 =>
+         when C6 .. C8 =>
             declare
                use Project;
                Kind : constant Auto_Fill_Kind :=
                  (case B is
-                     when B10    => Auto_Low,
-                     when B11    => Auto_High,
-                     when B12    => Auto_Buildup,
+                     when C6    => Auto_Low,
+                     when C7    => Auto_High,
+                     when C8    => Auto_Buildup,
                      when others => Off);
 
             begin
@@ -478,17 +286,17 @@ package body WNM.UI is
                end if;
             end;
 
-         when B5 .. B7 | B13 .. B15 =>
+         when L1 .. L3 | L5 .. L7 =>
             declare
                use Voices.Auto_Filter_FX;
                Kind : constant Mode_Kind :=
                  (case B is
-                     when B5  => Fix_Low_Pass,
-                     when B6  => Fix_Band_Pass,
-                     when B7  => Fix_High_Pass,
-                     when B13 => Sweep_Low_Pass,
-                     when B14 => Sweep_Band_Pass,
-                     when B15 => Sweep_High_Pass,
+                     when L1 => Fix_Low_Pass,
+                     when L2 => Fix_Band_Pass,
+                     when L3 => Fix_High_Pass,
+                     when L5 => Sweep_Low_Pass,
+                     when L6 => Sweep_Band_Pass,
+                     when L7 => Sweep_High_Pass,
                      when others => Off);
 
             begin
@@ -499,13 +307,13 @@ package body WNM.UI is
                end if;
             end;
 
-         when B8 | B16 =>
+         when L4 | L8 =>
             declare
                use Voices.Stutter_FX;
                Kind : constant Mode_Kind :=
                  (case B is
-                     when B8  => On_Short,
-                     when B16 => On_Trip,
+                     when L4  => On_Short,
+                     when L8 => On_Trip,
                      when others => Off);
 
             begin
@@ -525,36 +333,9 @@ package body WNM.UI is
 
    function Has_Long_Press (B : Button) return Boolean
    is (case B is
-          when B1             => False,
-          when B2             => False,
-          when B3             => False,
-          when B4             => False,
-          when B5             => False,
-          when B6             => False,
-          when B7             => False,
-          when B8             => False,
-          when B9             => False,
-          when B10            => False,
-          when B11            => False,
-          when B12            => False,
-          when B13            => False,
-          when B14            => False,
-          when B15            => False,
-          when B16            => False,
-          when Rec            => False,
-          when Play           => True,
-          when Func           => False,
-          when Step_Button    => False,
-          when Track_Button   => False,
-          when Pattern_Button => False,
-          when Song_Button    => False,
-          when Menu           => False,
-          when PAD_Up         => True,
-          when PAD_Down       => True,
-          when PAD_Left       => True,
-          when PAD_Right      => True,
-          when PAD_A          => False,
-          when PAD_B          => False);
+          when Drums_Play => True,
+          when PAD_Up .. PAD_B => True,
+          when others => False);
 
    function Has_Repeat_Press (B : Button) return Boolean
    is (case B is
@@ -637,7 +418,7 @@ package body WNM.UI is
       begin
          if TP.Touch then
             case Current_Input_Mode is
-               when Volume_BPM_Mute | Volume_BPM_Solo =>
+               when Volume_BPM_Mute =>
                   WNM.Audio_Routing.Set_Main_Volume
                     (Audio_Volume (TP.Value * Float (Audio_Volume'Last)));
                when FX_Alt =>
@@ -656,34 +437,6 @@ package body WNM.UI is
 
    procedure Update_LEDs is
 
-      function Track_Muted (T : Tracks) return Boolean
-      is (UI.Muted (T) or else Project.Song_Part_Sequencer.Muted (T));
-
-      ---------------------
-      -- On_Playing_Step --
-      ---------------------
-
-      procedure On_Playing_Step (H : LEDs.Hue) is
-         T : constant Tracks := Project.Editing_Track;
-         PH    : constant Project.Playhead :=
-           Project.Step_Sequencer.Playing_Step (T);
-      begin
-         if WNM.MIDI_Clock.Running
-           and then
-             not Track_Muted (T)
-           and then
-             Project.Editing_Pattern = PH.P
-             and then
-               PH.Steps_Count in
-                 Natural (Keyboard_Value'First) ..
-           Natural (Keyboard_Value'Last)
-         then
-            LEDs.Turn_On
-              (To_Button (Keyboard_Value (PH.Steps_Count)),
-               H);
-         end if;
-      end On_Playing_Step;
-
       Beat_Step : constant Boolean :=
         WNM.MIDI_Clock.Step in 1 .. 12 | 24 .. 36;
 
@@ -693,14 +446,9 @@ package body WNM.UI is
 
       LEDs.Turn_Off_All;
 
-      -- Rec LED --
-      if Recording then
-         LEDs.Turn_On (Rec, LEDs.Recording);
-      end if;
-
       -- Play LED --
       if WNM.MIDI_Clock.Running and then Beat_Step then
-         LEDs.Turn_On (Play, LEDs.Play);
+         LEDs.Turn_On (Drums_Play, LEDs.Play);
       end if;
 
       --  The FX LED is on if there's at least one FX enabled
@@ -720,278 +468,107 @@ package body WNM.UI is
                when Project.Off =>
                   null;
                when Project.Beat =>
-                  LEDs.Turn_On (B4);
+                  LEDs.Turn_On (C4);
                when Project.Half =>
-                  LEDs.Turn_On (B3);
+                  LEDs.Turn_On (C3);
                when Project.Quarter =>
-                  LEDs.Turn_On (B2);
+                  LEDs.Turn_On (C2);
                when Project.Eighth =>
-                  LEDs.Turn_On (B1);
+                  LEDs.Turn_On (C1);
             end case;
 
             if Project.Step_Fill then
-               LEDs.Turn_On (B9);
+               LEDs.Turn_On (C5);
             end if;
 
             case Project.Auto_Fill_State is
                when Project.Off =>
                   null;
                when Project.Auto_Low =>
-                  LEDs.Turn_On (B10);
+                  LEDs.Turn_On (C6);
                when Project.Auto_High =>
-                  LEDs.Turn_On (B11);
+                  LEDs.Turn_On (C7);
                when Project.Auto_Buildup =>
-                  LEDs.Turn_On (B12);
+                  LEDs.Turn_On (C8);
             end case;
 
             case Mixer.Auto_Filter_Mode is
                when Voices.Auto_Filter_FX.Off =>
                   null;
                when Voices.Auto_Filter_FX.Fix_Low_Pass =>
-                  LEDs.Turn_On (B5);
+                  LEDs.Turn_On (L1);
                when Voices.Auto_Filter_FX.Fix_Band_Pass =>
-                  LEDs.Turn_On (B6);
+                  LEDs.Turn_On (L2);
                when Voices.Auto_Filter_FX.Fix_High_Pass =>
-                  LEDs.Turn_On (B7);
+                  LEDs.Turn_On (L3);
                when Voices.Auto_Filter_FX.Sweep_Low_Pass =>
-                  LEDs.Turn_On (B13);
+                  LEDs.Turn_On (L5);
                when Voices.Auto_Filter_FX.Sweep_Band_Pass =>
-                  LEDs.Turn_On (B14);
+                  LEDs.Turn_On (L6);
                when Voices.Auto_Filter_FX.Sweep_High_Pass =>
-                  LEDs.Turn_On (B15);
+                  LEDs.Turn_On (L7);
             end case;
 
             case Mixer.Stutter_Mode is
                when Voices.Stutter_FX.Off =>
                   null;
                when Voices.Stutter_FX.On_Short =>
-                  LEDs.Turn_On (B8);
+                  LEDs.Turn_On (L4);
                when Voices.Stutter_FX.On_Trip =>
-                  LEDs.Turn_On (B16);
+                  LEDs.Turn_On (L8);
             end case;
-
-            -- Step select mode --
-         when Step_Select =>
-            LEDs.Set_Hue (LEDs.Step);
-            LEDs.Turn_On (To_Button (Project.Editing_Step));
-
-            -- Track assign mode --
-         when Track_Select =>
-            LEDs.Set_Hue (LEDs.Track);
-            LEDs.Turn_On (To_Button (Project.Editing_Track));
-
-            --  Pattern select --
-         when Pattern_Select =>
-            LEDs.Set_Hue (LEDs.Pattern);
-            LEDs.Turn_On (To_Button (Project.Editing_Pattern));
-
-            --  Song Part select --
-         when Song_Select =>
-            case Project.Editing_Song_Elt is
-               when Parts =>
-                  LEDs.Set_Hue (LEDs.Part);
-               when Chord_Progressions =>
-                  LEDs.Set_Hue (LEDs.Chord);
-            end case;
-            LEDs.Turn_On (To_Button (Project.Editing_Song_Elt));
 
             --  Volume and BPM mode --
-         when Volume_BPM_Mute | Volume_BPM_Solo =>
+         when Volume_BPM_Mute =>
 
             LEDs.Set_Hue (LEDs.Track);
 
-            if Solo_Mode_Enabled then
-               LEDs.Turn_On (Track_Button);
-               LEDs.Turn_On (To_Button (Solo));
-            else
-               for B in B1 .. B16 loop
-                  if not Muted (To_Value (B)) then
-                     LEDs.Turn_On (B);
-                  end if;
-               end loop;
-            end if;
+            for B in C1 .. C7 loop
+               if not Muted (To_Value (B)) then
+                  LEDs.Turn_On (B);
+               end if;
+            end loop;
+            for B in L1 .. L4 loop
+               if not Muted (To_Value (B)) then
+                  LEDs.Turn_On (B);
+               end if;
+            end loop;
 
          when others =>
             case Last_Main_Mode is
-            when Pattern_Mode =>
-               LEDs.Set_Hue (LEDs.Pattern);
-               LEDs.Turn_On (Pattern_Button);
+            when others =>
 
-               declare
-                  T : constant Tracks := Project.Editing_Track;
-                  EP : constant Patterns := Project.Editing_Pattern;
-                  P : Patterns;
-               begin
-                  LEDs.Turn_On (To_Button (EP));
-
-                  LEDs.Set_Hue (LEDs.Pattern_Link);
-
-                  --  Chained patterns after EP
-                  P := EP;
-                  while P /= Patterns'Last and then Project.Link (T, P) loop
-                     P := P + 1;
-                     LEDs.Turn_On (To_Button (P));
-                  end loop;
-
-                  --  Chained patterns before EP
-                  P := EP;
-                  while P /= Patterns'First and then Project.Link (T, P - 1)
-                  loop
-                     P := P - 1;
-                     LEDs.Turn_On (To_Button (P));
-                  end loop;
-
-                  --  Blink playing pattern
-                  if WNM.MIDI_Clock.Running then
-                     if Beat_Step then
-                        LEDs.Turn_On
-                          (To_Button
-                             (Project.Step_Sequencer.Playing_Step (T).P),
-                           LEDs.Playing);
-                     end if;
-                  end if;
-
-               end;
-
-            when Song_Mode =>
-               case Project.Editing_Song_Elt is
-               when Parts =>
-                  LEDs.Set_Hue (LEDs.Part);
-               when Chord_Progressions =>
-                  LEDs.Set_Hue (LEDs.Chord);
-               end case;
-
-               --  Blink selected song part
-               LEDs.Turn_On (Song_Button);
-               LEDs.Turn_On (To_Button (Project.Editing_Song_Elt));
-
-               --  Blinking playing part
-               if WNM.MIDI_Clock.Running then
-                  if Beat_Step then
-                     LEDs.Turn_On
-                       (To_Button (Project.Song_Part_Sequencer.Playing),
-                        LEDs.Playing);
-                  end if;
-               end if;
-
-            when Track_Mode =>
-
-               LEDs.Set_Hue (LEDs.Track);
-               LEDs.Turn_On (Track_Button);
-
-               if Recording then
-
-                  --  Active steps in edit mode
-                  LEDs.Set_Hue (LEDs.Recording);
-                  for B in Keyboard_Button loop
-                     if Project.Set (Step => To_Value (B)) then
-                        LEDs.Turn_On (B);
-                     end if;
-                  end loop;
-
-                  On_Playing_Step (LEDs.Playing);
-
-               else
-
-                  --  Selected track
-                  LEDs.Turn_On (To_Button (Project.Editing_Track),
-                                LEDs.Track);
-
-                  --  Triggered tracks
-                  if WNM.MIDI_Clock.Running then
-                     LEDs.Set_Hue (LEDs.Playing);
-                     for B in Keyboard_Button loop
-                        declare
-                           Track : constant Tracks := To_Value (B);
-                           PH    : constant Project.Playhead :=
-                             Project.Step_Sequencer.Playing_Step (Track);
-                        begin
-                           if not Track_Muted (Track)
-                             and then
-                               Project.Set (Track, PH)
-                           then
-                              LEDs.Turn_On (B);
-                           end if;
-                        end;
-                     end loop;
-                  end if;
-
-               end if;
-
-            when Step_Mode =>
-               LEDs.Set_Hue (LEDs.Step);
-               LEDs.Turn_On (Step_Button);
-
-               if Recording then
-                  --  Red means editing
-                  LEDs.Set_Hue (LEDs.Recording);
-               else
-                  LEDs.Set_Hue (LEDs.Active_Step);
-               end if;
-
-               --  Active steps
-               for B in Keyboard_Button loop
-                  if Project.Set (Step => To_Value (B)) then
-                     LEDs.Turn_On (B);
-                  end if;
-               end loop;
-
-               if Project.Set (Step => Project.Editing_Step) then
-                  if Select_Blink then
-                     --  Blink Selected step
-                     LEDs.Turn_On (To_Button (Project.Editing_Step),
-                                   LEDs.Step);
-                  end if;
-               else
-                  LEDs.Turn_On (To_Button (Project.Editing_Step),
-                                LEDs.Step);
-               end if;
-
-               --  Playing step
-               On_Playing_Step (LEDs.Playing);
-
-            when FX_Mode =>
-               LEDs.Set_Hue (LEDs.Violet);
-
-               LEDs.Turn_On (Func);
-               null;
-
-            when Sample_Edit_Mode =>
-
-               declare
-                  use type WNM.Project.Octave_Offset;
-                  Octave : constant WNM.Project.Octave_Offset :=
-                    WNM.Project.Step_Sequencer.Keyboard_Octave;
-
-                  Oct_Hue : constant WNM.LEDs.Hue :=
-                    (case abs Octave is
-                        when      1 => LEDs.Spring_Green,
-                        when      2 => LEDs.Cyan,
-                        when      3 => LEDs.Azure,
-                        when      4 => LEDs.Blue,
-                        when      5 => LEDs.Violet,
-                        when      6 => LEDs.Magenta,
-                        when      7 => LEDs.Rose,
-                        when others => LEDs.Red);
-               begin
-                  LEDs.Set_Hue (Oct_Hue);
-                  if Octave < 0 then
-                     LEDs.Turn_On (B1);
-                  elsif Octave > 0 then
-                     LEDs.Turn_On (B8);
-                  end if;
-               end;
-
-               LEDs.Set_Hue (LEDs.Yellow);
-
-               for B in B9 .. B16 loop
+               LEDs.Set_Hue (LEDs.Chord);
+               for B in C1 .. C8 loop
                   LEDs.Turn_On (B);
                end loop;
-               LEDs.Turn_On (B2);
-               LEDs.Turn_On (B3);
-               LEDs.Turn_On (B5);
-               LEDs.Turn_On (B6);
-               LEDs.Turn_On (B7);
+
+               LEDs.Set_Hue (LEDs.Step);
+               for B in L1 .. L8 loop
+                  LEDs.Turn_On (B);
+               end loop;
+
+               case Project.Chord_Play_Mode is
+                  when Project.Press_Release =>
+                     null;
+                  when Project.Hold =>
+                     LEDs.Turn_On (Chord_Alt, LEDs.Rose);
+                  when Project.Beat =>
+                     LEDs.Turn_On (Chord_Alt, LEDs.Green);
+               end case;
+
+               case Project.Lead_Play_Mode is
+                  when Project.Press_Release =>
+                     null;
+                  when Project.Hold =>
+                     LEDs.Turn_On (Lead_Alt, LEDs.Rose);
+                  when Project.Arp_16 =>
+                     LEDs.Turn_On (Lead_Alt, LEDs.Green);
+                  when Project.Arp_8 =>
+                     LEDs.Turn_On (Lead_Alt, LEDs.Red);
+                  when Project.Arp_4 =>
+                     LEDs.Turn_On (Lead_Alt, LEDs.Violet);
+               end case;
             end case;
       end case;
 
@@ -1012,9 +589,7 @@ package body WNM.UI is
    -----------
 
    function Muted (Track : WNM.Tracks) return Boolean
-   is (if In_Solo
-       then Solo /= Track
-       else Track_Muted (Track));
+   is (Track_Muted (Track));
 
    ----------------
    -- Some_FX_On --
@@ -1036,37 +611,5 @@ package body WNM.UI is
               or else
                 Mixer.Stutter_Mode /= Voices.Stutter_FX.Off;
    end Some_FX_On;
-
-   -----------------
-   -- Toggle_Solo --
-   -----------------
-
-   procedure Toggle_Solo (Track : WNM.Tracks) is
-   begin
-      if Solo_Mode_Enabled then
-         if Solo_Track = Track then
-            Solo_Mode_Enabled := False;
-         else
-            Solo_Track := Track;
-         end if;
-      else
-         Solo_Mode_Enabled := True;
-         Solo_Track := Track;
-      end if;
-   end Toggle_Solo;
-
-   -------------
-   -- In_Solo --
-   -------------
-
-   function In_Solo return Boolean
-   is (Solo_Mode_Enabled);
-
-   ----------
-   -- Solo --
-   ----------
-
-   function Solo return WNM.Tracks
-   is (Solo_Track);
 
 end WNM.UI;

@@ -24,8 +24,10 @@ with WNM.GUI.Menu.Yes_No_Dialog;
 with WNM.GUI.Bitmap_Fonts;
 with WNM.GUI.Menu.Projects;
 with WNM.GUI.Menu.Inputs;
+with WNM.GUI.Menu.Track_Mixer;
 with WNM.GUI.Menu.System_Info;
 with WNM.GUI.Menu.MIDI_Settings;
+with WNM.GUI.Menu.Magic_Hat;
 with WNM.Power_Control;
 
 package body WNM.GUI.Menu.Root is
@@ -37,6 +39,8 @@ package body WNM.GUI.Menu.Root is
    function Menu_Item_Text (Item : Menu_Items) return String
    is (case Item is
           when Projects        => "Projects",
+          when Magic_Hat       => "Magic Hat of Chords",
+          when Track_Mixer     => "Tracks Mixer",
           when Inputs          => "Inputs",
           when MIDI_Settings   => "MIDI",
           when DFU_Mode        => "Update Mode",
@@ -87,6 +91,9 @@ package body WNM.GUI.Menu.Root is
                when Projects =>
                   Menu.Projects.Push_Window;
 
+               when Track_Mixer =>
+                  Menu.Track_Mixer.Push_Window;
+
                when Inputs =>
                   Menu.Inputs.Push_Window;
 
@@ -99,6 +106,9 @@ package body WNM.GUI.Menu.Root is
 
                when System_Info =>
                   Menu.System_Info.Push_Window;
+
+               when Magic_Hat =>
+                  Menu.Magic_Hat.Push_Window;
 
             end case;
 

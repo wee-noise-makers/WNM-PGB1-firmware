@@ -27,7 +27,7 @@ with WNM.Short_Term_Sequencer;
 with WNM.Note_Off_Sequencer;
 with WNM.UI;
 with WNM.GUI.Update;
-with WNM.GUI.Menu.Track_Settings;
+with WNM.GUI.Menu;
 with WNM.Synth;
 with WNM.File_System;
 with WNM.Persistent;
@@ -206,7 +206,7 @@ package body WNM.Tasks is
          WNM.Sample_Library.Load;
       end if;
 
-      WNM.GUI.Menu.Track_Settings.Push_Window;
+      WNM.GUI.Menu.Open (WNM.GUI.Menu.Chord_Menu);
 
       WNM.Mixer.Start_Mixer;
 

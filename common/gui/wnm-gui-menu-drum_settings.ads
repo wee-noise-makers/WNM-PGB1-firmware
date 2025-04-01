@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2022 Fabien Chouteau                    --
+--                  Copyright (C) 2016-2017 Fabien Chouteau                  --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,36 +19,51 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.File_System.LEB128_File_Out;
+private with WNM.Project;
 
-private package WNM.Project.Storage.File_Out is
+package WNM.GUI.Menu.Drum_Settings is
 
-   subtype Parent is File_System.LEB128_File_Out.Instance;
-   type Instance
-   is new Parent with
-   private;
-
-   procedure Start_Global (This : in out Instance);
-
-   procedure Start_Track_Settings (This : in out Instance;
-                                   T : Tracks);
-
-   procedure Start_Sequence (This : in out Instance);
-   procedure Change_Track_In_Seq (This : in out Instance; T : Tracks);
-   procedure End_Section (This : in out Instance);
-   procedure End_File (This : in out Instance);
-
-   procedure Push (This : in out Instance; A : Track_Settings);
-   procedure Push (This : in out Instance; A : Pattern_Settings);
-   procedure Push (This : in out Instance; A : MIDI.MIDI_Data);
-   procedure Push (This : in out Instance; A : WNM.Duration_In_Steps);
-   procedure Push (This : in out Instance; A : WNM.Pattern_Length);
+   procedure Push_Window;
 
 private
 
-   type Instance
-   is new Parent with null record;
+   package Next_Track is new Enum_Next (WNM.Project.Drum_Tracks);
+   use Next_Track;
 
-   procedure Push (This : in out Instance; A : Token_Kind);
+   type Mode_Kind is (Step_Edit, Len_Edit, Synth_Edit);
 
-end WNM.Project.Storage.File_Out;
+   type Synth_Track_Id is (BD, SD, HH, SP);
+
+   type Synth_Settings is
+     (Engine, Param_A, Param_B, Param_C, Param_D, Master_FX);
+
+   type Synth_Top_Settings is (Engine, Params, Master_FX);
+
+   function Top_Settings_Count is new Enum_Count (Synth_Top_Settings);
+   function Synth_Track_Count is new Enum_Count (Synth_Track_Id);
+
+   type Instance is new Menu_Window with record
+      Mode : Mode_Kind := Step_Edit;
+      Selected_Step : WNM.Pattern_Length := WNM.Pattern_Length'First;
+      Selected_Track : WNM.Project.Drum_Tracks :=
+        WNM.Project.Drum_Tracks'First;
+
+      Synth_Track : Synth_Track_Id := Synth_Track_Id'First;
+      Synth_Set : Synth_Settings := Synth_Settings'First;
+   end record;
+
+   overriding
+   procedure Draw (This : in out Instance);
+
+   overriding
+   procedure On_Event (This  : in out Instance;
+                       Event : Menu_Event);
+
+   overriding
+   procedure On_Pushed (This  : in out Instance);
+
+   overriding
+   procedure On_Focus (This       : in out Instance;
+                       Exit_Value : Window_Exit_Value);
+
+end WNM.GUI.Menu.Drum_Settings;

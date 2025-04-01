@@ -20,7 +20,6 @@
 -------------------------------------------------------------------------------
 
 with WNM.Chord_Settings;
-with WNM.Project.Chord_Sequencer;
 
 package body WNM.Project.Arpeggiator is
 
@@ -64,7 +63,6 @@ package body WNM.Project.Arpeggiator is
 
    function Next_Note (T : Tracks) return MIDI.MIDI_Key is
       use WNM.Chord_Settings;
-      use WNM.Project.Chord_Sequencer;
 
       Track : Track_Rec renames G_Project.Tracks (T);
       Arp : Arpeggiator_Rec renames Arpeggiators (T);
@@ -98,7 +96,7 @@ package body WNM.Project.Arpeggiator is
             end;
       end case;
 
-      return Current_Chord (Note_Index);
+      return G_Current_Chord (Note_Index);
    end Next_Note;
 
    -----------------------------

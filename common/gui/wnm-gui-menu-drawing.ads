@@ -78,9 +78,6 @@ package WNM.GUI.Menu.Drawing is
    procedure Draw_MIDI_Note (Key     : MIDI.MIDI_Key;
                              Selected : Boolean);
 
-   procedure Draw_Duration (D        : Project.Note_Duration;
-                            Selected : Boolean);
-
    procedure Draw_Chord_Kind (Str      : String;
                               Selected : Boolean);
 
@@ -117,7 +114,8 @@ package WNM.GUI.Menu.Drawing is
                       Label    : String := "FX");
 
    procedure Draw_CC_Control_Page
-     (Mode        : WNM.Project.Track_Mode_Kind;
+     (T           : WNM.Tracks;
+      Mode        : WNM.Project.Track_Mode_Kind;
       Selected    : WNM.Project.CC_Id;
       Val_A, Val_B, Val_C, Val_D : MIDI.MIDI_Data;
       Ena_A, Ena_B, Ena_C, Ena_D : Boolean := True);

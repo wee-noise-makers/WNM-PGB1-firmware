@@ -55,6 +55,8 @@ with battery_20;
 with battery_10;
 with battery_0;
 
+with Ada.Text_IO; use Ada.Text_IO;
+
 package body WNM.GUI.Menu.Drawing is
 
    Scroll_Bar_Y_Offset : constant := 19;
@@ -320,158 +322,6 @@ package body WNM.GUI.Menu.Drawing is
              Str         => Str);
 
    end Draw_MIDI_Note;
-
-   -------------------
-   -- Draw_Duration --
-   -------------------
-
-   procedure Draw_Duration (D        : Project.Note_Duration;
-                            Selected : Boolean)
-   is
-      use WNM.Project;
-
-      Pos_X : constant Natural := Box_Center.X + 14;
-      DX : constant Natural := Pos_X - 3;
-      DY : constant := Box_Top + 15;
-
-      Str : constant String := Img (D);
-      Str_Pix_Len : constant Natural := Str'Length * Bitmap_Fonts.Width;
-      Str_X : constant Natural := Pos_X - (Str_Pix_Len / 2);
-
-      X : Integer := Str_X;
-   begin
-
-      Print (X_Offset    => X,
-             Y_Offset    => Value_Text_Y,
-             Str         => Str);
-
-      if Selected then
-         Screen.Draw_Line
-           ((Str_X, Select_Line_Y),
-
-            (Str_X + Str_Pix_Len, Select_Line_Y));
-      end if;
-
-      if D = Double then
-         for Cnt in 0 .. 4 loop
-            --  X     X
-            --  XXXXXXX
-            --  X     X
-            --  XXXXXXX
-            --  X     X
-            Screen.Set_Pixel ((DX, DY + 5 + Cnt));
-            Screen.Set_Pixel ((DX + 5, DY + 5 + Cnt));
-
-            Screen.Set_Pixel ((DX + Cnt, DY + 5 +  1));
-            Screen.Set_Pixel ((DX + Cnt, DY + 5 + 3));
-         end loop;
-      else
-         --   XXX
-         --  X   X
-         --  X   X
-         --   XXX
-         Screen.Set_Pixel ((DX + 0, DY + 7));
-         Screen.Set_Pixel ((DX + 0, DY + 8));
-         Screen.Set_Pixel ((DX + 4, DY + 7));
-         Screen.Set_Pixel ((DX + 4, DY + 8));
-         Screen.Set_Pixel ((DX + 1, DY + 6));
-         Screen.Set_Pixel ((DX + 2, DY + 6));
-         Screen.Set_Pixel ((DX + 3, DY + 6));
-         Screen.Set_Pixel ((DX + 1, DY + 9));
-         Screen.Set_Pixel ((DX + 2, DY + 9));
-         Screen.Set_Pixel ((DX + 3, DY + 9));
-         if D = Whole then
-            return;
-         end if;
-
-         --      X
-         --      X
-         --      X
-         --      X
-         --      X
-         --      X
-         --   XXXX
-         --  X   X
-         --  X   X
-         --   XXX
-         for Cnt in 0 .. 6 loop
-            Screen.Set_Pixel ((DX + 4, DY + Cnt));
-         end loop;
-
-         if D = Half then
-            return;
-         end if;
-
-         --      X
-         --      X
-         --      X
-         --      X
-         --      X
-         --      X
-         --   XXXX
-         --  XXXXX
-         --  XXXXX
-         --   XXX
-         Screen.Set_Pixel ((DX + 1, DY + 7));
-         Screen.Set_Pixel ((DX + 2, DY + 7));
-         Screen.Set_Pixel ((DX + 3, DY + 7));
-         Screen.Set_Pixel ((DX + 1, DY + 8));
-         Screen.Set_Pixel ((DX + 2, DY + 8));
-         Screen.Set_Pixel ((DX + 3, DY + 8));
-
-         if D = Quarter then
-            return;
-         end if;
-
-         --      XX
-         --      X X
-         --      X  X
-         --      X
-         --      X
-         --      X
-         --   XXXX
-         --  XXXXX
-         --  XXXXX
-         --   XXX
-         Screen.Set_Pixel ((DX + 5, DY + 0));
-         Screen.Set_Pixel ((DX + 6, DY + 1));
-         Screen.Set_Pixel ((DX + 7, DY + 2));
-         if D = N_8th then
-            return;
-         end if;
-
-         --      XX
-         --      X X
-         --      XX X
-         --      X X X
-         --      X
-         --      X
-         --   XXXX
-         --  XXXXX
-         --  XXXXX
-         --   XXX
-         Screen.Set_Pixel ((DX + 8, DY + 3));
-         Screen.Set_Pixel ((DX + 5, DY + 2));
-         Screen.Set_Pixel ((DX + 6, DY + 3));
-         if D = N_16th then
-            return;
-         end if;
-
-         --      XX
-         --      X X
-         --      XX X
-         --      X X X
-         --      XX X
-         --      X X
-         --   XXXX
-         --  XXXXX
-         --  XXXXX
-         --   XXX
-         Screen.Set_Pixel ((DX + 7, DY + 4));
-         Screen.Set_Pixel ((DX + 5, DY + 4));
-         Screen.Set_Pixel ((DX + 6, DY + 5));
-      end if;
-   end Draw_Duration;
 
    ---------------------
    -- Draw_Chord_Kind --
@@ -902,7 +752,8 @@ package body WNM.GUI.Menu.Drawing is
    --------------------------
 
    procedure Draw_CC_Control_Page
-     (Mode        : WNM.Project.Track_Mode_Kind;
+     (T           : WNM.Tracks;
+      Mode        : WNM.Project.Track_Mode_Kind;
       Selected    : WNM.Project.CC_Id;
       Val_A, Val_B, Val_C, Val_D : MIDI.MIDI_Data;
       Ena_A, Ena_B, Ena_C, Ena_D : Boolean := True)
@@ -940,7 +791,7 @@ package body WNM.GUI.Menu.Drawing is
                       when B => Val_B,
                       when C => Val_C,
                       when D => Val_D),
-               Project.CC_Controller_Short_Label (Editing_Track, Id),
+               Project.CC_Controller_Short_Label (T, Id),
                Id = Selected,
                Enabled => (case Id is
                              when A => Ena_A,
@@ -949,9 +800,7 @@ package body WNM.GUI.Menu.Drawing is
                              when D => Ena_D));
          end loop;
 
-         Draw_Title
-           (Project.CC_Controller_Label (Editing_Track, Selected),
-            "");
+         Draw_Title (Project.CC_Controller_Label (T, Selected), "");
       end if;
    end Draw_CC_Control_Page;
 

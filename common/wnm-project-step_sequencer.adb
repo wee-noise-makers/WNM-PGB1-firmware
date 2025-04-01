@@ -21,43 +21,30 @@
 
 with MIDI;
 
+with WNM.MIDI_Clock;
 with WNM.Short_Term_Sequencer;
 with WNM.Note_Off_Sequencer;
 with WNM.Chord_Settings;
 with WNM.Project.Arpeggiator;
 with WNM.UI; use WNM.UI;
 with WNM.Coproc;
-with WNM.Project.Song_Part_Sequencer;
-with WNM.Project.Chord_Sequencer;
-with WNM.Step_Event_Broadcast;
-with WNM.Part_Event_Broadcast;
 with WNM.Song_Start_Broadcast;
+with WNM.Step_Event_Broadcast;
 with WNM.Song_Stop_Broadcast;
 with WNM.Song_Continue_Broadcast;
-with WNM.MIDI_Clock;
 with HAL;                   use HAL;
 
 package body WNM.Project.Step_Sequencer is
 
-   G_Keyboard_Octave : Octave_Offset := 0;
-
-   Pattern_Counter : array (Tracks, Patterns) of UInt32;
-   --  Count how many times a pattern has played
-
-   procedure Process_Step (Track   : Tracks;
-                           Pattern : Patterns;
-                           Step    : Sequencer_Steps);
-
-   procedure Do_Preview_Trigger (T : Tracks);
-   procedure Play_Step (P : Patterns; T : Tracks; S : Sequencer_Steps;
-                        Now : Time.Time_Microseconds := Time.Clock);
-
    Playing : Boolean := False;
 
-   procedure Part_Callback;
-   package Part_Listener
-   is new Part_Event_Broadcast.Register (Part_Callback'Access);
-   pragma Unreferenced (Part_Listener);
+   type Note_Play_State is record
+      On_Notes : WNM.Chord_Settings.Chord_Notes := (others => 0);
+
+      On_Lead : MIDI.MIDI_Key := 0;
+   end record;
+
+   G_Note_Play_State : Note_Play_State;
 
    procedure Song_Start_Callback;
    package Song_Start_Listener
@@ -73,6 +60,22 @@ package body WNM.Project.Step_Sequencer is
    package Song_Continue_Listener
    is new Song_Continue_Broadcast.Register (Song_Continue_Callback'Access);
    pragma Unreferenced (Song_Continue_Listener);
+
+   procedure Play_Chord (T           : Tracks;
+                         Chord       : WNM.Chord_Settings.Chord_Notes;
+                         Last_Note   : WNM.Chord_Settings.Chord_Index_Range;
+                         Oct         : Octave_Offset;
+                         Velo        : MIDI.MIDI_Data;
+                         Now         : Time.Time_Microseconds;
+                         Shuffle     : Time.Time_Microseconds;
+                         Duration    : Time.Time_Microseconds;
+                         Repeat_Span : Time.Time_Microseconds);
+
+   procedure Play_Now (Now      : Time.Time_Microseconds;
+                       T        : Tracks;
+                       Key      : MIDI.MIDI_Key;
+                       Velo     : MIDI.MIDI_Data;
+                       Duration : Time.Time_Microseconds);
 
    ------------
    -- Offset --
@@ -105,13 +108,6 @@ package body WNM.Project.Step_Sequencer is
       return Result;
    end Offset;
 
-   -------------
-   -- Playing --
-   -------------
-
-   function Playing_Step (T : Tracks) return Playhead
-   is (G_Play_State.Playheads (T));
-
    ----------------
    -- Play_Pause --
    ----------------
@@ -125,6 +121,148 @@ package body WNM.Project.Step_Sequencer is
       end if;
    end Play_Pause;
 
+   ------------
+   -- Offset --
+   ------------
+
+   function Offset (Chord : WNM.Chord_Settings.Chord_Notes)
+                    return WNM.Chord_Settings.Chord_Notes
+   is
+      T   : constant Tracks := 6;
+      Oct : constant Octave_Offset := G_Project.Tracks (T).Offset;
+   begin
+      return (Offset (Chord (0), Oct),
+              Offset (Chord (1), Oct),
+              Offset (Chord (2), Oct),
+              Offset (Chord (3), Oct));
+   end Offset;
+
+   --------------
+   -- Chord_On --
+   --------------
+
+   procedure Chord_On (Chord : WNM.Chord_Settings.Chord_Notes;
+                       Velocity : MIDI.MIDI_Data)
+   is
+      use MIDI;
+
+      T : constant Tracks := 6;
+      Chan : constant MIDI.MIDI_Channel := Voice_MIDI_Chan (Mode (T));
+
+      Offset_Chord : constant WNM.Chord_Settings.Chord_Notes
+        := Offset (Chord);
+   begin
+      for Key of G_Note_Play_State.On_Notes loop
+         if Key /= 0 then
+            WNM.Coproc.Push_To_Synth ((WNM.Coproc.MIDI_Event,
+                                      (MIDI.Note_Off, Chan, Key, 0)));
+         end if;
+      end loop;
+
+      for Key of Offset_Chord loop
+         WNM.Coproc.Push_To_Synth ((WNM.Coproc.MIDI_Event,
+                                   (MIDI.Note_On, Chan, Key, Velocity)));
+      end loop;
+
+      G_Note_Play_State.On_Notes := Offset_Chord;
+      G_Current_Chord := Offset_Chord;
+   end Chord_On;
+
+   ---------------
+   -- Chord_Off --
+   ---------------
+
+   procedure Chord_Off (Chord : WNM.Chord_Settings.Chord_Notes) is
+      use WNM.Chord_Settings;
+      T : constant Tracks := 6;
+      Chan : constant MIDI.MIDI_Channel := Voice_MIDI_Chan (Mode (T));
+      Offset_Chord : constant WNM.Chord_Settings.Chord_Notes
+        := Offset (Chord);
+   begin
+      if Offset_Chord = G_Note_Play_State.On_Notes then
+         for Key of Offset_Chord loop
+            WNM.Coproc.Push_To_Synth ((WNM.Coproc.MIDI_Event,
+                                      (MIDI.Note_Off, Chan, Key, 0)));
+         end loop;
+         G_Note_Play_State.On_Notes := (others => 0);
+      end if;
+
+   end Chord_Off;
+
+   ----------------------
+   -- Chord_For_Button --
+   ----------------------
+
+   function Chord_For_Button (B : Chord_Button)
+                              return WNM.Chord_Settings.Chord_Notes
+   is
+      use WNM.Chord_Settings;
+
+   begin
+      return G_Project.Chords (B).Root +
+        WNM.Chord_Settings.Chords (G_Project.Chords (B).Quality);
+   end Chord_For_Button;
+
+   --------------------
+   -- Key_For_Button --
+   --------------------
+
+   function Key_For_Button (B : Lead_Button) return MIDI.MIDI_Key is
+   begin
+      return G_Project.Leads (B).Key;
+   end Key_For_Button;
+
+   -------------
+   -- Lead_On --
+   -------------
+
+   procedure Lead_On (Key : MIDI.MIDI_Key;
+                      Velocity : MIDI.MIDI_Data)
+   is
+      use MIDI;
+
+      T : constant Tracks := 5;
+      Chan : constant MIDI.MIDI_Channel := Voice_MIDI_Chan (Mode (T));
+   begin
+      if G_Note_Play_State.On_Lead /= 0 then
+         WNM.Coproc.Push_To_Synth ((WNM.Coproc.MIDI_Event,
+                                   (MIDI.Note_Off, Chan,
+                                    G_Note_Play_State.On_Lead,
+                                    Velocity)));
+
+      end if;
+
+      G_Note_Play_State.On_Lead := Key;
+
+      WNM.Coproc.Push_To_Synth ((WNM.Coproc.MIDI_Event,
+                                (MIDI.Note_On, Chan,
+                                 G_Note_Play_State.On_Lead,
+                                 Velocity)));
+
+   end Lead_On;
+
+   --------------
+   -- Lead_Off --
+   --------------
+
+   procedure Lead_Off (Key : MIDI.MIDI_Key;
+                      Velocity : MIDI.MIDI_Data)
+   is
+      use MIDI;
+
+      T : constant Tracks := 5;
+      Chan : constant MIDI.MIDI_Channel := Voice_MIDI_Chan (Mode (T));
+   begin
+      if G_Note_Play_State.On_Lead = Key then
+         WNM.Coproc.Push_To_Synth ((WNM.Coproc.MIDI_Event,
+                                   (MIDI.Note_Off, Chan,
+                                    G_Note_Play_State.On_Lead,
+                                    Velocity)));
+
+         G_Note_Play_State.On_Lead := 0;
+      end if;
+   end Lead_Off;
+
    --------------
    -- On_Press --
    --------------
@@ -132,104 +270,20 @@ package body WNM.Project.Step_Sequencer is
    procedure On_Press (Button : Keyboard_Button;
                        Mode   : WNM.UI.Main_Modes)
    is
-      V : constant Keyboard_Value := To_Value (Button);
    begin
       case Mode is
-         when UI.Pattern_Mode =>
-            Editing_Pattern := Patterns (V);
-
-         when UI.Song_Mode =>
-            pragma Warnings (Off, "lower bound test optimized");
-            if V in
-              Keyboard_Value (WNM.Parts'First) ..
-              Keyboard_Value (WNM.Parts'Last)
-            then
-               Set_Origin (Parts (V));
-            end if;
-            Editing_Song_Elt := Song_Element (V);
-
-         when UI.Track_Mode | UI.Step_Mode =>
-
-            if Mode = UI.Track_Mode and then not UI.Recording then
-               Editing_Track := Tracks (V);
-            else
-               Editing_Step := V;
-            end if;
-
-   --  if UI.Recording and then Pattern_Sequencer.Playing then
-   --
-   --     --  Live record the trigger
-   --     Sequences (Current_Editing_Pattern) (V) (Current_Playing_Step).Trig
-   --       := Always;
-   --
-   --     if Microstep /= 1 then
-   --        --  If user play later than the step time, play a preview
-   --        Do_Preview_Trigger (V);
-   --     end if;
-   --  else
-   --     Do_Preview_Trigger (V);
-   --  end if;
-
-            if UI.Recording then
-               declare
-                  S : Step_Rec renames
-                    G_Project.Steps
-                      (Editing_Track)(Editing_Pattern)(To_Value (Button));
-               begin
-                  if S.Trig /= None then
-                     S.Trig := None;
-                  else
-                     S.Trig := Always;
-                  end if;
-               end;
-            else
-               if Mode = UI.Step_Mode then
-                  Play_Step (Editing_Pattern,
-                             Editing_Track,
-                             To_Value (Button));
-               else
-                  Do_Preview_Trigger (Tracks (V));
-
-               end if;
-            end if;
-
-         when UI.FX_Mode =>
-            null;
-
-         when UI.Sample_Edit_Mode =>
+         when UI.Main_Modes =>
             case Button is
-               when B1 =>
-                  Prev (G_Keyboard_Octave);
-               when B8 =>
-                  Next (G_Keyboard_Octave);
-               when B4 =>
-                  G_Keyboard_Octave := 0;
-               when others =>
+               when C1 .. C8 =>
+                  Chord_On (Chord_For_Button (Button), 127);
+
+               when L1 .. L8 =>
                   declare
-                     Key : constant MIDI.MIDI_Key :=
-                       Offset ((case Button is
-                                  when B9  => MIDI.C4,
-                                  when B2  => MIDI.Cs4,
-                                  when B10 => MIDI.D4,
-                                  when B3  => MIDI.Ds4,
-                                  when B11 => MIDI.E4,
-                                  when B12 => MIDI.F4,
-                                  when B5  => MIDI.Fs4,
-                                  when B13 => MIDI.G4,
-                                  when B6  => MIDI.Gs4,
-                                  when B14 => MIDI.A4,
-                                  when B7  => MIDI.As4,
-                                  when B15 => MIDI.B4,
-                                  when B16 => MIDI.C5,
-                                  when others => MIDI.C4),
-                               G_Keyboard_Octave);
+                     Key : constant MIDI.MIDI_Key := Key_For_Button (Button);
+                     Offset_Key : constant MIDI.MIDI_Key :=
+                       Offset (Key, G_Project.Tracks (5).Offset);
                   begin
-                     WNM.Coproc.Push_To_Synth
-                       ((WNM.Coproc.MIDI_Event,
-                        (MIDI.Note_On,
-                         WNM.Synth.Sample_Rec_Playback_Channel,
-                         Key,
-                         127)));
+                     Lead_On (Offset_Key, 127);
                   end;
             end case;
       end case;
@@ -242,15 +296,27 @@ package body WNM.Project.Step_Sequencer is
    procedure On_Release (Button : Keyboard_Button;
                          Mode   : WNM.UI.Main_Modes)
    is
-      pragma Unreferenced (Button);
    begin
       case Mode is
-         when UI.Song_Mode =>
-            null;
+         when UI.Main_Modes =>
+            case Button is
+               when C1 .. C8 =>
+                  case G_Project.Chord_Play_Mode is
+                     when Press_Release =>
+                        Chord_Off (Chord_For_Button (Button));
+                     when others =>
+                        null;
+                  end case;
 
-         when UI.Track_Mode | UI.Step_Mode | UI.FX_Mode | UI.Pattern_Mode |
-              UI.Sample_Edit_Mode =>
-            null;
+               when L1 .. L8 =>
+                  declare
+                     Key : constant MIDI.MIDI_Key := Key_For_Button (Button);
+                     Offset_Key : constant MIDI.MIDI_Key :=
+                       Offset (Key, G_Project.Tracks (5).Offset);
+                  begin
+                     Lead_Off (Offset_Key, 127);
+                  end;
+            end case;
       end case;
    end On_Release;
 
@@ -321,50 +387,6 @@ package body WNM.Project.Step_Sequencer is
 
    end Play_Later;
 
-   -----------------------
-   -- Process_CC_Values --
-   -----------------------
-
-   procedure Process_CC_Values (P : Patterns;
-                                T : Tracks;
-                                S : Sequencer_Steps)
-   is
-      Val  : MIDI.MIDI_Data;
-      Ctrl : MIDI.MIDI_Data;
-      M    : constant Track_Mode_Kind := Mode (T);
-      Chan : constant MIDI.MIDI_Channel :=
-        (case M is
-            when Synth_Track_Mode_Kind =>
-              Voice_MIDI_Chan (M),
-            when MIDI_Mode =>
-              G_Project.Tracks (T).Chan);
-   begin
-      for Id in CC_Id loop
-         Val := CC_Value_To_Use (P, T, S, Id);
-         case Mode (T) is
-
-            when Synth_Track_Mode_Kind =>
-               Ctrl := (case Id is
-                           when A => Synth.Voice_Param_1_CC,
-                           when B => Synth.Voice_Param_2_CC,
-                           when C => Synth.Voice_Param_3_CC,
-                           when D => Synth.Voice_Param_4_CC);
-
-               WNM.Coproc.Push_To_Synth ((Kind => WNM.Coproc.MIDI_Event,
-                                          MIDI_Evt =>
-                                            (MIDI.Continous_Controller,
-                                             Chan, Ctrl, Val)));
-
-            when MIDI_Mode =>
-               Ctrl := G_Project.Tracks (T).CC (Id).Controller;
-               WNM_HAL.Send_External
-                 ((MIDI.Continous_Controller,
-                  Chan, Ctrl, Val));
-
-         end case;
-      end loop;
-   end Process_CC_Values;
-
    ---------------
    -- Play_Note --
    ---------------
@@ -372,7 +394,6 @@ package body WNM.Project.Step_Sequencer is
    procedure Play_Note (T           : Tracks;
                         Key         : MIDI.MIDI_Key;
                         Velo        : MIDI.MIDI_Data;
-                        Rep         : Repeat_Cnt;
                         Now         : Time.Time_Microseconds;
                         Shuffle     : Time.Time_Microseconds;
                         Duration    : Time.Time_Microseconds;
@@ -387,12 +408,6 @@ package body WNM.Project.Step_Sequencer is
          Start_Time := Start_Time + Shuffle;
          Play_Later (T, Start_Time, Key, Velo, Duration);
       end if;
-
-      for X in 1 .. Rep loop
-         Start_Time := Start_Time + Repeat_Span;
-         Play_Later (T, Start_Time, Key, Velo, Duration);
-      end loop;
-
    end Play_Note;
 
    --------------
@@ -402,14 +417,13 @@ package body WNM.Project.Step_Sequencer is
    procedure Play_Arp (T           : Tracks;
                        Velo        : MIDI.MIDI_Data;
                        Oct         : Octave_Offset;
-                       Rep         : Repeat_Cnt;
                        Now         : Time.Time_Microseconds;
                        Shuffle     : Time.Time_Microseconds;
                        Duration    : Time.Time_Microseconds;
                        Repeat_Span : Time.Time_Microseconds)
    is
       Start_Time : Time.Time_Microseconds := Now;
-      Key : MIDI.MIDI_Key := Offset (Arpeggiator.Next_Note (T), Oct);
+      Key : constant MIDI.MIDI_Key := Offset (Arpeggiator.Next_Note (T), Oct);
    begin
 
       if Shuffle = 0 then
@@ -418,14 +432,6 @@ package body WNM.Project.Step_Sequencer is
          Start_Time := Start_Time + Shuffle;
          Play_Later (T, Start_Time, Key, Velo, Duration);
       end if;
-
-      for X in 1 .. Rep loop
-         Start_Time := Start_Time + Repeat_Span;
-         Key := Arpeggiator.Next_Note (T);
-
-         Play_Later (T, Start_Time, Key, Velo, Duration);
-      end loop;
-
    end Play_Arp;
 
    ----------------
@@ -437,7 +443,6 @@ package body WNM.Project.Step_Sequencer is
                          Last_Note   : WNM.Chord_Settings.Chord_Index_Range;
                          Oct         : Octave_Offset;
                          Velo        : MIDI.MIDI_Data;
-                         Rep         : Repeat_Cnt;
                          Now         : Time.Time_Microseconds;
                          Shuffle     : Time.Time_Microseconds;
                          Duration    : Time.Time_Microseconds;
@@ -466,277 +471,79 @@ package body WNM.Project.Step_Sequencer is
             Play_Later (T, Start_Time, Offset_Chord (X), Velo, Duration);
          end loop;
       end if;
-
-      for X in 1 .. Rep loop
-         Start_Time := Start_Time + Repeat_Span;
-
-         for X in Chord'First .. Last_Note loop
-            Play_Later (T, Start_Time, Offset_Chord (X), Velo, Duration);
-         end loop;
-      end loop;
    end Play_Chord;
-
-   ---------------
-   -- Play_Step --
-   ---------------
-
-   procedure Play_Step (P : Patterns; T : Tracks; S : Sequencer_Steps;
-                        Now : Time.Time_Microseconds := Time.Clock)
-   is
-      use WNM.Chord_Settings;
-      use WNM.Project.Chord_Sequencer;
-      use MIDI;
-
-      Step : Step_Rec renames G_Project.Steps (T)(P)(S);
-      Track : Track_Rec renames G_Project.Tracks (T);
-
-      Ms_Per_Beat : constant Time.Time_Microseconds
-        := Microseconds_Per_Beat;
-
-      Note_Duration : constant Time.Time_Microseconds :=
-        (case Step.Duration
-         is
-            when Double  => Ms_Per_Beat * 8,
-            when Whole   => Ms_Per_Beat * 4,
-            when Half    => Ms_Per_Beat * 2,
-            when Quarter => Ms_Per_Beat,
-            when N_8th   => Ms_Per_Beat / 2,
-            when N_16th  => Ms_Per_Beat / 4,
-            when N_32nd  => Ms_Per_Beat / 8);
-
-      Repeat_Span : constant Time.Time_Microseconds :=
-        Ms_Per_Beat / (case Step.Repeat_Rate
-                       is
-                          when Rate_1_2  => 2,
-                          when Rate_1_3  => 3,
-                          when Rate_1_4  => 4,
-                          when Rate_1_5  => 5,
-                          when Rate_1_6  => 6,
-                          when Rate_1_8  => 8,
-                          when Rate_1_10 => 10,
-                          when Rate_1_12 => 12,
-                          when Rate_1_16 => 16,
-                          when Rate_1_20 => 20,
-                          when Rate_1_24 => 24,
-                          when Rate_1_32 => 32);
-
-      Repeat_Duration : constant Time.Time_Microseconds :=
-        (if Step.Repeat /= 0 and then Repeat_Span < Note_Duration
-         then Repeat_Span
-         else Note_Duration);
-
-      Shuffle : constant Time.Time_Microseconds :=
-        (if S mod 2 = 0 and then Track.Shuffle /= 0
-         then ((Ms_Per_Beat / 4) / 100) *
-                Time.Time_Microseconds (Track.Shuffle)
-         else 0);
-
-      Octave : constant Octave_Offset := Add_Sat (Step.Oct, Track.Offset);
-   begin
-
-      Process_CC_Values (P, T, S);
-
-      case Step.Note_Mode is
-         when Note =>
-            Play_Note (T, Offset (Step.Note, Octave),
-                       Step.Velo, Step.Repeat,
-                       Now, Shuffle, Repeat_Duration, Repeat_Span);
-
-         when Note_In_Chord =>
-
-            Play_Note (T,
-                       Offset
-                         (Current_Chord (Chord_Index_Range (Step.Note)),
-                          Octave),
-                       Step.Velo, Step.Repeat,
-                       Now, Shuffle, Repeat_Duration, Repeat_Span);
-
-         when Arp =>
-
-            Play_Arp (T,
-                      Step.Velo, Octave, Step.Repeat,
-                      Now, Shuffle, Repeat_Duration, Repeat_Span);
-
-         when Chord =>
-
-            Play_Chord
-              (T, Current_Chord,
-               G_Project.Tracks (T).Notes_Per_Chord,
-               Octave,
-               Step.Velo, Step.Repeat,
-               Now, Shuffle, Repeat_Duration, Repeat_Span);
-      end case;
-
-   end Play_Step;
-
-   ------------------
-   -- Process_Step --
-   ------------------
-
-   procedure Process_Step (Track   : Tracks;
-                           Pattern : Patterns;
-                           Step    : Sequencer_Steps)
-   is
-      Condition : Boolean := False;
-
-      Now : constant Time.Time_Microseconds := Time.Clock;
-   begin
-
-      if Step = Sequencer_Steps'First then
-         Pattern_Counter (Track, Pattern) := @ + 1;
-      end if;
-
-      declare
-         S : Step_Rec renames
-           G_Project.Steps (Track)(Pattern)(Step);
-
-         ------------
-         -- Out_Of --
-         ------------
-
-         function Out_Of (A, B : UInt32) return Boolean
-         is (((Pattern_Counter (Track, Pattern) - 1)  mod B) = (A - 1))
-           with Inline_Always;
-
-      begin
-         --  --  Send CC first
-         --  Process_CC_Values (Pattern, Track, Step);
-
-         if not UI.Muted (Track)
-           and then
-            not Song_Part_Sequencer.Muted (Track)
-         then
-            case S.Trig is
-               when None =>
-                  Condition := False;
-               when Always =>
-                  Condition := True;
-               when Fill =>
-                  Condition := G_Step_Fill;
-               when Not_Fill =>
-                  Condition := not G_Step_Fill;
-               when Percent_25 =>
-                  Condition := Random <= 25;
-               when Percent_50 =>
-                  Condition := Random <= 50;
-               when Percent_75 =>
-                  Condition := Random <= 75;
-
-               when OO_12 => Condition := Out_Of (1, 2);
-               when OO_22 => Condition := Out_Of (2, 2);
-               when OO_13 => Condition := Out_Of (1, 3);
-               when OO_23 => Condition := Out_Of (2, 3);
-               when OO_33 => Condition := Out_Of (3, 3);
-               when OO_14 => Condition := Out_Of (1, 4);
-               when OO_24 => Condition := Out_Of (2, 4);
-               when OO_34 => Condition := Out_Of (3, 4);
-               when OO_44 => Condition := Out_Of (4, 4);
-               when OO_15 => Condition := Out_Of (1, 5);
-               when OO_25 => Condition := Out_Of (2, 5);
-               when OO_35 => Condition := Out_Of (3, 5);
-               when OO_45 => Condition := Out_Of (4, 5);
-               when OO_55 => Condition := Out_Of (5, 5);
-
-            end case;
-
-            --  Auto fill
-            if not Condition and then Track in 1 .. 3 then
-               case G_Auto_Fill_State is
-                  when Off =>
-                     null;
-                  when Auto_Low =>
-                     Condition := Random <= 25;
-                  when Auto_High =>
-                     Condition := True;
-                  when Auto_Buildup =>
-                     Condition := Random <= G_Fill_Buildup_Proba;
-               end case;
-            end if;
-
-            --  Play step?
-            if Condition then
-               Play_Step (Pattern, Track, Step, Now);
-            end if;
-         end if;
-      end;
-   end Process_Step;
 
    --------------------
    -- Move_Playheads --
    --------------------
 
    procedure Move_Playheads (State : in out Play_State; Roll : Roll_Kind) is
-      Current_Part : constant Parts := Song_Part_Sequencer.Playing;
    begin
-      --  Put_Line ("Move Playheads!");
-      for Track_Id in Tracks loop
-         declare
-            PH    : Playhead renames State.Playheads (Track_Id);
-            Pat   : Pattern_Rec renames G_Project.Patterns (Track_Id)(PH.P);
-
-            procedure Reset_Pattern is
-            begin
-               PH.Steps_Count := 1;
-               Arpeggiator.Signal_Start_Of_Pattern (Track_Id);
-            end Reset_Pattern;
-         begin
-
-            --  The Step we're about to play
-            case Roll is
-               when Off =>
-                  PH.Steps_Count := @ + 1;
-
-               when Beat =>
-                  case PH.Steps_Count is
-                     when 8 | 16 => Reset_Pattern;
-                     when others => PH.Steps_Count := @ + 1;
-                  end case;
-
-               when Half =>
-                  case PH.Steps_Count is
-                     when 4 | 8 | 12 | 16 => Reset_Pattern;
-                     when others          => PH.Steps_Count := @ + 1;
-                  end case;
-
-               when Quarter =>
-                  case PH.Steps_Count is
-                  when 2 | 4 | 6 | 8 | 10 | 12 | 14 | 16
-                                => Reset_Pattern;
-                  when others   => PH.Steps_Count := @ + 1;
-                  end case;
-
-               when Eighth =>
-                  Reset_Pattern;
-            end case;
-
-            if PH.Steps_Count > Natural (Pat.Length) then
-               --  We are at the end of the pattern, what do we do next?
-               --  First, find the next pattern to play.
-
-               --  Check if there's a pattern link
-               if PH.P /= Patterns'Last
-                 and then
-                   Pat.Has_Link
-               then
-                  --  Use pattern link
-                  PH.P := @ + 1;
-               else
-                  --  No link, look at song part to pick which pattern to play
-                  --  for this track.
-                  PH.P :=
-                    G_Project.Parts (Current_Part).Pattern_Select (Track_Id);
-               end if;
-
-                  --  We're about to play the first step of this new pattern
-               PH.Steps_Count := 1;
-               Arpeggiator.Signal_Start_Of_Pattern (Track_Id);
+      --  The Step we're about to play
+      case Roll is
+         when Off =>
+            if State.Next_Step >= G_Project.Pattern_Len then
+               State.Next_Step := 1;
+            else
+               State.Next_Step := @ + 1;
             end if;
 
-            --  Put_Line (Track_Id'Img & " step count:" & PH.Steps_Count'Img);
+         when Beat =>
+            case State.Next_Step is
+               when 8 | 16 => State.Next_Step := 1;
+               when others => State.Next_Step := @ + 1;
+            end case;
 
-         end;
-      end loop;
+         when Half =>
+            case State.Next_Step is
+               when 4 | 8 | 12 | 16 => State.Next_Step := 1;
+               when others          => State.Next_Step := @ + 1;
+            end case;
+
+         when Quarter =>
+            case State.Next_Step is
+               when 2 | 4 | 6 | 8 | 10 | 12 | 14 | 16
+                  => State.Next_Step := 1;
+               when others   => State.Next_Step := @ + 1;
+            end case;
+
+         when Eighth =>
+            State.Next_Step := 1;
+      end case;
    end Move_Playheads;
+
+   ------------------
+   -- Process_Step --
+   ------------------
+
+   procedure Process_Step (DT   : Drum_Tracks;
+                           Step : WNM.Pattern_Length;
+                           Now  : Time_Microseconds)
+   is
+      Trig : constant Trigger_Kind := G_Project.Pattern (DT, Step);
+   begin
+      if Trig /= None then
+         Play_Now (Now,
+                   (case DT is
+                       when Kick => Kick_Track,
+                       when Snare => Snare_Track,
+                       when Hihat_Closed => Cymbal_Track,
+                       when Hihat_Open => Cymbal_Track,
+                       when Sample => Sample1_Track),
+                   (case DT is
+                       when Kick => MIDI.C1,
+                       when Snare => MIDI.C3,
+                       when Hihat_Closed => MIDI.C4,
+                       when Hihat_Open => MIDI.C4,
+                       when Sample => MIDI.C4),
+                   (case Trig is
+                       when None   => 0,
+                       when Ghost  => 30,
+                       when Hit    => 100,
+                       when Accent => 127),
+                   Microseconds_Per_Beat / 4);
+      end if;
+   end Process_Step;
 
    ------------------
    -- Execute_Step --
@@ -744,6 +551,7 @@ package body WNM.Project.Step_Sequencer is
 
    procedure Execute_Step is
       Build_Up_Step : constant := 4;
+      Now : constant Time.Time_Microseconds := Clock;
    begin
 
       if G_Roll_Next_State /= Off and then G_Roll_State = Off then
@@ -757,6 +565,10 @@ package body WNM.Project.Step_Sequencer is
       if Playing then
 
          WNM.Step_Event_Broadcast.Broadcast;
+
+         for DT in Drum_Tracks loop
+            Process_Step (DT, G_Play_State.Next_Step, Now);
+         end loop;
 
          Move_Playheads (G_Play_State, G_Roll_State);
 
@@ -772,45 +584,9 @@ package body WNM.Project.Step_Sequencer is
             G_Fill_Buildup_Proba := @ + Build_Up_Step;
          end if;
 
-         --  Guard against bad timing of MIDI step event when playback just
-         --  started.
-         if (for some Track in Tracks =>
-               G_Play_State.Playheads (Track).Steps_Count = 0)
-         then
-            return;
-         end if;
-
-         for Track in Tracks loop
-            Process_Step (Track,
-                          G_Play_State.Playheads (Track).P,
-                          Sequencer_Steps
-                            (G_Play_State.Playheads (Track).Steps_Count));
-         end loop;
       end if;
 
    end Execute_Step;
-
-   -------------------
-   -- Part_Callback --
-   -------------------
-
-   procedure Part_Callback is
-      Current_Part : constant Parts := Song_Part_Sequencer.Playing;
-   begin
-      --  There's a new part
-
-      for Track_Id in Tracks loop
-         declare
-            Pattern : constant Patterns :=
-              G_Project.Parts (Current_Part).Pattern_Select (Track_Id);
-            PH    : Playhead renames G_Play_State.Playheads (Track_Id);
-         begin
-            PH.Steps_Count := 0;
-            PH.P := Pattern;
-            Arpeggiator.Signal_Start_Of_Pattern (Track_Id);
-         end;
-      end loop;
-   end Part_Callback;
 
    ---------------------
    -- MIDI_Clock_Tick --
@@ -820,47 +596,13 @@ package body WNM.Project.Step_Sequencer is
       use MIDI.Time;
 
       Clock_Div : constant MIDI.Time.Step_Count := 6;
-
       S : constant MIDI.Time.Step_Count := Step mod Clock_Div;
    begin
       if S = 0 then
          Execute_Step;
       end if;
+
    end MIDI_Clock_Tick;
-
-   ------------------------
-   -- Do_Preview_Trigger --
-   ------------------------
-
-   procedure Do_Preview_Trigger (T : Tracks) is
-   begin
-      Process_CC_Values (Editing_Pattern, T, 1);
-      if Mode (T) = Chord_Mode then
-         Play_Chord (T           => T,
-                     Chord       => Chord_Sequencer.Current_Chord,
-                     Last_Note   => G_Project.Tracks (T).Notes_Per_Chord,
-                     Oct         => G_Project.Tracks (T).Offset,
-                     Velo        => MIDI.MIDI_Data'Last,
-                     Rep         => 0,
-                     Now         => Time.Clock,
-                     Shuffle     => 0,
-                     Duration    => Microseconds_Per_Beat,
-                     Repeat_Span => 0);
-      else
-         Play_Now (Time.Clock,
-                   T,
-                   Offset (MIDI.C4, G_Project.Tracks (T).Offset),
-                   MIDI.MIDI_Data'Last,
-                   Microseconds_Per_Beat);
-      end if;
-   end Do_Preview_Trigger;
-
-   ---------------------
-   -- Keyboard_Octave --
-   ---------------------
-
-   function Keyboard_Octave return Octave_Offset
-   is (G_Keyboard_Octave);
 
    -------------------------
    -- Song_Start_Callback --
@@ -869,9 +611,6 @@ package body WNM.Project.Step_Sequencer is
    procedure Song_Start_Callback is
    begin
       Playing := True;
-
-      --  Clear counters
-      Pattern_Counter := (others => (others => 0));
 
       Current_Playing_Step := Sequencer_Steps'First;
    end Song_Start_Callback;

@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2022 Fabien Chouteau                    --
+--                  Copyright (C) 2016-2017 Fabien Chouteau                  --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,36 +19,47 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.File_System.LEB128_File_Out;
+with WNM.Project; use WNM.Project;
 
-private package WNM.Project.Storage.File_Out is
+package WNM.GUI.Menu.Chord_Synth_Settings is
 
-   subtype Parent is File_System.LEB128_File_Out.Instance;
-   type Instance
-   is new Parent with
-   private;
-
-   procedure Start_Global (This : in out Instance);
-
-   procedure Start_Track_Settings (This : in out Instance;
-                                   T : Tracks);
-
-   procedure Start_Sequence (This : in out Instance);
-   procedure Change_Track_In_Seq (This : in out Instance; T : Tracks);
-   procedure End_Section (This : in out Instance);
-   procedure End_File (This : in out Instance);
-
-   procedure Push (This : in out Instance; A : Track_Settings);
-   procedure Push (This : in out Instance; A : Pattern_Settings);
-   procedure Push (This : in out Instance; A : MIDI.MIDI_Data);
-   procedure Push (This : in out Instance; A : WNM.Duration_In_Steps);
-   procedure Push (This : in out Instance; A : WNM.Pattern_Length);
+   procedure Push_Window;
 
 private
 
-   type Instance
-   is new Parent with null record;
+   type Top_Settings is (Engine,
+                         CC_Default,
+                         LFO,
+                         Volume,
+                         Pan,
+                         Master_FX,
+                         Octave_Offset,
+                         Shuffle,
+                         Arp_Mode,
+                         Arp_Notes);
 
-   procedure Push (This : in out Instance; A : Token_Kind);
+   function Top_Settings_Count is new Enum_Count (Top_Settings);
 
-end WNM.Project.Storage.File_Out;
+   subtype Sub_Settings is Project.User_Track_Settings;
+   function Sub_Settings_Count is new Enum_Count (Sub_Settings);
+
+   type Track_Settings_Menu is new Menu_Window with record
+      Current_Setting : Sub_Settings := Sub_Settings'First;
+      Instrument : Natural := 0;
+   end record;
+
+   overriding
+   procedure Draw (This : in out Track_Settings_Menu);
+
+   overriding
+   procedure On_Event (This  : in out Track_Settings_Menu;
+                       Event : Menu_Event);
+
+   overriding
+   procedure On_Pushed (This  : in out Track_Settings_Menu);
+
+   overriding
+   procedure On_Focus (This       : in out Track_Settings_Menu;
+                       Exit_Value : Window_Exit_Value);
+
+end WNM.GUI.Menu.Chord_Synth_Settings;

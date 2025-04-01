@@ -174,12 +174,33 @@ package body WNM.GUI.Menu.Self_Test is
                WNM_HAL.Delay_Milliseconds (30);
             end loop;
 
-            --  Just fill the screen and wait for shutdown
+            --  Fill the screen and wait for shutdown
             Screen.Clear;
             Screen.Fill_Rect (((0, 0), Screen.Width, Screen.Height));
             Screen.Update;
             while not WNM_HAL.Shutdown_Requested loop
-               WNM_HAL.Delay_Milliseconds (500);
+               WNM_HAL.Delay_Milliseconds (100);
+            end loop;
+
+            --  Wait for the battery to dtop below the threshold
+            loop
+               declare
+                  Millivolts : constant Natural :=
+                    WNM_HAL.Battery_Millivolts;
+
+                  Goal : constant := 3220;
+               begin
+                  exit when Millivolts < Goal
+                    or else
+                      WNM_HAL.State (PAD_B) = Down;
+
+                  Screen.Clear;
+                  Draw_Str_Center (40, Millivolts'Img & " <" & Goal'Img);
+                  Screen.Update;
+
+                  WNM_HAL.Read_Battery_Voltage;
+                  WNM_HAL.Delay_Milliseconds (100);
+               end;
             end loop;
 
          when B_Press =>

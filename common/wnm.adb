@@ -27,10 +27,24 @@ package body WNM is
    -- To_Value --
    --------------
 
-   function To_Value (B : Keyboard_Button) return Keyboard_Value is
-   begin
-      return Keyboard_Value (B'Enum_Rep - B1'Enum_Rep + 1);
-   end To_Value;
+   function To_Value (B : Keyboard_Button) return Keyboard_Value
+   is (case B is
+          when C1 => 1,
+          when C2 => 2,
+          when C3 => 3,
+          when C4 => 4,
+          when L1 => 5,
+          when L2 => 6,
+          when L3 => 7,
+          when L4 => 8,
+          when C5 => 9,
+          when C6 => 10,
+          when C7 => 11,
+          when C8 => 12,
+          when L5 => 13,
+          when L6 => 14,
+          when L7 => 15,
+          when L8 => 16);
 
    ---------------
    -- To_Button --
@@ -38,22 +52,22 @@ package body WNM is
 
    function To_Button (V : Keyboard_Value) return Keyboard_Button
    is (case V is
-          when 1  => B1,
-          when 2  => B2,
-          when 3  => B3,
-          when 4  => B4,
-          when 5  => B5,
-          when 6  => B6,
-          when 7  => B7,
-          when 8  => B8,
-          when 9  => B9,
-          when 10 => B10,
-          when 11 => B11,
-          when 12 => B12,
-          when 13 => B13,
-          when 14 => B14,
-          when 15 => B15,
-          when 16 => B16);
+          when 1  => C1,
+          when 2  => C2,
+          when 3  => C3,
+          when 4  => C4,
+          when 5  => L1,
+          when 6  => L2,
+          when 7  => L3,
+          when 8  => L4,
+          when 9  => C5,
+          when 10 => C6,
+          when 11 => C7,
+          when 12 => C8,
+          when 13 => L5,
+          when 14 => L6,
+          when 15 => L7,
+          when 16 => L8);
 
    Rand_X : UInt32 := 123456789;
    Rand_Y : UInt32 := 362436069;

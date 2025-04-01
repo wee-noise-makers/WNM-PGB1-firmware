@@ -24,7 +24,6 @@ with WNM.GUI.Bitmap_Fonts;  use WNM.GUI.Bitmap_Fonts;
 with WNM.GUI.Parameters;
 with WNM.Screen;
 with WNM.UI;
-with WNM.Sequence_Copy;     use WNM.Sequence_Copy;
 with WNM.GUI.Menu;
 with WNM.GUI.Menu.Drawing;  use WNM.GUI.Menu.Drawing;
 with WNM.GUI.Logo;
@@ -32,7 +31,6 @@ with WNM.GUI.Popup;
 with WNM.Project;
 with WNM.Audio_Routing;
 with WNM.Time;
-with WNM.Synth;
 
 package body WNM.GUI.Update is
 
@@ -55,31 +53,11 @@ package body WNM.GUI.Update is
       end if;
 
       -- Header --
-      B := 1;
-      Print (X_Offset    => B,
-             Y_Offset    => 0,
-             Str         => Project.Track_Name);
-      if WNM_Configuration.Individual_Synth_Perf_Enabled
-        and then
-          Project.Mode in Project.Synth_Track_Mode_Kind
-      then
-         Print (X_Offset    => B,
-                Y_Offset    => 0,
-                Str         =>
-                  Img (Synth.Synth_CPU_Load
-                    (Project.Voice_MIDI_Chan (Project.Mode))));
-      end if;
-
-      B := 79;
-      Print (X_Offset    => B,
-             Y_Offset    => 0,
-             Str         => 'P' & Img (Project.Editing_Pattern) &
-                            "S" & Img (Project.Editing_Step));
       Menu.Drawing.Draw_Battery (Anim_Step);
       Screen.Draw_H_Line (8);
 
       case WNM.UI.Input_GUI_Mode is
-         when WNM.UI.Volume_BPM_Mute | WNM.UI.Volume_BPM_Solo =>
+         when WNM.UI.Volume_BPM_Mute =>
 
             WNM.GUI.Parameters.Print_Percentage
               (Slot  => WNM.GUI.Parameters.Up,
@@ -96,18 +74,11 @@ package body WNM.GUI.Update is
             case WNM.UI.Input_GUI_Mode is
                when WNM.UI.Volume_BPM_Mute =>
                   WNM.GUI.Menu.Drawing.Draw_Value ("Mute");
-               when WNM.UI.Volume_BPM_Solo =>
-                  WNM.GUI.Menu.Drawing.Draw_Value ("Solo");
                when others =>
                   null;
             end case;
 
-         when WNM.UI.Pattern_Mode |
-              WNM.UI.Track_Mode |
-              WNM.UI.Step_Mode |
-              WNM.UI.Song_Mode |
-              WNM.UI.FX_Mode |
-              WNM.UI.Sample_Edit_Mode =>
+         when WNM.UI.Main_Modes =>
 
             Menu.Draw;
 
@@ -121,35 +92,6 @@ package body WNM.GUI.Update is
 
             Draw_Alt_Slider;
 
-         when WNM.UI.Copy =>
-            declare
-               Blink : constant Boolean := (Anim_Step mod 10) < 5;
-               FB : constant String := (if Blink then "  " else "??");
-               TB : constant String :=
-                 (if Is_Complete (WNM.UI.Copy_T.From) and then Blink
-                  then "  " else "??");
-            begin
-               B := 1;
-               Print (X_Offset    => B,
-                      Y_Offset    => Box_Top,
-                      Str         => "Copy " & WNM.UI.Copy_T.From.Kind'Img);
-               B := 1;
-               Print (X_Offset    => B,
-                      Y_Offset    => Box_Top + 9,
-                      Str         => "From " & Image (WNM.UI.Copy_T.From, FB));
-               B := 1;
-               Print (X_Offset    => B,
-                      Y_Offset    => Box_Top + 18,
-                      Str         => "To   " & Image (WNM.UI.Copy_T.To, TB));
-            end;
-
-         when WNM.UI.Step_Select |
-              WNM.UI.Track_Select |
-              WNM.UI.Pattern_Select |
-              WNM.UI.Song_Select
-            =>
-            raise Program_Error with
-              "These mode are not expected for the GUI";
       end case;
 
       WNM.GUI.Popup.Update;

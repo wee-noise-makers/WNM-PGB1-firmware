@@ -49,31 +49,31 @@ package body ASFML_Sim.Window is
    LED_Offset : constant array (WNM_Configuration.LED) of sfVector2f :=
      (
       Menu           => (842.0, 327.0),
-      Song_Button   => (971.0, 327.0),
-      Pattern_Button => (1101.0, 327.0),
+      Drum_Edit      => (971.0, 327.0),
+      Drums_Play     => (1101.0, 327.0),
       Func           => (1245.0, 327.0),
 
-      Track_Button => (50.0,   485.0),
-      B1           => (194.0,  485.0),
-      B2           => (324.0,  485.0),
-      B3           => (453.0,  485.0),
-      B4           => (583.0,  485.0),
-      B5           => (712.0,  485.0),
-      B6           => (842.0,  485.0),
-      B7           => (971.0,  485.0),
-      B8           => (1101.0,  485.0),
-      Play         => (1245.0, 485.0),
+      Chord_Select => (50.0,   485.0),
+      C1           => (194.0,  485.0),
+      C2           => (324.0,  485.0),
+      C3           => (453.0,  485.0),
+      C4           => (583.0,  485.0),
+      L1           => (712.0,  485.0),
+      L2           => (842.0,  485.0),
+      L3           => (971.0,  485.0),
+      L4           => (1101.0,  485.0),
+      Lead_Select  => (1245.0, 485.0),
 
-      Step_Button  => (50.0, 643.0),
-      B9           => (194.0, 643.0),
-      B10          => (324.0, 643.0),
-      B11          => (453.0, 643.0),
-      B12          => (583.0, 643.0),
-      B13          => (712.0, 643.0),
-      B14          => (842.0, 643.0),
-      B15          => (971.0, 643.0),
-      B16          => (1101.0, 643.0),
-      Rec          => (1245.0, 643.0));
+      Chord_Alt   => (50.0, 643.0),
+      C5          => (194.0, 643.0),
+      C6          => (324.0, 643.0),
+      C7          => (453.0, 643.0),
+      C8          => (583.0, 643.0),
+      L5          => (712.0, 643.0),
+      L6          => (842.0, 643.0),
+      L7          => (971.0, 643.0),
+      L8          => (1101.0, 643.0),
+      Lead_Alt    => (1245.0, 643.0));
 
    Button_Rect_Size : constant sfVector2f := (95.0, 95.0);
    Button_Text_Offset : constant sfVector2f := (Button_Rect_Size.x / 2.0,
@@ -295,7 +295,7 @@ package body ASFML_Sim.Window is
 
       Screen_Offset : constant sfVector2f := (526.0, 41.0);
       Screen_Scale : constant :=
-        (856.0 - 526.0) / Float (Screen_Width);
+        ((856.0 - 526.0) / Float (Screen_Width));
 
       Params : constant sfContextSettings := sfDefaultContextSettings;
 
@@ -594,14 +594,8 @@ package body ASFML_Sim.Window is
       use WNM.LEDs;
    begin
       case B is
-         when WNM_Configuration.Play =>
-            return To_Color (Hue_To_RGB (WNM.LEDs.Play));
-         when Rec => return To_Color (Hue_To_RGB (Recording));
-         when Step_Button => return To_Color (Hue_To_RGB (Step));
-         when Track_Button => return To_Color (Hue_To_RGB (Track));
-         when Pattern_Button => return To_Color (Hue_To_RGB (Pattern));
-         when Song_Button => return To_Color (Hue_To_RGB (Chord));
-         when Func => return To_Color (Hue_To_RGB (FX));
+         when Chord_Alt | Chord_Select =>
+            return To_Color (Hue_To_RGB (WNM.LEDs.Chord));
          when others =>
             return Sf.Graphics.Color.sfWhite;
       end case;
@@ -617,13 +611,13 @@ package body ASFML_Sim.Window is
 
       function Button_Img (B : WNM_Configuration.Button) return String
       is (case B is
-             when Rec            => "Rec",
-             when Play           => "Play",
+             when Lead_Alt       => "Ld Alt",
+             when Lead_Select    => "Lead",
              when Menu           => "Menu",
-             when Step_Button    => "Step",
-             when Track_Button   => "Track",
-             when Pattern_Button => "Pattern",
-             when Song_Button   => "Song",
+             when Chord_Alt      => "Ch Alt",
+             when Chord_Select   => "Chord",
+             when Drums_Play     => "Play",
+             when Drum_Edit      => "Edit",
              when Func           => "FX/Copy",
              when PAD_Up         => "Up",
              when PAD_Down       => "Down",

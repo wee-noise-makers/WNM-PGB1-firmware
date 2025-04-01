@@ -58,20 +58,20 @@ package body WNM.GUI.DFU_Mode_Display is
       LEDs.Set_Hue (LEDs.Green);
 
       --  U...
-      LEDs.Turn_On (B2);
-      LEDs.Turn_On (B10);
-      LEDs.Turn_On (B11);
-      LEDs.Turn_On (B12);
-      LEDs.Turn_On (B4);
+      LEDs.Turn_On (C2);
+      LEDs.Turn_On (C6);
+      LEDs.Turn_On (C7);
+      LEDs.Turn_On (C8);
+      LEDs.Turn_On (C4);
 
       --  P...
       LEDs.Turn_On (WNM_Configuration.Menu);
-      LEDs.Turn_On (Pattern_Button);
-      LEDs.Turn_On (Song_Button);
-      LEDs.Turn_On (B6);
-      LEDs.Turn_On (B8);
-      LEDs.Turn_On (B7);
-      LEDs.Turn_On (B14);
+      LEDs.Turn_On (Drums_Play);
+      LEDs.Turn_On (Drum_Edit);
+      LEDs.Turn_On (L2);
+      LEDs.Turn_On (L4);
+      LEDs.Turn_On (L3);
+      LEDs.Turn_On (L6);
 
       LEDs.Update;
 

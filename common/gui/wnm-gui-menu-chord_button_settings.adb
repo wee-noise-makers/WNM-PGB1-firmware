@@ -1,0 +1,144 @@
+-------------------------------------------------------------------------------
+--                                                                           --
+--                              Wee Noise Maker                              --
+--                                                                           --
+--                  Copyright (C) 2016-2017 Fabien Chouteau                  --
+--                                                                           --
+--    Wee Noise Maker is free software: you can redistribute it and/or       --
+--    modify it under the terms of the GNU General Public License as         --
+--    published by the Free Software Foundation, either version 3 of the     --
+--    License, or (at your option) any later version.                        --
+--                                                                           --
+--    Wee Noise Maker is distributed in the hope that it will be useful,     --
+--    but WITHOUT ANY WARRANTY; without even the implied warranty of         --
+--    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU       --
+--    General Public License for more details.                               --
+--                                                                           --
+--    You should have received a copy of the GNU General Public License      --
+--    along with We Noise Maker. If not, see <http://www.gnu.org/licenses/>. --
+--                                                                           --
+-------------------------------------------------------------------------------
+
+with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
+with WNM.Chord_Settings;
+
+package body WNM.GUI.Menu.Chord_Button_Settings is
+
+   package Sub_Settings_Next is new Enum_Next (Sub_Settings,
+                                               Wrap => False);
+   use Sub_Settings_Next;
+
+   Track_Settings_Singleton : aliased Track_Settings_Menu;
+
+   ------------
+   -- To_Top --
+   ------------
+
+   function To_Top (S : Sub_Settings) return Top_Settings
+   is (case S is
+          when Project.Root    => Chord_Notes,
+          when Project.Quality => Chord_Notes);
+
+   -----------------
+   -- Push_Window --
+   -----------------
+
+   procedure Push_Window is
+   begin
+      Push (Track_Settings_Singleton'Access);
+   end Push_Window;
+
+   ----------
+   -- Draw --
+   ----------
+
+   overriding
+   procedure Draw
+     (This : in out Track_Settings_Menu)
+   is
+      Sub : constant Sub_Settings := This.Current_Setting;
+      Top : constant Top_Settings := To_Top (Sub);
+
+      C : constant Chord_Button := Project.Editing_Chord;
+   begin
+
+      Draw_Menu_Box ("Chord",
+                     Count => Top_Settings_Count,
+                     Index => Top_Settings'Pos (Top));
+      case Top is
+         when Chord_Notes =>
+
+            Draw_Title ("Chord quality", "");
+
+            Draw_Value_Pos (Key_Img (Project.Root_Note (C)),
+                            Box_Left + 3,
+                            Selected =>
+                               This.Current_Setting = Project.Root);
+
+            Draw_Value_Pos (WNM.Chord_Settings.Img (Project.Quality (C)),
+                            Box_Center.X,
+                            Selected =>
+                               This.Current_Setting = Project.Quality);
+      end case;
+
+   end Draw;
+
+   --------------
+   -- On_Event --
+   --------------
+
+   overriding
+   procedure On_Event
+     (This  : in out Track_Settings_Menu;
+      Event : Menu_Event)
+   is
+      C : constant Chord_Button := Project.Editing_Chord;
+   begin
+      case Event.Kind is
+         when Left_Press =>
+            Prev (This.Current_Setting);
+         when Right_Press =>
+            Next (This.Current_Setting);
+
+         when Up_Press =>
+            Project.Next_Value (This.Current_Setting, C);
+
+         when Down_Press =>
+            Project.Prev_Value (This.Current_Setting, C);
+
+         when A_Press =>
+            null;
+         when B_Press =>
+            null;
+
+         when Slider_Touch =>
+            Project.Set (This.Current_Setting, Event.Slider_Value, C);
+      end case;
+   end On_Event;
+
+   ---------------
+   -- On_Pushed --
+   ---------------
+
+   overriding
+   procedure On_Pushed
+     (This  : in out Track_Settings_Menu)
+   is
+   begin
+      null;
+   end On_Pushed;
+
+   --------------
+   -- On_Focus --
+   --------------
+
+   overriding
+   procedure On_Focus
+     (This       : in out Track_Settings_Menu;
+      Exit_Value : Window_Exit_Value)
+   is
+   begin
+      null;
+   end On_Focus;
+
+end WNM.GUI.Menu.Chord_Button_Settings;

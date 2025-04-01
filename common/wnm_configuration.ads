@@ -11,40 +11,41 @@ package WNM_Configuration is
 
    Individual_Synth_Perf_Enabled : constant Boolean := False;
 
-   type Button is (B1, B2, B3, B4, B5, B6, B7, B8,
-                   B9, B10, B11, B12, B13, B14, B15, B16,
-                   Rec, Play,
-                   Menu, Func, Step_Button, Track_Button, Pattern_Button,
-                   Song_Button,
+   type Button is (C1, C2, C3, C4, C5, C6, C7, C8,
+                   L1, L2, L3, L4, L5, L6, L7, L8,
+                   Lead_Select, Lead_Alt,
+                   Chord_Select, Chord_Alt,
+                   Menu, Func,
+                   Drums_Play, Drum_Edit,
                    PAD_Up, PAD_Down, PAD_Left, PAD_Right, PAD_A, PAD_B);
 
-   subtype LED is Button range B1 .. Song_Button;
+   subtype LED is Button range C1 .. Drum_Edit;
 
    LED_Position : constant array (LED) of Positive :=
-     (B1             => 6,
-      B2             => 7,
-      B3             => 8,
-      B4             => 9,
-      B5             => 10,
-      B6             => 11,
-      B7             => 12,
-      B8             => 13,
-      B9             => 16,
-      B10            => 17,
-      B11            => 18,
-      B12            => 19,
-      B13            => 20,
-      B14            => 21,
-      B15            => 22,
-      B16            => 23,
-      Rec            => 24,
-      Play           => 14,
+     (C1             => 6,
+      C2             => 7,
+      C3             => 8,
+      C4             => 9,
+      L1             => 10,
+      L2             => 11,
+      L3             => 12,
+      L4             => 13,
+      C5             => 16,
+      C6             => 17,
+      C7             => 18,
+      C8             => 19,
+      L5             => 20,
+      L6             => 21,
+      L7             => 22,
+      L8             => 23,
+      Lead_Alt       => 24,
+      Lead_Select    => 14,
       Menu           => 1,
       Func           => 4,
-      Step_Button    => 15,
-      Track_Button   => 5,
-      Pattern_Button => 3,
-      Song_Button    => 2);
+      Chord_Alt      => 15,
+      Chord_Select   => 5,
+      Drums_Play     => 3,
+      Drum_Edit      => 2);
 
    package Audio is
       Sample_Frequency   : constant := Tresses.Resources.SAMPLE_RATE;

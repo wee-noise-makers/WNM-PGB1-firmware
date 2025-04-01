@@ -20,7 +20,6 @@
 -------------------------------------------------------------------------------
 
 with MIDI;
-with WNM.Sequence_Copy;
 with WNM.Chord_Settings;
 with WNM.Synth;
 with WNM.Time;
@@ -31,20 +30,12 @@ private with Enum_Next;
 
 package WNM.Project is
 
-   Editing_Step     : Sequencer_Steps := Sequencer_Steps'First;
-   Editing_Track    : Tracks          := Tracks'First;
-   Editing_Pattern  : Patterns        := Patterns'First;
-   Editing_Song_Elt : Song_Element    := Song_Element'First;
+   Editing_Chord : Chord_Button := Chord_Button'First;
+   Editing_Lead : Lead_Button := Lead_Button'First;
 
    type Playhead is record
-      P : Patterns := Patterns'First;
       Steps_Count : Natural := 0;
    end record;
-
-   function Do_Copy (T : in out WNM.Sequence_Copy.Copy_Transaction)
-                     return Boolean
-     with Pre => WNM.Sequence_Copy.Is_Complete (T);
-   --  Returns True if something was copied
 
    procedure Set_BPM (BPM : Beat_Per_Minute);
    procedure Change_BPM (BPM_Delta : Integer);
@@ -58,88 +49,6 @@ package WNM.Project is
 
    procedure Handle_MIDI (Msg : MIDI.Message);
 
-   ----------
-   -- Step --
-   ----------
-
-   type Trigger_Kind is (None, Always, Fill, Not_Fill,
-                         Percent_25, Percent_50, Percent_75,
-                         OO_12, OO_22,
-                         OO_13, OO_23, OO_33,
-                         OO_14, OO_24, OO_34, OO_44,
-                         OO_15, OO_25, OO_35, OO_45, OO_55);
-
-   function Img (T : Trigger_Kind) return String
-   is (case T is
-          when None       => "Never",
-          when Always     => "Always",
-          when Fill       => "Fill",
-          when Not_Fill   => "Not Fill",
-          when Percent_25 => "25%",
-          when Percent_50 => "50%",
-          when Percent_75 => "75%",
-          when OO_12      => "1/2",
-          when OO_22      => "2/2",
-          when OO_13      => "1/3",
-          when OO_23      => "2/3",
-          when OO_33      => "3/3",
-          when OO_14      => "1/4",
-          when OO_24      => "2/4",
-          when OO_34      => "3/4",
-          when OO_44      => "4/4",
-          when OO_15      => "1/5",
-          when OO_25      => "2/5",
-          when OO_35      => "3/5",
-          when OO_45      => "4/5",
-          when OO_55      => "5/5");
-
-   type Note_Duration is (N_32nd, N_16th, N_8th,
-                          Quarter, Half, Whole, Double);
-
-   function Img (D : Note_Duration) return String
-   is (case D is
-          when Double  => "Double",
-          when Whole   => "Whole",
-          when Half    => "Half",
-          when Quarter => "Quarter",
-          when N_8th   => "8th",
-          when N_16th  => "16th",
-          when N_32nd  => "32nd");
-
-   type Repeat_Cnt is mod 8;
-
-   type Repeat_Rate_Kind is (Rate_1_2, Rate_1_3, Rate_1_4, Rate_1_5,
-                             Rate_1_6, Rate_1_8, Rate_1_10, Rate_1_12,
-                             Rate_1_16,
-                             Rate_1_20, Rate_1_24, Rate_1_32);
-   function Img (R : Repeat_Rate_Kind) return String
-   is (case R is
-          when Rate_1_2  => "1/2",
-          when Rate_1_3  => "1/3",
-          when Rate_1_4  => "1/4",
-          when Rate_1_5  => "1/5",
-          when Rate_1_6  => "1/6",
-          when Rate_1_8  => "1/8",
-          when Rate_1_10 => "1/10",
-          when Rate_1_12 => "1/12",
-          when Rate_1_16 => "1/16",
-          when Rate_1_20 => "1/20",
-          when Rate_1_24 => "1/24",
-          when Rate_1_32 => "1/32");
-
-   type Note_Mode_Kind is (Note, Chord,
-                           Note_In_Chord,
-                           Arp);
-   package Note_Mode_Kind_Next is new Enum_Next (Note_Mode_Kind);
-   use Note_Mode_Kind_Next;
-
-   function Img (M : Note_Mode_Kind) return String
-   is (case M is
-          when Note          => "Note",
-          when Chord         => "Chord",
-          when Note_In_Chord => "Note in chord",
-          when Arp           => "Arpeggiator");
-
    type CC_Id is (A, B, C, D);
 
    function CC_Letter (ID : CC_Id) return String
@@ -149,75 +58,42 @@ package WNM.Project is
           when C => "C",
           when D => "D");
 
-   -- Step getters --
-   function Set (Track : Tracks; PH : Playhead) return Boolean;
-   function Set (Track   : Tracks := Editing_Track;
-                 Pattern : Patterns := Editing_Pattern;
-                 Step    : Sequencer_Steps)
-                 return Boolean;
+   type Chord_Play_Mode_Kind is (Press_Release, Hold, Beat);
 
-   function Trigger (Step : Sequencer_Steps := Editing_Step)
-                     return Trigger_Kind;
-   function Repeat (Step : Sequencer_Steps := Editing_Step)
-                    return Repeat_Cnt;
-   function Repeat_Rate (Step : Sequencer_Steps := Editing_Step)
-                         return Repeat_Rate_Kind;
-   function Note_Mode (Step : Sequencer_Steps := Editing_Step)
-                       return Note_Mode_Kind;
-   function Note_Img (Step : Sequencer_Steps := Editing_Step)
-                      return String;
-   function Duration (Step : Sequencer_Steps := Editing_Step)
-                      return Note_Duration;
-   function Velocity (Step : Sequencer_Steps := Editing_Step)
-                      return MIDI.MIDI_Data;
-   function CC_Enabled (Step : Sequencer_Steps := Editing_Step;
-                        Id : CC_Id) return Boolean;
-   function CC_Value (Step : Sequencer_Steps := Editing_Step;
-                      Id : CC_Id)
-                      return MIDI.MIDI_Data;
+   function Chord_Play_Mode return Chord_Play_Mode_Kind;
+   procedure Chord_Play_Mode_Next;
 
-   function CC_Image (Step : Sequencer_Steps := Editing_Step;
-                      Id : CC_Id)
-                      return String;
+   type Lead_Play_Mode_Kind is (Press_Release, Hold, Arp_16, Arp_8, Arp_4);
 
-   procedure Note_Mode_Next (Step : Sequencer_Steps := Editing_Step);
+   function Lead_Play_Mode return Lead_Play_Mode_Kind;
+   procedure Lead_Play_Mode_Next;
 
-   procedure CC_Toggle (Step : Sequencer_Steps; Id : CC_Id);
+   type Scale_Choice is (Random, Major, Minor, Modal);
+   subtype Valid_Scale_Choice is Scale_Choice range Major .. Modal;
+   type Key_Choice is (Random, C, Cs, D, Ds, E, F, Fs, G, Gs, A, As, B);
+   function Img (Key : Key_Choice) return String
+   is (case Key is
+          when Random => "Random",
+          when C => "C",
+          when Cs => "C#",
+          when D => "D",
+          when Ds => "D#",
+          when E => "E",
+          when F => "F",
+          when Fs => "F#",
+          when G => "G",
+          when Gs => "G#",
+          when A => "A",
+          when As => "A#",
+          when B => "B");
 
-   type Step_Settings is (Condition,
-                          Note,
-                          Duration,
-                          Velo,
-                          Repeat,
-                          Repeat_Rate,
-                          CC_A,
-                          CC_B,
-                          CC_C,
-                          CC_D,
-                          Note_Mode,
-                          Octave_Shift);
+   procedure Randomly_Pick_A_Progression (Scale_C : Scale_Choice;
+                                          Key_C   : Key_Choice);
+   --  a.k.a. The Magic Hat of Chord Progression
 
-   for Step_Settings'Size use 8;
-   for Step_Settings use (Condition    => 0,
-                          Note         => 1,
-                          Duration     => 2,
-                          Velo         => 3,
-                          Repeat       => 4,
-                          Repeat_Rate  => 5,
-                          CC_A         => 6,
-                          CC_B         => 7,
-                          CC_C         => 8,
-                          CC_D         => 9,
-                          Note_Mode    => 10,
-                          Octave_Shift => 11);
-
-   subtype User_Step_Settings is Step_Settings range Condition .. CC_D;
-
-   procedure Set (S : User_Step_Settings; V : WNM_HAL.Touch_Value);
-   procedure Next_Value (S : User_Step_Settings);
-   procedure Prev_Value (S : User_Step_Settings);
-   procedure Next_Value_Fast (S : User_Step_Settings);
-   procedure Prev_Value_Fast (S : User_Step_Settings);
+   procedure Load_Progression (Scale_Choice : Valid_Scale_Choice;
+                               Key          : MIDI.MIDI_Key;
+                               Id           : Natural);
 
    -----------
    -- Track --
@@ -286,22 +162,22 @@ package WNM.Project is
    function Add_Sat (A, B : Octave_Offset) return Octave_Offset;
 
    -- Track Getters --
-   function Mode (T : Tracks := Editing_Track) return Track_Mode_Kind;
-   function MIDI_Chan (T : Tracks := Editing_Track) return MIDI.MIDI_Channel;
-   function Track_Name (T : Tracks := Editing_Track) return String;
-   function Track_Volume (T : Tracks := Editing_Track) return Audio_Volume;
-   function Track_Pan (T : Tracks := Editing_Track) return Audio_Pan;
-   function Track_Offset (T : Tracks := Editing_Track) return Octave_Offset;
+   function Mode (T : Tracks) return Track_Mode_Kind;
+   function MIDI_Chan (T : Tracks) return MIDI.MIDI_Channel;
+   function Track_Name (T : Tracks) return String;
+   function Track_Volume (T : Tracks) return Audio_Volume;
+   function Track_Pan (T : Tracks) return Audio_Pan;
+   function Track_Offset (T : Tracks) return Octave_Offset;
 
    type Shuffle_Value is range 0 .. 100;
-   function Track_Shuffle (T : Tracks := Editing_Track) return Shuffle_Value;
-   function CC_Default (T : Tracks := Editing_Track;
+   function Track_Shuffle (T : Tracks) return Shuffle_Value;
+   function CC_Default (T : Tracks;
                         Id : CC_Id)
                         return MIDI.MIDI_Data;
-   function Master_FX (T : Tracks := Editing_Track) return FX_Kind;
+   function Master_FX (T : Tracks) return FX_Kind;
 
-   function LFO_Rate (T : Tracks := Editing_Track) return MIDI.MIDI_Data;
-   function LFO_Amp (T : Tracks := Editing_Track) return MIDI.MIDI_Data;
+   function LFO_Rate (T : Tracks) return MIDI.MIDI_Data;
+   function LFO_Amp (T : Tracks) return MIDI.MIDI_Data;
 
    type LFO_Target_Kind is (P1, P2, P3, P4, Vol, Pan, None);
    for LFO_Target_Kind use (P1 => Synth.Voice_Param_1_CC,
@@ -311,7 +187,7 @@ package WNM.Project is
                             Vol => Synth.Voice_Volume_CC,
                             Pan => Synth.Voice_Pan_CC,
                             None => MIDI.MIDI_Data'Last);
-   function LFO_Target (T : Tracks := Editing_Track) return LFO_Target_Kind;
+   function LFO_Target (T : Tracks) return LFO_Target_Kind;
 
    type LFO_Shape_Kind is (Sine, Triangle, Ramp_Up, Ramp_Down,
                            Exp_Up, Exp_Down);
@@ -321,43 +197,38 @@ package WNM.Project is
                            Ramp_Down => 3,
                            Exp_Up    => 4,
                            Exp_Down  => 5);
-   function LFO_Shape (T : Tracks := Editing_Track) return LFO_Shape_Kind;
+   function LFO_Shape (T : Tracks) return LFO_Shape_Kind;
 
    type LFO_Sync_Kind is (Off, On);
    for LFO_Sync_Kind use (Off => 0, On => 1);
-   function LFO_Sync (T : Tracks := Editing_Track) return LFO_Sync_Kind;
+   function LFO_Sync (T : Tracks) return LFO_Sync_Kind;
 
    type LFO_Loop_Kind is (Off, On);
    for LFO_Loop_Kind use (Off => 0, On => 1);
-   function LFO_Loop (T : Tracks := Editing_Track) return LFO_Loop_Kind;
+   function LFO_Loop (T : Tracks) return LFO_Loop_Kind;
 
    type LFO_Amp_Kind is (Positive, Center, Negative);
    for LFO_Amp_Kind use (Positive => 0,
                          Center   => 1,
                          Negative => 2);
-   function LFO_Amp_Mode (T : Tracks := Editing_Track) return LFO_Amp_Kind;
+   function LFO_Amp_Mode (T : Tracks) return LFO_Amp_Kind;
 
-   function CC_Value_To_Use (P : Patterns; T : Tracks; S : Sequencer_Steps;
-                             Id : CC_Id)
-                             return MIDI.MIDI_Data;
-   --  Return the value for the given step if any, otherwise the default value
-
-   function CC_Controller (T : Tracks := Editing_Track;
+   function CC_Controller (T : Tracks;
                            Id : CC_Id)
                            return MIDI.MIDI_Data;
-   function CC_Controller_Label (T    : Tracks := Editing_Track;
+   function CC_Controller_Label (T    : Tracks;
                                  Id   : CC_Id)
                                  return Controller_Label;
-   function CC_Controller_Short_Label (T    : Tracks := Editing_Track;
+   function CC_Controller_Short_Label (T    : Tracks;
                                        Id   : CC_Id)
                                        return Tresses.Short_Label;
-   function Selected_Engine (T : Tracks := Editing_Track)
+   function Selected_Engine (T : Tracks)
                              return MIDI.MIDI_Data;
-   function Selected_Engine_Img (T : Tracks := Editing_Track)
+   function Selected_Engine_Img (T : Tracks)
                                  return String;
-   function Arp_Mode (T : Tracks := Editing_Track) return Arp_Mode_Kind;
-   function Arp_Notes (T : Tracks := Editing_Track) return Arp_Notes_Kind;
-   function Notes_Per_Chord (T : Tracks := Editing_Track)
+   function Arp_Mode (T : Tracks) return Arp_Mode_Kind;
+   function Arp_Notes (T : Tracks) return Arp_Notes_Kind;
+   function Notes_Per_Chord (T : Tracks)
                              return Natural;
 
    type Track_Settings is (Engine,
@@ -423,16 +294,20 @@ package WNM.Project is
                            LFO_Sync            => 31);
 
    subtype User_Track_Settings
-     is Track_Settings range Engine .. Track_Mode;
+     is Track_Settings range Engine .. Arp_Notes;
 
-   procedure Set (T : Tracks;
-                  S : User_Track_Settings;
-                  V : WNM_HAL.Touch_Value);
+   procedure Set (S : User_Track_Settings;
+                  V : WNM_HAL.Touch_Value;
+                  T : Tracks);
 
-   procedure Next_Value (S : User_Track_Settings);
-   procedure Prev_Value (S : User_Track_Settings);
-   procedure Next_Value_Fast (S : User_Track_Settings);
-   procedure Prev_Value_Fast (S : User_Track_Settings);
+   procedure Next_Value (S : User_Track_Settings;
+                         T : Tracks);
+   procedure Prev_Value (S : User_Track_Settings;
+                         T : Tracks);
+   procedure Next_Value_Fast (S : User_Track_Settings;
+                              T : Tracks);
+   procedure Prev_Value_Fast (S : User_Track_Settings;
+                              T : Tracks);
 
    procedure Set_CC_Controller (T : Tracks; Id : CC_Id; C : MIDI.MIDI_Data);
 
@@ -440,137 +315,64 @@ package WNM.Project is
                                       Id   : CC_Id;
                                       Label : Controller_Label);
 
+   ------------
+   -- Chords --
+   ------------
+
+   type Chord_Settings is (Root, Quality);
+   subtype User_Chord_Settings is Chord_Settings;
+
+   function Root_Note (C : Chord_Button) return MIDI.MIDI_Key;
+   function Quality (C : Chord_Button) return WNM.Chord_Settings.Chord_Name;
+
+   procedure Set (S : User_Chord_Settings;
+                  V : WNM_HAL.Touch_Value;
+                  C : Chord_Button);
+   procedure Next_Value (S : User_Chord_Settings; C : Chord_Button);
+   procedure Prev_Value (S : User_Chord_Settings; C : Chord_Button);
+
+   ----------
+   -- Lead --
+   ----------
+
+   type Lead_Settings is (Note);
+   subtype User_Lead_Settings is Lead_Settings;
+
+   function Note (C : Lead_Button) return MIDI.MIDI_Key;
+
+   procedure Set (S : User_Lead_Settings;
+                  V : WNM_HAL.Touch_Value;
+                  C : Lead_Button);
+   procedure Next_Value (S : User_Lead_Settings; C : Lead_Button);
+   procedure Prev_Value (S : User_Lead_Settings; C : Lead_Button);
+
    -------------
    -- Pattern --
    -------------
 
-   function Link (T : Tracks := Editing_Track;
-                  P : Patterns := Editing_Pattern)
-                  return Boolean;
+   function Pattern_Length return WNM.Pattern_Length;
+   procedure Incr_Pattern_Length;
+   procedure Decr_Pattern_Length;
 
-   function Pattern_Length (T : Tracks := Editing_Track;
-                            P : Patterns := Editing_Pattern)
-                            return WNM.Pattern_Length;
+   type Trigger_Kind is (None, Ghost, Hit, Accent);
+   type Drum_Tracks is (Kick, Snare, Hihat_Closed, Hihat_Open, Sample);
 
-   type Pattern_Settings is (Length,
-                             Has_Link);
+   function Trigger (DT : Drum_Tracks; Step : WNM.Pattern_Length)
+                     return Trigger_Kind;
+
+   procedure Trigger_Next (DT : Drum_Tracks; Step : WNM.Pattern_Length);
+   procedure Trigger_Prev (DT : Drum_Tracks; Step : WNM.Pattern_Length);
+
+   type Pattern_Settings is (Length);
 
    for Pattern_Settings'Size use 8;
-   for Pattern_Settings use (Length    => 0,
-                             Has_Link  => 1);
+   for Pattern_Settings use (Length    => 0);
 
-   subtype User_Pattern_Settings is Pattern_Settings range Length .. Has_Link;
+   subtype User_Pattern_Settings is Pattern_Settings range Length .. Length;
 
    procedure Set (S : User_Pattern_Settings; V : WNM_HAL.Touch_Value);
    procedure Next_Value (S : User_Pattern_Settings);
    procedure Prev_Value (S : User_Pattern_Settings);
-
-   -----------
-   -- Chord --
-   -----------
-
-   type Chord_Slot_Id is range 1 .. 16;
-
-   type Chord_Setting_Kind is (Tonic,
-                               Name,
-                               Duration);
-
-   for Chord_Setting_Kind'Size use 8;
-   for Chord_Setting_Kind use (Tonic    => 0,
-                               Name     => 1,
-                               Duration => 2);
-
-   subtype User_Chord_Settings is Chord_Setting_Kind range Tonic .. Duration;
-
-   -- Chord Getters --
-
-   function Progression_Length (C : WNM.Chord_Progressions)
-                                return Chord_Slot_Id;
-
-   function Selected_Tonic (C  : WNM.Chord_Progressions;
-                            Id : Chord_Slot_Id)
-                            return MIDI.MIDI_Key;
-   function Selected_Name (C : WNM.Chord_Progressions;
-                           Id : Chord_Slot_Id)
-                           return WNM.Chord_Settings.Chord_Name;
-   function Selected_Duration (C : WNM.Chord_Progressions;
-                               Id : Chord_Slot_Id)
-                               return Duration_In_Steps;
-
-   procedure Increase_Progession_Length (Prog : WNM.Chord_Progressions);
-   procedure Decrease_Progession_Length (Prog : WNM.Chord_Progressions);
-
-   procedure Set (C  : WNM.Chord_Progressions;
-                  Id : Chord_Slot_Id;
-                  S  : User_Chord_Settings;
-                  V  : WNM_HAL.Touch_Value);
-   procedure Next_Value (C  : WNM.Chord_Progressions;
-                         Id : Chord_Slot_Id;
-                         S  : User_Chord_Settings);
-   procedure Prev_Value (C  : WNM.Chord_Progressions;
-                         Id : Chord_Slot_Id;
-                         S  : User_Chord_Settings);
-
-   procedure Next_Value_Fast (C  : WNM.Chord_Progressions;
-                              Id : Chord_Slot_Id;
-                              S  : User_Chord_Settings);
-   procedure Prev_Value_Fast (C  : WNM.Chord_Progressions;
-                              Id : Chord_Slot_Id;
-                              S  : User_Chord_Settings);
-
-   type Scale_Choice is (Random, Major, Minor, Modal);
-   type Key_Choice is (Random, C, Cs, D, Ds, E, F, Fs, G, Gs, A, As, B);
-   procedure Randomly_Pick_A_Progression (Prog_Id : WNM.Chord_Progressions;
-                                          Scale_C : Scale_Choice;
-                                          Key_C   : Key_Choice);
-   --  a.k.a. The Magic Hat of Chord Progression
-
-   -----------
-   -- Parts --
-   -----------
-
-   type Part_Settings is (Part_Patterns,
-                          Part_Length,
-                          Part_Progression,
-                          Part_Link);
-
-   for Part_Settings'Size use 8;
-   for Part_Settings use (Part_Patterns    => 0,
-                          Part_Length      => 1,
-                          Part_Progression => 2,
-                          Part_Link        => 3);
-
-   subtype User_Part_Settings
-     is Part_Settings range Part_Patterns .. Part_Link;
-
-   function Part_Pattern (P : Parts;
-                          T : Tracks)
-                          return Patterns;
-
-   function Part_Muted (P : Parts;
-                        T : Tracks)
-                        return Boolean;
-
-   function Part_Chords (P : Parts) return Chord_Progressions;
-
-   type Part_Link_Kind is (Go_Loop, Go_Back, Go_Next);
-   function Part_Link (P : Parts) return Part_Link_Kind;
-   function Part_Length (P : Parts) return Duration_In_Steps;
-
-   procedure Toggle_Mute (P : Parts; T : Tracks);
-
-   procedure Pattern_Next (P : Parts; T : Tracks);
-   procedure Pattern_Prev (P : Parts; T : Tracks);
-
-   procedure Part_Chords_Next (P : Parts);
-   procedure Part_Chords_Prev (P : Parts);
-   procedure Part_Link_Next (P : Parts);
-   procedure Part_Link_Prev (P : Parts);
-
-   procedure Part_Len_Next (P : Parts);
-   procedure Part_Len_Prev (P : Parts);
-
-   procedure Set_Origin (P : Parts);
 
    --------
    -- FX --
@@ -639,28 +441,16 @@ private
    type Global_Settings is (BPM);
    for Global_Settings use (BPM => 0);
 
-   package Boolean_Next is new Enum_Next (Boolean);
-   use Boolean_Next;
+   --  package Boolean_Next is new Enum_Next (Boolean);
+   --  use Boolean_Next;
 
-   package Trigger_Kind_Next is new Enum_Next (Trigger_Kind);
+   package Trigger_Kind_Next is new Enum_Next (Trigger_Kind,
+                                               Wrap => False);
    use Trigger_Kind_Next;
-
-   package Repeat_Rate_Kind_Next is new Enum_Next (Repeat_Rate_Kind);
-   use Repeat_Rate_Kind_Next;
-
-   package Repeat_Cnt_Next is new Enum_Next (Repeat_Cnt);
-   use Repeat_Cnt_Next;
-
-   package Note_Duration_Next is new Enum_Next (Note_Duration);
-   use Note_Duration_Next;
 
    package MIDI_Data_Next is new Enum_Next (T    => MIDI.MIDI_Data,
                                             Wrap => False);
    use MIDI_Data_Next;
-
-   package MIDI_Chan_Next is new Enum_Next (T    => MIDI.MIDI_Channel,
-                                            Wrap => False);
-   use MIDI_Chan_Next;
 
    package Audio_Volume_Next is new Enum_Next (T    => Audio_Volume,
                                                Wrap => False);
@@ -683,10 +473,6 @@ private
    package Chord_Name_Next is new Enum_Next (WNM.Chord_Settings.Chord_Name);
    use Chord_Name_Next;
 
-   package Notes_Per_Chord_Next
-   is new Enum_Next (Chord_Settings.Chord_Index_Range, Wrap => False);
-   use Notes_Per_Chord_Next;
-
    package LFO_Shape_Next is new Enum_Next (T    => LFO_Shape_Kind,
                                             Wrap => True);
    use LFO_Shape_Next;
@@ -703,15 +489,15 @@ private
                                          Wrap => True);
    use Tracks_Next;
 
-   package Duration_In_Steps_Next is new Enum_Next
-     (T    => WNM.Duration_In_Steps,
-      Wrap => False);
-   use Duration_In_Steps_Next;
-
-   package Pattern_Length_Next is new Enum_Next
-     (T    => WNM.Pattern_Length,
-      Wrap => True);
-   use Pattern_Length_Next;
+   --  package Duration_In_Steps_Next is new Enum_Next
+   --    (T    => WNM.Duration_In_Steps,
+   --     Wrap => False);
+   --  use Duration_In_Steps_Next;
+   --
+   --  package Pattern_Length_Next is new Enum_Next
+   --    (T    => WNM.Pattern_Length,
+   --     Wrap => True);
+   --  use Pattern_Length_Next;
 
    type CC_Val_Array is array (CC_Id) of MIDI.MIDI_Data;
    type CC_Ena_Array is array (CC_Id) of Boolean;
@@ -724,65 +510,6 @@ private
    package Shuffle_Value_Next is new Enum_Next (T => Shuffle_Value,
                                                 Wrap => False);
    use Shuffle_Value_Next;
-
-   package Part_Link_Kind_Next is new Enum_Next (T => Part_Link_Kind,
-                                            Wrap => True);
-   use Part_Link_Kind_Next;
-
-   type Step_Rec is record
-      Trig        : Trigger_Kind;
-      Repeat      : Repeat_Cnt;
-      Repeat_Rate : Repeat_Rate_Kind;
-
-      Note_Mode : Note_Mode_Kind;
-      Note      : MIDI.MIDI_Key;
-      Oct       : Octave_Offset;
-      Duration  : Note_Duration;
-      Velo      : MIDI.MIDI_Data;
-      CC_Ena    : CC_Ena_Array;
-      CC_Val    : CC_Val_Array;
-   end record;
-
-   Default_Step : constant Step_Rec :=
-     (Trig => None,
-      Repeat => 0,
-      Repeat_Rate => Rate_1_8,
-      Note_Mode => Note,
-      Note => MIDI.C4,
-      Oct => 0,
-      Duration => N_16th,
-      Velo => MIDI.MIDI_Data'Last,
-      CC_Ena => (others => False),
-      CC_Val => (others => 0));
-
-   Default_Step_Lead : constant Step_Rec :=
-     (Default_Step with delta Note_Mode => Arp,
-                              Note => 0);
-
-   Default_Step_Bass : constant Step_Rec :=
-     (Default_Step with delta Note_Mode => Note_In_Chord,
-                              Note => 0);
-
-   Default_Step_Chord : constant Step_Rec :=
-     (Default_Step with delta Note_Mode => Chord,
-                              Note => 0);
-
-   type Pattern_Step_Arr is array (Sequencer_Steps) of Step_Rec
-     with Pack;
-   type Track_Pattern_Step_Arr is array (Patterns) of Pattern_Step_Arr
-     with Pack;
-   type All_Steps_Arr is array (Tracks) of Track_Pattern_Step_Arr
-     with Pack;
-
-   type Pattern_Rec is record
-      Length   : WNM.Pattern_Length := Steps_Per_Bar;
-      Has_Link : Boolean := False;
-   end record;
-
-   Default_Pattern : constant Pattern_Rec := (others => <>);
-
-   type Track_Patterns_Arr is array (Patterns) of Pattern_Rec;
-   type All_Pattern_Arr is array (Tracks) of Track_Patterns_Arr;
 
    type CC_Setting is record
       Controller : MIDI.MIDI_Data := 0;
@@ -810,8 +537,8 @@ private
       Engine : MIDI.MIDI_Data := 0;
       Arp_Mode : Arp_Mode_Kind := Arp_Mode_Kind'First;
       Arp_Notes : Arp_Notes_Kind := Arp_Notes_Kind'First;
-      Notes_Per_Chord : Chord_Settings.Chord_Index_Range :=
-        Chord_Settings.Chord_Index_Range'Last;
+      Notes_Per_Chord : WNM.Chord_Settings.Chord_Index_Range :=
+        WNM.Chord_Settings.Chord_Index_Range'Last;
    end record;
 
    Kick_Track     : constant Tracks := 1;
@@ -852,7 +579,7 @@ private
       Engine => 0,
       Arp_Mode => Arp_Mode_Kind'First,
       Arp_Notes => Arp_Notes_Kind'First,
-      Notes_Per_Chord => Chord_Settings.Chord_Index_Range'Last
+      Notes_Per_Chord => WNM.Chord_Settings.Chord_Index_Range'Last
      );
 
    Default_Kick_Track : constant Track_Rec :=
@@ -945,68 +672,38 @@ private
       Bitcrush_Track => Default_Bitcrush_Track,
       others         => Default_Track);
 
+   type Pattern_Arr is array (Drum_Tracks, WNM.Pattern_Length) of Trigger_Kind;
+
    type Chord_Rec is record
-      Tonic : MIDI.MIDI_Key := MIDI.C4;
-      Name  : WNM.Chord_Settings.Chord_Name :=
-        WNM.Chord_Settings.Chord_Name'First;
-      Duration : Duration_In_Steps := Steps_Per_Bar;
+      Root : MIDI.MIDI_Key := MIDI.C4;
+      Quality : WNM.Chord_Settings.Chord_Name := WNM.Chord_Settings.Maj_Triad;
    end record;
 
-   Default_Chord : constant Chord_Rec :=
-     (Tonic    => MIDI.C4,
-      Name     => WNM.Chord_Settings.Chord_Name'First,
-      Duration => 16);
+   type Chord_Arr is array (Chord_Button) of Chord_Rec;
 
-   type Chord_Arr is array (Chord_Slot_Id) of Chord_Rec;
-
-   type Chord_Progression_Rec is record
-      Len    : Chord_Slot_Id := Chord_Slot_Id'First;
-      Chords : Chord_Arr;
+   type Lead_Rec is record
+      Key : MIDI.MIDI_Key := MIDI.C4;
    end record;
 
-   Default_Chord_Progression : constant Chord_Progression_Rec :=
-     (others => <>);
+   type Lead_Arr is array (Lead_Button) of Lead_Rec;
 
-   type Chord_Progression_Arr
-   is array (WNM.Chord_Progressions) of Chord_Progression_Rec;
-
-   type Pattern_Select_Arr is array (WNM.Tracks) of WNM.Patterns;
-   type Track_Mute_Arr is array (WNM.Tracks) of Boolean;
-   type Song_Part_Rec is record
-      Pattern_Select : Pattern_Select_Arr := (others => 1);
-      Track_Mute   : Track_Mute_Arr   := (others => False);
-      Progression : Chord_Progressions := Chord_Progressions'First;
-      Link : Part_Link_Kind := Go_Loop;
-      Len : Duration_In_Steps := Steps_Per_Bar;
-   end record;
-
-   Default_Part : constant Song_Part_Rec := (others => <>);
-
-   type Song_Part_Arr is array (WNM.Parts) of Song_Part_Rec;
-
-   BPM_Default : constant := 120.0;
+   BPM_Default : constant := 90.0;
    type Project_Rec is record
       BPM : Beat_Per_Minute := BPM_Default;
 
       Tracks : Track_Arr := Tracks_Defaults;
 
-      Patterns : All_Pattern_Arr := (others => (others => Default_Pattern));
+      Chords : Chord_Arr;
+      Leads  : Lead_Arr;
 
-      Steps : All_Steps_Arr :=
-        (Bass_Track  => (others => (others => Default_Step_Bass)),
-         Lead_Track  => (others => (others => Default_Step_Lead)),
-         Chord_Track => (others => (others => Default_Step_Chord)),
-         others      => (others => (others => Default_Step)));
-
-      Parts : Song_Part_Arr;
-
-      --  The First part to play at the end of a link
-      Part_Origin : WNM.Parts := WNM.Parts'First;
-
-      Progressions : Chord_Progression_Arr;
+      Pattern_Len : WNM.Pattern_Length := 8;
+      Pattern : Pattern_Arr := (others => (others => None));
 
       Alt_Slider_Track : WNM.Tracks := Lead_Track;
       Alt_Slider_Target : Alt_Slider_Control := Alt_Slider_Control'First;
+
+      Chord_Play_Mode : Chord_Play_Mode_Kind := Chord_Play_Mode_Kind'First;
+      Lead_Play_Mode  : Lead_Play_Mode_Kind := Lead_Play_Mode_Kind'First;
    end record;
 
    G_Project : Project_Rec := (others => <>);
@@ -1017,22 +714,7 @@ private
    type Playhead_Array is array (Tracks) of Playhead;
 
    type Play_State is record
-      --  Step sequencer
-      Playheads : Playhead_Array := (others => (1, 1));
-
-      --  Part Sequencer
-      Playing_Part     : WNM.Parts := WNM.Parts'First;
-      Origin           : WNM.Parts := WNM.Parts'First;
-      Part_Steps_Count : Natural := 0;
-
-      --  Chord Sequencer
-      Chord_Steps_Count : Natural := 0;
-      Progression : WNM.Chord_Progressions := WNM.Chord_Progressions'First;
-      Chord_Id    : Chord_Slot_Id := Chord_Slot_Id'First;
-      Tonic       : MIDI.MIDI_Key := MIDI.C4;
-      Chord_Name  : WNM.Chord_Settings.Chord_Name :=
-        WNM.Chord_Settings.Chord_Name'First;
-      Chord       : WNM.Chord_Settings.Chord_Notes := (others => 1);
+      Next_Step : WNM.Pattern_Length := 1;
    end record;
 
    G_Part_Origin_Query : Boolean := False with Atomic;
@@ -1048,4 +730,7 @@ private
    G_Auto_Fill_State   : Auto_Fill_Kind := Off with Atomic;
    G_Fill_Buildup_Proba : Rand_Percent := Rand_Percent'First with Atomic;
    G_Step_Fill : Boolean := False with Atomic;
+
+   G_Current_Chord : WNM.Chord_Settings.Chord_Notes := (others => MIDI.C4);
+
 end WNM.Project;

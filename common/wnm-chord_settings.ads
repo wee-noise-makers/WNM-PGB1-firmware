@@ -21,6 +21,8 @@
 
 with MIDI; use MIDI;
 
+with WNM.GUI.Bitmap_Fonts;
+
 package WNM.Chord_Settings is
 
    type Interval is (P1, min2, Maj2, min3, Maj3, P4,
@@ -71,6 +73,23 @@ package WNM.Chord_Settings is
                        Sus2, Sus4, Five,
                        Maj_Inv1, Maj_Inv2,
                        Min_Inv1, Min_Inv2);
+
+   function Substitution (Name : Chord_Name) return Chord_Name
+   is (case Name is
+          when Maj_Triad => Maj_7th,
+          when Min_Triad => Min_7th,
+          when Maj_7th => Maj_Triad,
+          when Min_7th => Min_Triad,
+          when Maj_Inv1 => Maj_Inv2,
+          when Maj_Inv2 => Maj_Inv1,
+          when Min_Inv1 => Min_Inv2,
+          when Min_Inv2 => Min_Inv1,
+          when Dim_7th => Dim_Triad,
+          when Dim_Triad => Dim_7th,
+          when Sus2 => Sus4,
+          when Sus4 => Sus2,
+          when Min6 => Min6,
+          when Five => Five);
 
    subtype Triads is Chord_Name range Maj_Triad .. Dim_Triad;
 
@@ -142,14 +161,15 @@ package WNM.Chord_Settings is
    function Img (N : Chord_Name) return String
    is (case N is
           when Maj_Triad => "Major",
-          when Min_Triad => "Minor",
-          when Dim_Triad => "Dim",
-          when Maj_7th   => "Major7",
-          when Min_7th   => "Minor7",
-          when Dim_7th   => "Dim7",
-          when Min6      => "Minor6",
-          when Sus2      => "Sus2",
-          when Sus4      => "Sus4",
+          when Min_Triad => "minor",
+          when Dim_Triad => "Dim (" & GUI.Bitmap_Fonts.Dim & ")",
+          when Maj_7th   => "Major7 (" & GUI.Bitmap_Fonts.Seven & ")",
+          when Min_7th   => "minor7 (" & GUI.Bitmap_Fonts.Seven & ")",
+          when Dim_7th   => "Dim7 (" & GUI.Bitmap_Fonts.Dim &
+                                       GUI.Bitmap_Fonts.Seven & ")",
+          when Min6      => "m6",
+          when Sus2      => "Sus2 (" & GUI.Bitmap_Fonts.Sus2 & ")",
+          when Sus4      => "Sus4 (" & GUI.Bitmap_Fonts.Sus4 & ")",
           when Five      => "5",
           when Maj_Inv1  => "Maj/inv1",
           when Maj_Inv2  => "Maj/inv2",

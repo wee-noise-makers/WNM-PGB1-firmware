@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2022 Fabien Chouteau                    --
+--                  Copyright (C) 2016-2023 Fabien Chouteau                  --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,36 +19,45 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.File_System.LEB128_File_Out;
+private with WNM.Project;
+private with Enum_Next;
 
-private package WNM.Project.Storage.File_Out is
+package WNM.GUI.Menu.Track_Mixer is
 
-   subtype Parent is File_System.LEB128_File_Out.Instance;
-   type Instance
-   is new Parent with
-   private;
-
-   procedure Start_Global (This : in out Instance);
-
-   procedure Start_Track_Settings (This : in out Instance;
-                                   T : Tracks);
-
-   procedure Start_Sequence (This : in out Instance);
-   procedure Change_Track_In_Seq (This : in out Instance; T : Tracks);
-   procedure End_Section (This : in out Instance);
-   procedure End_File (This : in out Instance);
-
-   procedure Push (This : in out Instance; A : Track_Settings);
-   procedure Push (This : in out Instance; A : Pattern_Settings);
-   procedure Push (This : in out Instance; A : MIDI.MIDI_Data);
-   procedure Push (This : in out Instance; A : WNM.Duration_In_Steps);
-   procedure Push (This : in out Instance; A : WNM.Pattern_Length);
+   procedure Push_Window;
 
 private
 
-   type Instance
-   is new Parent with null record;
+   subtype Mixer_Settings is Project.User_Track_Settings
+   range Project.Volume .. Project.Pan;
 
-   procedure Push (This : in out Instance; A : Token_Kind);
+   package Mixer_Settings_Next is new Enum_Next (Mixer_Settings);
+   use Mixer_Settings_Next;
 
-end WNM.Project.Storage.File_Out;
+   function Mixer_Settings_Count is new Enum_Count (Mixer_Settings);
+
+   subtype Mixer_Track is WNM.Tracks range 1 .. 8;
+   package Mixer_Track_Next is new Enum_Next (Mixer_Track);
+
+   use Mixer_Track_Next;
+
+   type Instance is new Menu_Window with record
+      Setting : Mixer_Settings := Mixer_Settings'First;
+      Selected_T : Mixer_Track := Mixer_Track'First;
+   end record;
+
+   overriding
+   procedure Draw (This   : in out Instance);
+
+   overriding
+   procedure On_Event (This  : in out Instance;
+                       Event : Menu_Event);
+
+   overriding
+   procedure On_Pushed (This  : in out Instance) is null;
+
+   overriding
+   procedure On_Focus (This       : in out Instance;
+                       Exit_Value : Window_Exit_Value) is null;
+
+end WNM.GUI.Menu.Track_Mixer;

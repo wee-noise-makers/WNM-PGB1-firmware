@@ -24,8 +24,6 @@ with MIDI.Time;
 
 package WNM.Project.Step_Sequencer is
 
-   function Playing_Step (T : Tracks) return Playhead;
-
    procedure Play_Pause;
    --  Use it to signal a play/pause event
 
@@ -36,8 +34,6 @@ package WNM.Project.Step_Sequencer is
                          Mode : WNM.UI.Main_Modes);
 
    procedure MIDI_Clock_Tick (Step : MIDI.Time.Step_Count);
-
-   function Keyboard_Octave return Octave_Offset;
 
 private
 
