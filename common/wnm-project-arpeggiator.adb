@@ -61,7 +61,11 @@ package body WNM.Project.Arpeggiator is
    -- Next_Note --
    ---------------
 
-   function Next_Note (T : Tracks) return MIDI.MIDI_Key is
+   function Next_Note (T     : Tracks;
+                       Mode  : Arp_Mode_Kind;
+                       Chord : WNM.Chord_Settings.Chord_Notes)
+                       return MIDI.MIDI_Key
+   is
       use WNM.Chord_Settings;
 
       Track : Track_Rec renames G_Project.Tracks (T);
@@ -70,7 +74,7 @@ package body WNM.Project.Arpeggiator is
       Note_Index : Chord_Index_Range;
    begin
 
-      case Track.Arp_Mode is
+      case Mode is
          when Random =>
             Note_Index :=
               Chord_Index_Range (Natural (WNM.Random) mod
@@ -78,7 +82,7 @@ package body WNM.Project.Arpeggiator is
          when others =>
             declare
                Pat : constant Arp_Pattern_Acc :=
-                 (case Track.Arp_Mode is
+                 (case Mode is
                      when Up       => Arp_Up'Access,
                      when Down     => Arp_Down'Access,
                      when Up_Down  => Arp_Up_Down'Access,
@@ -90,13 +94,12 @@ package body WNM.Project.Arpeggiator is
                if Arp.Next_Index not in Pat'Range then
                   Arp.Next_Index := Pat'First;
                end if;
-
                Note_Index := Pat (Arp.Next_Index);
                Arp.Next_Index := Arp.Next_Index + 1;
             end;
       end case;
 
-      return G_Current_Chord (Note_Index);
+      return Chord (Note_Index);
    end Next_Note;
 
    -----------------------------

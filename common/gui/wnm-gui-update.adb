@@ -92,6 +92,10 @@ package body WNM.GUI.Update is
 
             Draw_Alt_Slider;
 
+         when WNM.UI.Track_Select =>
+            Draw_Title ("Track Select", "");
+            Draw_Value (Project.Img (Project.Mode (Project.Editing_Track)));
+
       end case;
 
       WNM.GUI.Popup.Update;

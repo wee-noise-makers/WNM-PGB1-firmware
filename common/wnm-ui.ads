@@ -30,17 +30,18 @@ package WNM.UI is
 
    procedure Update_LEDs;
 
-   type Input_Mode_Type is (Chord_Settings_Mode,
+   type Input_Mode_Type is (Track_Settings_Mode,
                             Chord_Mode,
-                            Lead_Settings_Mode,
                             Lead_Mode,
+
+                            Track_Select,
 
                             Volume_BPM_Mute,
                             FX_Alt
                            );
 
    subtype Main_Modes
-     is Input_Mode_Type range Chord_Settings_Mode .. Lead_Mode;
+     is Input_Mode_Type range Track_Settings_Mode .. Lead_Mode;
 
    function Input_Mode return Input_Mode_Type;
    function Input_GUI_Mode return Input_Mode_Type;

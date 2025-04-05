@@ -13,8 +13,8 @@ package WNM_Configuration is
 
    type Button is (C1, C2, C3, C4, C5, C6, C7, C8,
                    L1, L2, L3, L4, L5, L6, L7, L8,
-                   Lead_Select, Lead_Alt,
-                   Chord_Select, Chord_Alt,
+                   Play_Button, Lead_Alt,
+                   Track_Button, Chord_Alt,
                    Menu, Func,
                    Drums_Play, Drum_Edit,
                    PAD_Up, PAD_Down, PAD_Left, PAD_Right, PAD_A, PAD_B);
@@ -39,11 +39,11 @@ package WNM_Configuration is
       L7             => 22,
       L8             => 23,
       Lead_Alt       => 24,
-      Lead_Select    => 14,
+      Play_Button    => 14,
       Menu           => 1,
       Func           => 4,
       Chord_Alt      => 15,
-      Chord_Select   => 5,
+      Track_Button   => 5,
       Drums_Play     => 3,
       Drum_Edit      => 2);
 

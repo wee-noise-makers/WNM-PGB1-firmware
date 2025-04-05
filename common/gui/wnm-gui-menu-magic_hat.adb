@@ -20,7 +20,6 @@
 -------------------------------------------------------------------------------
 
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
-with WNM.GUI.Bitmap_Fonts;
 
 with HAL; use HAL;
 with WNM.Chord_Settings;
@@ -76,43 +75,6 @@ package body WNM.GUI.Menu.Magic_Hat is
           when Project.Minor => Chord_Settings.Minor_Progressions'Access,
           when Project.Modal => Chord_Settings.Modal_Progressions'Access));
 
-   ---------------
-   -- Chord_Img --
-   ---------------
-
-   function Chord_Img (C : Chord_Settings.Roman_Numeral_Notation)
-                       return String
-   is
-      use Chord_Settings;
-
-      Major : constant Boolean :=
-        (case C.Harmonic_Function is
-            when Maj_Triad | Maj_7th | Maj_Inv1 | Maj_Inv2 |
-                 Dim_Triad | Dim_7th | Chord_Settings.Sus2 |
-                 Chord_Settings.Sus4 | Five => True,
-            when others => False);
-
-      Func : constant String :=
-        (case C.Harmonic_Function is
-            when Maj_Triad => "",
-            when Min_Triad => "",
-            when Dim_Triad => "" & Bitmap_Fonts.Dim,
-            when Maj_7th   => "" & Bitmap_Fonts.Seven,
-            when Min_7th   => "" & Bitmap_Fonts.Seven,
-            when Dim_7th   => "" & Bitmap_Fonts.Dim & Bitmap_Fonts.Seven,
-            when Min6      => "6",
-            when Sus2      => "" & Bitmap_Fonts.Sus2,
-            when Sus4      => "" & Bitmap_Fonts.Sus4,
-            when Five      => "5",
-            when Maj_Inv1  => "inv1",
-            when Maj_Inv2  => "inv2",
-            when Min_Inv1  => "inv1",
-            when Min_Inv2  => "inv2");
-
-   begin
-      return Img (C.Accidental) & Img (C.Degree, Major) & Func;
-   end Chord_Img;
-
    ----------
    -- Draw --
    ----------
@@ -162,7 +124,6 @@ package body WNM.GUI.Menu.Magic_Hat is
                             Selected => Sub = Prog_Id);
 
             declare
-               use Bitmap_Fonts;
                use WNM.Chord_Settings;
                use WNM.Project;
 
@@ -178,8 +139,8 @@ package body WNM.GUI.Menu.Magic_Hat is
                X : Natural := 3;
             begin
                for C of Prog loop
-                  Print (X, Box_Center.Y, Chord_Img (C));
-                  X := X + 2;
+                  Draw_Roman_Chord (X, Box_Center.Y, C);
+                  X := X + 5;
                end loop;
             end;
       end case;

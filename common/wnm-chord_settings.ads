@@ -167,10 +167,10 @@ package WNM.Chord_Settings is
           when Min_7th   => "minor7 (" & GUI.Bitmap_Fonts.Seven & ")",
           when Dim_7th   => "Dim7 (" & GUI.Bitmap_Fonts.Dim &
                                        GUI.Bitmap_Fonts.Seven & ")",
-          when Min6      => "m6",
+          when Min6      => "minor 6 " & GUI.Bitmap_Fonts.Six & ")",
           when Sus2      => "Sus2 (" & GUI.Bitmap_Fonts.Sus2 & ")",
           when Sus4      => "Sus4 (" & GUI.Bitmap_Fonts.Sus4 & ")",
-          when Five      => "5",
+          when Five      => "Five (" & GUI.Bitmap_Fonts.Five & ")",
           when Maj_Inv1  => "Maj/inv1",
           when Maj_Inv2  => "Maj/inv2",
           when Min_Inv1  => "Min/inv1",

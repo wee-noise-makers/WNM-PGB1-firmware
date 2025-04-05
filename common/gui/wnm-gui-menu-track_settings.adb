@@ -20,16 +20,22 @@
 -------------------------------------------------------------------------------
 
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
+with WNM.GUI.Menu.Text_Dialog;
 
-package body WNM.GUI.Menu.Chord_Synth_Settings is
+with WNM.Utils;
 
-   T   : constant Tracks := 6;
-
-   package Sub_Settings_Next is new Enum_Next (Sub_Settings,
-                                               Wrap => False);
-   use Sub_Settings_Next;
+package body WNM.GUI.Menu.Track_Settings is
 
    Track_Settings_Singleton : aliased Track_Settings_Menu;
+
+   Valid_Top_Settings : array (Track_Mode_Kind, Top_Settings) of
+     Boolean := (others => (others => False));
+
+   Top_Settings_Count_Cache : array (Track_Mode_Kind) of Natural :=
+     (others => 0);
+
+   Top_Settings_Position_Cache : array (Track_Mode_Kind, Top_Settings) of
+     Integer := (others => (others => -1));
 
    ------------
    -- To_Top --
@@ -53,6 +59,87 @@ package body WNM.GUI.Menu.Chord_Synth_Settings is
        when Project.CC_Default_B => CC_Default,
        when Project.CC_Default_C => CC_Default,
        when Project.CC_Default_D => CC_Default);
+
+   -------------------------
+   -- Fix_Current_Setting --
+   -------------------------
+
+   procedure Fix_Current_Setting (This : in out Track_Settings_Menu) is
+   begin
+      if not Valid_Setting (Mode (Editing_Track), This.Current_Setting) then
+         Prev_Valid_Setting (Mode (Editing_Track), This.Current_Setting);
+      end if;
+      if not Valid_Setting (Mode (Editing_Track), This.Current_Setting) then
+         Next_Valid_Setting (Mode (Editing_Track), This.Current_Setting);
+      end if;
+   end Fix_Current_Setting;
+
+   ------------------------
+   -- Top_Settings_Count --
+   ------------------------
+
+   function Top_Settings_Count (M : Project.Track_Mode_Kind) return Positive is
+   begin
+      --  Computed at elaboration
+      return Top_Settings_Count_Cache (M);
+   end Top_Settings_Count;
+
+   --------------------------
+   -- Top_Setting_Position --
+   --------------------------
+
+   function Top_Setting_Position (S : Top_Settings;
+                                  M : Project.Track_Mode_Kind)
+                                  return Natural
+   is
+   begin
+      --  Computed at elaboration
+      return Top_Settings_Position_Cache (M, S);
+   end Top_Setting_Position;
+
+   ------------------------
+   -- Next_Valid_Setting --
+   ------------------------
+
+   procedure Next_Valid_Setting (M : Project.Track_Mode_Kind;
+                                 S : in out Sub_Settings)
+   is
+      Result : Sub_Settings := S;
+   begin
+      while Result /= Sub_Settings'Last loop
+         Result := Sub_Settings'Succ (Result);
+         if Valid_Setting (M, Result) then
+            S := Result;
+            return;
+         end if;
+      end loop;
+
+      if Valid_Setting (M, Result) then
+         S := Result;
+      end if;
+   end Next_Valid_Setting;
+
+   ------------------------
+   -- Prev_Valid_Setting --
+   ------------------------
+
+   procedure Prev_Valid_Setting (M : Project.Track_Mode_Kind;
+                                 S : in out Sub_Settings)
+   is
+      Result : Sub_Settings := S;
+   begin
+      while Result /= Sub_Settings'First loop
+         Result := Sub_Settings'Pred (Result);
+         if Valid_Setting (M, Result) then
+            S := Result;
+            return;
+         end if;
+      end loop;
+
+      if Valid_Setting (M, Result) then
+         S := Result;
+      end if;
+   end Prev_Valid_Setting;
 
    --------------
    -- To_CC_Id --
@@ -83,13 +170,20 @@ package body WNM.GUI.Menu.Chord_Synth_Settings is
    procedure Draw
      (This : in out Track_Settings_Menu)
    is
-      Sub : constant Sub_Settings := This.Current_Setting;
-      Top : constant Top_Settings := To_Top (Sub);
+      Mode : Project.Track_Mode_Kind;
+      Sub : Sub_Settings;
+      Top : Top_Settings;
+      T : constant Tracks := Editing_Track;
    begin
+      This.Fix_Current_Setting;
 
-      Draw_Menu_Box ("Chord synth",
-                     Count => Top_Settings_Count,
-                     Index => Top_Settings'Pos (Top));
+      Mode := Project.Mode (Editing_Track);
+      Sub := This.Current_Setting;
+      Top := To_Top (This.Current_Setting);
+
+      Draw_Menu_Box (Project.Img (Project.Mode (T)) & " Settings",
+                     Count => Top_Settings_Count (Mode),
+                     Index => Top_Setting_Position (Top, Mode));
       case Top is
          when Volume =>
             Draw_Volume ("Volume:", Project.Track_Volume (T));
@@ -133,9 +227,21 @@ package body WNM.GUI.Menu.Chord_Synth_Settings is
             Draw_Title ("Arpeggiator notes:", "");
             Draw_Value (Project.Img (Project.Arp_Notes (T)));
 
+         when Notes_Per_Chord =>
+            Draw_Title ("Notes per Chord:", "");
+            Draw_Value (Project.Notes_Per_Chord (Editing_Track)'Img);
+
+         when MIDI_Chan =>
+            Draw_Title ("MIDI Channel:", "");
+            Draw_Value (Project.MIDI_Chan (Editing_Track)'Img);
+
+         when MIDI_Instrument =>
+            Draw_Title ("MIDI instrument:", "");
+            Draw_Value (Builtin_Instruments (This.Instrument).Name);
+
          when Engine =>
             Draw_Title ("Synth Engine:", "");
-            Draw_Value (Project.Selected_Engine_Img (T));
+            Draw_Value (Project.Selected_Engine_Img (Editing_Track));
 
          when LFO =>
 
@@ -163,7 +269,7 @@ package body WNM.GUI.Menu.Chord_Synth_Settings is
                Project.LFO_Amp (T),
                "AMP",
                Sub = LFO_Amplitude,
-               Style => (case LFO_Amp_Mode (T) is
+               Style => (case LFO_Amp_Mode (Editing_Track) is
                             when Project.Positive => Drawing.Positive,
                             when Project.Center   => Drawing.Center,
                             when Project.Negative => Drawing.Negative));
@@ -171,14 +277,14 @@ package body WNM.GUI.Menu.Chord_Synth_Settings is
             Draw_LFO_Shape (C,
                             "SHP",
                             Sub = LFO_Shape,
-                            Project.LFO_Shape (T),
-                            Project.LFO_Sync (T),
-                            Project.LFO_Loop (T));
+                            Project.LFO_Shape (Editing_Track),
+                            Project.LFO_Sync (Editing_Track),
+                            Project.LFO_Loop (Editing_Track));
 
             Draw_CC_Value
               (D,
                0,
-               Project.LFO_Target (T)'Img,
+               Project.LFO_Target (Editing_Track)'Img,
                Sub = LFO_Target);
 
          when CC_Default =>
@@ -186,10 +292,10 @@ package body WNM.GUI.Menu.Chord_Synth_Settings is
               (T => T,
                Mode => Project.Mode (T),
                Selected => To_CC_Id (Sub),
-               Val_A => Project.CC_Default (T, A),
-               Val_B => Project.CC_Default (T, B),
-               Val_C => Project.CC_Default (T, C),
-               Val_D => Project.CC_Default (T, D),
+               Val_A => Project.CC_Default (Editing_Track, A),
+               Val_B => Project.CC_Default (Editing_Track, B),
+               Val_C => Project.CC_Default (Editing_Track, C),
+               Val_D => Project.CC_Default (Editing_Track, D),
                Ena_A => True,
                Ena_B => True,
                Ena_C => True,
@@ -209,17 +315,20 @@ package body WNM.GUI.Menu.Chord_Synth_Settings is
       Event : Menu_Event)
    is
    begin
+      This.Fix_Current_Setting;
+
       case Event.Kind is
          when Left_Press =>
-            Prev (This.Current_Setting);
+            Prev_Valid_Setting (Mode (Editing_Track),
+                                This.Current_Setting);
          when Right_Press =>
-            Next (This.Current_Setting);
+            Next_Valid_Setting (Mode (Editing_Track),
+                                This.Current_Setting);
 
          when Up_Press =>
-            Project.Next_Value (This.Current_Setting, T);
-
+            Project.Next_Value (This.Current_Setting, Editing_Track);
          when Down_Press =>
-            Project.Prev_Value (This.Current_Setting, T);
+            Project.Prev_Value (This.Current_Setting, Editing_Track);
 
          when A_Press =>
             null;
@@ -227,7 +336,9 @@ package body WNM.GUI.Menu.Chord_Synth_Settings is
             null;
 
          when Slider_Touch =>
-            Project.Set (This.Current_Setting, Event.Slider_Value, T);
+            Project.Set (This.Current_Setting,
+                         Event.Slider_Value,
+                         Project.Editing_Track);
       end case;
    end On_Event;
 
@@ -253,7 +364,62 @@ package body WNM.GUI.Menu.Chord_Synth_Settings is
       Exit_Value : Window_Exit_Value)
    is
    begin
-      null;
+      This.Fix_Current_Setting;
+
+      if This.Current_Setting
+          in CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D
+      then
+
+         --  Return from controller label text edit
+
+         if Exit_Value = Success then
+            declare
+               CC : constant CC_Id := To_CC_Id (This.Current_Setting);
+               Output : constant String := WNM.GUI.Menu.Text_Dialog.Value;
+               Label : Controller_Label := Empty_Controller_Label;
+            begin
+               Utils.Copy_Str (Output, Label);
+               Project.Set_CC_Controller_Label (Editing_Track, CC, Label);
+            end;
+         end if;
+      end if;
    end On_Focus;
 
-end WNM.GUI.Menu.Chord_Synth_Settings;
+begin
+
+   for Mode in Project.Track_Mode_Kind loop
+
+      for Sub in Sub_Settings loop
+         if Valid_Setting (Mode, Sub) then
+            Valid_Top_Settings (Mode, To_Top (Sub)) := True;
+         end if;
+      end loop;
+
+      --  I don't think there is a way to know the number of settings per
+      --  mode at compile time because it depends on the results of the
+      --  Valid_Setting function. So we compute the numbers here and cache
+      --  the result for futre calls.
+
+      for Top in Top_Settings loop
+         if Valid_Top_Settings (Mode, Top) then
+            Top_Settings_Count_Cache (Mode) :=
+              Top_Settings_Count_Cache (Mode) + 1;
+         end if;
+      end loop;
+
+      --  Same as Settings_Count, we compute the numbers here and cache the
+      --  result for futre calls.
+
+      declare
+         Cnt : Natural := 0;
+      begin
+         for Top in Top_Settings loop
+            if Valid_Top_Settings (Mode, Top) then
+               Top_Settings_Position_Cache (Mode, Top) := Cnt;
+               Cnt := Cnt + 1;
+            end if;
+         end loop;
+      end;
+
+   end loop;
+end WNM.GUI.Menu.Track_Settings;

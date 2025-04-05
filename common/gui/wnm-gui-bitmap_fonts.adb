@@ -52,7 +52,7 @@ package body WNM.GUI.Bitmap_Fonts is
            with Address => font_5x7.Data.Data'Address;
 
       begin
-         if Index in 0 .. 102 and then X in 0 .. 4 and then Y in 0 .. 6 then
+         if Index in 0 .. 104 and then X in 0 .. 4 and then Y in 0 .. 6 then
             return not Data (1 + X + Bitmap_Offset + Y * font_5x7.Data.W);
          else
             return False;

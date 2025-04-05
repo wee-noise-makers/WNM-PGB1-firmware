@@ -53,7 +53,7 @@ package body ASFML_Sim.Window is
       Drums_Play     => (1101.0, 327.0),
       Func           => (1245.0, 327.0),
 
-      Chord_Select => (50.0,   485.0),
+      Track_Button => (50.0,   485.0),
       C1           => (194.0,  485.0),
       C2           => (324.0,  485.0),
       C3           => (453.0,  485.0),
@@ -62,7 +62,7 @@ package body ASFML_Sim.Window is
       L2           => (842.0,  485.0),
       L3           => (971.0,  485.0),
       L4           => (1101.0,  485.0),
-      Lead_Select  => (1245.0, 485.0),
+      Play_Button  => (1245.0, 485.0),
 
       Chord_Alt   => (50.0, 643.0),
       C5          => (194.0, 643.0),
@@ -594,7 +594,7 @@ package body ASFML_Sim.Window is
       use WNM.LEDs;
    begin
       case B is
-         when Chord_Alt | Chord_Select =>
+         when Chord_Alt | WNM_Configuration.Track_Button =>
             return To_Color (Hue_To_RGB (WNM.LEDs.Chord));
          when others =>
             return Sf.Graphics.Color.sfWhite;
@@ -612,10 +612,10 @@ package body ASFML_Sim.Window is
       function Button_Img (B : WNM_Configuration.Button) return String
       is (case B is
              when Lead_Alt       => "Ld Alt",
-             when Lead_Select    => "Lead",
+             when Play_Button    => "Lead",
              when Menu           => "Menu",
              when Chord_Alt      => "Ch Alt",
-             when Chord_Select   => "Chord",
+             when Track_Button   => "Chord",
              when Drums_Play     => "Play",
              when Drum_Edit      => "Edit",
              when Func           => "FX/Copy",

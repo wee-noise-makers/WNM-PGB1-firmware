@@ -32,6 +32,7 @@ package WNM.Project is
 
    Editing_Chord : Chord_Button := Chord_Button'First;
    Editing_Lead : Lead_Button := Lead_Button'First;
+   Editing_Track : Tracks := Tracks'First;
 
    type Playhead is record
       Steps_Count : Natural := 0;
@@ -335,10 +336,29 @@ package WNM.Project is
    -- Lead --
    ----------
 
+   type Lead_Evt is (None, N1, N2, N3, N4, Random);
+   type Lead_Seq_Length is range 1 .. 64;
+
+   type Lead_Tracks is (Lead, Bass);
+   function Trigger (B    : Lead_Button;
+                     LT   : Lead_Tracks;
+                     Step : Lead_Seq_Length)
+                     return Lead_Evt;
+   procedure Trigger_Next (B    : Lead_Button;
+                           LT : Lead_Tracks;
+                           Step : Lead_Seq_Length);
+   procedure Trigger_Prev (B    : Lead_Button;
+                           LT : Lead_Tracks;
+                           Step : Lead_Seq_Length);
+
+   function Seq_Length (B : Lead_Button) return Lead_Seq_Length;
+   procedure Incr_Seq_Length (B : Lead_Button);
+   procedure Decr_Seq_Length (B : Lead_Button);
+
    type Lead_Settings is (Note);
    subtype User_Lead_Settings is Lead_Settings;
 
-   function Note (C : Lead_Button) return MIDI.MIDI_Key;
+   --  function Note (C : Lead_Button) return MIDI.MIDI_Key;
 
    procedure Set (S : User_Lead_Settings;
                   V : WNM_HAL.Touch_Value;
@@ -488,6 +508,10 @@ private
    package Tracks_Next is new Enum_Next (T    => WNM.Tracks,
                                          Wrap => True);
    use Tracks_Next;
+
+   package Lead_Seq_Trig is new Enum_Next (T    => Lead_Evt,
+                                           Wrap => True);
+   use Lead_Seq_Trig;
 
    --  package Duration_In_Steps_Next is new Enum_Next
    --    (T    => WNM.Duration_In_Steps,
@@ -681,8 +705,10 @@ private
 
    type Chord_Arr is array (Chord_Button) of Chord_Rec;
 
+   type Lead_Seq is array (Lead_Tracks, Lead_Seq_Length) of Lead_Evt;
    type Lead_Rec is record
-      Key : MIDI.MIDI_Key := MIDI.C4;
+      Len  : Lead_Seq_Length := 1;
+      Seq : Lead_Seq := (others => (others => None));
    end record;
 
    type Lead_Arr is array (Lead_Button) of Lead_Rec;

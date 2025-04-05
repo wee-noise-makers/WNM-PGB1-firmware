@@ -19,8 +19,7 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with WNM.GUI.Menu.Lead_Synth_Settings;
-with WNM.GUI.Menu.Chord_Synth_Settings;
+with WNM.GUI.Menu.Track_Settings;
 with WNM.GUI.Menu.Chord_Button_Settings;
 with WNM.GUI.Menu.Lead_Button_Settings;
 
@@ -39,10 +38,8 @@ package body WNM.GUI.Menu is
       end loop;
 
       case Kind is
-         when Chord_Synth_Menu =>
-            GUI.Menu.Chord_Synth_Settings.Push_Window;
-         when Lead_Synth_Menu =>
-            GUI.Menu.Lead_Synth_Settings.Push_Window;
+         when Track_Settings_Menu =>
+            GUI.Menu.Track_Settings.Push_Window;
          when Chord_Menu =>
             GUI.Menu.Chord_Button_Settings.Push_Window;
          when Lead_Menu =>

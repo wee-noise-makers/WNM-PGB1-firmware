@@ -92,11 +92,12 @@ package body WNM.GUI.Menu.Drum_Settings is
       Screen.Set_Pixel ((DX, Y - 1));
    end Big_Tick;
 
-   --------------------
-   -- Draw_Step_Edit --
-   --------------------
+   ----------
+   -- Draw --
+   ----------
 
-   procedure Draw_Step_Edit (This : in out Instance) is
+   overriding
+   procedure Draw (This : in out Instance) is
       use WNM.Project;
 
       Disp_Step_Cnt : constant := 20;
@@ -184,102 +185,6 @@ package body WNM.GUI.Menu.Drum_Settings is
 
       Draw_Str (Len_Box_Left + 2, SY (Snare), "+");
       Draw_Str (Len_Box_Left + 2, SY (Hihat_Open), "-");
-   end Draw_Step_Edit;
-
-   --------------
-   -- To_CC_Id --
-   --------------
-
-   function To_CC_Id (S : Synth_Settings) return Project.CC_Id
-   is (case S is
-          when Param_A => Project.A,
-          when Param_B => Project.B,
-          when Param_C => Project.C,
-          when Param_D => Project.D,
-          when others => raise Program_Error);
-
-   --------------
-   -- To_Track --
-   --------------
-
-   function To_Track (T : Synth_Track_Id) return Tracks
-   is (case T is
-          when BD => 1,
-          when SD => 2,
-          when HH => 3,
-          when SP => 7);
-
-   ---------------------
-   -- Draw_Synth_Edit --
-   ---------------------
-
-   procedure Draw_Synth_Edit (This : in out Instance) is
-      DT : constant Synth_Track_Id := This.Synth_Track;
-      Sub : constant Synth_Settings := This.Synth_Set;
-      Top : constant Synth_Top_Settings :=
-        (case Sub is
-            when Engine             => Engine,
-            when Param_A .. Param_D => Params,
-            when Master_FX          => Master_FX);
-
-      Top_Index : constant Natural :=
-        Synth_Top_Settings'Pos (Top) +
-        Top_Settings_Count * Synth_Track_Id'Pos (DT);
-
-      T : constant Tracks := To_Track (DT);
-
-   begin
-      Draw_Menu_Box ((case DT is
-                        when BD => "Bass Drum",
-                        when SD => "Snare Drum",
-                        when HH => "HiHat",
-                        when SP => "Sample"),
-                     Count => Top_Settings_Count * Synth_Track_Count,
-                     Index => Top_Index);
-
-      case Sub is
-         when Engine =>
-            Draw_Title ("Engine:", "");
-            Draw_Value (Project.Selected_Engine_Img (T));
-
-         when Param_A .. Param_D =>
-            Draw_CC_Control_Page
-              (T => T,
-               Mode => Project.Mode (T),
-               Selected => To_CC_Id (Sub),
-               Val_A => Project.CC_Default (T, Project.A),
-               Val_B => Project.CC_Default (T, Project.B),
-               Val_C => Project.CC_Default (T, Project.C),
-               Val_D => Project.CC_Default (T, Project.D),
-               Ena_A => True,
-               Ena_B => True,
-               Ena_C => True,
-               Ena_D => True);
-
-         when Master_FX =>
-            Draw_Title ("FX send:", "");
-            Draw_Value (Img (Project.Master_FX (T)));
-
-            Draw_FX (Id => WNM.Project.A,
-                     Value => Project.Master_FX (T),
-                     Selected => False,
-                     Label => "");
-      end case;
-   end Draw_Synth_Edit;
-
-   ----------
-   -- Draw --
-   ----------
-
-   overriding
-   procedure Draw (This : in out Instance) is
-   begin
-      case This.Mode is
-         when Step_Edit | Len_Edit =>
-            Draw_Step_Edit (This);
-         when Synth_Edit =>
-            Draw_Synth_Edit (This);
-      end case;
    end Draw;
 
    --------------
@@ -291,17 +196,6 @@ package body WNM.GUI.Menu.Drum_Settings is
      (This  : in out Instance;
       Event : Menu_Event)
    is
-      function To_Track_Setting (Sub : Synth_Settings)
-                                 return Project.User_Track_Settings
-      is
-        (case Sub is
-            when Engine    => Project.Engine,
-            when Param_A   => Project.CC_Default_A,
-            when Param_B   => Project.CC_Default_B,
-            when Param_C   => Project.CC_Default_C,
-            when Param_D   => Project.CC_Default_D,
-            when Master_FX => Project.Master_FX);
-
    begin
       case This.Mode is
          when Step_Edit =>
@@ -338,7 +232,7 @@ package body WNM.GUI.Menu.Drum_Settings is
             when Left_Press =>
                   This.Mode := Step_Edit;
             when Right_Press =>
-               This.Mode := Synth_Edit;
+               null;
 
             when Up_Press =>
                null;
@@ -352,48 +246,6 @@ package body WNM.GUI.Menu.Drum_Settings is
                This.Selected_Step := Project.Pattern_Length;
             when Slider_Touch =>
                null;
-            end case;
-
-         when Synth_Edit =>
-            case Event.Kind is
-            when Left_Press =>
-               if This.Synth_Set = Synth_Settings'First then
-                  if This.Synth_Track = Synth_Track_Id'First then
-                     This.Mode := Len_Edit;
-                  else
-                     This.Synth_Track :=
-                       Synth_Track_Id'Pred (This.Synth_Track);
-                     This.Synth_Set := Synth_Settings'Last;
-                  end if;
-               else
-                  This.Synth_Set := Synth_Settings'Pred (This.Synth_Set);
-               end if;
-            when Right_Press =>
-               if This.Synth_Set /= Synth_Settings'Last then
-                  This.Synth_Set := Synth_Settings'Succ (This.Synth_Set);
-               else
-                  if This.Synth_Track /= Synth_Track_Id'Last then
-                     This.Synth_Track :=
-                       Synth_Track_Id'Succ (This.Synth_Track);
-                     This.Synth_Set := Synth_Settings'First;
-                  end if;
-
-               end if;
-
-            when Up_Press =>
-               Project.Next_Value (To_Track_Setting (This.Synth_Set),
-                                   To_Track (This.Synth_Track));
-            when Down_Press =>
-               Project.Prev_Value (To_Track_Setting (This.Synth_Set),
-                                   To_Track (This.Synth_Track));
-            when A_Press =>
-               null;
-            when B_Press =>
-               null;
-            when Slider_Touch =>
-               Project.Set (To_Track_Setting (This.Synth_Set),
-                            Event.Slider_Value,
-                            To_Track (This.Synth_Track));
             end case;
       end case;
 

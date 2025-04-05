@@ -36,6 +36,8 @@ package WNM.GUI.Bitmap_Fonts is
    Aug   : constant Character := Character'Val (133);
    Sus4  : constant Character := Character'Val (134);
    Sus2  : constant Character := Character'Val (135);
+   Five  : constant Character := Character'Val (136);
+   Six  : constant Character := Character'Val (137);
 
    procedure Print (X_Offset    : in out Integer;
                     Y_Offset    : Integer;

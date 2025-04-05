@@ -27,6 +27,7 @@ with WNM.Sample_Library;
 with WNM.Project;
 with WNM.Project.Library;
 with WNM.GUI.Bitmap_Fonts;
+with WNM.Chord_Settings;
 
 package WNM.GUI.Menu.Drawing is
 
@@ -159,5 +160,9 @@ package WNM.GUI.Menu.Drawing is
    procedure Draw_Battery (Step : HAL.UInt32);
 
    procedure Draw_Alt_Slider;
+
+   procedure Draw_Roman_Chord (X : in out Natural;
+                               Y : Natural;
+                               C : WNM.Chord_Settings.Roman_Numeral_Notation);
 
 end WNM.GUI.Menu.Drawing;

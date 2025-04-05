@@ -21,7 +21,10 @@
 
 package WNM.Project.Arpeggiator is
 
-   function Next_Note (T : Tracks) return MIDI.MIDI_Key;
+   function Next_Note (T     : Tracks;
+                       Mode  : Arp_Mode_Kind;
+                       Chord : WNM.Chord_Settings.Chord_Notes)
+                       return MIDI.MIDI_Key;
 
    procedure Signal_Start_Of_Pattern (T : Tracks);
 

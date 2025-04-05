@@ -37,8 +37,6 @@ package WNM.Project.Step_Sequencer is
 
 private
 
-   Current_Playing_Step : Sequencer_Steps := Sequencer_Steps'First with Atomic;
-
    --  Current_Seq_State : Sequencer_State := Pause with Atomic;
    Current_Track     : Tracks := Tracks'First with Atomic;
 

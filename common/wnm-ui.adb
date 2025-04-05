@@ -45,8 +45,6 @@ package body WNM.UI is
    Last_Main_Mode : Main_Modes := Chord_Mode;
    Current_Input_Mode : Input_Mode_Type := Last_Main_Mode;
 
-   --  Select_Done : Boolean := False;
-
    Track_Muted : array (WNM.Tracks) of Boolean := (others => False);
 
    Anim_Step : UInt32 := 0;
@@ -135,20 +133,12 @@ package body WNM.UI is
             case Evt is
                when On_Press =>
                   case B is
-                  when Chord_Select =>
-                     Current_Input_Mode := Chord_Settings_Mode;
-                     GUI.Menu.Open (GUI.Menu.Chord_Synth_Menu);
-                     Last_Main_Mode := Current_Input_Mode;
-
-                  when Lead_Select =>
-                     Current_Input_Mode := Lead_Settings_Mode;
-                     GUI.Menu.Open (GUI.Menu.Lead_Synth_Menu);
-                     Last_Main_Mode := Current_Input_Mode;
+                  when Track_Button =>
+                     Current_Input_Mode := Track_Select;
 
                   when Func =>
                      --  Switch to Func mode
                      Current_Input_Mode := FX_Alt;
-                     --  Select_Done := False;
 
                   when Menu =>
                      GUI.Menu.Root.Push_Root_Window;
@@ -156,53 +146,68 @@ package body WNM.UI is
                   when Drum_Edit =>
                      GUI.Menu.Drum_Settings.Push_Window;
 
-                  when Drums_Play =>
+                  when Play_Button =>
                      Project.Step_Sequencer.Play_Pause;
 
-                  when Keyboard_Button =>
+                  when Chord_Button =>
+                     Project.Editing_Chord := B;
+                     Project.Step_Sequencer.On_Press (B, Current_Input_Mode);
 
+                  when Lead_Button =>
+                     Project.Editing_Lead := B;
                      Project.Step_Sequencer.On_Press (B, Current_Input_Mode);
 
                   when Chord_Alt =>
-                     Project.Chord_Play_Mode_Next;
+
+                     Current_Input_Mode := Chord_Mode;
+                     GUI.Menu.Open (GUI.Menu.Chord_Menu);
+                     Last_Main_Mode := Current_Input_Mode;
 
                   when Lead_Alt =>
-                     Project.Lead_Play_Mode_Next;
+                     Current_Input_Mode := Lead_Mode;
+                     GUI.Menu.Open (GUI.Menu.Lead_Menu);
+                     Last_Main_Mode := Current_Input_Mode;
 
                   when others =>
                      null;
                   end case;
                when On_Long_Press =>
                   case B is
-                  when Drums_Play =>
+                  when Play_Button =>
                      --  Switch to volume/BPM config mode
                      Current_Input_Mode := Volume_BPM_Mute;
 
-                  when others => null;
+                     when others => null;
                   end case;
                when On_Release =>
                   case B is
                   when Chord_Button =>
-                     Project.Editing_Chord := B;
-                     Current_Input_Mode := Chord_Mode;
-                     GUI.Menu.Open (GUI.Menu.Chord_Menu);
-                     Last_Main_Mode := Current_Input_Mode;
-
                      Project.Step_Sequencer.On_Release (B,
                                                         Current_Input_Mode);
                   when Lead_Button =>
-                     Project.Editing_Lead := B;
-                     Current_Input_Mode := Lead_Mode;
-                     GUI.Menu.Open (GUI.Menu.Lead_Menu);
-                     Last_Main_Mode := Current_Input_Mode;
 
                      Project.Step_Sequencer.On_Release (B,
                                                         Current_Input_Mode);
+
                   when others => null;
                   end case;
                when others => null;
             end case;
 
+         when Track_Select =>
+            case B is
+               when Keyboard_Button =>
+                  if B in C1 .. C4 | C5 .. C7 | L1 .. L4 then
+                     Project.Editing_Track := To_Value (B);
+                  end if;
+
+               when Track_Button =>
+                  if Evt = On_Release then
+                     Current_Input_Mode := Track_Settings_Mode;
+                     GUI.Menu.Open (GUI.Menu.Track_Settings_Menu);
+                  end if;
+               when others => null;
+            end case;
          when FX_Alt =>
             case Evt is
                when On_Press =>
@@ -226,7 +231,7 @@ package body WNM.UI is
 
          when Volume_BPM_Mute =>
 
-            if B = Drums_Play and then Evt = On_Release then
+            if B = Play_Button and then Evt = On_Release then
                Current_Input_Mode := Last_Main_Mode;
             end if;
 
@@ -333,7 +338,7 @@ package body WNM.UI is
 
    function Has_Long_Press (B : Button) return Boolean
    is (case B is
-          when Drums_Play => True,
+          when Play_Button     => True,
           when PAD_Up .. PAD_B => True,
           when others => False);
 
@@ -448,7 +453,7 @@ package body WNM.UI is
 
       -- Play LED --
       if WNM.MIDI_Clock.Running and then Beat_Step then
-         LEDs.Turn_On (Drums_Play, LEDs.Play);
+         LEDs.Turn_On (Play_Button, LEDs.Play);
       end if;
 
       --  The FX LED is on if there's at least one FX enabled
@@ -534,41 +539,36 @@ package body WNM.UI is
                end if;
             end loop;
 
+         when Track_Select =>
+            LEDs.Set_Hue (LEDs.Track);
+            LEDs.Turn_On (Track_Button);
+            LEDs.Turn_On (To_Button (Keyboard_Value (Project.Editing_Track)));
+
          when others =>
+            LEDs.Set_Hue (LEDs.Chord);
+            for B in C1 .. C8 loop
+               LEDs.Turn_On (B);
+            end loop;
+
+            LEDs.Set_Hue (LEDs.Step);
+            for B in L1 .. L8 loop
+               LEDs.Turn_On (B);
+            end loop;
+
             case Last_Main_Mode is
-            when others =>
+               when Track_Settings_Mode =>
+                  LEDs.Turn_On (Track_Button, LEDs.Chord);
+               when Chord_Mode =>
+                  LEDs.Turn_On (Chord_Alt, LEDs.Chord);
+                  if Select_Blink then
+                     LEDs.Turn_Off (Project.Editing_Chord);
+                  end if;
 
-               LEDs.Set_Hue (LEDs.Chord);
-               for B in C1 .. C8 loop
-                  LEDs.Turn_On (B);
-               end loop;
-
-               LEDs.Set_Hue (LEDs.Step);
-               for B in L1 .. L8 loop
-                  LEDs.Turn_On (B);
-               end loop;
-
-               case Project.Chord_Play_Mode is
-                  when Project.Press_Release =>
-                     null;
-                  when Project.Hold =>
-                     LEDs.Turn_On (Chord_Alt, LEDs.Rose);
-                  when Project.Beat =>
-                     LEDs.Turn_On (Chord_Alt, LEDs.Green);
-               end case;
-
-               case Project.Lead_Play_Mode is
-                  when Project.Press_Release =>
-                     null;
-                  when Project.Hold =>
-                     LEDs.Turn_On (Lead_Alt, LEDs.Rose);
-                  when Project.Arp_16 =>
-                     LEDs.Turn_On (Lead_Alt, LEDs.Green);
-                  when Project.Arp_8 =>
-                     LEDs.Turn_On (Lead_Alt, LEDs.Red);
-                  when Project.Arp_4 =>
-                     LEDs.Turn_On (Lead_Alt, LEDs.Violet);
-               end case;
+               when Lead_Mode =>
+                  LEDs.Turn_On (Lead_Alt, LEDs.Step);
+                  if Select_Blink then
+                     LEDs.Turn_Off (Project.Editing_Lead);
+                  end if;
             end case;
       end case;
 

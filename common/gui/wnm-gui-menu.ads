@@ -21,8 +21,7 @@
 
 package WNM.GUI.Menu is
 
-   type Base_Menu_Kind is (Chord_Synth_Menu,
-                           Lead_Synth_Menu,
+   type Base_Menu_Kind is (Track_Settings_Menu,
                            Chord_Menu,
                            Lead_Menu);
 

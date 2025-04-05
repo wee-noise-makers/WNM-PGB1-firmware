@@ -156,16 +156,16 @@ package body WNM.Project is
             Scale := Major_Scale;
       end case;
 
-      --  Load Lead notes
-      declare
-         L_Id : Lead_Button := Lead_Button'First;
-      begin
-
-         for Interval of WNM.Chord_Settings.Scales (Scale) loop
-            G_Project.Leads (L_Id).Key := Key + Interval;
-            L_Id := Lead_Button'Succ (L_Id);
-         end loop;
-      end;
+      --  --  Load Lead notes
+      --  declare
+      --     L_Id : Lead_Button := Lead_Button'First;
+      --  begin
+      --
+      --     for Interval of WNM.Chord_Settings.Scales (Scale) loop
+      --        G_Project.Leads (L_Id).Key := Key + Interval;
+      --        L_Id := Lead_Button'Succ (L_Id);
+      --     end loop;
+      --  end;
 
       --  Load chords
       declare
@@ -1161,12 +1161,67 @@ package body WNM.Project is
       end case;
    end Prev_Value;
 
-   ----------
-   -- Note --
-   ----------
+   -------------
+   -- Trigger --
+   -------------
 
-   function Note (C : Lead_Button) return MIDI.MIDI_Key
-   is (G_Project.Leads (C).Key);
+   function Trigger (B    : Lead_Button;
+                     LT   : Lead_Tracks;
+                     Step : Lead_Seq_Length)
+                     return Lead_Evt
+   is (G_Project.Leads (B).Seq (LT, Step));
+
+   ------------------
+   -- Trigger_Next --
+   ------------------
+
+   procedure Trigger_Next (B    : Lead_Button;
+                           LT   : Lead_Tracks;
+                           Step : Lead_Seq_Length)
+   is
+   begin
+      Next (G_Project.Leads (B).Seq (LT, Step));
+   end Trigger_Next;
+
+   ------------------
+   -- Trigger_Prev --
+   ------------------
+
+   procedure Trigger_Prev (B    : Lead_Button;
+                           LT   : Lead_Tracks;
+                           Step : Lead_Seq_Length) is
+   begin
+      Prev (G_Project.Leads (B).Seq (LT, Step));
+   end Trigger_Prev;
+
+   ----------------
+   -- Seq_Length --
+   ----------------
+
+   function Seq_Length (B : Lead_Button) return Lead_Seq_Length
+   is (G_Project.Leads (B).Len);
+
+   ---------------------
+   -- Incr_Seq_Length --
+   ---------------------
+
+   procedure Incr_Seq_Length (B : Lead_Button) is
+   begin
+      if G_Project.Leads (B).Len /= Lead_Seq_Length'Last then
+         G_Project.Leads (B).Len := @ + 1;
+      end if;
+   end Incr_Seq_Length;
+
+   ---------------------
+   -- Decr_Seq_Length --
+   ---------------------
+
+   procedure Decr_Seq_Length (B : Lead_Button) is
+   begin
+      if G_Project.Leads (B).Len /= Lead_Seq_Length'First then
+         G_Project.Leads (B).Len := @ - 1;
+      end if;
+   end Decr_Seq_Length;
 
    ---------
    -- Set --
@@ -1178,7 +1233,7 @@ package body WNM.Project is
    is
    begin
       case S is
-         when Note => Set (G_Project.Leads (C).Key, V);
+         when Note => null; -- Set (G_Project.Leads (C).Key, V);
       end case;
    end Set;
 
@@ -1190,7 +1245,7 @@ package body WNM.Project is
         is
    begin
       case S is
-         when Note => Next (G_Project.Leads (C).Key);
+         when Note => null; -- Next (G_Project.Leads (C).Key);
       end case;
    end Next_Value;
 
@@ -1202,7 +1257,7 @@ package body WNM.Project is
    is
    begin
       case S is
-         when Note => Prev (G_Project.Leads (C).Key);
+         when Note => null; -- Prev (G_Project.Leads (C).Key);
       end case;
    end Prev_Value;
 
@@ -1595,5 +1650,33 @@ begin
    G_Project.Chords (C6).Quality := WNM.Chord_Settings.Dim_7th;
    G_Project.Chords (C7).Quality := WNM.Chord_Settings.Sus2;
    G_Project.Chords (C8).Quality := WNM.Chord_Settings.Sus4;
+
+   G_Project.Leads (L1).Seq (Lead, 1) := N1;
+   G_Project.Leads (L1).Seq (Lead, 3) := N2;
+   G_Project.Leads (L1).Seq (Lead, 5) := N3;
+   G_Project.Leads (L1).Seq (Lead, 7) := N4;
+   G_Project.Leads (L1).Seq (Lead, 9) := Random;
+
+   G_Project.Leads (L1).Len := 12;
+
+   G_Project.Leads (L2).Seq (Bass, 1) := N1;
+   G_Project.Leads (L2).Seq (Bass, 5) := N1;
+   G_Project.Leads (L2).Seq (Bass, 8) := N4;
+   G_Project.Leads (L2).Seq (Bass, 9) := N1;
+
+   G_Project.Leads (L2).Len := 12;
+
+   G_Project.Leads (L3).Seq (Lead, 1) := N1;
+   G_Project.Leads (L3).Seq (Lead, 3) := N2;
+   G_Project.Leads (L3).Seq (Lead, 5) := N3;
+   G_Project.Leads (L3).Seq (Lead, 7) := N4;
+   G_Project.Leads (L3).Seq (Lead, 8) := Random;
+
+   G_Project.Leads (L3).Seq (Bass, 1) := N1;
+   G_Project.Leads (L3).Seq (Bass, 5) := N1;
+   G_Project.Leads (L3).Seq (Bass, 8) := N4;
+   G_Project.Leads (L3).Seq (Bass, 9) := N1;
+
+   G_Project.Leads (L3).Len := 12;
 
 end WNM.Project;

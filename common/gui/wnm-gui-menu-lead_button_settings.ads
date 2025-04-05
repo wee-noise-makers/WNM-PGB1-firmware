@@ -27,15 +27,14 @@ package WNM.GUI.Menu.Lead_Button_Settings is
 
 private
 
-   type Top_Settings is (Key);
-
-   function Top_Settings_Count is new Enum_Count (Top_Settings);
-
-   subtype Sub_Settings is Project.User_Lead_Settings;
-   function Sub_Settings_Count is new Enum_Count (Sub_Settings);
+   type Mode_Kind is (Step_Edit, Len_Edit);
 
    type Track_Settings_Menu is new Menu_Window with record
-      Current_Setting : Sub_Settings := Sub_Settings'First;
+      Mode : Mode_Kind := Step_Edit;
+      Selected_Step : WNM.Project.Lead_Seq_Length :=
+        WNM.Project.Lead_Seq_Length'First;
+      Selected_Track : WNM.Project.Lead_Tracks :=
+        WNM.Project.Lead_Tracks'First;
    end record;
 
    overriding

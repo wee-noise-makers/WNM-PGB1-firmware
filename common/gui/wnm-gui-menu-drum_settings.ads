@@ -30,7 +30,7 @@ private
    package Next_Track is new Enum_Next (WNM.Project.Drum_Tracks);
    use Next_Track;
 
-   type Mode_Kind is (Step_Edit, Len_Edit, Synth_Edit);
+   type Mode_Kind is (Step_Edit, Len_Edit);
 
    type Synth_Track_Id is (BD, SD, HH, SP);
 
@@ -47,9 +47,6 @@ private
       Selected_Step : WNM.Pattern_Length := WNM.Pattern_Length'First;
       Selected_Track : WNM.Project.Drum_Tracks :=
         WNM.Project.Drum_Tracks'First;
-
-      Synth_Track : Synth_Track_Id := Synth_Track_Id'First;
-      Synth_Set : Synth_Settings := Synth_Settings'First;
    end record;
 
    overriding

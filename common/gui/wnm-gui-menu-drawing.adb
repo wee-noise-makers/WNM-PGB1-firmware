@@ -55,8 +55,6 @@ with battery_20;
 with battery_10;
 with battery_0;
 
-with Ada.Text_IO; use Ada.Text_IO;
-
 package body WNM.GUI.Menu.Drawing is
 
    Scroll_Bar_Y_Offset : constant := 19;
@@ -1299,5 +1297,52 @@ package body WNM.GUI.Menu.Drawing is
       end loop;
 
    end Draw_Alt_Slider;
+
+   ----------------------
+   -- Draw_Roman_Chord --
+   ----------------------
+
+   procedure Draw_Roman_Chord (X : in out Natural;
+                               Y : Natural;
+                               C : WNM.Chord_Settings.Roman_Numeral_Notation)
+   is
+      use WNM.Chord_Settings;
+
+      Major : constant Boolean :=
+        (case C.Harmonic_Function is
+            when Maj_Triad | Maj_7th | Maj_Inv1 | Maj_Inv2 |
+                 Dim_Triad | Dim_7th | Chord_Settings.Sus2 |
+                 Chord_Settings.Sus4 | Chord_Settings.Five => True,
+            when others => False);
+
+      Func : constant String :=
+        (case C.Harmonic_Function is
+            when Maj_Triad => "",
+            when Min_Triad => "",
+            when Dim_Triad => "" & Bitmap_Fonts.Dim,
+            when Maj_7th   => "" & Bitmap_Fonts.Seven,
+            when Min_7th   => "" & Bitmap_Fonts.Seven,
+            when Dim_7th   => "" & Bitmap_Fonts.Dim & Bitmap_Fonts.Seven,
+            when Min6      => "" & Bitmap_Fonts.Six,
+            when Chord_Settings.Sus2 => "" & Bitmap_Fonts.Sus2,
+            when Chord_Settings.Sus4 => "" & Bitmap_Fonts.Sus4,
+            when Chord_Settings.Five => "" & Bitmap_Fonts.Five,
+            when Maj_Inv1  => "inv1",
+            when Maj_Inv2  => "inv2",
+            when Min_Inv1  => "inv1",
+            when Min_Inv2  => "inv2");
+
+      Deg : constant String := Img (C.Degree, Major);
+   begin
+      Bitmap_Fonts.Print (X, Y, Chord_Settings.Img (C.Accidental));
+      X := X - 1;
+      for Char of Deg loop
+         Bitmap_Fonts.Print (X, Y, Char);
+         if Char in 'i' | 'I' then
+            X := X - 2;
+         end if;
+      end loop;
+      Bitmap_Fonts.Print (X, Y, Func);
+   end Draw_Roman_Chord;
 
 end WNM.GUI.Menu.Drawing;
