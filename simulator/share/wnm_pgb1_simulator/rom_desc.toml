@@ -71,8 +71,10 @@
 [files]
 'shutdown.tmp_prj' = "projects/tech.wnm_prj" # project that will be loaded at boot
 '01Tech           .wnm_prj' = "projects/tech.wnm_prj"
-'02Echo-Alice Efe .wnm_prj' = "projects/echo.wnm_prj"
-'03Attention      .wnm_prj' = "projects/attention.wnm_prj"
-'04Epoque         .wnm_prj' = "projects/epoque.wnm_prj"
-'05Dark-BroBeatzTV.wnm_prj' = "projects/trap.wnm_prj"
-'06Anymore        .wnm_prj' = "projects/anymore.wnm_prj"
+'02Lost1-AABattery.wnm_prj' = "projects/lost_one-aabatterymusic.wnm_prj"
+'03Noxis-Technoval.wnm_prj' = "projects/noxis-technoval.wnm_prj"
+'04Dark (#1)      .wnm_prj' = "projects/trap.wnm_prj"
+'05Echo (#2)      .wnm_prj' = "projects/echo.wnm_prj"
+'06Attention      .wnm_prj' = "projects/attention.wnm_prj"
+'07Epoque         .wnm_prj' = "projects/epoque.wnm_prj"
+'08Anymore        .wnm_prj' = "projects/anymore.wnm_prj"
