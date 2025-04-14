@@ -44,6 +44,8 @@ package body WNM.Project.Step_Sequencer is
       Lead_Btn : Lead_Button := Lead_Button'First;
 
       Lead_Next_Index : Natural := 0;
+
+      Drums_On : Boolean := False;
    end record;
 
    G_Note_Play_State : Note_Play_State;
@@ -123,6 +125,29 @@ package body WNM.Project.Step_Sequencer is
          MIDI_Clock.Internal_Stop;
       end if;
    end Play_Pause;
+
+   ---------------------
+   -- Drums_Play_Stop --
+   ---------------------
+
+   procedure Drums_Play_Stop is
+   begin
+      G_Note_Play_State.Drums_On := not @;
+
+      if G_Note_Play_State.Drums_On then
+         G_Play_State.Next_Step := WNM.Pattern_Length'Last;
+         G_Play_State_Save.Next_Step := WNM.Pattern_Length'Last;
+         G_Roll_Next_State := Off;
+         G_Roll_State := Off;
+      end if;
+   end Drums_Play_Stop;
+
+   --------------
+   -- Drums_On --
+   --------------
+
+   function Drums_On return Boolean
+   is (G_Note_Play_State.Drums_On);
 
    ------------
    -- Offset --
@@ -224,7 +249,7 @@ package body WNM.Project.Step_Sequencer is
 
                   G_Note_Play_State.Lead_Btn := Button;
                   G_Note_Play_State.Lead_On := True;
-                  G_Note_Play_State.Lead_Next_Index := 1;
+                  G_Note_Play_State.Lead_Next_Index := Natural'Last;
             end case;
       end case;
    end On_Press;
@@ -550,12 +575,13 @@ package body WNM.Project.Step_Sequencer is
       S : constant MIDI.Time.Step_Count := Step mod Clock_Div;
    begin
       if S = 0 then
-         Execute_Step;
-      end if;
 
-      if G_Note_Play_State.Lead_On then
+         if G_Note_Play_State.Drums_On then
+            Execute_Step;
+         end if;
 
-         if Step mod 6 = 0 then
+         if G_Note_Play_State.Lead_On then
+
             declare
                Seq : Lead_Rec renames
                  G_Project.Leads (G_Note_Play_State.Lead_Btn);
@@ -642,4 +668,6 @@ package body WNM.Project.Step_Sequencer is
       Playing := True;
    end Song_Continue_Callback;
 
+begin
+   G_Current_Chord := Chord_For_Button (C1);
 end WNM.Project.Step_Sequencer;

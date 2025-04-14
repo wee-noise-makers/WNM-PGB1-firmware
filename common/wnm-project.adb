@@ -1223,44 +1223,6 @@ package body WNM.Project is
       end if;
    end Decr_Seq_Length;
 
-   ---------
-   -- Set --
-   ---------
-
-   procedure Set (S : User_Lead_Settings;
-                  V : WNM_HAL.Touch_Value;
-                  C : Lead_Button)
-   is
-   begin
-      case S is
-         when Note => null; -- Set (G_Project.Leads (C).Key, V);
-      end case;
-   end Set;
-
-   ----------------
-   -- Next_Value --
-   ----------------
-
-   procedure Next_Value (S : User_Lead_Settings; C : Lead_Button)
-        is
-   begin
-      case S is
-         when Note => null; -- Next (G_Project.Leads (C).Key);
-      end case;
-   end Next_Value;
-
-   ----------------
-   -- Prev_Value --
-   ----------------
-
-   procedure Prev_Value (S : User_Lead_Settings; C : Lead_Button)
-   is
-   begin
-      case S is
-         when Note => null; -- Prev (G_Project.Leads (C).Key);
-      end case;
-   end Prev_Value;
-
    --------------------
    -- Pattern_Length --
    --------------------
@@ -1629,10 +1591,16 @@ package body WNM.Project is
    end Add_Sat;
 
 begin
+   G_Project.Pattern_Len := 16;
+
    G_Project.Pattern (Kick, 1) := Hit;
    G_Project.Pattern (Kick, 5) := Hit;
+   G_Project.Pattern (Kick, 9) := Hit;
+   G_Project.Pattern (Kick, 12) := Hit;
 
    G_Project.Pattern (Snare, 5) := Hit;
+   G_Project.Pattern (Snare, 13) := Hit;
+   G_Project.Pattern (Snare, 14) := Ghost;
 
    G_Project.Pattern (Hihat_Closed, 1) := Hit;
    G_Project.Pattern (Hihat_Closed, 2) := Hit;
@@ -1642,41 +1610,135 @@ begin
    G_Project.Pattern (Hihat_Closed, 6) := Hit;
    G_Project.Pattern (Hihat_Closed, 7) := Accent;
    G_Project.Pattern (Hihat_Closed, 8) := Hit;
+   G_Project.Pattern (Hihat_Closed, 9) := Ghost;
+   G_Project.Pattern (Hihat_Closed, 10) := Hit;
+   G_Project.Pattern (Hihat_Closed, 11) := Accent;
+   G_Project.Pattern (Hihat_Closed, 12) := Ghost;
+   G_Project.Pattern (Hihat_Closed, 13) := Hit;
+   G_Project.Pattern (Hihat_Closed, 14) := Ghost;
+   G_Project.Pattern (Hihat_Closed, 15) := Accent;
+   G_Project.Pattern (Hihat_Closed, 16) := Ghost;
 
-   G_Project.Chords (C2).Quality := WNM.Chord_Settings.Min_Triad;
-   G_Project.Chords (C3).Quality := WNM.Chord_Settings.Dim_Triad;
-   G_Project.Chords (C4).Quality := WNM.Chord_Settings.Maj_7th;
-   G_Project.Chords (C5).Quality := WNM.Chord_Settings.Min_7th;
-   G_Project.Chords (C6).Quality := WNM.Chord_Settings.Dim_7th;
-   G_Project.Chords (C7).Quality := WNM.Chord_Settings.Sus2;
-   G_Project.Chords (C8).Quality := WNM.Chord_Settings.Sus4;
+   G_Project.Pattern (Sample, 3) := Hit;
+   G_Project.Pattern (Sample, 7) := Hit;
+   G_Project.Pattern (Sample, 11) := Hit;
+   G_Project.Pattern (Sample, 15) := Hit;
+
+   -- Chords --
+   G_Project.Chords (C1).Quality := WNM.Chord_Settings.Maj_Triad;
+   G_Project.Chords (C1).Root := MIDI.C3;
+
+   G_Project.Chords (C2).Quality := WNM.Chord_Settings.Maj_7th;
+   G_Project.Chords (C2).Root := MIDI.C3;
+
+   G_Project.Chords (C3).Quality := WNM.Chord_Settings.Maj_Triad;
+   G_Project.Chords (C3).Root := MIDI.F3;
+
+   G_Project.Chords (C4).Quality := WNM.Chord_Settings.Min_Triad;
+   G_Project.Chords (C4).Root := MIDI.E3;
+
+   G_Project.Chords (C5).Quality := WNM.Chord_Settings.Maj_7th;
+   G_Project.Chords (C5).Root := MIDI.C3;
+
+   G_Project.Chords (C6).Quality := WNM.Chord_Settings.Min_7th;
+   G_Project.Chords (C6).Root := MIDI.E3;
+
+   G_Project.Chords (C7).Quality := WNM.Chord_Settings.Maj_7th;
+   G_Project.Chords (C7).Root := MIDI.F3;
+
+   G_Project.Chords (C8).Quality := WNM.Chord_Settings.Min_7th;
+   G_Project.Chords (C8).Root := MIDI.E3;
+
+   -- L1 --
 
    G_Project.Leads (L1).Seq (Lead, 1) := N1;
-   G_Project.Leads (L1).Seq (Lead, 3) := N2;
-   G_Project.Leads (L1).Seq (Lead, 5) := N3;
-   G_Project.Leads (L1).Seq (Lead, 7) := N4;
+   G_Project.Leads (L1).Seq (Lead, 2) := N2;
+   G_Project.Leads (L1).Seq (Lead, 3) := N3;
+   G_Project.Leads (L1).Seq (Lead, 4) := N4;
+   G_Project.Leads (L1).Seq (Lead, 5) := N1;
+   G_Project.Leads (L1).Seq (Lead, 6) := N2;
+   G_Project.Leads (L1).Seq (Lead, 7) := N3;
+   G_Project.Leads (L1).Seq (Lead, 8) := N4;
    G_Project.Leads (L1).Seq (Lead, 9) := Random;
+   G_Project.Leads (L1).Seq (Lead, 10) := N2;
+   G_Project.Leads (L1).Seq (Lead, 11) := Random;
+   G_Project.Leads (L1).Seq (Lead, 12) := N4;
+   G_Project.Leads (L1).Seq (Lead, 13) := N1;
+   G_Project.Leads (L1).Seq (Lead, 14) := Random;
+   G_Project.Leads (L1).Seq (Lead, 15) := N3;
+   G_Project.Leads (L1).Seq (Lead, 16) := Random;
 
-   G_Project.Leads (L1).Len := 12;
+   G_Project.Leads (L1).Len := 16;
+
+   -- L2 --
 
    G_Project.Leads (L2).Seq (Bass, 1) := N1;
    G_Project.Leads (L2).Seq (Bass, 5) := N1;
-   G_Project.Leads (L2).Seq (Bass, 8) := N4;
    G_Project.Leads (L2).Seq (Bass, 9) := N1;
+   G_Project.Leads (L2).Seq (Bass, 12) := N4;
+   G_Project.Leads (L2).Seq (Bass, 13) := N1;
 
-   G_Project.Leads (L2).Len := 12;
+   G_Project.Leads (L2).Len := 16;
+
+   -- L3 --
 
    G_Project.Leads (L3).Seq (Lead, 1) := N1;
-   G_Project.Leads (L3).Seq (Lead, 3) := N2;
-   G_Project.Leads (L3).Seq (Lead, 5) := N3;
-   G_Project.Leads (L3).Seq (Lead, 7) := N4;
-   G_Project.Leads (L3).Seq (Lead, 8) := Random;
+   G_Project.Leads (L3).Seq (Lead, 2) := N2;
+   G_Project.Leads (L3).Seq (Lead, 3) := N3;
+   G_Project.Leads (L3).Seq (Lead, 4) := N4;
+   G_Project.Leads (L3).Seq (Lead, 5) := N1;
+   G_Project.Leads (L3).Seq (Lead, 6) := N2;
+   G_Project.Leads (L3).Seq (Lead, 7) := N3;
+   G_Project.Leads (L3).Seq (Lead, 8) := N4;
+   G_Project.Leads (L3).Seq (Lead, 9) := Random;
+   G_Project.Leads (L3).Seq (Lead, 10) := N2;
+   G_Project.Leads (L3).Seq (Lead, 11) := Random;
+   G_Project.Leads (L3).Seq (Lead, 12) := N4;
+   G_Project.Leads (L3).Seq (Lead, 13) := N1;
+   G_Project.Leads (L3).Seq (Lead, 14) := Random;
+   G_Project.Leads (L3).Seq (Lead, 15) := N3;
+   G_Project.Leads (L3).Seq (Lead, 16) := Random;
 
    G_Project.Leads (L3).Seq (Bass, 1) := N1;
    G_Project.Leads (L3).Seq (Bass, 5) := N1;
-   G_Project.Leads (L3).Seq (Bass, 8) := N4;
    G_Project.Leads (L3).Seq (Bass, 9) := N1;
+   G_Project.Leads (L3).Seq (Bass, 12) := N4;
+   G_Project.Leads (L3).Seq (Bass, 13) := N1;
 
-   G_Project.Leads (L3).Len := 12;
+   G_Project.Leads (L3).Len := 16;
+
+   -- L5 --
+
+   G_Project.Leads (L5).Seq (Lead, 1) := N1;
+   G_Project.Leads (L5).Seq (Lead, 4) := N1;
+   G_Project.Leads (L5).Seq (Lead, 6) := N2;
+
+   G_Project.Leads (L5).Len := 8;
+
+   -- L6 --
+
+   G_Project.Leads (L6).Seq (Lead, 1) := N1;
+   G_Project.Leads (L6).Seq (Lead, 4) := N1;
+   G_Project.Leads (L6).Seq (Lead, 6) := N3;
+
+   G_Project.Leads (L6).Len := 8;
+
+   -- L7 --
+
+   G_Project.Leads (L7).Seq (Lead, 1) := N2;
+   G_Project.Leads (L7).Seq (Lead, 4) := N4;
+   G_Project.Leads (L7).Seq (Lead, 6) := N2;
+   G_Project.Leads (L7).Seq (Lead, 7) := N1;
+
+   G_Project.Leads (L7).Len := 8;
+
+   -- L8 --
+
+   G_Project.Leads (L8).Seq (Lead, 1) := N1;
+   G_Project.Leads (L8).Seq (Lead, 3) := N2;
+   G_Project.Leads (L8).Seq (Lead, 6) := N4;
+   G_Project.Leads (L8).Seq (Lead, 8) := N2;
+
+   G_Project.Leads (L8).Len := 8;
 
 end WNM.Project;

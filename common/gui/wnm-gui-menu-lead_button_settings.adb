@@ -104,7 +104,7 @@ package body WNM.GUI.Menu.Lead_Button_Settings is
 
       function SX (Step : Lead_Seq_Length)
                    return Natural
-      is (7 + Integer (Step - First_Step + 1) * Step_Width);
+      is (1 + Integer (Step - First_Step + 1) * Step_Width);
 
       function SY (DT : Project.Lead_Tracks)
                    return Natural
@@ -142,8 +142,8 @@ package body WNM.GUI.Menu.Lead_Button_Settings is
       for T in Project.Lead_Tracks loop
 
          Draw_Str (0, SY (T), (case T is
-                      when Lead => "LD",
-                      when Bass => "BS"));
+                      when Lead => "L",
+                      when Bass => "B"));
 
          for S in Lead_Seq_Length range First_Step .. Last_Step loop
             declare
@@ -168,7 +168,7 @@ package body WNM.GUI.Menu.Lead_Button_Settings is
                           SY (This.Selected_Track));
       else
          Draw_Rect (((Len_Box_Left, SY (Lead) - 2),
-                    Font_Width + 3,
+                    Font_Width + 1,
                     Step_Height * 2));
       end if;
 

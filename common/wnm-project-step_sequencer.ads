@@ -27,6 +27,10 @@ package WNM.Project.Step_Sequencer is
    procedure Play_Pause;
    --  Use it to signal a play/pause event
 
+   procedure Drums_Play_Stop;
+
+   function Drums_On return Boolean;
+
    procedure On_Press (Button : Keyboard_Button;
                        Mode : WNM.UI.Main_Modes);
 

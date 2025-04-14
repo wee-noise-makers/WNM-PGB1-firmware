@@ -146,6 +146,9 @@ package body WNM.UI is
                   when Drum_Edit =>
                      GUI.Menu.Drum_Settings.Push_Window;
 
+                  when Drums_Play =>
+                     Project.Step_Sequencer.Drums_Play_Stop;
+
                   when Play_Button =>
                      Project.Step_Sequencer.Play_Pause;
 
@@ -456,6 +459,10 @@ package body WNM.UI is
          LEDs.Turn_On (Play_Button, LEDs.Play);
       end if;
 
+      if WNM.Project.Step_Sequencer.Drums_On then
+         LEDs.Turn_On (Drums_Play, LEDs.Dim_Green);
+      end if;
+
       --  The FX LED is on if there's at least one FX enabled
       if Some_FX_On then
          LEDs.Turn_On (Func, LEDs.FX);
@@ -563,7 +570,6 @@ package body WNM.UI is
                   if Select_Blink then
                      LEDs.Turn_Off (Project.Editing_Chord);
                   end if;
-
                when Lead_Mode =>
                   LEDs.Turn_On (Lead_Alt, LEDs.Step);
                   if Select_Blink then

@@ -355,17 +355,6 @@ package WNM.Project is
    procedure Incr_Seq_Length (B : Lead_Button);
    procedure Decr_Seq_Length (B : Lead_Button);
 
-   type Lead_Settings is (Note);
-   subtype User_Lead_Settings is Lead_Settings;
-
-   --  function Note (C : Lead_Button) return MIDI.MIDI_Key;
-
-   procedure Set (S : User_Lead_Settings;
-                  V : WNM_HAL.Touch_Value;
-                  C : Lead_Button);
-   procedure Next_Value (S : User_Lead_Settings; C : Lead_Button);
-   procedure Prev_Value (S : User_Lead_Settings; C : Lead_Button);
-
    -------------
    -- Pattern --
    -------------
