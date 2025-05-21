@@ -7,20 +7,26 @@
 \usepackage[inkscapeformat=png]{svg}
 \usepackage{enumitem}
 
+\newcommand\warning[1][]{%
+\begin{tikzpicture}[baseline=-0.5ex, inner xsep=0pt,#1]
+\node[]{$\triangle$};
+\node[yshift=0.125ex, scale=0.45]{!};
+\end{tikzpicture}\space}
+
 \newlist{notes}{enumerate}{1}
 \setlist[notes]{label=Note: ,leftmargin=*}
 
+
 \newenvironment{important}[1][]{%
    \begin{mdframed}[%
-      backgroundcolor={red!15}, hidealllines=true,
+      backgroundcolor={black!15}, hidealllines=true,
       skipabove=0.7\baselineskip, skipbelow=0.7\baselineskip,
       splitbottomskip=2pt, splittopskip=4pt, #1]%
-   \makebox[0pt]{% ignore the withd of !
+   \makebox[5pt]{% ignore the withd of !
       \smash{% ignor the height of !
-         \fontsize{20pt}{20pt}\selectfont% make the ! bigger
-         \hspace*{-19pt}% move ! to the left
-         \raisebox{-2pt}{% move ! up a little
-            {\color{red!70!black}\sffamily\bfseries !}% type the bold red !
+         \hspace*{-8pt}% move ! to the left
+         \raisebox{0pt}{% move ! up a little
+            {\color{black} \scalebox{1.5}{\warning} }% type the bold red !
          }%
       }%
    }%
