@@ -30,7 +30,6 @@ def main(firmware):
         addr = str(device.get("DEVNUM"))
                   
         if vid == "2e8a" and pid == "0003" and action == "bind":
-            subprocess.call(['echo', 'lol'])
             os.system(f"picotool load -t uf2 {firmware} --bus {bus} --address {addr}  && ~/src/github/raspberrypi/picotool/build/picotool reboot &")
 
 if __name__ == '__main__':
