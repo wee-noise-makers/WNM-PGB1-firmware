@@ -24,3 +24,5 @@ _autosave-*
 
 *.stderr
 *.stdout
+
+.venv/
