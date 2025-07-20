@@ -143,6 +143,9 @@ package body WNM_HAL is
 
    TP1_Threshold, TP2_Threshold, TP3_Threshold : HAL.UInt32 := 9999;
 
+   TP_Filter_Y : Float := 0.0;
+   TP_Last_Touch : Boolean := False;
+
    VBAT_Sense_Pin  : constant RP.GPIO.GPIO_Point := (Pin => 28);
    VBAT_Sense_Chan : constant RP.ADC.ADC_Channel :=
      RP.ADC.To_ADC_Channel (VBAT_Sense_Pin);
@@ -285,27 +288,54 @@ package body WNM_HAL is
             declare
 
                Clamp_A : constant Float := Float'Max (0.0, A);
-               Clamp_B : constant Float := Float'Max (0.0, B);
+
+               Clamp_B : constant Float := Float'Max (0.0, B) / 2.0;
+               --  The middle touch area (TP2) is twice as large as the other
+               --  two, we devide its weight by 2 to
+
                Clamp_C : constant Float := Float'Max (0.0, C);
 
                --  The center of mass is calculated in one dimension for the
                --  three touch points. In order to ensure consistent access
                --  to the limit values, the coordinates of A and C have been
-               --  slightly moved outwards (-0.1 instead of 0.0, and 1.1
+               --  slightly moved outwards (-0.05 instead of 0.0, and 1.05
                --  instead of 1.0).
                Center_Of_Mass : constant Float :=
-                 (Clamp_A * (-0.1) + Clamp_B * 0.5 + Clamp_C * 1.1)
+                 (Clamp_A * (-0.05) + Clamp_B * 0.5 + Clamp_C * 1.05)
                    /
                  (Clamp_A + Clamp_B + Clamp_C);
 
-               --  The result is then confined to the output range
-               Clamp_COM : constant Float :=
-                 Float'Max (Touch_Value'First,
-                            Float'Min (Touch_Value'Last, Center_Of_Mass));
             begin
-               return (Touch => True, Value => Clamp_COM);
+
+               if not TP_Last_Touch then
+                  --  New touch detected, reset the filter
+                  TP_Filter_Y := Center_Of_Mass;
+               end if;
+
+               --  Output filtering
+               declare
+                  Input : constant Float := Center_Of_Mass;
+
+                  Alpha : constant Float := 0.8;
+                  Y : constant Float :=
+                    TP_Filter_Y * Alpha + (1.0 - Alpha) * Input;
+
+                  Output : Float;
+               begin
+
+                  TP_Filter_Y := Y;
+
+                  --  The result is then confined to the output range
+                  Output :=
+                    Float'Max (Touch_Value'First,
+                               Float'Min (Touch_Value'Last, Y));
+
+                  TP_Last_Touch := True;
+                  return (Touch => True, Value => Output);
+               end;
             end;
          else
+            TP_Last_Touch := False;
             return (Touch => False, Value => 0.0);
          end if;
       end;
