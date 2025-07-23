@@ -181,6 +181,4 @@ private
       Prev_Scalefactor : S32 := 0;
    end record;
 
-   procedure Clamp_Weights (State : in out Encoder_State);
-
 end WNM.QOA;

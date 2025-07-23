@@ -46,7 +46,6 @@ package body WNM.QOA is
       for X in LMS_Array'Range loop
          Prediction := Prediction +
            Integer_64 (LMS.Weight (X)) * Integer_64 (LMS.History (X));
-         null;
       end loop;
       return S32
         ((Prediction - (Prediction mod 2**13)) / 2**13); -- Shift_Right
@@ -129,7 +128,7 @@ package body WNM.QOA is
 
       Best_Scalefactor : Scalefactor_Id;
       Best_LMS : Work_LMS;
-      Best_Error : Unsigned_64;
+      Best_Rank : Unsigned_64;
 
       State : Encoder_State;
 
@@ -141,7 +140,6 @@ package body WNM.QOA is
       for Frame of QOA_Data loop
          Frame_Cnt := Frame_Cnt + 1;
          --  Put_Line ("##### Frame:" & Frame_Cnt'Img);
-         Clamp_Weights (State);
 
          --  Write current LMS State
          for X in LMS_Array'Range loop
@@ -162,7 +160,7 @@ package body WNM.QOA is
             --  meassure the total squared error.
 
             Best_Scalefactor := Scalefactor_Id'First;
-            Best_Error := Unsigned_64'Last;
+            Best_Rank := Unsigned_64'Last;
 
             for Sfi in Scalefactor_Id loop
                --  There is a strong correlation between the scalefactors of
@@ -178,7 +176,7 @@ package body WNM.QOA is
                   --  the LMS state when encoding.
                   LMS : Work_LMS := State.Base_LMS;
 
-                  Current_Error : Unsigned_64 := 0;
+                  Current_Rank : Unsigned_64 := 0;
                   Current_Slice : Slice;
                begin
 
@@ -211,9 +209,23 @@ package body WNM.QOA is
                                      S32 (Integer_16'First),
                                      S32 (Integer_16'Last));
 
+                        --  If the weights have grown too large, we introduce
+                        --  a penalty here. This prevents pops/clicks in
+                        --  certain problem cases
+                        Weights_Penalty : constant S32 :=
+                          S32'Max (0,
+                                   ((LMS.Weight (0)**2 +
+                                     LMS.Weight (1)**2 +
+                                     LMS.Weight (2)**2 +
+                                     LMS.Weight (3)**2
+                                   ) / 2**6) - 16#8fffff#);
+
                         Error : constant Integer_64 :=
                           Integer_64 (Input_Sample) -
                           Integer_64 (Reconstructed);
+
+                        Error_SQ : constant Unsigned_64 :=
+                          Unsigned_64 (Error)**2;
 
                      begin
                         --  if Sfi = 0 then
@@ -233,21 +245,17 @@ package body WNM.QOA is
                         --     Put_Line ("predicted:" & Predicted'Img);
                         --     Put_Line ("residual:" & Residual'Img);
                         --     Put_Line ("scaled:" & Scaled'Img);
-                           --  Put_Line ("quantized:" & Quantized'Img);
-                           --  Put_Line ("reconstructed:" & Reconstructed'Img);
-                           --  Put_Line ("error:" & Error'Img);
+                        --     Put_Line ("quantized:" & Quantized'Img);
+                        --     Put_Line ("reconstructed:" & Reconstructed'Img);
+                        --     Put_Line ("error:" & Error'Img);
                         --  end if;
 
-                        Current_Error :=
-                          Current_Error + Unsigned_64 (Error * Error);
+                        Current_Rank := Current_Rank +
+                          Error_SQ + Unsigned_64 (Weights_Penalty);
 
                         --  Put_Line ("current_error:" & Current_Error'Img);
-                        if Current_Error > Best_Error then
-                           --  Put_Line ("!!! Big error break" &
-                           --              Current_Error'Img  &
-                           --              " >" & Best_Error'Img);
+                        if Current_Rank > Best_Rank then
                            exit;
-
                         end if;
 
                         QOA_LMS_Update (LMS, Reconstructed, Dequantized);
@@ -259,8 +267,8 @@ package body WNM.QOA is
                   --  Put_Line ("sfi:" & Sfi'Img &
                   --   " error:" & Current_Error'Img);
 
-                  if Current_Error < Best_Error then
-                     Best_Error := Current_Error;
+                  if Current_Rank < Best_Rank then
+                     Best_Rank := Current_Rank;
                      Best_Slice := Current_Slice;
                      Best_LMS := LMS;
                      Best_Scalefactor := Scalefactor;
@@ -310,7 +318,6 @@ package body WNM.QOA is
 
       Slice_Cnt : Natural := 0;
    begin
-      Clamp_Weights (State);
 
       --  Write current LMS State
       for X in LMS_Array'Range loop
@@ -560,22 +567,5 @@ package body WNM.QOA is
       State.Base_LMS.Weight (2) := -2**13;
       State.Base_LMS.Weight (3) := 2**14;
    end Reset;
-
-   -------------------
-   -- Clamp_Weights --
-   -------------------
-
-   procedure Clamp_Weights (State : in out Encoder_State) is
-      A, B, C, D : Integer_64;
-   begin
-      A := Integer_64 (State.Base_LMS.Weight (0)) ** 2;
-      B := Integer_64 (State.Base_LMS.Weight (1)) ** 2;
-      C := Integer_64 (State.Base_LMS.Weight (2)) ** 2;
-      D := Integer_64 (State.Base_LMS.Weight (3)) ** 2;
-
-      if (A + B + C + D) > 16#2fffffff# then
-         State.Base_LMS.Weight := (others => 0);
-      end if;
-   end Clamp_Weights;
 
 end WNM.QOA;
