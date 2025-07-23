@@ -332,8 +332,7 @@ package body WNM.GUI.Menu.Track_Settings is
 
          when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D =>
             declare
-               CC : constant Project.CC_Id :=
-                 To_CC_Id (This.Current_Setting);
+               CC : constant Project.CC_Id := To_CC_Id (Sub);
             begin
                Draw_Title ("MIDI CC " & Project.CC_Letter (CC) & " Label:",
                            "");
@@ -461,18 +460,20 @@ package body WNM.GUI.Menu.Track_Settings is
      (This       : in out Track_Settings_Menu;
       Exit_Value : Window_Exit_Value)
    is
+      Sub : Sub_Settings;
    begin
       This.Fix_Current_Setting;
 
-      if This.Current_Setting
-          in CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D
+      Sub := This.Current_Setting;
+
+      if Sub in CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D
       then
 
          --  Return from controller label text edit
 
          if Exit_Value = Success then
             declare
-               CC : constant CC_Id := To_CC_Id (This.Current_Setting);
+               CC : constant CC_Id := To_CC_Id (Sub);
                Output : constant String := WNM.GUI.Menu.Text_Dialog.Value;
                Label : Controller_Label := Empty_Controller_Label;
             begin
