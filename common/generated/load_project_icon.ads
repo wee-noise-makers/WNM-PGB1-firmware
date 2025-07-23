@@ -3,7 +3,7 @@ with WNM.Screen;
 package load_project_icon is
    pragma Style_Checks (Off);
 
-   Data : WNM.Screen.Bitmap := (W => 27, H => 28, Length_Byte => 95,
+   Data : constant WNM.Screen.Bitmap := (W => 27, H => 28, Length_Byte => 95,
 Data => (
  255, 127, 0, 248, 255, 7, 192, 0, 108, 0, 6, 96, 6, 48, 0, 99, 128, 1, 24, 6, 12, 192, 96, 96, 0,
  6, 6, 3, 48, 96, 24, 128, 1, 198, 0, 252, 63, 6, 224, 255, 49, 0, 0, 140, 1, 0, 96, 12, 0, 0,

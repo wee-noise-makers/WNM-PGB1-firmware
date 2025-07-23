@@ -3,7 +3,7 @@ with WNM.Screen;
 package font_5x7 is
    pragma Style_Checks (Off);
 
-   Data : WNM.Screen.Bitmap := (W => 490, H => 7, Length_Byte => 429,
+   Data : constant WNM.Screen.Bitmap := (W => 490, H => 7, Length_Byte => 429,
 Data => (
  187, 214, 205, 231, 125, 253, 255, 255, 255, 141, 59, 130, 11, 38, 136, 241, 255, 251, 123, 140, 17, 70, 12, 64, 116,
  113, 56, 239, 92, 132, 17, 70, 224, 156, 115, 14, 196, 30, 247, 207, 223, 255, 247, 239, 247, 251, 246, 252, 255, 255,

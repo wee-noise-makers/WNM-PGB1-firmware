@@ -127,7 +127,8 @@ private
       CC_D_Label  : Project.Controller_Label;
    end record;
 
-   Builtin_Instruments : array (Natural range <>) of MIDI_Instrument_Settings
+   Builtin_Instruments : constant array (Natural range <>) of
+     MIDI_Instrument_Settings
      := (0 => ("Volca Keys       ",
                44, "Cutoff           ",
                45, "VCF EG INT       ",

@@ -377,7 +377,7 @@ package body BMP is
          Put_Line (File_Out, "   Data : aliased constant " & Format_Str &
                      "_Data_T := (");
       else
-         Text_IO.Put (File_Out, "   Data : WNM.Screen.Bitmap");
+         Text_IO.Put (File_Out, "   Data : constant WNM.Screen.Bitmap");
 
          --  Text_IO.Put (File_Out, "Bitmap_Indexed");
 

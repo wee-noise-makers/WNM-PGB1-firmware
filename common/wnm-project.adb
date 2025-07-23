@@ -2172,7 +2172,7 @@ package body WNM.Project is
       --  room on the stack to hold the full project.
 
       G_Project.BPM := BPM_Default;
-      G_Project.Tracks := Tracks_Defaults;
+      Set_Track_Defaults (G_Project.Tracks);
 
       G_Project.Patterns := (others => (others => Default_Pattern));
 
@@ -2369,4 +2369,108 @@ package body WNM.Project is
       end if;
    end Add_Sat;
 
+   ------------------------
+   -- Set_Track_Defaults --
+   ------------------------
+
+   procedure Set_Track_Defaults (Tracks : out Track_Arr) is
+      Default_Kick_Track : constant Track_Rec :=
+        (Default_Track with delta Offset => -4,
+         CC => ((0, 63, "CC0              "),
+                (1, 63, "CC1              "),
+                (2, 63, "CC2              "),
+                (3, 63, "CC3              ")
+               ));
+
+      Default_Snare_Track : constant Track_Rec :=
+        (Default_Track with delta Offset => -1,
+         CC => ((0, 63, "CC0              "),
+                (1, 63, "CC1              "),
+                (2, 63, "CC2              "),
+                (3, 63, "CC3              ")
+               ));
+
+      Default_Cymbal_Track : constant Track_Rec :=
+        (Default_Track with delta Engine => 1,
+         CC => ((0, 127, "CC0              "),
+                (1, 100, "CC1              "),
+                (2, 29, "CC2              "),
+                (3, 15, "CC3              ")
+               ));
+
+      Default_Bass_Track : constant Track_Rec :=
+        (Default_Track with delta Engine => 7,
+         Offset => -2,
+         FX => Reverb,
+         CC => ((0, 63, "CC0              "),
+                (1, 63, "CC1              "),
+                (2, 10, "CC2              "),
+                (3, 63, "CC3              ")
+               ));
+
+      Default_Lead_Track : constant Track_Rec :=
+        (Default_Track with delta Engine => 0,
+         FX => Reverb,
+         CC => ((0, 60, "CC0              "),
+                (1, 40, "CC1              "),
+                (2, 10, "CC2              "),
+                (3, 60, "CC3              ")
+               ));
+
+      Default_Sample1_Track : constant Track_Rec :=
+        (Default_Track with delta CC => ((0, 0, "CC0              "),
+                                         (1, 0, "CC1              "),
+                                         (2, 0, "CC2              "),
+                                         (3, 127, "CC3              ")
+                                        ));
+
+      Default_Sample2_Track : constant Track_Rec :=
+        (Default_Track with delta CC => ((0, 4, "CC0              "),
+                                         (1, 0, "CC1              "),
+                                         (2, 0, "CC2              "),
+                                         (3, 127, "CC3              ")
+                                        ));
+
+      Default_Speech_Track : constant Track_Rec :=
+        (Default_Track with delta CC => ((0, 63, "CC0              "),
+                                         (1, 63, "CC1              "),
+                                         (2, 63, "CC2              "),
+                                         (3, 63, "CC3              ")
+                                        ));
+
+      Default_Chord_Track : constant Track_Rec :=
+        (Default_Track with delta CC => ((0, 0, "CC0              "),
+                                         (1, 10, "CC1              "),
+                                         (2, 10, "CC2              "),
+                                         (3, 63, "CC3              ")
+                                        ));
+
+      Default_Bitcrush_Track : constant Track_Rec :=
+        (Default_Track with delta CC => ((0, 63, "CC0              "),
+                                         (1, 103, "CC1              "),
+                                         (2, 63, "CC2              "),
+                                         (3, 119, "CC3              ")
+                                        ));
+
+   begin
+      Tracks (Kick_Track)     := Default_Kick_Track;
+      Tracks (Snare_Track)    := Default_Snare_Track;
+      Tracks (Cymbal_Track)   := Default_Cymbal_Track;
+      Tracks (Bass_Track)     := Default_Bass_Track;
+      Tracks (Lead_Track)     := Default_Lead_Track;
+      Tracks (Chord_Track)    := Default_Chord_Track;
+      Tracks (Sample1_Track)  := Default_Sample1_Track;
+      Tracks (Sample2_Track)  := Default_Sample2_Track;
+      Tracks (9)              := Default_Track;
+      Tracks (10)             := Default_Track;
+      Tracks (Bitcrush_Track) := Default_Bitcrush_Track;
+      Tracks (12)             := Default_Track;
+      Tracks (13)             := Default_Track;
+      Tracks (14)             := Default_Track;
+      Tracks (15)             := Default_Track;
+      Tracks (16)             := Default_Track;
+   end Set_Track_Defaults;
+
+begin
+   Set_Track_Defaults (G_Project.Tracks);
 end WNM.Project;

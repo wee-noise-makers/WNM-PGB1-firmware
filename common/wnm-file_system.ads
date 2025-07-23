@@ -123,4 +123,10 @@ package WNM.File_System is
                                                   Read,
                                                   Read);
 
+   File_Sector_Buffer  : WNM_HAL.Storage_Sector_Data
+     with Alignment => 2;
+   --  This buffer is kept public so we can use it for writing flash sectors
+   --  in other parts of the code. Of course it should not be used while a
+   --  file is open...
+
 end WNM.File_System;

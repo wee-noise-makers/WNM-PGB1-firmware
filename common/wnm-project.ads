@@ -855,95 +855,7 @@ private
       Notes_Per_Chord => Chord_Settings.Chord_Index_Range'Last
      );
 
-   Default_Kick_Track : constant Track_Rec :=
-     (Default_Track with delta Offset => -4,
-                               CC => ((0, 63, "CC0              "),
-                                      (1, 63, "CC1              "),
-                                      (2, 63, "CC2              "),
-                                      (3, 63, "CC3              ")
-                                     ));
-
-   Default_Snare_Track : constant Track_Rec :=
-     (Default_Track with delta Offset => -1,
-                               CC => ((0, 63, "CC0              "),
-                                      (1, 63, "CC1              "),
-                                      (2, 63, "CC2              "),
-                                      (3, 63, "CC3              ")
-                                     ));
-
-   Default_Cymbal_Track : constant Track_Rec :=
-     (Default_Track with delta Engine => 1,
-                               CC => ((0, 127, "CC0              "),
-                                      (1, 100, "CC1              "),
-                                      (2, 29, "CC2              "),
-                                      (3, 15, "CC3              ")
-                                     ));
-
-   Default_Bass_Track : constant Track_Rec :=
-     (Default_Track with delta Engine => 7,
-                               Offset => -2,
-                               FX => Reverb,
-                               CC => ((0, 63, "CC0              "),
-                                      (1, 63, "CC1              "),
-                                      (2, 10, "CC2              "),
-                                      (3, 63, "CC3              ")
-                                     ));
-
-   Default_Lead_Track : constant Track_Rec :=
-     (Default_Track with delta Engine => 0,
-                               FX => Reverb,
-                               CC => ((0, 60, "CC0              "),
-                                      (1, 40, "CC1              "),
-                                      (2, 10, "CC2              "),
-                                      (3, 60, "CC3              ")
-                                     ));
-
-   Default_Sample1_Track : constant Track_Rec :=
-     (Default_Track with delta CC => ((0, 0, "CC0              "),
-                                      (1, 0, "CC1              "),
-                                      (2, 0, "CC2              "),
-                                      (3, 127, "CC3              ")
-                                     ));
-
-   Default_Sample2_Track : constant Track_Rec :=
-     (Default_Track with delta CC => ((0, 4, "CC0              "),
-                                      (1, 0, "CC1              "),
-                                      (2, 0, "CC2              "),
-                                      (3, 127, "CC3              ")
-                                     ));
-
-   Default_Speech_Track : constant Track_Rec :=
-     (Default_Track with delta CC => ((0, 63, "CC0              "),
-                                      (1, 63, "CC1              "),
-                                      (2, 63, "CC2              "),
-                                      (3, 63, "CC3              ")
-                                     ));
-
-   Default_Chord_Track : constant Track_Rec :=
-     (Default_Track with delta CC => ((0, 0, "CC0              "),
-                                      (1, 10, "CC1              "),
-                                      (2, 10, "CC2              "),
-                                      (3, 63, "CC3              ")
-                                     ));
-
-   Default_Bitcrush_Track : constant Track_Rec :=
-     (Default_Track with delta CC => ((0, 63, "CC0              "),
-                                      (1, 103, "CC1              "),
-                                      (2, 63, "CC2              "),
-                                      (3, 119, "CC3              ")
-                                     ));
-
-   Tracks_Defaults : constant Track_Arr :=
-     (Kick_Track     => Default_Kick_Track,
-      Snare_Track    => Default_Snare_Track,
-      Cymbal_Track   => Default_Cymbal_Track,
-      Bass_Track     => Default_Bass_Track,
-      Lead_Track     => Default_Lead_Track,
-      Sample1_Track  => Default_Sample1_Track,
-      Sample2_Track  => Default_Sample2_Track,
-      Chord_Track    => Default_Chord_Track,
-      Bitcrush_Track => Default_Bitcrush_Track,
-      others         => Default_Track);
+   procedure Set_Track_Defaults (Tracks : out Track_Arr);
 
    type Chord_Rec is record
       Tonic : MIDI.MIDI_Key := MIDI.C4;
@@ -988,7 +900,7 @@ private
    type Project_Rec is record
       BPM : Beat_Per_Minute := BPM_Default;
 
-      Tracks : Track_Arr := Tracks_Defaults;
+      Tracks : Track_Arr;
 
       Patterns : All_Pattern_Arr := (others => (others => Default_Pattern));
 

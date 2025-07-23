@@ -19,6 +19,8 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with Interfaces;
+
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
 with WNM.GUI.Popup;
 with WNM.GUI.Menu.Text_Dialog;
@@ -27,16 +29,18 @@ with WNM.Utils;
 
 package body WNM.GUI.Menu.Track_Settings is
 
+   use type Interfaces.Integer_8;
+
    Track_Settings_Singleton : aliased Track_Settings_Menu;
 
    Valid_Top_Settings : array (Track_Mode_Kind, Top_Settings) of
      Boolean := (others => (others => False));
 
-   Top_Settings_Count_Cache : array (Track_Mode_Kind) of Natural :=
-     (others => 0);
+   Top_Settings_Count_Cache : array (Track_Mode_Kind) of
+     Interfaces.Integer_8 := (others => 0);
 
    Top_Settings_Position_Cache : array (Track_Mode_Kind, Top_Settings) of
-     Integer := (others => (others => -1));
+     Interfaces.Integer_8 := (others => (others => -1));
 
    ------------
    -- To_Top --
@@ -91,10 +95,11 @@ package body WNM.GUI.Menu.Track_Settings is
    -- Top_Settings_Count --
    ------------------------
 
-   function Top_Settings_Count (M : Project.Track_Mode_Kind) return Positive is
+   function Top_Settings_Count (M : Project.Track_Mode_Kind) return Positive
+   is
    begin
       --  Computed at elaboration
-      return Top_Settings_Count_Cache (M);
+      return Positive (Top_Settings_Count_Cache (M));
    end Top_Settings_Count;
 
    --------------------------
@@ -107,7 +112,7 @@ package body WNM.GUI.Menu.Track_Settings is
    is
    begin
       --  Computed at elaboration
-      return Top_Settings_Position_Cache (M, S);
+      return Natural (Top_Settings_Position_Cache (M, S));
    end Top_Setting_Position;
 
    ------------------------
@@ -504,7 +509,7 @@ begin
       --  result for futre calls.
 
       declare
-         Cnt : Natural := 0;
+         Cnt : Interfaces.Integer_8 := 0;
       begin
          for Top in Top_Settings loop
             if Valid_Top_Settings (Mode, Top) then

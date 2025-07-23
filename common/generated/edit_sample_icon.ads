@@ -3,7 +3,7 @@ with WNM.Screen;
 package edit_sample_icon is
    pragma Style_Checks (Off);
 
-   Data : WNM.Screen.Bitmap := (W => 29, H => 32, Length_Byte => 116,
+   Data : constant WNM.Screen.Bitmap := (W => 29, H => 32, Length_Byte => 116,
 Data => (
  255, 255, 1, 224, 255, 127, 0, 12, 0, 27, 128, 1, 96, 6, 48, 0, 140, 1, 6, 128, 97, 192, 0, 48, 24,
  24, 0, 6, 6, 3, 192, 128, 97, 0, 24, 96, 12, 0, 255, 143, 1, 224, 255, 49, 0, 0, 48, 6, 0, 0,

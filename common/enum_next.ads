@@ -31,7 +31,7 @@ package Enum_Next is
       Max : T := T'Last;
    end record;
 
-   Default_Limits : constant Limits := (others => <>);
+   Default_Limits : constant Limits := (T'First, T'Last);
 
    function Next (Elt : T; Lim : Limits := Default_Limits) return T
      with Inline_Always;

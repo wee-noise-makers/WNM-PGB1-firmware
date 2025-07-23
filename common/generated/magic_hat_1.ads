@@ -3,7 +3,7 @@ with WNM.Screen;
 package magic_hat_1 is
    pragma Style_Checks (Off);
 
-   Data : WNM.Screen.Bitmap := (W => 25, H => 25, Length_Byte => 79,
+   Data : constant WNM.Screen.Bitmap := (W => 25, H => 25, Length_Byte => 79,
 Data => (
  255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
  3, 0, 128, 191, 255, 239, 127, 0, 192, 255, 0, 128, 255, 1, 0, 255, 251, 255, 254, 247, 255, 253, 239, 255, 251,

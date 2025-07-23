@@ -11,11 +11,8 @@ with WNM_Configuration;
 
 package body WNM.File_System is
 
-   File_Buffer : Storage_Array
-     (1 .. WNM_Configuration.Storage.Sector_Byte_Size);
-
    File_Conf : aliased constant Littlefs.lfs_file_config :=
-     (Buffer => File_Buffer'Address,
+     (Buffer => File_Sector_Buffer'Address,
       others => <>);
 
    FS : aliased Littlefs.LFS_T;
