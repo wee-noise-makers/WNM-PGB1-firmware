@@ -61,6 +61,9 @@ package WNM.GUI.Menu.Drawing is
    procedure Draw_Lines_Center (Y   : Integer;
                                 Str : String);
 
+   procedure Draw_Fit_Screen (X, Y : Integer;
+                              Str  : String);
+
    procedure Draw_Menu_Box (Title : String;
                             Count : Natural;
                             Index : Natural)

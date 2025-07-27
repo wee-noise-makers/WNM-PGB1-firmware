@@ -143,6 +143,50 @@ package body WNM.GUI.Menu.Drawing is
       end loop;
    end Draw_Lines_Center;
 
+   ---------------------
+   -- Draw_Fit_Screen --
+   ---------------------
+
+   procedure Draw_Fit_Screen (X, Y : Integer;
+                              Str  : String)
+   is
+      First : Integer := Str'First;
+      Last : Integer;
+      PY : Integer := Y;
+
+      Max_Columns : constant Natural := (Screen_Width - X - 3) / Font_Width;
+
+   begin
+      if Str'Length <= Max_Columns then
+         Draw_Str (X, Y, Str);
+         return;
+      end if;
+
+      loop
+         Last := Integer'Min (Str'Last, First + Max_Columns - 1);
+
+         declare
+            Split : Natural := Last;
+         begin
+            --  Find a good split point
+            while Split > First and then Str (Split) /= ' ' loop
+               Split := Split - 1;
+            end loop;
+
+            if Split /= First then
+               Last := Split;
+            end if;
+            Draw_Str (X, PY, Str (First .. Last));
+         end;
+
+         PY := @ + Bitmap_Fonts.Height + 1;
+         First := Last + 1;
+         Last := First;
+
+         exit when First > Str'Last;
+      end loop;
+   end Draw_Fit_Screen;
+
    -------------------
    -- Draw_Menu_Box --
    -------------------

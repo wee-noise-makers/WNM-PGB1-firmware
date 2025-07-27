@@ -262,7 +262,9 @@ package body WNM.GUI.Menu.Track_Settings is
 
          when Engine =>
             Draw_Title ("Synth Engine:", "");
-            Draw_Value (Project.Selected_Engine_Img (Editing_Track));
+            Draw_Fit_Screen (Box_Left + 8,
+                             Value_Text_Y - Font_Height - 1,
+                             Project.Selected_Engine_Img (Editing_Track));
 
          when LFO =>
 
