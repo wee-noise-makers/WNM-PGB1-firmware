@@ -9,7 +9,7 @@ maintainers-logins = ["Fabien-Chouteau"]
 executables = ["wnm_pgb1_device"]
 
 [[depends-on]]
-tresses = "~1.0.0"
+tresses = "~2.0.0"
 littlefs = "~1.0.0"
 flux = "~1.0.0"
 noise_nugget_sdk = "*"

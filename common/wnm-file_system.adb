@@ -174,7 +174,7 @@ package body WNM.File_System is
    -- Open_Write --
    ----------------
 
-   function Open_Write (Path : String) return Open_Read_Result is
+   function Open_Write (Path : String) return Open_Write_Result is
    begin
       if Status /= Closed then
          return Already_Open;

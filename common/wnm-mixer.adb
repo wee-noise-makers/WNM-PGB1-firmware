@@ -19,6 +19,9 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+--  with ASFML_Sim;
+--  with Interfaces;
+
 with System.Storage_Elements;
 with Tresses.DSP;
 with HAL; use HAL;
@@ -30,6 +33,8 @@ with WNM.Persistent;
 with WNM.Sample_Recording;
 with WNM.Audio_Routing;
 with WNM.Utils;
+with WNM.Short_Term_Sequencer;
+with WNM.Shared_Buffers;
 with BBqueue;
 
 package body WNM.Mixer is
@@ -246,11 +251,16 @@ package body WNM.Mixer is
             if Sample_Rec_State = Rec then
                declare
                   Mono : WNM_HAL.Mono_Buffer;
+                  --  use Interfaces;
                begin
                   for Index in Output'Range loop
                      Mono (Index) :=
                        S16 ((S32 (Input.L (Bypass)(Index)) +
                                 S32 (Input.R (Bypass)(Index))) / 2);
+
+                     --  if ASFML_Sim.Put_Some_Noise then
+                     --     Mono (Index) := S16 (Random) * 150;
+                     --  end if;
                   end loop;
                   WNM.Sample_Recording.Record_Buffer (Mono);
                end;
@@ -441,10 +451,14 @@ package body WNM.Mixer is
    begin
       if Mode = None and then Sample_Rec_State /= None then
          WNM.Audio_Routing.Leave_Sampling;
+         WNM.Shared_Buffers.Clear_Synth_Buffers;
          WNM.Sample_Recording.Reset;
+         WNM.Short_Term_Sequencer.Restart;
 
       elsif Mode /= None and then Sample_Rec_State = None then
+         WNM.Short_Term_Sequencer.Halt;
          WNM.Audio_Routing.Enter_Sampling;
+
       end if;
 
       Sample_Rec_State := Mode;

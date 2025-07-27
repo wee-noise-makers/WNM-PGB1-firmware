@@ -2431,13 +2431,6 @@ package body WNM.Project is
                                          (3, 127, "CC3              ")
                                         ));
 
-      Default_Speech_Track : constant Track_Rec :=
-        (Default_Track with delta CC => ((0, 63, "CC0              "),
-                                         (1, 63, "CC1              "),
-                                         (2, 63, "CC2              "),
-                                         (3, 63, "CC3              ")
-                                        ));
-
       Default_Chord_Track : constant Track_Rec :=
         (Default_Track with delta CC => ((0, 0, "CC0              "),
                                          (1, 10, "CC1              "),

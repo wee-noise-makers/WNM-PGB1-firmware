@@ -17,7 +17,7 @@ rtmidi = "~0.1.0"
 fsmaker = "~0.0.0"
 flux = "~1.0.0"
 stopwatch = "~0.1.0"
-tresses = "~1.0.0"
+tresses = "~2.0.0"
 uf2_utils = "*"
 midi = "^1.0.0"
 

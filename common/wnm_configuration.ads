@@ -93,10 +93,8 @@ package WNM_Configuration is
         ((Code_Sectors + Sample_Library_Sectors + FS_Sectors) /= Total_Sectors,
          "Invalid number of used sectors");
 
-      Sectors_Per_Sample       : constant := Sample_Library_Sectors / Nbr_Samples;
-      Single_Sample_Byte_Size  : constant := Sample_Library_Byte_Size / Nbr_Samples;
-      Single_Sample_Point_Cnt  : constant := Single_Sample_Byte_Size / 2;
-      Sample_Name_Length       : constant := 14;
+      Sectors_Per_Sample : constant := Sample_Library_Sectors / Nbr_Samples;
+      Sample_Name_Length : constant := 14;
 
    end Storage;
 

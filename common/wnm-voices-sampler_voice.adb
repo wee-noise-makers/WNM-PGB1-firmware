@@ -517,11 +517,9 @@ package body WNM.Voices.Sampler_Voice is
                       (This.Phase, Phase_Frac_Bits - 15) and 16#7FFF#);
 
                A : constant S32 :=
-                 S32 (Sample_Recording.Get_Point (This.Cache,
-                      Sample_Point_Index (P)));
+                 S32 (Sample_Recording.Get_Point (Sample_Point_Index (P)));
                B : constant S32 :=
-                 S32 (Sample_Recording.Get_Point (This.Cache,
-                      Sample_Point_Index (P) + 1));
+                 S32 (Sample_Recording.Get_Point (Sample_Point_Index (P) + 1));
             begin
                Sample_Point := A + ((B - A) * V) / 2**15;
             end;

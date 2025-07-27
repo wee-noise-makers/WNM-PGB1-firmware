@@ -23,12 +23,21 @@ with HAL; use HAL;
 with WNM.Coproc;
 with WNM.Note_Off_Sequencer;
 
+with WNM.Shared_Buffers;
+
 package body WNM.Short_Term_Sequencer is
 
    type Any_Node_Index is range 0 .. MAX_EVENT_NUMBER;
    subtype Node_Index is Any_Node_Index range 1 .. Any_Node_Index'Last;
 
-   Nodes : array (Node_Index) of aliased Event;
+   Nodes : array (Node_Index) of aliased Event
+     with Import, Address => Shared_Buffers.Shared_Buffer
+            (Shared_Buffers.Short_Term_Offset)'Address;
+
+   pragma Compile_Time_Error
+     (Nodes'Size > Shared_Buffers.Short_Term_Byte_Size * 8,
+      "Invalid shared buffer size");
+
    Allocator : array (Node_Index) of Event_Access := (others => null);
    Alloc_Head : Node_Index := Node_Index'First;
    Alloc_Tail : Node_Index := Node_Index'First;
@@ -36,6 +45,8 @@ package body WNM.Short_Term_Sequencer is
 
    List_Head : Event_Access := null;
    Last_Insert : Event_Access := null;
+
+   Running : Boolean := True with Volatile;
 
    function Alloc return Event_Access;
    procedure Free (Ptr : in out Event_Access);
@@ -61,6 +72,12 @@ package body WNM.Short_Term_Sequencer is
          end if;
 
          Alloc_Full := Alloc_Head = Alloc_Tail;
+
+         --  Make sure the next pointer is null because we could be restating
+         --  from sample recording session in which case the node data in
+         --  shared buffer could invalid.
+         Ret.Next := null;
+
          return Ret;
       end if;
    end Alloc;
@@ -145,69 +162,30 @@ package body WNM.Short_Term_Sequencer is
                       Key      : MIDI.MIDI_Key;
                       Velocity : MIDI.MIDI_Data;
                       Duration : Time.Time_Microseconds)
-     is
-      Node : constant Event_Access := Alloc;
+   is
    begin
-      if Node = null then
-         --  This event is discarded...
+      if not Running then
          return;
       end if;
 
-      Node.D.Target := Target;
-      Node.D.Chan := Chan;
-      Node.D.Key := Key;
-      Node.D.Velocity := Velocity;
-      Node.D.Duration := Duration;
-      Node.Expiration := Start;
+      declare
+         Node : constant Event_Access := Alloc;
+      begin
+         if Node = null then
+            --  This event is discarded...
+            return;
+         end if;
 
-      Insert (Node);
+         Node.D.Target := Target;
+         Node.D.Chan := Chan;
+         Node.D.Key := Key;
+         Node.D.Velocity := Velocity;
+         Node.D.Duration := Duration;
+         Node.Expiration := Start;
+
+         Insert (Node);
+      end;
    end Play_At;
-
-   --  ----------
-   --  -- Push --
-   --  ----------
-   --
-   --  procedure Push (D : Event_Data; Expiration : Expiration_Time) is
-   --     Node : constant Event_Access := Alloc;
-   --  begin
-   --     if Node = null then
-   --        --  This event is discarded...
-   --        return;
-   --     end if;
-   --
-   --     Node.D := D;
-   --     Node.Expiration := Expiration;
-   --
-   --     Insert (Node);
-   --  end Push;
-   --
-   --  ---------
-   --  -- Pop --
-   --  ---------
-   --
-   --  procedure Pop (Now     :     Expiration_Time;
-   --                 D       : out Event_Data;
-   --                 Success : out Boolean)
-   --  is
-   --     Node : Event_Access;
-   --  begin
-   --     if List_Head /= null and then List_Head.Expiration <= Now then
-   --        Node := List_Head;
-   --
-   --        if Last_Insert = Node then
-   --           Last_Insert := null;
-   --        end if;
-   --
-   --        List_Head := Node.Next;
-   --
-   --        D := Node.D;
-   --        Success := True;
-   --
-   --        Free (Node);
-   --     else
-   --        Success := False;
-   --     end if;
-   --  end Pop;
 
    ------------
    -- Update --
@@ -216,6 +194,9 @@ package body WNM.Short_Term_Sequencer is
    procedure Update (Now : Time.Time_Microseconds) is
       Node : Event_Access;
    begin
+      if not Running then
+         return;
+      end if;
 
       while List_Head /= null and then List_Head.Expiration <= Now loop
          Node := List_Head;
@@ -261,8 +242,35 @@ package body WNM.Short_Term_Sequencer is
    --     Ada.Text_IO.Put_Line ("---------------------------");
    --  end Print_Queue;
 
+   ----------
+   -- Halt --
+   ----------
+
+   procedure Halt is
+   begin
+      Running := False;
+   end Halt;
+
+   -------------
+   -- Restart --
+   -------------
+
+   procedure Restart is
+   begin
+      for Index in Node_Index loop
+         Allocator (Index) := Nodes (Index)'Access;
+      end loop;
+
+      Alloc_Head := Node_Index'First;
+      Alloc_Tail := Node_Index'First;
+      Alloc_Full := False;
+
+      List_Head := null;
+      Last_Insert := null;
+
+      Running := True;
+   end Restart;
+
 begin
-   for Index in Node_Index loop
-      Allocator (Index) := Nodes (Index)'Access;
-   end loop;
+   Restart;
 end WNM.Short_Term_Sequencer;

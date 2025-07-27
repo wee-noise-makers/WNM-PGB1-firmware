@@ -634,6 +634,7 @@ package WNM.Project is
 
    procedure Step_Fill_Toogle;
    function Step_Fill return Boolean;
+
 private
 
    type Global_Settings is (BPM);
@@ -741,7 +742,8 @@ private
       Velo      : MIDI.MIDI_Data;
       CC_Ena    : CC_Ena_Array;
       CC_Val    : CC_Val_Array;
-   end record;
+   end record
+     with Pack;
 
    Default_Step : constant Step_Rec :=
      (Trig => None,

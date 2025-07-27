@@ -20,21 +20,9 @@
 -------------------------------------------------------------------------------
 
 with WNM.Sample_Library; use WNM.Sample_Library;
-with WNM.QOA;
-with WNM.Shared_Buffers;
 with Tresses;
 
 package WNM.Sample_Recording is
-
-   Sample_Rec_QOA_Buffer : QOA.QOA_Sample
-     with Address => WNM.Shared_Buffers.Shared_Buffer'Address;
-
-   --  The QOA sample buffer and reverb buffer are mapped on the same memory
-   --  area to save space. These two features are not used together. Make sure
-   --  there's enough room for the QOA sample.
-   pragma Compile_Time_Error
-     (WNM.Shared_Buffers.Shared_Butffer_Bit_Size < WNM.QOA.Sample_Bit_Size,
-      "Shared buffer too small");
 
    procedure Reset;
    procedure Init_From_Sample (Id : Sample_Index);
@@ -65,8 +53,7 @@ package WNM.Sample_Recording is
    procedure Move_Start_Point (Count : Integer);
    procedure Move_End_Point (Count : Integer);
 
-   function Get_Point (Cache : in out QOA.Decoder_Cache;
-                       Index :        Sample_Point_Index)
+   function Get_Point (Index : Sample_Point_Index)
                        return Tresses.S16
      with Inline_Always;
 

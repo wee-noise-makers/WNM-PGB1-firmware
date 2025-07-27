@@ -21,6 +21,10 @@
 
 package body WNM.Voices.Reverb_Voice is
 
+   ------------
+   -- Render --
+   ------------
+
    procedure Render (This   : in out Instance;
                      Left   : in out Tresses.Mono_Buffer;
                      Right  : in out Tresses.Mono_Buffer)

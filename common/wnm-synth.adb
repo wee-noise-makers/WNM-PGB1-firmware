@@ -37,16 +37,34 @@ with Tresses.Interfaces;
 with WNM.Generic_Queue;
 with WNM.Utils;
 
+with WNM.Shared_Buffers;
+
 package body WNM.Synth is
 
    TK          : aliased WNM.Voices.Kick_Voice.Instance;
    TS          : aliased WNM.Voices.Snare_Voice.Instance;
    HH          : aliased WNM.Voices.Hihat_Voice.Instance;
-   Lead        : aliased Tresses.Voices.Macro.Instance;
-   Bass        : aliased Tresses.Voices.Macro.Instance;
    Chord       : aliased WNM.Voices.Chord_Voice.Instance;
    Sampler1    : aliased WNM.Voices.Sampler_Voice.Instance;
    Sampler2    : aliased WNM.Voices.Sampler_Voice.Instance;
+
+   Lead_B     : aliased Tresses.Voices.Macro.Macro_Buffers
+     with Import, Address => Shared_Buffers.Shared_Buffer
+       (Shared_Buffers.Lead_Synth_Offset)'Address;
+   Bass_B     : aliased Tresses.Voices.Macro.Macro_Buffers
+     with Import, Address => Shared_Buffers.Shared_Buffer
+       (Shared_Buffers.Bass_Synth_Offset)'Address;
+
+   Lead : aliased Tresses.Voices.Macro.Instance (Lead_B'Access);
+   Bass : aliased Tresses.Voices.Macro.Instance (Bass_B'Access);
+
+   pragma Compile_Time_Error
+     (Lead'Size > Shared_Buffers.Lead_Synth_Byte_Size * 8,
+      "Invalid shared buffer size for Lead synth");
+
+   pragma Compile_Time_Error
+     (Bass'Size > Shared_Buffers.Bass_Synth_Byte_Size * 8,
+      "Invalid shared buffer size for bass synth");
 
    Sample_Rec_Playback :
    WNM.Voices.Sampler_Voice.Sample_Rec_Playback_Instance;

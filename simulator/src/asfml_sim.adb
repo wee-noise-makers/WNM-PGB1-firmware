@@ -234,6 +234,10 @@ package body ASFML_Sim is
                         SFML_Pressed (K) := Event.eventType = sfEvtKeyPressed;
                      end if;
                   end loop;
+
+                  if Event.key.code = sfKeyN then
+                     Put_Some_Noise := not Put_Some_Noise;
+                  end if;
                end if;
 
                if Event.eventType = sfEvtMouseMoved then

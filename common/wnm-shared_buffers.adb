@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2021 Fabien Chouteau                    --
+--                  Copyright (C) 2024-2025 Fabien Chouteau                  --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,52 +19,28 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with MIDI;
-with WNM.Time;
+package body WNM.Shared_Buffers is
 
-package WNM.Short_Term_Sequencer is
+   -------------------------
+   -- Clear_Synth_Buffers --
+   -------------------------
 
-   type Event_Data is record
-      Target   : MIDI_Target := External;
-      Chan     : MIDI.MIDI_Channel;
-      Key      : MIDI.MIDI_Key;
-      Velocity : MIDI.MIDI_Data;
-      Duration : Time.Time_Microseconds;
-   end record;
+   procedure Clear_Synth_Buffers is
+      subtype Lead_Range
+        is Natural range
+          Lead_Synth_Offset .. Lead_Synth_Offset + Lead_Synth_Byte_Size - 1;
 
-   procedure Play_At (Start    : Time.Time_Microseconds;
-                      Target   : MIDI_Target;
-                      Chan     : MIDI.MIDI_Channel;
-                      Key      : MIDI.MIDI_Key;
-                      Velocity : MIDI.MIDI_Data;
-                      Duration : Time.Time_Microseconds);
+      subtype Bass_Range
+        is Natural range
+          Bass_Synth_Offset .. Bass_Synth_Offset + Bass_Synth_Byte_Size - 1;
 
-   procedure Update (Now : Time.Time_Microseconds);
+      subtype Reverb_Range
+        is Natural range
+          Reverb_Offset .. Reverb_Offset + Reverb_Byte_Size - 1;
+   begin
+      Shared_Buffer (Lead_Range) := (others => 0);
+      Shared_Buffer (Bass_Range) := (others => 0);
+      Shared_Buffer (Reverb_Range) := (others => 0);
+   end Clear_Synth_Buffers;
 
-   procedure Halt;
-   --  Halt the short term sequencer and make sure the shared buffer data is
-   --  not used.
-
-   procedure Restart;
-   --  Restart the short term sequencer and reclain shared bufffer data
-
-private
-
-   Max_Number_Of_Tracks  : constant := 10;
-   Max_Number_Of_Repeats : constant := 8;
-   Max_Number_Of_Notes   : constant := 4;
-
-   MAX_EVENT_NUMBER : constant :=
-     Max_Number_Of_Tracks * Max_Number_Of_Repeats * Max_Number_Of_Notes * 2;
-
-   type Event;
-
-   type Event_Access is access all Event;
-
-   type Event is record
-      D : Event_Data;
-      Expiration : Time.Time_Microseconds;
-      Next : Event_Access;
-   end record;
-
-end WNM.Short_Term_Sequencer;
+end WNM.Shared_Buffers;

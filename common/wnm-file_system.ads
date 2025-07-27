@@ -24,7 +24,7 @@ package WNM.File_System is
    function Open_Read (Path : String) return Open_Read_Result
      with Post => (if Open_Read'Result = Ok then Status = Read_Only);
 
-   function Open_Write (Path : String) return Open_Read_Result
+   function Open_Write (Path : String) return Open_Write_Result
      with Post => (if Open_Write'Result = Ok then Status = Write_Only);
 
    procedure Close

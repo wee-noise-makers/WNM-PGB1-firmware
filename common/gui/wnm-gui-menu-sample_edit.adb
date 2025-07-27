@@ -179,6 +179,7 @@ package body WNM.GUI.Menu.Sample_Edit is
 
             if Exit_Value = Success then
                New_State := Record_Sample;
+               WNM.Sample_Recording.Reset;
             else
                Mixer.Enter_Sample_Rec_Mode (Mixer.None);
                New_State := Select_Mode;
@@ -212,6 +213,7 @@ package body WNM.GUI.Menu.Sample_Edit is
                case This.Mode is
                   when New_Sample =>
                      New_State := Record_Sample;
+                     WNM.Sample_Recording.Reset;
                   when Edit_Sample =>
                      New_State := Select_Sample;
                end case;

@@ -1,4 +1,3 @@
-with Ada.Synchronous_Task_Control;
 with GNAT.Bounded_Buffers;
 with System;
 
@@ -16,6 +15,8 @@ with Stopwatch;
 with Enum_Next;
 
 package ASFML_Sim is
+
+   Put_Some_Noise : Boolean := False with Atomic, Volatile;
 
    procedure Start;
 
