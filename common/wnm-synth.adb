@@ -41,6 +41,8 @@ with WNM.Shared_Buffers;
 
 package body WNM.Synth is
 
+   use type MIDI.MIDI_UInt8;
+
    TK          : aliased WNM.Voices.Kick_Voice.Instance;
    TS          : aliased WNM.Voices.Snare_Voice.Instance;
    HH          : aliased WNM.Voices.Hihat_Voice.Instance;
@@ -74,7 +76,7 @@ package body WNM.Synth is
    subtype Voice_Class is Tresses.Interfaces.Four_Params_Voice'Class;
    type Voice_Access is access all Voice_Class;
 
-   subtype Lead_Engine_Range is MIDI.MIDI_Data range 0 .. 22;
+   subtype Lead_Engine_Range is MIDI.MIDI_Data range 0 .. 27;
    function Lead_Engines (V : MIDI.MIDI_Data) return Tresses.Synth_Engines
    is (case V is
           when 0  => Tresses.Voice_Saw_Swarm,
@@ -99,8 +101,14 @@ package body WNM.Synth is
           when 19 => Tresses.Voice_Chip_Echo_Square,
           when 20 => Tresses.Voice_Chip_Echo_Square_Saw,
           when 21 => Tresses.Voice_Chip_Bass,
-          when Lead_Engine_Range'Last .. MIDI.MIDI_Data'Last
-                  => Tresses.Voice_PDR_Square_Full_Sine);
+          when 22 => Tresses.Voice_PDR_Square_Full_Sine,
+          when 23 => Tresses.Voice_Triangle_Phaser,
+          when 24 => Tresses.Voice_Sine_Phaser,
+          when 25 => Tresses.Voice_Sine_Pluck,
+          when 26 => Tresses.Voice_Triangle_Pluck,
+          when 27 => Tresses.Voice_Chip_Pluck,
+          when Lead_Engine_Range'Last + 1 .. MIDI.MIDI_Data'Last
+                  => Tresses.Synth_Engines'Last);
 
    subtype Kick_Engine_Range is MIDI.MIDI_Data range 0 .. 2;
    function Kick_Engines (V : MIDI.MIDI_Data)

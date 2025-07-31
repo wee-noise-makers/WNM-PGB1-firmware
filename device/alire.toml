@@ -17,6 +17,7 @@ midi = "~1.0.0"
 
 [[pins]]
 noise_nugget_sdk = { url = 'https://github.com/wee-noise-makers/noise-nugget-ada-sdk', commit = "631ca2ed2d8c3fa66320a72daf8b4032c61cf881"}
+tresses =  { url = 'https://github.com/wee-noise-makers/tresses', commit = "b067bc52c98b54d66999962619e04981d325c79f" }
 
 [build-switches]
 "*".ada_version = "ada2022"
