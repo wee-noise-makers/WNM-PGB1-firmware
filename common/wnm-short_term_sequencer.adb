@@ -38,7 +38,14 @@ package body WNM.Short_Term_Sequencer is
      (Nodes'Size > Shared_Buffers.Short_Term_Byte_Size * 8,
       "Invalid shared buffer size");
 
-   Allocator : array (Node_Index) of Event_Access := (others => null);
+   Allocator : array (Node_Index) of Event_Access
+     with Import, Address => Shared_Buffers.Shared_Buffer
+       (Shared_Buffers.Short_Term_Alloc_Offset)'Address;
+
+   pragma Compile_Time_Error
+     (Allocator'Size > Shared_Buffers.Short_Term_Alloc_Byte_Size * 8,
+      "Invalid shared buffer size");
+
    Alloc_Head : Node_Index := Node_Index'First;
    Alloc_Tail : Node_Index := Node_Index'First;
    Alloc_Full : Boolean := False;

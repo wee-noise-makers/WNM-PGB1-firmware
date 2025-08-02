@@ -43,7 +43,11 @@ package WNM.Shared_Buffers is
    Short_Term_Offset : constant := Reverb_Offset + Reverb_Byte_Size;
    Short_Term_Byte_Size : constant := 20_500;
 
-   Top : constant := Reverb_Offset + Reverb_Byte_Size;
+   Short_Term_Alloc_Offset : constant :=
+     Short_Term_Offset + Short_Term_Byte_Size;
+   Short_Term_Alloc_Byte_Size : constant := 2_600;
+
+   Top : constant := Short_Term_Alloc_Offset + Short_Term_Alloc_Byte_Size;
 
    pragma Compile_Time_Error (Top >= Shared_Buffer_Byte_Size,
                               "Invalid layout");

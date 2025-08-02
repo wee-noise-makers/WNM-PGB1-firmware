@@ -611,6 +611,17 @@ package body WNM.Synth is
          end if;
       end Add_Clip;
 
+      ---------
+      -- Mix --
+      ---------
+
+      procedure Mix (Chan : MIDI.MIDI_Channel) is
+         FX : constant FX_Kind := FX_Send (Chan);
+         Volume : constant Audio_Volume := Volume_For_Chan (Chan);
+         Pan : constant Audio_Pan := Pan_For_Chan (Chan);
+      begin
+         WNM_HAL.Mix (Output.L (FX), Output.R (FX), Buffer, Volume, Pan);
+      end Mix;
    begin
       Utils.Start (Overall_Synth_Perf);
 
@@ -671,74 +682,42 @@ package body WNM.Synth is
 
          Start (Synth_Perf (Kick_Channel));
          TK.Render (Buffer);
-         WNM_HAL.Mix (Output.L (FX_Send (Kick_Channel)),
-                      Output.R (FX_Send (Kick_Channel)),
-                      Input => Buffer,
-                      Volume => Volume_For_Chan (Kick_Channel),
-                      Pan => Pan_For_Chan (Kick_Channel));
+         Mix (Kick_Channel);
          Stop (Synth_Perf (Kick_Channel));
 
          Start (Synth_Perf (Snare_Channel));
          TS.Render (Buffer);
-         WNM_HAL.Mix (Output.L (FX_Send (Snare_Channel)),
-                      Output.R (FX_Send (Snare_Channel)),
-                      Input => Buffer,
-                      Volume => Volume_For_Chan (Snare_Channel),
-                      Pan => Pan_For_Chan (Snare_Channel));
+         Mix (Snare_Channel);
          Stop (Synth_Perf (Snare_Channel));
 
          Start (Synth_Perf (Hihat_Channel));
          HH.Render (Buffer);
-         WNM_HAL.Mix (Output.L (FX_Send (Hihat_Channel)),
-                      Output.R (FX_Send (Hihat_Channel)),
-                      Input => Buffer,
-                      Volume => Volume_For_Chan (Hihat_Channel),
-                      Pan => Pan_For_Chan (Hihat_Channel));
+         Mix (Hihat_Channel);
          Stop (Synth_Perf (Hihat_Channel));
 
          Start (Synth_Perf (Lead_Channel));
          Lead.Render (Buffer, Aux_Buffer);
-         WNM_HAL.Mix (Output.L (FX_Send (Lead_Channel)),
-                      Output.R (FX_Send (Lead_Channel)),
-                      Input => Buffer,
-                      Volume => Volume_For_Chan (Lead_Channel),
-                      Pan => Pan_For_Chan (Lead_Channel));
+         Mix (Lead_Channel);
          Stop (Synth_Perf (Lead_Channel));
 
          Start (Synth_Perf (Bass_Channel));
          Bass.Render (Buffer, Aux_Buffer);
-         WNM_HAL.Mix (Output.L (FX_Send (Bass_Channel)),
-                      Output.R (FX_Send (Bass_Channel)),
-                      Input => Buffer,
-                      Volume => Volume_For_Chan (Bass_Channel),
-                      Pan => Pan_For_Chan (Bass_Channel));
+         Mix (Bass_Channel);
          Stop (Synth_Perf (Bass_Channel));
 
          Start (Synth_Perf (Chord_Channel));
          Chord.Render (Buffer);
-         WNM_HAL.Mix (Output.L (FX_Send (Chord_Channel)),
-                      Output.R (FX_Send (Chord_Channel)),
-                      Input => Buffer,
-                      Volume => Volume_For_Chan (Chord_Channel),
-                      Pan => Pan_For_Chan (Chord_Channel));
+         Mix (Chord_Channel);
          Stop (Synth_Perf (Chord_Channel));
 
          Start (Synth_Perf (Sample1_Channel));
          Sampler1.Render (Buffer);
-         WNM_HAL.Mix (Output.L (FX_Send (Sample1_Channel)),
-                      Output.R (FX_Send (Sample1_Channel)),
-                      Input => Buffer,
-                      Volume => Volume_For_Chan (Sample1_Channel),
-                      Pan => Pan_For_Chan (Sample1_Channel));
+         Mix (Sample1_Channel);
          Stop (Synth_Perf (Sample1_Channel));
 
          Start (Synth_Perf (Sample2_Channel));
          Sampler2.Render (Buffer);
-         WNM_HAL.Mix (Output.L (FX_Send (Sample2_Channel)),
-                      Output.R (FX_Send (Sample2_Channel)),
-                      Input => Buffer,
-                      Volume => Volume_For_Chan (Sample2_Channel),
-                      Pan => Pan_For_Chan (Sample2_Channel));
+         Mix (Sample2_Channel);
          Stop (Synth_Perf (Sample2_Channel));
 
          --  Start (Synth_Perf (Speech_Channel));

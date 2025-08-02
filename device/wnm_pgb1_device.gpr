@@ -27,6 +27,26 @@ project Wnm_PGB1_Device is
         Wnm_Pgb1_Device_Config.Ada_Compiler_Switches &
       ("-gnatwJ" -- Suppress warnings on obsolescent features
       );
+
+      --  A very nasty bug appeared around the "Various RAM usage
+      --  optimizations" patch. A click can be heard on the left output only
+      --  (both speakers and headphone mode) at an interval between ~0.5s and
+      --  ~20s. After hours of investigations, I couldn't find the real cause
+      --  for this click. But three things make it disapear:
+      --    - In WNM.Mixer.Mix_Regular, set the output to 0 after the
+      --     bitcrusher effect instead of computing the sum of all FX buffers
+      --    - Set the optimization level to zero for the WNM.Mixer package
+      --    - Overclock the CPU to 250MHz (to be checked again...)
+      --
+      --  My intuition is that an interrupt happening during the mixing
+      --  operation is corrupting the stack, or the registers. But I was
+      --  not able to confirm this. Another possibility is that bad code
+      --  is generated at high optimization level, also not confirmed.
+      --
+      --  The only acceptable solution/workaround available at the moment is
+      --  to disable optimization for the package.
+      for Switches ("wnm-mixer.adb") use
+        Wnm_Pgb1_Device_Config.Ada_Compiler_Switches & ("-O0");
    end Compiler;
 
    package Linker is
@@ -38,6 +58,7 @@ project Wnm_PGB1_Device is
        ,"-Wl,--allow-multiple-definition"
        ,"-lc"
        ,"-Wl,--trace-symbol=__gnat_malloc"
+       ,"-g"
       );
    end Linker;
 
