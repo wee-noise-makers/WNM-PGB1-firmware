@@ -44,7 +44,11 @@ package body WNM.Power_Control is
 
    procedure Power_Down is
    begin
+      WNM_HAL.Set_Input_Volume (0);
+      WNM_HAL.Set_Main_Volume (0);
+
       Save_Before_Shutdown;
+
       WNM_HAL.Power_Down;
    end Power_Down;
 
@@ -54,6 +58,9 @@ package body WNM.Power_Control is
 
    procedure Enter_DFU_Mode is
    begin
+      WNM_HAL.Set_Input_Volume (0);
+      WNM_HAL.Set_Main_Volume (0);
+
       Save_Before_Shutdown;
 
       WNM.GUI.DFU_Mode_Display.Setup;
