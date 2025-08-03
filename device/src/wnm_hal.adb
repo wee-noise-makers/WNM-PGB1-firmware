@@ -444,7 +444,7 @@ package body WNM_HAL is
                                                   Output_Volume);
          when Speakers =>
             Noise_Nugget_SDK.Audio.Set_HP_Volume (0.0, 0.0);
-            Noise_Nugget_SDK.Audio.Enable_Speaker (True, False, Gain => 2);
+            Noise_Nugget_SDK.Audio.Enable_Speaker (True, False, Gain => 1);
             Noise_Nugget_SDK.Audio.Set_Speaker_Volume
               (L2R => 0.0,
                R2R => 0.0,
