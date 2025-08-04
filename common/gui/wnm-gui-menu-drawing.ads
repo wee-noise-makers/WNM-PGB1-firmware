@@ -165,4 +165,6 @@ package WNM.GUI.Menu.Drawing is
 
    procedure Draw_Alt_Slider;
 
+   procedure Draw_Chords_Progress (Center_X, Center_Y : Natural);
+
 end WNM.GUI.Menu.Drawing;

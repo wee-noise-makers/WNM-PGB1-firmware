@@ -23,6 +23,7 @@ with WNM.GUI.Bitmap_Fonts; use WNM.GUI.Bitmap_Fonts;
 
 with WNM.Utils;
 with WNM.Sample_Recording;
+with WNM.Project.Chord_Sequencer;
 
 with lfo_sine;
 with lfo_ramp_up;
@@ -1494,5 +1495,42 @@ package body WNM.GUI.Menu.Drawing is
       end loop;
 
    end Draw_Alt_Slider;
+
+   --------------------------
+   -- Draw_Chords_Progress --
+   --------------------------
+
+   procedure Draw_Chords_Progress (Center_X, Center_Y : Natural) is
+      use type Project.Roll_Kind;
+
+      Len : constant Natural :=
+        Natural (Project.Chord_Sequencer.Chords_In_Progression);
+      Index : constant Natural :=
+        Natural (Project.Chord_Sequencer.Current_Chord_Index) - 1;
+
+      Shadow_Index : constant Natural :=
+        Natural (Project.Chord_Sequencer.Shadow_Chord_Index) - 1;
+
+      Tick_W : constant Natural :=
+        (Screen.Width - 5) / Natural (Project.Chord_Slot_Id'Last);
+
+      Total_Width : constant Natural := Len * Tick_W;
+      Margin : constant Natural := Center_X - (Total_Width / 2) + 1;
+
+      Y : constant Natural := Center_Y - 3;
+   begin
+
+      for Idx in 0 .. Len - 1 loop
+         Screen.Draw_Line ((Margin + (Tick_W * Idx), Y - 2),
+                           (Margin + (Tick_W * (Idx + 1) - 3), Y - 2));
+      end loop;
+      Draw_Str (Margin + (Tick_W * Index), Y, "^");
+
+      if Project.Roll_State /= Project.Off then
+         Screen.Draw_Line
+           ((Margin + (Tick_W * Shadow_Index) + 1, Y - 4),
+            (Margin + (Tick_W * (Shadow_Index + 1) - 3 - 1), Y - 4));
+      end if;
+   end Draw_Chords_Progress;
 
 end WNM.GUI.Menu.Drawing;
