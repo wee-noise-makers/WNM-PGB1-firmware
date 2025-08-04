@@ -12,7 +12,7 @@ executables = ["wnm_pgb1_device"]
 tresses = "~2.0.0"
 littlefs = "~1.0.0"
 flux = "~1.0.0"
-noise_nugget_sdk = "*"
+noise_nugget_sdk = "~2.0.0"
 midi = "~1.0.0"
 
 [[pins]]
