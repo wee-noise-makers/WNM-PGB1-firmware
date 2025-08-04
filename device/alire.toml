@@ -21,6 +21,7 @@ tresses =  { url = 'https://github.com/wee-noise-makers/tresses', commit = "b067
 
 [build-switches]
 "*".ada_version = "ada2022"
+release.runtime_checks = "none"
 
 [configuration.values]
 noise_nugget_sdk.System_Clock = "SYS_133MHz"
