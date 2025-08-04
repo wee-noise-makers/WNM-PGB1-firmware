@@ -66,8 +66,7 @@ package WNM.GUI.Menu.Drawing is
 
    procedure Draw_Menu_Box (Title : String;
                             Count : Natural;
-                            Index : Natural)
-     with Pre => Index in 0 .. Count - 1;
+                            Index : Natural);
 
    procedure Draw_Volume (Title : String;
                           Val : WNM_HAL.Audio_Volume);

@@ -221,7 +221,7 @@ package body WNM.GUI.Menu.Drawing is
       if Count > 0 then
          declare
             Item_width   : constant Natural :=
-              Natural'Min ((Box_Width / (Count + 2)) - 1, 15);
+              Natural'Min ((Box_Width / (Count + 2)) - 2, 15);
             Item_Spacing : constant Natural := Item_width + 2;
             X_Offset : constant Natural :=
               (Screen.Width - Count * Item_Spacing) / 2;
@@ -259,6 +259,13 @@ package body WNM.GUI.Menu.Drawing is
                    Y_Offset => Arrow_Y_Offset,
                    C        => '>');
          end if;
+
+         if Count > 0 and then Index /= 0 then
+            X := 0;
+            Print (X_Offset => X,
+                   Y_Offset => Arrow_Y_Offset,
+                   C        => '<');
+         end if;
       end if;
 
       Screen.Set_Pixel ((Box_Left + 1, Box_Top + 1));
@@ -266,12 +273,6 @@ package body WNM.GUI.Menu.Drawing is
       Screen.Set_Pixel ((Box_Right - 1, Box_Top + 1));
       Screen.Set_Pixel ((Box_Right - 1, Box_Bottom - 1));
 
-      if Count > 0 and then Index /= 0 then
-         X := 0;
-         Print (X_Offset => X,
-                Y_Offset => Arrow_Y_Offset,
-                C        => '<');
-      end if;
    end Draw_Menu_Box;
 
    -----------------
