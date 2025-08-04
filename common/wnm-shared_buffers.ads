@@ -40,12 +40,27 @@ package WNM.Shared_Buffers is
    Reverb_Offset : constant := Bass_Synth_Offset + Bass_Synth_Byte_Size;
    Reverb_Byte_Size : constant := 33_000;
 
+   -- Short term sequencer --
+
+   Max_Number_Of_Tracks  : constant := 10;
+   Max_Number_Of_Repeats : constant := 8;
+   Max_Number_Of_Notes   : constant := 4;
+
+   MAX_EVENT_NUMBER : constant :=
+     Max_Number_Of_Tracks * Max_Number_Of_Repeats * Max_Number_Of_Notes * 2;
+
    Short_Term_Offset : constant := Reverb_Offset + Reverb_Byte_Size;
-   Short_Term_Byte_Size : constant := 20_500;
+   Short_Term_Byte_Size : constant :=
+     ((152 + Standard'Address_Size) / 8) * MAX_EVENT_NUMBER;
+   --  Array of record containing one pointer, therefore it depends on the
+   --  size of pointers for a given target architecture (device vs simualtor).
 
    Short_Term_Alloc_Offset : constant :=
      Short_Term_Offset + Short_Term_Byte_Size;
-   Short_Term_Alloc_Byte_Size : constant := 2_600;
+   Short_Term_Alloc_Byte_Size : constant :=
+     (Standard'Address_Size / 8) * MAX_EVENT_NUMBER;
+   --  This is the size of an array of pointers, therefore it depends on the
+   --  size of pointers for a given target architecture (device vs simualtor).
 
    Top : constant := Short_Term_Alloc_Offset + Short_Term_Alloc_Byte_Size;
 

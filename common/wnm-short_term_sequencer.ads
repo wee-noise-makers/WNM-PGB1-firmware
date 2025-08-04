@@ -30,7 +30,8 @@ package WNM.Short_Term_Sequencer is
       Key      : MIDI.MIDI_Key;
       Velocity : MIDI.MIDI_Data;
       Duration : Time.Time_Microseconds;
-   end record;
+   end record
+     with Pack;
 
    procedure Play_At (Start    : Time.Time_Microseconds;
                       Target   : MIDI_Target;
@@ -50,13 +51,6 @@ package WNM.Short_Term_Sequencer is
 
 private
 
-   Max_Number_Of_Tracks  : constant := 10;
-   Max_Number_Of_Repeats : constant := 8;
-   Max_Number_Of_Notes   : constant := 4;
-
-   MAX_EVENT_NUMBER : constant :=
-     Max_Number_Of_Tracks * Max_Number_Of_Repeats * Max_Number_Of_Notes * 2;
-
    type Event;
 
    type Event_Access is access all Event;
@@ -65,6 +59,7 @@ private
       D : Event_Data;
       Expiration : Time.Time_Microseconds;
       Next : Event_Access;
-   end record;
+   end record
+     with Pack;
 
 end WNM.Short_Term_Sequencer;

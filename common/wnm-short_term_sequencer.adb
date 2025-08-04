@@ -27,7 +27,7 @@ with WNM.Shared_Buffers;
 
 package body WNM.Short_Term_Sequencer is
 
-   type Any_Node_Index is range 0 .. MAX_EVENT_NUMBER;
+   type Any_Node_Index is range 0 .. Shared_Buffers.MAX_EVENT_NUMBER;
    subtype Node_Index is Any_Node_Index range 1 .. Any_Node_Index'Last;
 
    Nodes : array (Node_Index) of aliased Event
