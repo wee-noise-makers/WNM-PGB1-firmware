@@ -485,6 +485,10 @@ package body WNM.GUI.Menu.Chord_Settings is
                      WNM.Project.Increase_Progession_Length (Prog);
                      This.Selected_Chord :=
                        WNM.Project.Progression_Length (Prog);
+
+                     --  Go to edit the added chord
+                     This.Current_Chord_Setting := Chord_Sub_Settings'Last;
+                     This.Top_Chord_Setting := Prog_Edit;
                   end if;
 
                when B_Press =>

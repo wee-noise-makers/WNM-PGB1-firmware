@@ -116,8 +116,10 @@ package body WNM.GUI.Update is
               Box_Left + (Box_Right - Box_Left - 7 * Bitmap_Fonts.Width) / 2;
 
             Print (X_Offset => B,
-                   Y_Offset => Box_Top,
+                   Y_Offset => Box_Top - 5,
                    Str      => "FX/Copy");
+
+            Draw_Chords_Progress (Screen_Width / 2, Box_Top + 15);
 
             Draw_Alt_Slider;
 
