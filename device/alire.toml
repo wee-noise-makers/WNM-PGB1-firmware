@@ -15,10 +15,6 @@ flux = "~1.0.0"
 noise_nugget_sdk = "~2.0.0"
 midi = "~1.0.0"
 
-[[pins]]
-noise_nugget_sdk = { url = 'https://github.com/wee-noise-makers/noise-nugget-ada-sdk', commit = "8d185a861a3cce8b09c5dcfd67b73bcbba23fbe2"}
-tresses =  { url = 'https://github.com/wee-noise-makers/tresses', commit = "b067bc52c98b54d66999962619e04981d325c79f" }
-
 [build-switches]
 "*".ada_version = "ada2022"
 release.runtime_checks = "none"

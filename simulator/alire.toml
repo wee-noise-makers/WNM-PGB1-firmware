@@ -24,7 +24,6 @@ midi = "^1.0.0"
 [[pins]]
 fsmaker = { url="https://github.com/Fabien-Chouteau/fsmaker" }
 uf2_utils = { url="https://github.com/Fabien-Chouteau/uf2_utils" }
-tresses =  { url = 'https://github.com/wee-noise-makers/tresses', commit = "b067bc52c98b54d66999962619e04981d325c79f" }
 
 [configuration.values]
 littlefs.Assert = false
