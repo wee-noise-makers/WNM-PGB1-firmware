@@ -46,7 +46,10 @@ project Wnm_PGB1_Device is
       --  The only acceptable solution/workaround available at the moment is
       --  to disable optimization for the package.
       for Switches ("wnm-mixer.adb") use
-        Wnm_Pgb1_Device_Config.Ada_Compiler_Switches & ("-O1");
+        Wnm_Pgb1_Device_Config.Ada_Compiler_Switches &
+      ("-O1"
+       , "-gnatwJ" -- Suppress warnings on obsolescent features
+      );
    end Compiler;
 
    package Linker is
