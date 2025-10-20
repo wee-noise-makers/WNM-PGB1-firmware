@@ -24,10 +24,16 @@ with Interfaces;
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
 with WNM.GUI.Popup;
 with WNM.GUI.Menu.Text_Dialog;
+with Tresses;
 
 with WNM.Utils;
+with WNM.Synth_Engines; use WNM.Synth_Engines;
 
 package body WNM.GUI.Menu.Track_Settings is
+
+   package Synth_Categories_Next is new Enum_Next (Synth_Categories,
+                                                   Wrap => False);
+   use Synth_Categories_Next;
 
    use type Interfaces.Integer_8;
 
@@ -41,6 +47,21 @@ package body WNM.GUI.Menu.Track_Settings is
 
    Top_Settings_Position_Cache : array (Track_Mode_Kind, Top_Settings) of
      Interfaces.Integer_8 := (others => (others => -1));
+
+   type Engine_Lvl is (Category, Engine);
+   Eng_LVL : array (Tracks) of Engine_Lvl := (others => Engine);
+
+   Selected_Cat : array (Tracks) of Synth_Categories := (others => Chip);
+   Selected_Eng : array (Tracks) of Natural := (others => 0);
+
+   function Selected_Engine (T : Tracks) return Tresses.Engines
+   is (Engines (Selected_Cat (T)) (Selected_Eng (T)));
+
+   function Selected_Engine (T : Tracks) return MIDI.MIDI_Data
+   is (Tresse_To_MIDI (Selected_Engine (T)));
+
+   function Last_Engine_In_Cat (T : Tracks) return Natural
+   is (Engines (Selected_Cat (T))'Last);
 
    ------------
    -- To_Top --
@@ -261,10 +282,24 @@ package body WNM.GUI.Menu.Track_Settings is
             Draw_Value (Builtin_Instruments (This.Instrument).Name);
 
          when Engine =>
-            Draw_Title ("Synth Engine:", "");
-            Draw_Fit_Screen (Box_Left + 8,
-                             Value_Text_Y - Font_Height - 1,
-                             Project.Selected_Engine_Img (Editing_Track));
+
+            case Eng_LVL (Editing_Track) is
+               when Category =>
+                  Draw_Title ("Synth Engine:", "Category (Press A)");
+                  Draw_Value (Selected_Cat (Editing_Track)'Img);
+               when Engine =>
+                  Draw_Title ("Synth Engine:", "");
+                  --  Draw_Fit_Screen
+                  --    (Box_Left + 8,
+                  --     Value_Text_Y - Font_Height - 1,
+                  --     Project.Selected_Engine_Img (Editing_Track));
+                  Draw_Fit_Screen
+                    (Box_Left + 8,
+                     Value_Text_Y - Font_Height - 1,
+                     Tresses.Img
+                       (Engines (Selected_Cat (Editing_Track))
+                                (Selected_Eng (Editing_Track))));
+            end case;
 
          when LFO =>
 
@@ -354,15 +389,16 @@ package body WNM.GUI.Menu.Track_Settings is
      (This  : in out Track_Settings_Menu;
       Event : Menu_Event)
    is
+      T : constant Tracks := Editing_Track;
    begin
       This.Fix_Current_Setting;
 
       case Event.Kind is
          when Left_Press =>
-            Prev_Valid_Setting (Mode (Editing_Track),
+            Prev_Valid_Setting (Mode (T),
                                 This.Current_Setting);
          when Right_Press =>
-            Next_Valid_Setting (Mode (Editing_Track),
+            Next_Valid_Setting (Mode (T),
                                 This.Current_Setting);
 
          when Up_Press =>
@@ -373,6 +409,20 @@ package body WNM.GUI.Menu.Track_Settings is
                      end if;
                when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D =>
                   GUI.Popup.Display ("Press A to edit ", 500_000);
+
+               when Engine =>
+                  case Eng_LVL (T) is
+                     when Category =>
+                        Next (Selected_Cat (T));
+                     when Engine =>
+                        if Selected_Eng (T) <
+                          Last_Engine_In_Cat (T)
+                        then
+                           Selected_Eng (T) := @ + 1;
+                           Project.Set_Engine (Selected_Engine (T));
+                        end if;
+                        --  Project.Next_Value (This.Current_Setting);
+                  end case;
 
                when others =>
                   Project.Next_Value (This.Current_Setting);
@@ -388,6 +438,20 @@ package body WNM.GUI.Menu.Track_Settings is
                when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D =>
                   GUI.Popup.Display ("Press A to edit ", 500_000);
 
+               when Engine =>
+                  case Eng_LVL (T) is
+                     when Category =>
+                        Prev (Selected_Cat (T));
+
+                     when Engine =>
+                        if Selected_Eng (T) /= 0 then
+                           Selected_Eng (T) := @ - 1;
+                           Project.Set_Engine
+                             (Selected_Engine (T));
+                        end if;
+                        --  Project.Prev_Value (This.Current_Setting);
+                  end case;
+
                when others =>
                   Project.Prev_Value (This.Current_Setting);
                   --  Project.Prev_Value_Fast (This.Current_Setting);
@@ -402,15 +466,15 @@ package body WNM.GUI.Menu.Track_Settings is
                      I : MIDI_Instrument_Settings renames
                        Builtin_Instruments (This.Instrument);
                   begin
-                     Set_CC_Controller (Editing_Track, A, I.CC_Target_A);
-                     Set_CC_Controller (Editing_Track, B, I.CC_Target_B);
-                     Set_CC_Controller (Editing_Track, C, I.CC_Target_C);
-                     Set_CC_Controller (Editing_Track, D, I.CC_Target_D);
+                     Set_CC_Controller (T, A, I.CC_Target_A);
+                     Set_CC_Controller (T, B, I.CC_Target_B);
+                     Set_CC_Controller (T, C, I.CC_Target_C);
+                     Set_CC_Controller (T, D, I.CC_Target_D);
 
-                     Set_CC_Controller_Label (Editing_Track, A, I.CC_A_Label);
-                     Set_CC_Controller_Label (Editing_Track, B, I.CC_B_Label);
-                     Set_CC_Controller_Label (Editing_Track, C, I.CC_C_Label);
-                     Set_CC_Controller_Label (Editing_Track, D, I.CC_D_Label);
+                     Set_CC_Controller_Label (T, A, I.CC_A_Label);
+                     Set_CC_Controller_Label (T, B, I.CC_B_Label);
+                     Set_CC_Controller_Label (T, C, I.CC_C_Label);
+                     Set_CC_Controller_Label (T, D, I.CC_D_Label);
                   end;
 
                when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D =>
@@ -425,17 +489,27 @@ package body WNM.GUI.Menu.Track_Settings is
                        ("CC " & Project.CC_Letter (CC) & " Label");
                      WNM.GUI.Menu.Text_Dialog.Push_Window
                        (Utils.Trim
-                          (Project.CC_Controller_Label (Editing_Track, CC)));
+                          (Project.CC_Controller_Label (T, CC)));
                   end;
 
+               when Engine =>
+                  Eng_LVL (T) := Engine;
+                  Selected_Eng (T) := 0;
+                  Project.Set_Engine (Selected_Engine (T));
                when others =>
                   null;
             end case;
+
          when B_Press =>
-            null;
+            case This.Current_Setting is
+               when Engine =>
+                  Eng_LVL (T) := Category;
+               when others =>
+                  null;
+            end case;
 
          when Slider_Touch =>
-            Project.Set (Project.Editing_Track,
+            Project.Set (T,
                          This.Current_Setting,
                          Event.Slider_Value);
       end case;

@@ -28,9 +28,9 @@ with WNM.Voices.Sampler_Voice;
 with WNM.Voices.Chord_Voice;
 with WNM.Voices.Hihat_Voice;
 with WNM.Voices.Kick_Voice;
+with WNM.Synth_Engines;
 
 with Tresses; use Tresses;
-with Tresses.Voices.Macro;
 with Tresses.Macro;
 with Tresses.Interfaces;
 
@@ -50,15 +50,15 @@ package body WNM.Synth is
    Sampler1    : aliased WNM.Voices.Sampler_Voice.Instance;
    Sampler2    : aliased WNM.Voices.Sampler_Voice.Instance;
 
-   Lead_B     : aliased Tresses.Voices.Macro.Macro_Buffers
+   Lead_B     : aliased Tresses.Macro.Macro_Buffers
      with Import, Address => Shared_Buffers.Shared_Buffer
        (Shared_Buffers.Lead_Synth_Offset)'Address;
-   Bass_B     : aliased Tresses.Voices.Macro.Macro_Buffers
+   Bass_B     : aliased Tresses.Macro.Macro_Buffers
      with Import, Address => Shared_Buffers.Shared_Buffer
        (Shared_Buffers.Bass_Synth_Offset)'Address;
 
-   Lead : aliased Tresses.Voices.Macro.Instance (Lead_B'Access);
-   Bass : aliased Tresses.Voices.Macro.Instance (Bass_B'Access);
+   Lead : aliased Tresses.Macro.Instance (Lead_B'Access);
+   Bass : aliased Tresses.Macro.Instance (Bass_B'Access);
 
    pragma Compile_Time_Error
      (Lead'Size > Shared_Buffers.Lead_Synth_Byte_Size * 8,
@@ -77,38 +77,8 @@ package body WNM.Synth is
    type Voice_Access is access all Voice_Class;
 
    subtype Lead_Engine_Range is MIDI.MIDI_Data range 0 .. 27;
-   function Lead_Engines (V : MIDI.MIDI_Data) return Tresses.Synth_Engines
-   is (case V is
-          when 0  => Tresses.Voice_Saw_Swarm,
-          when 1  => Tresses.Voice_Analog_Buzz,
-          when 2  => Tresses.Voice_Analog_Morph,
-          when 3  => Tresses.Voice_FM2OP,
-          when 4  => Tresses.Voice_Sand,
-          when 5  => Tresses.Voice_Bass_808,
-          when 6  => Tresses.Voice_House_Bass,
-          when 7  => Tresses.Voice_Pluck_Bass,
-          when 8  => Tresses.Voice_Reese,
-          when 9  => Tresses.Voice_Screech,
-          when 10 => Tresses.Voice_Plucked,
-          when 11 => Tresses.Voice_PDR_Sine,
-          when 12 => Tresses.Voice_PDR_Triangle,
-          when 13 => Tresses.Voice_PDR_Sine_Square,
-          when 14 => Tresses.Voice_PDR_Square_Sine,
-          when 15 => Tresses.Voice_PDL_Trig_Warp,
-          when 16 => Tresses.Voice_PDL_Triangle_Screech,
-          when 17 => Tresses.Voice_Chip_Glide,
-          when 18 => Tresses.Voice_Chip_Phaser,
-          when 19 => Tresses.Voice_Chip_Echo_Square,
-          when 20 => Tresses.Voice_Chip_Echo_Square_Saw,
-          when 21 => Tresses.Voice_Chip_Bass,
-          when 22 => Tresses.Voice_PDR_Square_Full_Sine,
-          when 23 => Tresses.Voice_Triangle_Phaser,
-          when 24 => Tresses.Voice_Sine_Phaser,
-          when 25 => Tresses.Voice_Sine_Pluck,
-          when 26 => Tresses.Voice_Triangle_Pluck,
-          when 27 => Tresses.Voice_Chip_Pluck,
-          when Lead_Engine_Range'Last + 1 .. MIDI.MIDI_Data'Last
-                  => Tresses.Synth_Engines'Last);
+   function Lead_Engines (V : MIDI.MIDI_Data) return Tresses.Engines
+   is (Synth_Engines.MIDI_To_Tresses (V));
 
    subtype Kick_Engine_Range is MIDI.MIDI_Data range 0 .. 2;
    function Kick_Engines (V : MIDI.MIDI_Data)

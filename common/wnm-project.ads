@@ -433,7 +433,7 @@ package WNM.Project is
    procedure Prev_Value (S : User_Track_Settings);
    procedure Next_Value_Fast (S : User_Track_Settings);
    procedure Prev_Value_Fast (S : User_Track_Settings);
-
+   procedure Set_Engine (E : MIDI.MIDI_Data);
    procedure Set_CC_Controller (T : Tracks; Id : CC_Id; C : MIDI.MIDI_Data);
 
    procedure Set_CC_Controller_Label (T    : Tracks;

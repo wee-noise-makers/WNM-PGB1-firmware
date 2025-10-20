@@ -1555,6 +1555,18 @@ package body WNM.Project is
       Synchronize_Synth_Setting (Editing_Track, S);
    end Prev_Value_Fast;
 
+   ----------------
+   -- Set_Engine --
+   ----------------
+
+   procedure Set_Engine (E : MIDI.MIDI_Data) is
+      T : constant Tracks := Editing_Track;
+      Track : Track_Rec renames G_Project.Tracks (T);
+   begin
+      Track.Engine := E;
+      Synchronize_Synth_Setting (Editing_Track, Engine);
+   end Set_Engine;
+
    -----------------------
    -- Set_CC_Controller --
    -----------------------
