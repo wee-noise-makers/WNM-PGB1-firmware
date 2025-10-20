@@ -81,7 +81,7 @@ package body WNM.GUI.Menu.Step_Settings is
          when Note =>
             case Sub is
                when Project.Note =>
-                  Draw_Title (Project.Img (Project.Note_Mode), "(A)");
+                  Draw_Title (Project.Img (Project.Note_Mode), "(press A)");
                when Project.Duration =>
                   Draw_Title ("Duration", "");
                when Project.Velo =>
