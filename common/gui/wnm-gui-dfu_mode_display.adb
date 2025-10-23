@@ -20,7 +20,6 @@
 -------------------------------------------------------------------------------
 
 --  with WNM.Screen;
-with WNM.LEDs;
 --  with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
 with WNM.Time;
 
@@ -30,7 +29,7 @@ package body WNM.GUI.DFU_Mode_Display is
    -- Setup --
    -----------
 
-   procedure Setup is
+   procedure Setup (Hue : WNM.LEDs.Hue := WNM.LEDs.Green) is
    begin
 
       --  TODO: The DFU mode will reset all GPIO and therefore turn-off the
@@ -55,7 +54,7 @@ package body WNM.GUI.DFU_Mode_Display is
       --  Screen.Update;
 
       LEDs.Turn_Off_All;
-      LEDs.Set_Hue (LEDs.Green);
+      LEDs.Set_Hue (Hue);
 
       --  U...
       LEDs.Turn_On (B2);

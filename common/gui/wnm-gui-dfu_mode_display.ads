@@ -19,9 +19,11 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with WNM.LEDs;
+
 package WNM.GUI.DFU_Mode_Display is
 
-   procedure Setup;
+   procedure Setup (Hue : WNM.LEDs.Hue := WNM.LEDs.Green);
    --  Setup LEDs and screen with DFU mode message
 
 end WNM.GUI.DFU_Mode_Display;

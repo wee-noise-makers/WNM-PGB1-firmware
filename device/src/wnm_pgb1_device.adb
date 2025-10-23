@@ -1,7 +1,10 @@
 with System;
 with HAL;
 with WNM.Tasks;
+with WNM.GUI.DFU_Mode_Display;
+with WNM.LEDs;
 with WNM_HAL.Synth_Core;
+with WNM_HAL;
 with RP.Multicore;
 with Noise_Nugget_SDK.Audio;
 with WNM_Configuration;
@@ -13,7 +16,14 @@ with RP.Multicore.Spinlocks;
 with Cortex_M.NVIC;
 
 procedure WNM_PGB1_Device is
+   use type WNM_HAL.Button_State;
 begin
+   --  Check if Menu button is pressed at boot
+   if WNM_HAL.State (WNM_Configuration.Menu) = WNM_HAL.Down then
+      WNM.GUI.DFU_Mode_Display.Setup (Hue => WNM.LEDs.Red);
+      WNM_HAL.Enter_DFU_Mode;
+   end if;
+
    --  Make sure we don't have data left in the FIFO after reset
    RP.Multicore.FIFO.Drain;
 
