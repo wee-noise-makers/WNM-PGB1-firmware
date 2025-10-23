@@ -25,7 +25,7 @@ private with WNM.GUI.Bitmap_Fonts;
 
 package WNM.GUI.Popup is
 
-   Text_Length : constant := 20;
+   Text_Length : constant := 19;
    subtype Popup_Text is String (1 .. Text_Length);
 
    procedure Display (T : String; Duration : Time.Time_Microseconds);
@@ -39,11 +39,12 @@ private
 
    type Popup_State is (Disabled, Text_Popup_1L, Text_Popup_2L);
 
-   State  : Popup_State := Disabled;
+   State  : Popup_State := Text_Popup_1L;
    T_Text   : Popup_Text := (others => ' ');
    B_Text   : Popup_Text := (others => ' ');
 
-   subtype Tick_Count is Integer range 0 .. Text_Length * Bitmap_Fonts.Width;
+   subtype Tick_Count
+     is Integer range 0 .. Text_Length * Bitmap_Fonts.Width;
    Remaining_Ticks : Tick_Count := 0;
    Tick_Period : Time.Time_Microseconds := 0;
    Next_Tick : Time.Time_Microseconds := 0;

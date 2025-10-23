@@ -33,18 +33,19 @@ package body WNM.GUI.Popup is
       Text_Left : constant Natural :=
         (Screen.Width - (Text_Length * Bitmap_Fonts.Width)) / 2;
 
-      Text_Spacing : constant Natural := Bitmap_Fonts.Height;
+      Text_Spacing : constant Natural := Bitmap_Fonts.Height + 1;
       Text_Top  : constant Natural :=
         (Screen.Height - (Text_Spacing * Lines)) / 2;
 
       Rect_Left   : constant Natural := Text_Left - 4;
       Rect_Right  : constant Natural := Screen.Width - Rect_Left;
       Rect_Top    : constant Natural := Text_Top - 4;
-      Rect_Bottom : constant Natural := Screen.Height - Rect_Top;
+      Rect_Bottom : constant Natural := Rect_Top + (Text_Spacing * Lines) + 9;
+      Rect_Height : constant Natural := Rect_Bottom - Rect_Top;
 
-      BG_Rect : constant Screen.Rect := ((Rect_Left, Rect_Top),
-                                         Screen.Width - 2 * Rect_Left,
-                                         Screen.Height - 2 * Rect_Top);
+      BG_Rect : constant Screen.Rect := ((0, Rect_Top - Rect_Height / 4),
+                                         Screen_Width,
+                                         Rect_Height + Rect_Height / 2);
 
       procedure Draw_BG (Remaining : Tick_Count);
 
@@ -61,23 +62,29 @@ package body WNM.GUI.Popup is
          Screen.Fill_Rect (BG_Rect, False);
 
          --  Top
-         Screen.Draw_Line ((Rect_Left + 1, Rect_Top + 1),
-                           (Rect_Right - 1, Rect_Top + 1));
+         Screen.Draw_Line ((Rect_Left + 3, Rect_Top + 1),
+                           (Rect_Right - 3, Rect_Top + 1));
 
          --  Right
-         Screen.Draw_Line ((Rect_Right - 1, Rect_Top + 1),
-                           (Rect_Right - 1, Rect_Bottom - 1));
+         Screen.Draw_Line ((Rect_Right - 1, Rect_Top + 3),
+                           (Rect_Right - 1, Rect_Bottom - 3));
 
          --  Bottom
-         Screen.Draw_Line ((Rect_Left + 1, Rect_Bottom - 1),
-                           (Rect_Right - 1, Rect_Bottom - 1));
+         Screen.Draw_Line ((Rect_Left + 3, Rect_Bottom - 1),
+                           (Rect_Right - 3, Rect_Bottom - 1));
 
          --  Left
-         Screen.Draw_Line ((Rect_Left + 1, Rect_Top + 1),
-                           (Rect_Left + 1, Rect_Bottom - 1));
+         Screen.Draw_Line ((Rect_Left + 1, Rect_Top + 3),
+                           (Rect_Left + 1, Rect_Bottom - 3));
 
-         Screen.Draw_Line ((Rect_Left + 1, Rect_Bottom - 2),
-                           (Rect_Left + Remaining, Rect_Bottom - 2));
+         --  Remaining bar
+         Screen.Draw_Line ((Rect_Left + 4, Rect_Bottom - 3),
+                           (Rect_Left + 4 + Remaining, Rect_Bottom - 3));
+
+         Screen.Set_Pixel ((Rect_Left + 2, Rect_Top + 2));
+         Screen.Set_Pixel ((Rect_Left + 2, Rect_Bottom - 2));
+         Screen.Set_Pixel ((Rect_Right - 2, Rect_Top + 2));
+         Screen.Set_Pixel ((Rect_Right - 2, Rect_Bottom - 2));
 
       end Draw_BG;
 
