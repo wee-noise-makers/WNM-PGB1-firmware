@@ -138,7 +138,7 @@ package body WNM.GUI.Menu.Projects is
                    when Rename_Project => "R"));
       Anim_Step := Anim_Step + 1;
 
-      Draw_Str_Center (Box_Bottom - Bitmap_Fonts.Height - 1,
+      Draw_Str_Center (Box_Bottom - Bitmap_Fonts.Height - 2,
                        Menu_Item_Text (This.Item));
    end Draw;
 

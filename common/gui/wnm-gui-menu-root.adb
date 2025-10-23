@@ -28,6 +28,14 @@ with WNM.GUI.Menu.System_Info;
 with WNM.GUI.Menu.MIDI_Settings;
 with WNM.GUI.Menu.User_Waveform;
 with WNM.Power_Control;
+with WNM.Screen;
+
+with edit_wave_icon;
+with project_icon;
+with line_in_icon;
+with midi_icon;
+with system_info_icon;
+with firmware_update_icon;
 
 package body WNM.GUI.Menu.Root is
 
@@ -40,7 +48,7 @@ package body WNM.GUI.Menu.Root is
           when Projects        => "Projects",
           when Inputs          => "Inputs",
           when User_Waveform   => "Custom Waveform",
-          when MIDI_Settings   => "MIDI",
+          when MIDI_Settings   => "MIDI Settings",
           when DFU_Mode        => "Update Mode",
           when System_Info     => "System Info");
 
@@ -56,6 +64,21 @@ package body WNM.GUI.Menu.Root is
       end if;
    end Push_Root_Window;
 
+   ---------------
+   -- Draw_Icon --
+   ---------------
+
+   procedure Draw_Icon (Bmp : Screen.Bitmap) is
+      Icon_W : constant Natural := Bmp.W;
+      Icon_H : constant Natural := Bmp.H;
+      Icon_Left : constant Natural :=
+        Box_Center.X - (Icon_W / 2);
+      Icon_Top : constant Natural :=
+        Box_Center.Y - 3 - (Icon_H / 2);
+   begin
+      Screen.Copy_Bitmap (Bmp, Icon_Left, Icon_Top);
+   end Draw_Icon;
+
    ----------
    -- Draw --
    ----------
@@ -69,7 +92,22 @@ package body WNM.GUI.Menu.Root is
                      Count => Menu_Items_Count,
                      Index => Menu_Items'Pos (This.Item));
 
-      Draw_Str_Center (Box_Center.Y - (Bitmap_Fonts.Height / 2),
+      case This.Item is
+         when Projects =>
+            Draw_Icon (project_icon.Data);
+         when User_Waveform =>
+            Draw_Icon (edit_wave_icon.Data);
+         when Inputs =>
+            Draw_Icon (line_in_icon.Data);
+         when MIDI_Settings =>
+            Draw_Icon (midi_icon.Data);
+         when DFU_Mode =>
+            Draw_Icon (firmware_update_icon.Data);
+         when System_Info =>
+            Draw_Icon (system_info_icon.Data);
+      end case;
+
+      Draw_Str_Center (Box_Bottom - Bitmap_Fonts.Height - 2,
                        Menu_Item_Text (This.Item));
    end Draw;
 
