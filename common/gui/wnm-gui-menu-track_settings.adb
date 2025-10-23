@@ -25,7 +25,7 @@ with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
 with WNM.GUI.Popup;
 with WNM.GUI.Menu.Text_Dialog;
 
-with WNM.Utils;
+with WNM.Utils; use WNM.Utils;
 
 package body WNM.GUI.Menu.Track_Settings is
 
@@ -191,10 +191,11 @@ package body WNM.GUI.Menu.Track_Settings is
       Mode : Project.Track_Mode_Kind;
       Sub : Sub_Settings;
       Top : Top_Settings;
+      T : constant Tracks := Editing_Track;
    begin
       This.Fix_Current_Setting;
 
-      Mode := Project.Mode (Editing_Track);
+      Mode := Project.Mode (T);
       Sub := This.Current_Setting;
       Top := To_Top (This.Current_Setting);
 
@@ -250,21 +251,31 @@ package body WNM.GUI.Menu.Track_Settings is
 
          when Notes_Per_Chord =>
             Draw_Title ("Notes per Chord:", "");
-            Draw_Value (Project.Notes_Per_Chord (Editing_Track)'Img);
+            Draw_Value (Project.Notes_Per_Chord (T)'Img);
 
          when MIDI_Chan =>
             Draw_Title ("MIDI Channel:", "");
-            Draw_Value (Project.MIDI_Chan (Editing_Track)'Img);
+            Draw_Value (Project.MIDI_Chan (T)'Img);
 
          when MIDI_Instrument =>
             Draw_Title ("MIDI instrument:", "");
             Draw_Value (Builtin_Instruments (This.Instrument).Name);
 
          when Engine =>
-            Draw_Title ("Synth Engine:", "");
-            Draw_Fit_Screen (Box_Left + 8,
-                             Value_Text_Y - Font_Height - 1,
-                             Project.Selected_Engine_Img (Editing_Track));
+            declare
+               Count : constant Natural := Project.Engines_Count (T);
+               Current : constant Natural :=
+                 Natural (Project.Selected_Engine (T)) + 1;
+
+            begin
+               Draw_Title ("Synth Engine: " &
+                             Trim (Current'Img) & "/" &
+                             Trim (Count'Img),
+                           "");
+               Draw_Fit_Screen (Box_Left + 8,
+                                Value_Text_Y - Font_Height - 1,
+                                Project.Selected_Engine_Img (T));
+            end;
 
          when LFO =>
 
@@ -292,7 +303,7 @@ package body WNM.GUI.Menu.Track_Settings is
                Project.LFO_Amp,
                "AMP",
                Sub = LFO_Amplitude,
-               Style => (case LFO_Amp_Mode (Editing_Track) is
+               Style => (case LFO_Amp_Mode (T) is
                             when Project.Positive => Drawing.Positive,
                             when Project.Center   => Drawing.Center,
                             when Project.Negative => Drawing.Negative));
@@ -300,24 +311,24 @@ package body WNM.GUI.Menu.Track_Settings is
             Draw_LFO_Shape (C,
                             "SHP",
                             Sub = LFO_Shape,
-                            Project.LFO_Shape (Editing_Track),
-                            Project.LFO_Sync (Editing_Track),
-                            Project.LFO_Loop (Editing_Track));
+                            Project.LFO_Shape (T),
+                            Project.LFO_Sync (T),
+                            Project.LFO_Loop (T));
 
             Draw_CC_Value
               (D,
                0,
-               Project.LFO_Target (Editing_Track)'Img,
+               Project.LFO_Target (T)'Img,
                Sub = LFO_Target);
 
          when CC_Default =>
             Draw_CC_Control_Page
               (Mode => Project.Mode,
                Selected => To_CC_Id (Sub),
-               Val_A => Project.CC_Default (Editing_Track, A),
-               Val_B => Project.CC_Default (Editing_Track, B),
-               Val_C => Project.CC_Default (Editing_Track, C),
-               Val_D => Project.CC_Default (Editing_Track, D),
+               Val_A => Project.CC_Default (T, A),
+               Val_B => Project.CC_Default (T, B),
+               Val_C => Project.CC_Default (T, C),
+               Val_D => Project.CC_Default (T, D),
                Ena_A => True,
                Ena_B => True,
                Ena_C => True,
@@ -329,7 +340,7 @@ package body WNM.GUI.Menu.Track_Settings is
             begin
                Draw_Title ("MIDI CC " & Project.CC_Letter (CC) & ":", "");
                Draw_Value ("Controller:" &
-                             Project.CC_Controller (Editing_Track, CC)'Img);
+                             Project.CC_Controller (T, CC)'Img);
             end;
 
          when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D =>
@@ -338,7 +349,7 @@ package body WNM.GUI.Menu.Track_Settings is
             begin
                Draw_Title ("MIDI CC " & Project.CC_Letter (CC) & " Label:",
                            "");
-               Draw_Value (Project.CC_Controller_Label (Editing_Track, CC));
+               Draw_Value (Project.CC_Controller_Label (T, CC));
             end;
 
       end case;
@@ -354,15 +365,16 @@ package body WNM.GUI.Menu.Track_Settings is
      (This  : in out Track_Settings_Menu;
       Event : Menu_Event)
    is
+      T : constant Tracks := Editing_Track;
    begin
       This.Fix_Current_Setting;
 
       case Event.Kind is
          when Left_Press =>
-            Prev_Valid_Setting (Mode (Editing_Track),
+            Prev_Valid_Setting (Mode (T),
                                 This.Current_Setting);
          when Right_Press =>
-            Next_Valid_Setting (Mode (Editing_Track),
+            Next_Valid_Setting (Mode (T),
                                 This.Current_Setting);
 
          when Up_Press =>
@@ -402,15 +414,15 @@ package body WNM.GUI.Menu.Track_Settings is
                      I : MIDI_Instrument_Settings renames
                        Builtin_Instruments (This.Instrument);
                   begin
-                     Set_CC_Controller (Editing_Track, A, I.CC_Target_A);
-                     Set_CC_Controller (Editing_Track, B, I.CC_Target_B);
-                     Set_CC_Controller (Editing_Track, C, I.CC_Target_C);
-                     Set_CC_Controller (Editing_Track, D, I.CC_Target_D);
+                     Set_CC_Controller (T, A, I.CC_Target_A);
+                     Set_CC_Controller (T, B, I.CC_Target_B);
+                     Set_CC_Controller (T, C, I.CC_Target_C);
+                     Set_CC_Controller (T, D, I.CC_Target_D);
 
-                     Set_CC_Controller_Label (Editing_Track, A, I.CC_A_Label);
-                     Set_CC_Controller_Label (Editing_Track, B, I.CC_B_Label);
-                     Set_CC_Controller_Label (Editing_Track, C, I.CC_C_Label);
-                     Set_CC_Controller_Label (Editing_Track, D, I.CC_D_Label);
+                     Set_CC_Controller_Label (T, A, I.CC_A_Label);
+                     Set_CC_Controller_Label (T, B, I.CC_B_Label);
+                     Set_CC_Controller_Label (T, C, I.CC_C_Label);
+                     Set_CC_Controller_Label (T, D, I.CC_D_Label);
                   end;
 
                when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D =>
@@ -425,7 +437,7 @@ package body WNM.GUI.Menu.Track_Settings is
                        ("CC " & Project.CC_Letter (CC) & " Label");
                      WNM.GUI.Menu.Text_Dialog.Push_Window
                        (Utils.Trim
-                          (Project.CC_Controller_Label (Editing_Track, CC)));
+                          (Project.CC_Controller_Label (T, CC)));
                   end;
 
                when others =>
@@ -435,7 +447,7 @@ package body WNM.GUI.Menu.Track_Settings is
             null;
 
          when Slider_Touch =>
-            Project.Set (Project.Editing_Track,
+            Project.Set (T,
                          This.Current_Setting,
                          Event.Slider_Value);
       end case;
@@ -463,6 +475,7 @@ package body WNM.GUI.Menu.Track_Settings is
       Exit_Value : Window_Exit_Value)
    is
       Sub : Sub_Settings;
+      T : constant Tracks := Editing_Track;
    begin
       This.Fix_Current_Setting;
 
@@ -480,7 +493,7 @@ package body WNM.GUI.Menu.Track_Settings is
                Label : Controller_Label := Empty_Controller_Label;
             begin
                Utils.Copy_Str (Output, Label);
-               Project.Set_CC_Controller_Label (Editing_Track, CC, Label);
+               Project.Set_CC_Controller_Label (T, CC, Label);
             end;
          end if;
       end if;

@@ -355,6 +355,8 @@ package WNM.Project is
                              return MIDI.MIDI_Data;
    function Selected_Engine_Img (T : Tracks := Editing_Track)
                                  return String;
+   function Engines_Count (T : Tracks := Editing_Track) return Natural;
+
    function Arp_Mode (T : Tracks := Editing_Track) return Arp_Mode_Kind;
    function Arp_Notes (T : Tracks := Editing_Track) return Arp_Notes_Kind;
    function Notes_Per_Chord (T : Tracks := Editing_Track)

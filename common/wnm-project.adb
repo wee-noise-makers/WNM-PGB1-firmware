@@ -319,10 +319,12 @@ package body WNM.Project is
    -- Engine_Limits --
    -------------------
 
-   function Engine_Limits return MIDI_Data_Next.Limits is
+   function Engine_Limits (T : Tracks := Editing_Track)
+                           return MIDI_Data_Next.Limits
+   is
       use MIDI;
    begin
-      case Mode is
+      case Mode (T) is
          when Lead_Mode =>
             return (MIDI_Data'First, Synth.Lead_Engine_Last);
          when Bass_Mode =>
@@ -341,6 +343,16 @@ package body WNM.Project is
             return (MIDI_Data'First, MIDI_Data'First);
       end case;
    end Engine_Limits;
+
+   -------------------
+   -- Engines_Count --
+   -------------------
+
+   function Engines_Count (T : Tracks := Editing_Track) return Natural is
+      Lim : constant MIDI_Data_Next.Limits := Engine_Limits (T);
+   begin
+      return Natural (Lim.Max) - Natural (Lim.Min) + 1;
+   end Engines_Count;
 
    --------------
    -- CC_Image --
