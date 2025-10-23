@@ -86,6 +86,8 @@
 --  <End of Section>
 --  <End of File>
 
+with Ada.Unchecked_Conversion;
+
 with HAL; use HAL;
 with WNM.Project_Load_Broadcast;
 with WNM.File_System.LEB128_File_Out; use WNM.File_System.LEB128_File_Out;
@@ -519,6 +521,21 @@ package body WNM.Project.Storage is
       Output.End_Section;
    end Save_Global;
 
+   ------------------------
+   -- Save_User_Waveform --
+   ------------------------
+
+   procedure Save_User_Waveform (Output : in out File_Out.Instance) is
+      function To_U16 is new Ada.Unchecked_Conversion (Tresses.S16,
+                                                       Tresses.U16);
+   begin
+      Output.Start_User_Waveform;
+      for Frame of WNM.Synth.User_Waveform loop
+         Output.Push (Out_UInt (To_U16 (Frame)));
+      end loop;
+      Output.End_Section;
+   end Save_User_Waveform;
+
    ----------
    -- Save --
    ----------
@@ -559,6 +576,10 @@ package body WNM.Project.Storage is
 
       if Output.Status = Ok then
          Save_Steps (Output);
+      end if;
+
+      if Output.Status = Ok then
+         Save_User_Waveform (Output);
       end if;
 
       Output.End_File;
@@ -1063,6 +1084,34 @@ package body WNM.Project.Storage is
       end loop;
    end Load_Global;
 
+   ------------------------
+   -- Load_User_Waveform --
+   ------------------------
+
+   procedure Load_User_Waveform (Input : in out File_In.Instance) is
+      function To_S16 is new Ada.Unchecked_Conversion (Tresses.U16,
+                                                       Tresses.S16);
+
+      Raw : In_UInt;
+   begin
+      for Frame of WNM.Synth.User_Waveform loop
+         Input.Read (Raw);
+
+         if Raw > In_UInt (Tresses.U16'Last) then
+            Input.Set_Format_Error;
+         else
+            Frame := To_S16 (Tresses.U16 (Raw));
+         end if;
+
+         exit when Input.Status /= Ok;
+      end loop;
+
+      Input.Read (Raw);
+      if Raw /= End_Of_Section_Value then
+         Input.Set_Format_Error;
+      end if;
+   end Load_User_Waveform;
+
    ----------
    -- Load --
    ----------
@@ -1107,6 +1156,9 @@ package body WNM.Project.Storage is
 
             when Sequence_Section =>
                Load_Sequences (Input);
+
+            when User_Waveform =>
+               Load_User_Waveform (Input);
 
             when End_Of_File =>
                exit;

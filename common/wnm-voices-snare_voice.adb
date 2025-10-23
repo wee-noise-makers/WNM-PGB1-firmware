@@ -22,9 +22,9 @@
 with Tresses.Drums.Clap;
 with Tresses.Macro;
 with Tresses.Drums.Snare;
-with Tresses.Drums.Sine_Snare;
-with Tresses.Drums.Saw_Snare;
-with Tresses.Drums.Triangle_Snare;
+with Tresses.Drums.Wave_Snare;
+with Tresses.Resources;
+with WNM.Synth;
 
 package body WNM.Voices.Snare_Voice is
 
@@ -66,9 +66,10 @@ package body WNM.Voices.Snare_Voice is
    begin
       case This.Engine is
          when Sine_Snare =>
-            Drums.Sine_Snare.Render_Snare
+            Drums.Wave_Snare.Render_Snare
               (Buffer,
                Params => This.Params,
+               Tone_Waveform => Resources.WAV_Sine'Access,
                Phase => This.Phase,
                Phase_Increment => This.Phase_Increment,
                Target_Phase_Increment => This.Target_Phase_Increment,
@@ -80,9 +81,10 @@ package body WNM.Voices.Snare_Voice is
                Do_Strike => This.Do_Strike);
 
          when Saw_Snare =>
-            Drums.Saw_Snare.Render_Snare
+            Drums.Wave_Snare.Render_Snare
               (Buffer,
                Params => This.Params,
+               Tone_Waveform => Resources.WAV_Sawtooth'Access,
                Phase => This.Phase,
                Phase_Increment => This.Phase_Increment,
                Target_Phase_Increment => This.Target_Phase_Increment,
@@ -94,9 +96,25 @@ package body WNM.Voices.Snare_Voice is
                Do_Strike => This.Do_Strike);
 
          when Triangle_Snare =>
-            Drums.Triangle_Snare.Render_Snare
+            Drums.Wave_Snare.Render_Snare
               (Buffer,
                Params => This.Params,
+               Tone_Waveform => Resources.WAV_Triangle'Access,
+               Phase => This.Phase,
+               Phase_Increment => This.Phase_Increment,
+               Target_Phase_Increment => This.Target_Phase_Increment,
+               Tone_Env => This.Env0,
+               Noise_Env => This.Env1,
+               Rng => This.Rng,
+               Pitch => This.Pitch,
+               Do_Init => This.Do_Init,
+               Do_Strike => This.Do_Strike);
+
+         when User_Wave_Snare =>
+            Drums.Wave_Snare.Render_Snare
+              (Buffer,
+               Params => This.Params,
+               Tone_Waveform => Synth.User_Waveform'Access,
                Phase => This.Phase,
                Phase_Increment => This.Phase_Increment,
                Target_Phase_Increment => This.Target_Phase_Increment,
@@ -133,6 +151,7 @@ package body WNM.Voices.Snare_Voice is
                                             Pitch => This.Pitch,
                                             Do_Init => This.Do_Init,
                                             Do_Strike => This.Do_Strike);
+
       end case;
    end Render;
 
@@ -145,6 +164,7 @@ package body WNM.Voices.Snare_Voice is
           when Sine_Snare => Tresses.Drum_Sine_Snare,
           when Saw_Snare => Tresses.Drum_Saw_Snare,
           when Triangle_Snare => Tresses.Drum_Triangle_Snare,
+          when User_Wave_Snare => Tresses.Drum_User_Wave_Snare,
           when Virt_Analog => Tresses.Drum_Snare,
           when Clap  => Tresses.Drum_Clap);
 

@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                     Copyright (C) 2023 Fabien Chouteau                    --
+--                  Copyright (C) 2016-2025 Fabien Chouteau                  --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,54 +19,50 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-with Tresses;            use Tresses;
-with Tresses.Interfaces; use Tresses.Interfaces;
+package WNM.GUI.Menu.User_Waveform_Load is
 
-private with Tresses.Envelopes.AR;
-private with Tresses.Random;
-
-package WNM.Voices.Kick_Voice is
-
-   type Instance
-   is new Four_Params_Voice
-   with private;
-
-   type Kick_Engine is (Sine_Kick, Triangle_Kick, Chip_Kick,
-                        Sine_Click_Kick,
-                        User_Wave_Kick,
-                        User_Wave_Click_Kick);
-
-   function Engine (This : Instance) return Kick_Engine;
-   procedure Set_Engine (This : in out Instance; E : Kick_Engine);
-
-   function Img (E : Kick_Engine) return String;
-
-   procedure Init (This : in out Instance);
-
-   procedure Render (This   : in out Instance;
-                     Buffer :    out Tresses.Mono_Buffer);
-
-   --  Interfaces --
-
-   overriding
-   function Param_Label (This : Instance; Id : Param_Id) return String;
-
-   overriding
-   function Param_Short_Label (This : Instance; Id : Param_Id)
-                               return Short_Label;
+   procedure Push_Window;
 
 private
+   type Menu_Items is (WAV_Sine,
+                       WAV_Sine_Warp1,
+                       WAV_Sine_Warp2,
+                       WAV_Sine_Warp3,
+                       WAV_Sine2_Warp1,
+                       WAV_Sine2_Warp2,
+                       WAV_Sine2_Warp3,
+                       WAV_Sawtooth,
+                       WAV_Screech,
+                       WAV_Triangle,
+                       WAV_Chip_Triangle,
+                       WAV_Chip_Pulse_50,
+                       WAV_Chip_Pulse_25,
+                       WAV_Combined_Sin_Saw,
+                       WAV_Combined_Saw_Sin,
+                       WAV_Combined_Trig_Sin,
+                       WAV_Combined_Sin_Square,
+                       WAV_Combined_Square_Sin,
+                       WAV_Combined_Square_Full_Sin,
+                       WAV_Bandlimited_Comb);
 
-   type Instance
-   is new Four_Params_Voice
-   with record
+   function Menu_Items_Count is new Enum_Count (Menu_Items);
 
-      Engine : Kick_Engine := Kick_Engine'First;
-
-      Phase, Phase_Increment, Target_Phase_Increment : U32 := 0;
-      Env0, Env1  : Tresses.Envelopes.AR.Instance;
-      Rng : Tresses.Random.Instance;
-      Do_Init : Boolean := True;
+   type Instance is new Menu_Window with record
+      Item : Menu_Items;
    end record;
 
-end WNM.Voices.Kick_Voice;
+   overriding
+   procedure Draw (This   : in out Instance);
+
+   overriding
+   procedure On_Event (This  : in out Instance;
+                       Event : Menu_Event);
+
+   overriding
+   procedure On_Pushed (This  : in out Instance) is null;
+
+   overriding
+   procedure On_Focus (This       : in out Instance;
+                       Exit_Value : Window_Exit_Value) is null;
+
+end WNM.GUI.Menu.User_Waveform_Load;

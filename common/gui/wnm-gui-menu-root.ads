@@ -26,6 +26,7 @@ package WNM.GUI.Menu.Root is
 private
 
    type Menu_Items is (Projects,
+                       User_Waveform,
                        Inputs,
                        MIDI_Settings,
                        DFU_Mode,

@@ -26,6 +26,7 @@ with WNM.GUI.Menu.Projects;
 with WNM.GUI.Menu.Inputs;
 with WNM.GUI.Menu.System_Info;
 with WNM.GUI.Menu.MIDI_Settings;
+with WNM.GUI.Menu.User_Waveform;
 with WNM.Power_Control;
 
 package body WNM.GUI.Menu.Root is
@@ -38,6 +39,7 @@ package body WNM.GUI.Menu.Root is
    is (case Item is
           when Projects        => "Projects",
           when Inputs          => "Inputs",
+          when User_Waveform   => "Custom Waveform",
           when MIDI_Settings   => "MIDI",
           when DFU_Mode        => "Update Mode",
           when System_Info     => "System Info");
@@ -89,6 +91,9 @@ package body WNM.GUI.Menu.Root is
 
                when Inputs =>
                   Menu.Inputs.Push_Window;
+
+               when User_Waveform =>
+                  Menu.User_Waveform.Push_Window;
 
                when MIDI_Settings =>
                   Menu.MIDI_Settings.Push_Window;

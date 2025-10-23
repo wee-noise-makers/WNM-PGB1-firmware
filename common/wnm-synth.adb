@@ -76,7 +76,7 @@ package body WNM.Synth is
    subtype Voice_Class is Tresses.Interfaces.Four_Params_Voice'Class;
    type Voice_Access is access all Voice_Class;
 
-   subtype Lead_Engine_Range is MIDI.MIDI_Data range 0 .. 27;
+   subtype Lead_Engine_Range is MIDI.MIDI_Data range 0 .. 32;
    function Lead_Engines (V : MIDI.MIDI_Data) return Tresses.Synth_Engines
    is (case V is
           when 0  => Tresses.Voice_Saw_Swarm,
@@ -107,18 +107,26 @@ package body WNM.Synth is
           when 25 => Tresses.Voice_Sine_Pluck,
           when 26 => Tresses.Voice_Triangle_Pluck,
           when 27 => Tresses.Voice_Chip_Pluck,
+          when 28 => Tresses.Voice_User_Wave_Glide,
+          when 29 => Tresses.Voice_User_Wave_Phaser,
+          when 30 => Tresses.Voice_User_Wave_Pluck,
+          when 31 => Tresses.Voice_User_Wave_Echo,
+          when 32 => Tresses.Voice_User_Wave_PDR,
           when Lead_Engine_Range'Last + 1 .. MIDI.MIDI_Data'Last
                   => Tresses.Synth_Engines'Last);
 
-   subtype Kick_Engine_Range is MIDI.MIDI_Data range 0 .. 2;
+   subtype Kick_Engine_Range is MIDI.MIDI_Data range 0 .. 5;
    function Kick_Engines (V : MIDI.MIDI_Data)
                           return Voices.Kick_Voice.Kick_Engine
    is (case V is
           when 0 => Voices.Kick_Voice.Sine_Kick,
           when 1 => Voices.Kick_Voice.Triangle_Kick,
-          when others => Voices.Kick_Voice.Chip_Kick);
+          when 2 => Voices.Kick_Voice.Chip_Kick,
+          when 3 => Voices.Kick_Voice.Sine_Click_Kick,
+          when 4 => Voices.Kick_Voice.User_Wave_Kick,
+          when others => Voices.Kick_Voice.User_Wave_Click_Kick);
 
-   subtype Snare_Engine_Range is MIDI.MIDI_Data range 0 .. 4;
+   subtype Snare_Engine_Range is MIDI.MIDI_Data range 0 .. 5;
    function Snare_Engines (V : MIDI.MIDI_Data)
                            return Voices.Snare_Voice.Snare_Engine
    is (case V is
@@ -126,7 +134,8 @@ package body WNM.Synth is
           when 1 => Voices.Snare_Voice.Saw_Snare,
           when 2 => Voices.Snare_Voice.Triangle_Snare,
           when 3 => Voices.Snare_Voice.Virt_Analog,
-          when others => Voices.Snare_Voice.Clap);
+          when 4 => Voices.Snare_Voice.Clap,
+          when others => Voices.Snare_Voice.User_Wave_Snare);
 
    subtype HH_Engine_Range is MIDI.MIDI_Data range 0 .. 2;
    function HH_Engines (V : MIDI.MIDI_Data)
@@ -143,7 +152,7 @@ package body WNM.Synth is
           when 0     => Voices.Sampler_Voice.Overdrive,
           when others => Voices.Sampler_Voice.Crusher);
 
-   subtype Chord_Engine_Range is MIDI.MIDI_Data range 0 .. 1;
+   subtype Chord_Engine_Range is MIDI.MIDI_Data range 0 .. 0;
    function Chord_Engines (V : MIDI.MIDI_Data)
                         return Voices.Chord_Voice.Chord_Engine
    is (case V is
@@ -987,4 +996,6 @@ package body WNM.Synth is
 
 begin
    Lead.Set_Engine (Voice_Saw_Swarm);
+   Lead.Set_User_Waveform (User_Waveform'Access);
+   Bass.Set_User_Waveform (User_Waveform'Access);
 end WNM.Synth;

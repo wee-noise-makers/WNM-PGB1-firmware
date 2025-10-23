@@ -33,6 +33,15 @@ package body WNM.Project.Storage.File_Out is
       This.Push (Global_Section);
    end Start_Global;
 
+   -------------------------
+   -- Start_User_Waveform --
+   -------------------------
+
+   procedure Start_User_Waveform (This : in out Instance) is
+   begin
+      This.Push (User_Waveform);
+   end Start_User_Waveform;
+
    --------------------------
    -- Start_Track_Settings --
    --------------------------

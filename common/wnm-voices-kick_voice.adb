@@ -20,9 +20,11 @@
 -------------------------------------------------------------------------------
 
 with Tresses.Macro;
-with Tresses.Drums.Sine_Kick;
-with Tresses.Drums.Triangle_Kick;
-with Tresses.Drums.Chip_Kick;
+with Tresses.Drums.Wave_Kick;
+with Tresses.Drums.Wave_Clic_Kick;
+with Tresses.Resources;
+
+with WNM.Synth;
 
 package body WNM.Voices.Kick_Voice is
 
@@ -64,9 +66,10 @@ package body WNM.Voices.Kick_Voice is
    begin
       case This.Engine is
          when Sine_Kick =>
-            Tresses.Drums.Sine_Kick.Render_Kick
+            Tresses.Drums.Wave_Kick.Render_Kick
               (Buffer,
                Params => This.Params,
+               Tone_Waveform => Resources.WAV_Sine'Access,
                Phase => This.Phase,
                Phase_Increment => This.Phase_Increment,
                Target_Phase_Increment => This.Target_Phase_Increment,
@@ -76,9 +79,10 @@ package body WNM.Voices.Kick_Voice is
                Do_Strike => This.Do_Strike);
 
          when Triangle_Kick =>
-            Tresses.Drums.Triangle_Kick.Render_Kick
+            Tresses.Drums.Wave_Kick.Render_Kick
               (Buffer,
                Params => This.Params,
+               Tone_Waveform => Resources.WAV_Triangle'Access,
                Phase => This.Phase,
                Phase_Increment => This.Phase_Increment,
                Target_Phase_Increment => This.Target_Phase_Increment,
@@ -88,9 +92,53 @@ package body WNM.Voices.Kick_Voice is
                Do_Strike => This.Do_Strike);
 
          when Chip_Kick =>
-            Tresses.Drums.Chip_Kick.Render_Kick
+            Tresses.Drums.Wave_Kick.Render_Kick
               (Buffer,
                Params => This.Params,
+               Tone_Waveform => Resources.WAV_Chip_Triangle'Access,
+               Phase => This.Phase,
+               Phase_Increment => This.Phase_Increment,
+               Target_Phase_Increment => This.Target_Phase_Increment,
+               Env => This.Env0,
+               Pitch => This.Pitch,
+               Do_Init => This.Do_Init,
+               Do_Strike => This.Do_Strike);
+
+         when Sine_Click_Kick =>
+            Drums.Wave_Clic_Kick.Render_Kick
+              (Buffer,
+               Params => This.Params,
+               Tone_Waveform => Resources.WAV_Sine'Access,
+               Phase => This.Phase,
+               Phase_Increment => This.Phase_Increment,
+               Target_Phase_Increment => This.Target_Phase_Increment,
+               Env => This.Env0,
+               Noise_Env => This.Env1,
+               RNG => This.Rng,
+               Pitch => This.Pitch,
+               Do_Init => This.Do_Init,
+               Do_Strike => This.Do_Strike);
+
+         when User_Wave_Click_Kick =>
+            Drums.Wave_Clic_Kick.Render_Kick
+              (Buffer,
+               Params => This.Params,
+               Tone_Waveform => WNM.Synth.User_Waveform'Access,
+               Phase => This.Phase,
+               Phase_Increment => This.Phase_Increment,
+               Target_Phase_Increment => This.Target_Phase_Increment,
+               Env => This.Env0,
+               Noise_Env => This.Env1,
+               RNG => This.Rng,
+               Pitch => This.Pitch,
+               Do_Init => This.Do_Init,
+               Do_Strike => This.Do_Strike);
+
+         when User_Wave_Kick =>
+            Tresses.Drums.Wave_Kick.Render_Kick
+              (Buffer,
+               Params => This.Params,
+               Tone_Waveform => Synth.User_Waveform'Access,
                Phase => This.Phase,
                Phase_Increment => This.Phase_Increment,
                Target_Phase_Increment => This.Target_Phase_Increment,
@@ -110,7 +158,10 @@ package body WNM.Voices.Kick_Voice is
    is (case E is
           when Sine_Kick => Tresses.Drum_Sine_Kick,
           when Triangle_Kick => Tresses.Drum_Triangle_Kick,
-          when Chip_Kick => Tresses.Drum_Chip_Kick);
+          when Chip_Kick => Tresses.Drum_Chip_Kick,
+          when User_Wave_Kick => Tresses.Drum_User_Wave_Kick,
+          when Sine_Click_Kick => Tresses.Drum_Sine_Clic_Kick,
+          when User_Wave_Click_Kick => Tresses.Drum_User_Wave_Clic_Kick);
 
    ---------
    -- Img --

@@ -158,13 +158,13 @@ package body WNM.GUI.Menu.Drawing is
       Max_Columns : constant Natural := (Screen_Width - X - 3) / Font_Width;
 
    begin
-      if Str'Length <= Max_Columns then
-         Draw_Str (X, Y, Str);
-         return;
-      end if;
-
       loop
          Last := Integer'Min (Str'Last, First + Max_Columns - 1);
+
+         if Last = Str'Last then
+            Draw_Str (X, PY, Str (First .. Last));
+            return;
+         end if;
 
          declare
             Split : Natural := Last;
@@ -182,7 +182,6 @@ package body WNM.GUI.Menu.Drawing is
 
          PY := @ + Bitmap_Fonts.Height + 1;
          First := Last + 1;
-         Last := First;
 
          exit when First > Str'Last;
       end loop;

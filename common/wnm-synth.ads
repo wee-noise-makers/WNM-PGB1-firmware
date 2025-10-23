@@ -28,9 +28,13 @@ with Interfaces;
 with MIDI;
 
 with Tresses;
+with Tresses.Resources;
 with Tresses.LFO;
 
 package WNM.Synth is
+
+   User_Waveform : aliased Tresses.Resources.Table_257_S16 :=
+     Tresses.Resources.WAV_Sine2_Warp2;
 
    Kick_Channel                : constant MIDI.MIDI_Channel := 1;
    Snare_Channel               : constant MIDI.MIDI_Channel := 2;
