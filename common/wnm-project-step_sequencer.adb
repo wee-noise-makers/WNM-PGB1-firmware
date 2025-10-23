@@ -126,135 +126,6 @@ package body WNM.Project.Step_Sequencer is
    end Play_Pause;
 
    --------------
-   -- On_Press --
-   --------------
-
-   procedure On_Press (Button : Keyboard_Button;
-                       Mode   : WNM.UI.Main_Modes)
-   is
-      V : constant Keyboard_Value := To_Value (Button);
-   begin
-      case Mode is
-         when UI.Pattern_Mode =>
-            Editing_Pattern := Patterns (V);
-
-         when UI.Song_Mode =>
-            pragma Warnings (Off, "lower bound test optimized");
-            if V in
-              Keyboard_Value (WNM.Parts'First) ..
-              Keyboard_Value (WNM.Parts'Last)
-            then
-               Set_Origin (Parts (V));
-            end if;
-            Editing_Song_Elt := Song_Element (V);
-
-         when UI.Track_Mode | UI.Step_Mode =>
-
-            if Mode = UI.Track_Mode and then not UI.Recording then
-               Editing_Track := Tracks (V);
-            else
-               Editing_Step := V;
-            end if;
-
-   --  if UI.Recording and then Pattern_Sequencer.Playing then
-   --
-   --     --  Live record the trigger
-   --     Sequences (Current_Editing_Pattern) (V) (Current_Playing_Step).Trig
-   --       := Always;
-   --
-   --     if Microstep /= 1 then
-   --        --  If user play later than the step time, play a preview
-   --        Do_Preview_Trigger (V);
-   --     end if;
-   --  else
-   --     Do_Preview_Trigger (V);
-   --  end if;
-
-            if UI.Recording then
-               declare
-                  S : Step_Rec renames
-                    G_Project.Steps
-                      (Editing_Track)(Editing_Pattern)(To_Value (Button));
-               begin
-                  if S.Trig /= None then
-                     S.Trig := None;
-                  else
-                     S.Trig := Always;
-                  end if;
-               end;
-            else
-               if Mode = UI.Step_Mode then
-                  Play_Step (Editing_Pattern,
-                             Editing_Track,
-                             To_Value (Button));
-               else
-                  Do_Preview_Trigger (Tracks (V));
-
-               end if;
-            end if;
-
-         when UI.FX_Mode =>
-            null;
-
-         when UI.Sample_Edit_Mode =>
-            case Button is
-               when B1 =>
-                  Prev (G_Keyboard_Octave);
-               when B8 =>
-                  Next (G_Keyboard_Octave);
-               when B4 =>
-                  G_Keyboard_Octave := 0;
-               when others =>
-                  declare
-                     Key : constant MIDI.MIDI_Key :=
-                       Offset ((case Button is
-                                  when B9  => MIDI.C4,
-                                  when B2  => MIDI.Cs4,
-                                  when B10 => MIDI.D4,
-                                  when B3  => MIDI.Ds4,
-                                  when B11 => MIDI.E4,
-                                  when B12 => MIDI.F4,
-                                  when B5  => MIDI.Fs4,
-                                  when B13 => MIDI.G4,
-                                  when B6  => MIDI.Gs4,
-                                  when B14 => MIDI.A4,
-                                  when B7  => MIDI.As4,
-                                  when B15 => MIDI.B4,
-                                  when B16 => MIDI.C5,
-                                  when others => MIDI.C4),
-                               G_Keyboard_Octave);
-                  begin
-                     WNM.Coproc.Push_To_Synth
-                       ((WNM.Coproc.MIDI_Event,
-                        (MIDI.Note_On,
-                         WNM.Synth.Sample_Rec_Playback_Channel,
-                         Key,
-                         127)));
-                  end;
-            end case;
-      end case;
-   end On_Press;
-
-   ----------------
-   -- On_Release --
-   ----------------
-
-   procedure On_Release (Button : Keyboard_Button;
-                         Mode   : WNM.UI.Main_Modes)
-   is
-      pragma Unreferenced (Button);
-   begin
-      case Mode is
-         when UI.Song_Mode =>
-            null;
-
-         when UI.Track_Mode | UI.Step_Mode | UI.FX_Mode | UI.Pattern_Mode |
-              UI.Sample_Edit_Mode =>
-            null;
-      end case;
-   end On_Release;
-
-   --------------
    -- Play_Now --
    --------------
 
@@ -789,6 +660,149 @@ package body WNM.Project.Step_Sequencer is
       end if;
 
    end Execute_Step;
+
+   --------------
+   -- On_Press --
+   --------------
+
+   procedure On_Press (Button : Keyboard_Button;
+                       Mode   : WNM.UI.Main_Modes)
+   is
+      V : constant Keyboard_Value := To_Value (Button);
+   begin
+      case Mode is
+         when UI.Pattern_Mode =>
+            Editing_Pattern := Patterns (V);
+
+         when UI.Song_Mode =>
+            pragma Warnings (Off, "lower bound test optimized");
+            if V in
+              Keyboard_Value (WNM.Parts'First) ..
+              Keyboard_Value (WNM.Parts'Last)
+            then
+               Set_Origin (Parts (V));
+            end if;
+            Editing_Song_Elt := Song_Element (V);
+
+         when UI.Track_Mode | UI.Step_Mode =>
+
+            if UI.Chroma_Keyboard then
+               case Button is
+               when B1 =>
+                  Prev (G_Keyboard_Octave);
+               when B8 =>
+                  Next (G_Keyboard_Octave);
+               when B4 =>
+                  G_Keyboard_Octave := 0;
+               when others =>
+                  declare
+                     Key : constant MIDI.MIDI_Key :=
+                       Offset ((case Button is
+                                  when B9  => MIDI.C4,
+                                  when B2  => MIDI.Cs4,
+                                  when B10 => MIDI.D4,
+                                  when B3  => MIDI.Ds4,
+                                  when B11 => MIDI.E4,
+                                  when B12 => MIDI.F4,
+                                  when B5  => MIDI.Fs4,
+                                  when B13 => MIDI.G4,
+                                  when B6  => MIDI.Gs4,
+                                  when B14 => MIDI.A4,
+                                  when B7  => MIDI.As4,
+                                  when B15 => MIDI.B4,
+                                  when B16 => MIDI.C5,
+                                  when others => MIDI.C4),
+                               G_Keyboard_Octave);
+                     T : constant Tracks := Editing_Track;
+                  begin
+                     if UI.Recording then
+                        declare
+                           P : constant Patterns := Editing_Pattern;
+                           S : constant Sequencer_Steps := Editing_Step;
+                           Step_Data : Step_Rec renames
+                             G_Project.Steps
+                                 (T)(P)(S);
+                        begin
+                           Step_Data.Note_Mode := Note;
+                           Step_Data.Note := Key;
+                           Play_Step (P, T, S);
+                        end;
+
+                     else
+                        Play_Now (Time.Clock,
+                                  T,
+                                  Offset (Key, G_Project.Tracks (T).Offset),
+                                  MIDI.MIDI_Data'Last,
+                                  Microseconds_Per_Beat);
+                     end if;
+                  end;
+               end case;
+            elsif UI.Recording then
+
+               Editing_Step := V;
+               declare
+                  S : Step_Rec renames
+                    G_Project.Steps
+                      (Editing_Track)(Editing_Pattern)(To_Value (Button));
+               begin
+                  if S.Trig /= None then
+                     S.Trig := None;
+                  else
+                     S.Trig := Always;
+                  end if;
+               end;
+            else
+               if Mode = UI.Step_Mode then
+                  Play_Step (Editing_Pattern,
+                             Editing_Track,
+                             To_Value (Button));
+               else
+                  Do_Preview_Trigger (Tracks (V));
+                  Editing_Track := Tracks (V);
+               end if;
+            end if;
+
+         when UI.FX_Mode =>
+            null;
+
+         when UI.Sample_Edit_Mode =>
+            case Button is
+               when B1 =>
+                  Prev (G_Keyboard_Octave);
+               when B8 =>
+                  Next (G_Keyboard_Octave);
+               when B4 =>
+                  G_Keyboard_Octave := 0;
+               when others =>
+                  declare
+                     Key : constant MIDI.MIDI_Key :=
+                       Offset ((case Button is
+                                  when B9  => MIDI.C4,
+                                  when B2  => MIDI.Cs4,
+                                  when B10 => MIDI.D4,
+                                  when B3  => MIDI.Ds4,
+                                  when B11 => MIDI.E4,
+                                  when B12 => MIDI.F4,
+                                  when B5  => MIDI.Fs4,
+                                  when B13 => MIDI.G4,
+                                  when B6  => MIDI.Gs4,
+                                  when B14 => MIDI.A4,
+                                  when B7  => MIDI.As4,
+                                  when B15 => MIDI.B4,
+                                  when B16 => MIDI.C5,
+                                  when others => MIDI.C4),
+                               G_Keyboard_Octave);
+                  begin
+                     WNM.Coproc.Push_To_Synth
+                       ((WNM.Coproc.MIDI_Event,
+                        (MIDI.Note_On,
+                         WNM.Synth.Sample_Rec_Playback_Channel,
+                         Key,
+                         127)));
+                  end;
+            end case;
+      end case;
+   end On_Press;
 
    -------------------
    -- Part_Callback --

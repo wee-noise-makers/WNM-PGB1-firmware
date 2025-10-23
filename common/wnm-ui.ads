@@ -57,6 +57,7 @@ package WNM.UI is
    function Input_GUI_Mode return Input_Mode_Type;
 
    function Recording return Boolean;
+   function Chroma_Keyboard return Boolean;
 
    function Muted (Track : WNM.Tracks) return Boolean;
 

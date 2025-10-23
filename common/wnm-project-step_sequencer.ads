@@ -32,9 +32,6 @@ package WNM.Project.Step_Sequencer is
    procedure On_Press (Button : Keyboard_Button;
                        Mode : WNM.UI.Main_Modes);
 
-   procedure On_Release (Button : Keyboard_Button;
-                         Mode : WNM.UI.Main_Modes);
-
    procedure MIDI_Clock_Tick (Step : MIDI.Time.Step_Count);
 
    function Keyboard_Octave return Octave_Offset;

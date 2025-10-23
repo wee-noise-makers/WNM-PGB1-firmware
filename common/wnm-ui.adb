@@ -53,11 +53,11 @@ package body WNM.UI is
    Select_Done : Boolean := False;
 
    Recording_On : Boolean := False;
+   Chroma_Keyboard_On : Boolean := False;
 
    Track_Muted : array (WNM.Tracks) of Boolean := (others => False);
    Solo_Mode_Enabled : Boolean := False;
    Solo_Track : WNM.Tracks := 1;
-
    Anim_Step : UInt32 := 0;
 
    ----------------
@@ -88,6 +88,9 @@ package body WNM.UI is
 
    function Recording return Boolean
    is (Recording_On);
+
+   function Chroma_Keyboard return Boolean
+   is (Chroma_Keyboard_On);
 
    ------------------
    -- Signal_Event --
@@ -181,15 +184,16 @@ package body WNM.UI is
 
                   when Rec =>
                      case Current_Input_Mode is
+                        when Step_Mode | Track_Mode =>
+                           Recording_On := not Recording_On;
                         when others =>
                            null;
                      end case;
 
-                     Recording_On := not Recording_On;
-
                   when Keyboard_Button =>
 
-                     Project.Step_Sequencer.On_Press (B, Current_Input_Mode);
+                     Project.Step_Sequencer.On_Press
+                       (B, Current_Input_Mode);
 
                   when others =>
                      null;
@@ -204,26 +208,19 @@ package body WNM.UI is
                         Current_Input_Mode := Volume_BPM_Mute;
                      end if;
 
-                     --  when Rec =>
-                  --     --  Switch to squence edition mode
-                  --     Sequencer.Rec_Long;
-                  --  when B1 .. B16 =>
-                  --
-                  --     GUI.Menu.Open (GUI.Menu.Step_Menu);
-                  --     Editing_Step := To_Value (B);
-                  --
-                  --  when Pattern_Button =>
-                  --     GUI.Menu.Open (GUI.Menu.Pattern_Menu);
-                  --     Current_Input_Mode := Pattern_Select;
-                  when others => null;
+                  when Rec =>
+                     Chroma_Keyboard_On := True;
+
+                  when others =>
+                     null;
                   end case;
+
                when On_Release =>
-                  case B is
-                  when Keyboard_Button =>
-                     Project.Step_Sequencer.On_Release (B, Current_Input_Mode);
-                  when others => null;
-                  end case;
-               when others => null;
+                  if Chroma_Keyboard_On and then B = Rec then
+                     Chroma_Keyboard_On := False;
+                  end if;
+               when others =>
+                  null;
             end case;
 
          when Pattern_Select =>
@@ -247,6 +244,7 @@ package body WNM.UI is
                         --  Switching mode disables recording.
                         --  TODO: Is that a good thing?
                         Recording_On := False;
+                        Chroma_Keyboard_On := False;
                      end if;
                   end if;
                when others => null;
@@ -273,6 +271,8 @@ package body WNM.UI is
                         --  Switching mode disables recording.
                         --  TODO: Is that a good thing?
                         Recording_On := False;
+                        Chroma_Keyboard_On := False;
+
                      end if;
                   end if;
                when others => null;
@@ -299,6 +299,8 @@ package body WNM.UI is
                         --  Switching mode disables recording.
                         --  TODO: Is that a good thing?
                         Recording_On := False;
+                        Chroma_Keyboard_On := False;
+
                      end if;
                   end if;
                when others => null;
@@ -325,6 +327,8 @@ package body WNM.UI is
                         --  Switching mode disables recording.
                         --  TODO: Is that a good thing?
                         Recording_On := False;
+                        Chroma_Keyboard_On := False;
+
                      end if;
                   end if;
                when others => null;
@@ -541,7 +545,7 @@ package body WNM.UI is
           when B14            => False,
           when B15            => False,
           when B16            => False,
-          when Rec            => False,
+          when Rec            => True,
           when Play           => True,
           when Func           => False,
           when Step_Button    => False,
@@ -649,6 +653,45 @@ package body WNM.UI is
          end if;
       end;
    end Update;
+
+   --------------------------
+   -- LEDs_Chroma_Keyboard --
+   --------------------------
+
+   procedure LEDs_Chroma_Keyboard is
+      use type WNM.Project.Octave_Offset;
+      Octave : constant WNM.Project.Octave_Offset :=
+        WNM.Project.Step_Sequencer.Keyboard_Octave;
+
+      Oct_Hue : constant WNM.LEDs.Hue :=
+        (case abs Octave is
+            when      1 => LEDs.Spring_Green,
+            when      2 => LEDs.Cyan,
+            when      3 => LEDs.Azure,
+            when      4 => LEDs.Blue,
+            when      5 => LEDs.Violet,
+            when      6 => LEDs.Magenta,
+            when      7 => LEDs.Rose,
+            when others => LEDs.Red);
+   begin
+      LEDs.Set_Hue (Oct_Hue);
+      if Octave < 0 then
+         LEDs.Turn_On (B1);
+      elsif Octave > 0 then
+         LEDs.Turn_On (B8);
+      end if;
+
+      LEDs.Set_Hue (LEDs.Yellow);
+
+      for B in B9 .. B16 loop
+         LEDs.Turn_On (B);
+      end loop;
+      LEDs.Turn_On (B2);
+      LEDs.Turn_On (B3);
+      LEDs.Turn_On (B5);
+      LEDs.Turn_On (B6);
+      LEDs.Turn_On (B7);
+   end LEDs_Chroma_Keyboard;
 
    -----------------
    -- Update_LEDs --
@@ -879,7 +922,10 @@ package body WNM.UI is
                LEDs.Set_Hue (LEDs.Track);
                LEDs.Turn_On (Track_Button);
 
-               if Recording then
+               if Chroma_Keyboard_On then
+                  LEDs_Chroma_Keyboard;
+
+               elsif Recording then
 
                   --  Active steps in edit mode
                   LEDs.Set_Hue (LEDs.Recording);
@@ -888,6 +934,12 @@ package body WNM.UI is
                         LEDs.Turn_On (B);
                      end if;
                   end loop;
+
+                  if Select_Blink then
+                     --  Blink Selected step
+                     LEDs.Turn_On (To_Button (Project.Editing_Step),
+                                   LEDs.Step);
+                  end if;
 
                   On_Playing_Step (LEDs.Playing);
 
@@ -922,76 +974,46 @@ package body WNM.UI is
                LEDs.Set_Hue (LEDs.Step);
                LEDs.Turn_On (Step_Button);
 
-               if Recording then
-                  --  Red means editing
-                  LEDs.Set_Hue (LEDs.Recording);
+               if Chroma_Keyboard_On then
+                  LEDs_Chroma_Keyboard;
                else
-                  LEDs.Set_Hue (LEDs.Active_Step);
-               end if;
 
-               --  Active steps
-               for B in Keyboard_Button loop
-                  if Project.Set (Step => To_Value (B)) then
-                     LEDs.Turn_On (B);
+                  if Recording then
+                     --  Red means editing
+                     LEDs.Set_Hue (LEDs.Recording);
+                  else
+                     LEDs.Set_Hue (LEDs.Active_Step);
                   end if;
-               end loop;
 
-               if Project.Set (Step => Project.Editing_Step) then
-                  if Select_Blink then
-                     --  Blink Selected step
+                  --  Active steps
+                  for B in Keyboard_Button loop
+                     if Project.Set (Step => To_Value (B)) then
+                        LEDs.Turn_On (B);
+                     end if;
+                  end loop;
+
+                  if Project.Set (Step => Project.Editing_Step) then
+                     if Select_Blink then
+                        --  Blink Selected step
+                        LEDs.Turn_On (To_Button (Project.Editing_Step),
+                                      LEDs.Step);
+                     end if;
+                  else
                      LEDs.Turn_On (To_Button (Project.Editing_Step),
                                    LEDs.Step);
                   end if;
-               else
-                  LEDs.Turn_On (To_Button (Project.Editing_Step),
-                                LEDs.Step);
-               end if;
 
-               --  Playing step
-               On_Playing_Step (LEDs.Playing);
+                  --  Playing step
+                  On_Playing_Step (LEDs.Playing);
+               end if;
 
             when FX_Mode =>
                LEDs.Set_Hue (LEDs.Violet);
 
                LEDs.Turn_On (Func);
-               null;
 
             when Sample_Edit_Mode =>
-
-               declare
-                  use type WNM.Project.Octave_Offset;
-                  Octave : constant WNM.Project.Octave_Offset :=
-                    WNM.Project.Step_Sequencer.Keyboard_Octave;
-
-                  Oct_Hue : constant WNM.LEDs.Hue :=
-                    (case abs Octave is
-                        when      1 => LEDs.Spring_Green,
-                        when      2 => LEDs.Cyan,
-                        when      3 => LEDs.Azure,
-                        when      4 => LEDs.Blue,
-                        when      5 => LEDs.Violet,
-                        when      6 => LEDs.Magenta,
-                        when      7 => LEDs.Rose,
-                        when others => LEDs.Red);
-               begin
-                  LEDs.Set_Hue (Oct_Hue);
-                  if Octave < 0 then
-                     LEDs.Turn_On (B1);
-                  elsif Octave > 0 then
-                     LEDs.Turn_On (B8);
-                  end if;
-               end;
-
-               LEDs.Set_Hue (LEDs.Yellow);
-
-               for B in B9 .. B16 loop
-                  LEDs.Turn_On (B);
-               end loop;
-               LEDs.Turn_On (B2);
-               LEDs.Turn_On (B3);
-               LEDs.Turn_On (B5);
-               LEDs.Turn_On (B6);
-               LEDs.Turn_On (B7);
+               LEDs_Chroma_Keyboard;
             end case;
       end case;
 
