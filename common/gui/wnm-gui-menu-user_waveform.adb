@@ -62,7 +62,6 @@ package body WNM.GUI.Menu.User_Waveform is
       Step : constant HAL.UInt32 := Anim_Step / 6;
 
       Icon_W : constant Natural := load_wave_icon.Data.W;
-      Icon_H : constant Natural := load_wave_icon.Data.H;
       Icon_Left : constant Natural :=
         Box_Center.X - (Icon_W / 2);
 
