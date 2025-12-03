@@ -30,14 +30,16 @@ package WNM.Voices.Chord_Voice is
    is new Four_Params_Voice
    with private;
 
-   type Chord_Engine is (Waveform);
+   type Chord_Engine is (Waveform,  Mixed_Waveforms, Custom_Waveform);
 
    function Engine (This : Instance) return Chord_Engine;
    procedure Set_Engine (This : in out Instance; E : Chord_Engine);
 
    function Img (E : Chord_Engine) return String
    is (case E is
-          when Waveform => "Chords - Waveform");
+          when Waveform        => "Waveforms",
+          when Mixed_Waveforms => "Mixed Waveforms",
+          when Custom_Waveform => "Custom Waveform");
 
    procedure Init (This : in out Instance);
 
@@ -61,7 +63,9 @@ package WNM.Voices.Chord_Voice is
    overriding
    function Param_Label (This : Instance; Id : Param_Id) return String
    is (case Id is
-          when P_Waveform => "Waveform",
+          when P_Waveform => (if This.Engine /= Custom_Waveform
+                              then "Waveform"
+                              else "-Unused-"),
           when P_Glide    => "Glide",
           when P_Attack   => "Attack",
           when P_Release  => "Release");
@@ -70,7 +74,9 @@ package WNM.Voices.Chord_Voice is
    function Param_Short_Label (This : Instance; Id : Param_Id)
                                return Short_Label
    is (case Id is
-          when P_Waveform => "WAV",
+          when P_Waveform => (if This.Engine /= Custom_Waveform
+                              then "WAV"
+                              else "---"),
           when P_Glide    => "GLD",
           when P_Attack   => "ATK",
           when P_Release  => "REL");

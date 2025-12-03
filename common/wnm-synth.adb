@@ -152,11 +152,13 @@ package body WNM.Synth is
           when 0     => Voices.Sampler_Voice.Overdrive,
           when others => Voices.Sampler_Voice.Crusher);
 
-   subtype Chord_Engine_Range is MIDI.MIDI_Data range 0 .. 0;
+   subtype Chord_Engine_Range is MIDI.MIDI_Data range 0 .. 2;
    function Chord_Engines (V : MIDI.MIDI_Data)
                         return Voices.Chord_Voice.Chord_Engine
    is (case V is
-          when others  => Voices.Chord_Voice.Waveform);
+          when 0      => Voices.Chord_Voice.Waveform,
+          when 1      => Voices.Chord_Voice.Mixed_Waveforms,
+          when others => Voices.Chord_Voice.Custom_Waveform);
 
    subtype Tresses_Channels
      is MIDI.MIDI_Channel range Kick_Channel .. Bitcrusher_Channel;

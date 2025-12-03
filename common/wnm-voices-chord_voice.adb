@@ -22,6 +22,7 @@
 with Tresses.DSP;
 with Tresses.Envelopes.AR; use Tresses.Envelopes.AR;
 with Tresses.Resources; use Tresses.Resources;
+with WNM.Synth;
 
 package body WNM.Voices.Chord_Voice is
 
@@ -85,6 +86,25 @@ package body WNM.Voices.Chord_Voice is
 
    end Init;
 
+   ----------------
+   -- Voice_Wave --
+   ----------------
+
+   function Voice_Wave (This : Instance;
+                        Wave_Select : Wave_Range;
+                        V : Voice_Id)
+                        return not null access constant Table_257_S16
+   is
+      Mix_Sel : constant Wave_Range :=
+        Wave_Range ((U32 (Wave_Select) + U32 (V)) mod
+                      (U32 (Wave_Range'Last) + 1));
+   begin
+      return (case This.Engine is
+                 when Waveform        => Waveforms (Wave_Select),
+                 when Mixed_Waveforms => Waveforms (Mix_Sel),
+                 when Custom_Waveform => WNM.Synth.User_Waveform'Access);
+   end Voice_Wave;
+
    ------------
    -- Render --
    ------------
@@ -100,8 +120,14 @@ package body WNM.Voices.Chord_Voice is
         Wave_Range
           (Param_Range'Min (Mod_Param, Param_Range (Wave_Range'Last)));
 
-      Waveform : constant not null access constant Table_257_S16 :=
-        Waveforms (Wave_Select);
+      Waveform_1 : constant not null access constant Table_257_S16 :=
+        Voice_Wave (This, Wave_Select, 1);
+      Waveform_2 : constant not null access constant Table_257_S16 :=
+        Voice_Wave (This, Wave_Select, 2);
+      Waveform_3 : constant not null access constant Table_257_S16 :=
+        Voice_Wave (This, Wave_Select, 3);
+      Waveform_4 : constant not null access constant Table_257_S16 :=
+        Voice_Wave (This, Wave_Select, 4);
 
       Sample : S32;
       Diff, Moded : U32;
@@ -158,10 +184,10 @@ package body WNM.Voices.Chord_Voice is
                V3.Phase := V3.Phase + V3.Current_Phase_Incr;
                V4.Phase := V4.Phase + V4.Current_Phase_Incr;
 
-               S1 := DSP.Interpolate824 (Waveform.all, V1.Phase);
-               S2 := DSP.Interpolate824 (Waveform.all, V2.Phase);
-               S3 := DSP.Interpolate824 (Waveform.all, V3.Phase);
-               S4 := DSP.Interpolate824 (Waveform.all, V4.Phase);
+               S1 := DSP.Interpolate824 (Waveform_1.all, V1.Phase);
+               S2 := DSP.Interpolate824 (Waveform_2.all, V2.Phase);
+               S3 := DSP.Interpolate824 (Waveform_3.all, V3.Phase);
+               S4 := DSP.Interpolate824 (Waveform_4.all, V4.Phase);
 
                Sample := (S32 (S1) + S32 (S2) + S32 (S3) + S32 (S4)) / 4;
                Envelopes.AR.Render (This.Env);
