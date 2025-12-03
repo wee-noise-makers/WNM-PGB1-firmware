@@ -719,9 +719,10 @@ package body WNM.Project.Step_Sequencer is
                         declare
                            P : constant Patterns := Editing_Pattern;
                            S : constant Sequencer_Steps := Editing_Step;
+                           pragma Warnings (Off, "not referenced");
                            Step_Data : Step_Rec renames
-                             G_Project.Steps
-                                 (T)(P)(S);
+                             G_Project.Steps (T)(P)(S);
+                           pragma Warnings (On, "not referenced");
                         begin
                            Step_Data.Note_Mode := Note;
                            Step_Data.Note := Key;
@@ -756,6 +757,7 @@ package body WNM.Project.Step_Sequencer is
                   Play_Step (Editing_Pattern,
                              Editing_Track,
                              To_Value (Button));
+                  Editing_Step := V;
                else
                   Do_Preview_Trigger (Tracks (V));
                   Editing_Track := Tracks (V);
