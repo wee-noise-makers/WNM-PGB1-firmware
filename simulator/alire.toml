@@ -1,6 +1,6 @@
 name = "wnm_pgb1_simulator"
 description = "Simulator of the PGB-1 groovebox"
-version = "0.1.0-dev"
+version = "1.2.0"
 
 authors = ["Fabien Chouteau"]
 maintainers = ["Fabien Chouteau <fabien.chouteau@gmail.com>"]
@@ -24,7 +24,8 @@ midi = "^1.0.0"
 [[pins]]
 fsmaker = { url="https://github.com/Fabien-Chouteau/fsmaker" }
 uf2_utils = { url="https://github.com/Fabien-Chouteau/uf2_utils" }
-tresses = {url="https://github.com/wee-noise-makers/tresses"}
+tresses = {url="https://github.com/wee-noise-makers/tresses", branch="release/3.0"}
+# tresses = { path = "../../tresses"}
 
 [configuration.values]
 littlefs.Assert = false

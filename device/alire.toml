@@ -1,6 +1,6 @@
 name = "wnm_pgb1_device"
 description = "Firmware for the PGB-1 groovebox"
-version = "0.1.0-dev"
+version = "1.2.0"
 
 authors = ["Fabien Chouteau"]
 maintainers = ["Fabien Chouteau <fabien.chouteau@gmail.com>"]
@@ -20,7 +20,8 @@ midi = "~1.0.0"
 release.runtime_checks = "none"
 
 [[pins]]
-tresses = {url="https://github.com/wee-noise-makers/tresses"}
+tresses = {url="https://github.com/wee-noise-makers/tresses", branch="release/3.0"}
+# tresses = { path = "../../tresses"}
 
 [configuration.values]
 noise_nugget_sdk.System_Clock = "SYS_133MHz"
