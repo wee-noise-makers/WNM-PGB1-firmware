@@ -2387,19 +2387,21 @@ package body WNM.Project is
 
    procedure Set_Track_Defaults (Tracks : out Track_Arr) is
       Default_Kick_Track : constant Track_Rec :=
-        (Default_Track with delta Offset => -4,
+        (Default_Track with delta
+         Engine => 3,
+         Offset => -4,
          CC => ((0, 63, "CC0              "),
                 (1, 63, "CC1              "),
-                (2, 63, "CC2              "),
+                (2, 15, "CC2              "),
                 (3, 63, "CC3              ")
                ));
 
       Default_Snare_Track : constant Track_Rec :=
         (Default_Track with delta Offset => -1,
-         CC => ((0, 63, "CC0              "),
-                (1, 63, "CC1              "),
-                (2, 63, "CC2              "),
-                (3, 63, "CC3              ")
+         CC => ((0, 40, "CC0              "),
+                (1, 35, "CC1              "),
+                (2, 50, "CC2              "),
+                (3, 50, "CC3              ")
                ));
 
       Default_Cymbal_Track : constant Track_Rec :=
