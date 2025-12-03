@@ -36,6 +36,7 @@ package WNM.Voices.Snare_Voice is
    type Snare_Engine is (Sine_Snare, Saw_Snare, Triangle_Snare,
                          Virt_Analog,
                          Clap,
+                         Clap_HP,
                          User_Wave_Snare);
 
    function Engine (This : Instance) return Snare_Engine;

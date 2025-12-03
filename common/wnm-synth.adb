@@ -126,7 +126,7 @@ package body WNM.Synth is
           when 4 => Voices.Kick_Voice.User_Wave_Kick,
           when others => Voices.Kick_Voice.User_Wave_Click_Kick);
 
-   subtype Snare_Engine_Range is MIDI.MIDI_Data range 0 .. 5;
+   subtype Snare_Engine_Range is MIDI.MIDI_Data range 0 .. 6;
    function Snare_Engines (V : MIDI.MIDI_Data)
                            return Voices.Snare_Voice.Snare_Engine
    is (case V is
@@ -135,6 +135,7 @@ package body WNM.Synth is
           when 2 => Voices.Snare_Voice.Triangle_Snare,
           when 3 => Voices.Snare_Voice.Virt_Analog,
           when 4 => Voices.Snare_Voice.Clap,
+          when 5 => Voices.Snare_Voice.Clap_HP,
           when others => Voices.Snare_Voice.User_Wave_Snare);
 
    subtype HH_Engine_Range is MIDI.MIDI_Data range 0 .. 2;

@@ -152,6 +152,17 @@ package body WNM.Voices.Snare_Voice is
                                             Do_Init => This.Do_Init,
                                             Do_Strike => This.Do_Strike);
 
+         when Clap_HP =>
+            Tresses.Drums.Clap.Render_Clap_HP (Buffer,
+                                              Params => This.Params,
+                                              Filter => This.Filter0,
+                                              Rng =>  This.Rng,
+                                              Env => This.Env0,
+                                              Re_Trig => This.Re_Trig,
+                                              Pitch => This.Pitch,
+                                              Do_Init => This.Do_Init,
+                                              Do_Strike => This.Do_Strike);
+
       end case;
    end Render;
 
@@ -166,7 +177,8 @@ package body WNM.Voices.Snare_Voice is
           when Triangle_Snare => Tresses.Drum_Triangle_Snare,
           when User_Wave_Snare => Tresses.Drum_User_Wave_Snare,
           when Virt_Analog => Tresses.Drum_Snare,
-          when Clap  => Tresses.Drum_Clap);
+          when Clap  => Tresses.Drum_Clap,
+          when Clap_HP => Tresses.Drum_Clap_HP);
 
    ---------
    -- Img --
