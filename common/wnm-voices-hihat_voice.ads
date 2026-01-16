@@ -33,7 +33,13 @@ package WNM.Voices.Hihat_Voice is
    is new Four_Params_Voice
    with private;
 
-   type HH_Engine is (Cymbal, HH909, HH707);
+   type HH_Engine is
+     (Cymbal,
+      HH909, HH707, HH808, HH505, HHLM2, HHMRK2, HHCR78, HH_Acoustic,
+      HH909_BP, HH707_BP, HH808_BP, HH505_BP, HHLM2_BP, HHMRK2_BP, HHCR78_BP,
+      HH_Acoustic_BP,
+      HH909_HP, HH707_HP, HH808_HP, HH505_HP, HHLM2_HP, HHMRK2_HP, HHCR78_HP,
+      HH_Acoustic_HP);
 
    function Engine (This : Instance) return HH_Engine;
    procedure Set_Engine (This : in out Instance; E : HH_Engine);

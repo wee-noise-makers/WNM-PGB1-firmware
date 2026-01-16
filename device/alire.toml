@@ -20,7 +20,8 @@ midi = "~1.0.0"
 release.runtime_checks = "none"
 
 [[pins]]
-tresses = {url="https://github.com/wee-noise-makers/tresses"}
+tresses = {url="https://github.com/wee-noise-makers/tresses", branch="main"}
+# tresses = { path = "../../tresses"}
 
 [configuration.values]
 noise_nugget_sdk.System_Clock = "SYS_133MHz"

@@ -138,13 +138,39 @@ package body WNM.Synth is
           when 5 => Voices.Snare_Voice.Clap_HP,
           when others => Voices.Snare_Voice.User_Wave_Snare);
 
-   subtype HH_Engine_Range is MIDI.MIDI_Data range 0 .. 2;
+   subtype HH_Engine_Range is MIDI.MIDI_Data range 0 .. 24;
    function HH_Engines (V : MIDI.MIDI_Data)
                         return Voices.Hihat_Voice.HH_Engine
    is (case V is
           when 0 => Voices.Hihat_Voice.Cymbal,
           when 1 => Voices.Hihat_Voice.HH909,
-          when others => Voices.Hihat_Voice.HH707);
+          when 2 => Voices.Hihat_Voice.HH707,
+          when 3 => Voices.Hihat_Voice.HH808,
+          when 4 => Voices.Hihat_Voice.HH505,
+          when 5 => Voices.Hihat_Voice.HHLM2,
+          when 6 => Voices.Hihat_Voice.HHCR78,
+          when 7 => Voices.Hihat_Voice.HHMRK2,
+          when 8 => Voices.Hihat_Voice.HH_Acoustic,
+
+          when 9 => Voices.Hihat_Voice.HH909_BP,
+          when 10 => Voices.Hihat_Voice.HH707_BP,
+          when 11 => Voices.Hihat_Voice.HH808_BP,
+          when 12 => Voices.Hihat_Voice.HH505_BP,
+          when 13 => Voices.Hihat_Voice.HHLM2_BP,
+          when 14 => Voices.Hihat_Voice.HHCR78_BP,
+          when 15 => Voices.Hihat_Voice.HHMRK2_BP,
+          when 16 => Voices.Hihat_Voice.HH_Acoustic_BP,
+
+          when 17 => Voices.Hihat_Voice.HH909_HP,
+          when 18 => Voices.Hihat_Voice.HH707_HP,
+          when 19 => Voices.Hihat_Voice.HH808_HP,
+          when 20 => Voices.Hihat_Voice.HH505_HP,
+          when 21 => Voices.Hihat_Voice.HHLM2_HP,
+          when 22 => Voices.Hihat_Voice.HHCR78_HP,
+          when 23 => Voices.Hihat_Voice.HHMRK2_HP,
+          when 24 => Voices.Hihat_Voice.HH_Acoustic_HP,
+
+          when others => Voices.Hihat_Voice.HH_Acoustic_HP);
 
    subtype Sampler_Engine_Range is MIDI.MIDI_Data range 0 .. 1;
    function Sampler_Engines (V : MIDI.MIDI_Data)
