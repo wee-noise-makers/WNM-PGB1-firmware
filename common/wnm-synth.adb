@@ -172,11 +172,17 @@ package body WNM.Synth is
 
           when others => Voices.Hihat_Voice.HH_Acoustic_HP);
 
-   subtype Sampler_Engine_Range is MIDI.MIDI_Data range 0 .. 1;
+   subtype Sampler_Engine_Range is MIDI.MIDI_Data range 0 .. 6;
    function Sampler_Engines (V : MIDI.MIDI_Data)
                         return Voices.Sampler_Voice.Sampler_Engine
    is (case V is
-          when 0     => Voices.Sampler_Voice.Overdrive,
+          when 0      => Voices.Sampler_Voice.Overdrive,
+          when 1      => Voices.Sampler_Voice.Crusher,
+          when 2      => Voices.Sampler_Voice.Glide,
+          when 3      => Voices.Sampler_Voice.Pitch_Down_1oct,
+          when 4      => Voices.Sampler_Voice.Pitch_Down_2oct,
+          when 5      => Voices.Sampler_Voice.Pitch_Up_1oct,
+          when 6      => Voices.Sampler_Voice.Pitch_Up_2oct,
           when others => Voices.Sampler_Voice.Crusher);
 
    subtype Chord_Engine_Range is MIDI.MIDI_Data range 0 .. 2;

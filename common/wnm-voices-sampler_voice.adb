@@ -224,7 +224,8 @@ package body WNM.Voices.Sampler_Voice is
                              Key  :        MIDI.MIDI_Key)
    is
    begin
-      This.Phase_Increment := Pitch_Table2 (Key);
+      This.Start_Phase_Increment := This.Phase_Increment;
+      This.Target_Phase_Increment := Pitch_Table2 (Key);
    end Set_MIDI_Pitch;
 
    ----------
@@ -288,6 +289,7 @@ package body WNM.Voices.Sampler_Voice is
 
       Set_Release (This.Env, This.Params (P_Release));
 
+      This.Phase_Increment := This.Target_Phase_Increment;
       declare
          Out_Index : Natural := Buffer'First;
          Sample_Point : S32;
@@ -411,6 +413,7 @@ package body WNM.Voices.Sampler_Voice is
       end case;
 
       Set_Release (This.Env, This.Params (P_Release));
+      This.Phase_Increment := This.Target_Phase_Increment;
 
       declare
          Out_Index : Natural := Buffer'First;
@@ -457,6 +460,251 @@ package body WNM.Voices.Sampler_Voice is
       end;
    end Render_Crusher;
 
+   ----------------------
+   -- Render_Pitch_Mod --
+   ----------------------
+
+   procedure Render_Pitch_Mod (This    : in out Instance;
+                               Buffer  :    out Tresses.Mono_Buffer;
+                               Down    :        Boolean;
+                               Octaves :        Positive)
+   is
+      use Standard.Interfaces;
+
+      Points : Sample_Audio_Data renames
+        Sample_Data.all (This.Sample_Id).Audio;
+
+      Sample_Len : constant U32 :=
+        U32'Min (U32 (Sample_Point_Index'Last),
+                 U32 (Sample_Data.all (This.Sample_Id).Len));
+
+      P : U32;
+   begin
+      if This.Do_Init then
+         This.Do_Init := False;
+
+         Init (This.Env,
+               Do_Hold => True,
+               Attack_Speed => S_Half_Second);
+         Set_Attack (This.Env, Param_Range'Last / 4);
+
+         Init (This.Env2,
+               Do_Hold => True,
+               Attack_Speed => S_2_Seconds,
+               Release_Speed => S_2_Seconds);
+
+         This.Phase := 0;
+      end if;
+
+      case This.Do_Strike.Event is
+         when On =>
+            This.Do_Strike.Event := None;
+
+            --  This.Phase := 0;
+
+            declare
+               Start_Point : constant U32 :=
+                 U32 (Points_Per_Sample * U32 (This.Params (P_Start)) /
+                          U32 (Param_Range'Last));
+            begin
+               This.Phase := Start_Point * U32 (C4_Phase_Incr);
+            end;
+
+            On (This.Env, This.Do_Strike.Velocity);
+            On (This.Env2, This.Do_Strike.Velocity);
+
+         when Off =>
+            This.Do_Strike.Event := None;
+
+            Off (This.Env);
+            Off (This.Env2);
+         when None => null;
+      end case;
+
+      Set_Release (This.Env, This.Params (P_Release));
+      Set_Attack (This.Env2, This.Params (P_Drive));
+      Set_Release (This.Env2, This.Params (P_Start));
+      This.Phase_Increment := This.Target_Phase_Increment;
+
+      declare
+         Out_Index : Natural := Buffer'First;
+         Sample_Point : S32;
+         Phase_Increment : constant U32 :=
+           (if Down
+            then Tresses.DSP.Mix (This.Phase_Increment,
+                                  This.Phase_Increment / 2**Octaves,
+                                  This.Params (P_Drive))
+            else Tresses.DSP.Mix (This.Phase_Increment,
+                                  This.Phase_Increment * 2**Octaves,
+                                  This.Params (P_Drive)));
+
+      begin
+
+         if Sample_Len > 0 then
+            loop
+               exit when Out_Index > Buffer'Last;
+
+               P := Shift_Right (This.Phase, Phase_Frac_Bits);
+
+               exit when P > Sample_Len - 1;
+
+               --  Interpolation between two sample points
+               declare
+                  V : constant S32 :=
+                    S32 (Shift_Right
+                         (This.Phase, Phase_Frac_Bits - 15) and 16#7FFF#);
+
+                  A : constant S32 := S32 (Points (Sample_Point_Index (P)));
+                  B : constant S32 :=
+                    S32 (Points (Sample_Point_Index (P) + 1));
+               begin
+                  Sample_Point := A + ((B - A) * V) / 2**15;
+               end;
+
+               --  Pitch Envelope
+               Render (This.Env2);
+               --  This.Phase := This.Phase +
+               --    Tresses.DSP.Mix (1, This.Phase_Increment,
+               --                     Param_Range (Low_Pass (This.Env2)));
+               This.Phase := This.Phase + Phase_Increment;
+
+               --  Amplitude envelope
+               Render (This.Env);
+               Sample_Point := (Sample_Point * Low_Pass (This.Env)) / 2**15;
+
+               Buffer (Out_Index) := S16 (Sample_Point);
+
+               Out_Index := Out_Index + 1;
+            end loop;
+         end if;
+
+         --  Fill remaining point, if any...
+         Buffer (Out_Index .. Buffer'Last) := (others => 0);
+      end;
+   end Render_Pitch_Mod;
+
+   ------------------------
+   -- Render_Pitch_Glide --
+   ------------------------
+
+   procedure Render_Pitch_Glide (This   : in out Instance;
+                               Buffer :    out Tresses.Mono_Buffer)
+   is
+      use Standard.Interfaces;
+
+      Points : Sample_Audio_Data renames
+        Sample_Data.all (This.Sample_Id).Audio;
+
+      Sample_Len : constant U32 :=
+        U32'Min (U32 (Sample_Point_Index'Last),
+                 U32 (Sample_Data.all (This.Sample_Id).Len));
+
+      Diff : U32;
+      Amount : Param_Range;
+
+      P : U32;
+   begin
+      if This.Do_Init then
+         This.Do_Init := False;
+
+         Init (This.Env,
+               Do_Hold => True,
+               Attack_Speed => S_Half_Second);
+         Set_Attack (This.Env, Param_Range'Last / 4);
+
+         Init (This.Env2,
+               Do_Hold => False,
+               Release_Curve => Envelopes.AR.Exponential,
+               Release_Speed => Envelopes.AR.S_Half_Second);
+         Set_Attack (This.Env2, 0);
+
+         This.Phase := 0;
+      end if;
+
+      case This.Do_Strike.Event is
+         when On =>
+            This.Do_Strike.Event := None;
+
+            declare
+               Start_Point : constant U32 :=
+                 U32 (Points_Per_Sample * U32 (This.Params (P_Start)) /
+                          U32 (Param_Range'Last));
+            begin
+               This.Phase := Start_Point * U32 (C4_Phase_Incr);
+            end;
+
+            On (This.Env, This.Do_Strike.Velocity);
+            On (This.Env2, This.Do_Strike.Velocity);
+
+         when Off =>
+            This.Do_Strike.Event := None;
+
+            Off (This.Env);
+            Off (This.Env2);
+         when None => null;
+      end case;
+
+      Set_Release (This.Env, This.Params (P_Release));
+      Set_Release (This.Env2, This.Params (P_Drive));
+
+      if This.Target_Phase_Increment > This.Start_Phase_Increment then
+         Diff := This.Target_Phase_Increment - This.Start_Phase_Increment;
+         Amount := Param_Range'Last - Param_Range (Render (This.Env2));
+         This.Phase_Increment :=
+           This.Start_Phase_Increment + DSP.Modulate (Diff, Amount);
+      else
+         Diff := This.Start_Phase_Increment - This.Target_Phase_Increment;
+         Amount := Param_Range'Last - Param_Range (Render (This.Env2));
+         This.Phase_Increment :=
+           This.Start_Phase_Increment - DSP.Modulate (Diff, Amount);
+      end if;
+
+      declare
+         Out_Index : Natural := Buffer'First;
+         Sample_Point : S32;
+      begin
+
+         if Sample_Len > 0 then
+            loop
+               exit when Out_Index > Buffer'Last;
+
+               P := Shift_Right (This.Phase, Phase_Frac_Bits);
+
+               exit when P > Sample_Len - 1;
+
+               --  Interpolation between two sample points
+               declare
+                  V : constant S32 :=
+                    S32 (Shift_Right
+                         (This.Phase, Phase_Frac_Bits - 15) and 16#7FFF#);
+
+                  A : constant S32 := S32 (Points (Sample_Point_Index (P)));
+                  B : constant S32 :=
+                    S32 (Points (Sample_Point_Index (P) + 1));
+               begin
+                  Sample_Point := A + ((B - A) * V) / 2**15;
+               end;
+
+               --  We render the glide envelope for every sample to not have it
+               --  depend on the size of the buffer.
+               Render (This.Env2);
+               This.Phase := This.Phase + This.Phase_Increment;
+
+               --  Amplitude envelope
+               Render (This.Env);
+               Sample_Point := (Sample_Point * Low_Pass (This.Env)) / 2**15;
+
+               Buffer (Out_Index) := S16 (Sample_Point);
+
+               Out_Index := Out_Index + 1;
+            end loop;
+         end if;
+
+         --  Fill remaining point, if any...
+         Buffer (Out_Index .. Buffer'Last) := (others => 0);
+      end;
+   end Render_Pitch_Glide;
+
    ------------
    -- Render --
    ------------
@@ -466,8 +714,17 @@ package body WNM.Voices.Sampler_Voice is
    is
    begin
       case This.Engine is
-         when Overdrive => Render_Overdrive (This, Buffer);
-         when Crusher   => Render_Crusher (This, Buffer);
+         when Overdrive       => Render_Overdrive (This, Buffer);
+         when Crusher         => Render_Crusher (This, Buffer);
+         when Glide           => Render_Pitch_Glide (This, Buffer);
+         when Pitch_Down_1oct      =>
+            Render_Pitch_Mod (This, Buffer, Down => True, Octaves => 1);
+         when Pitch_Up_1oct        =>
+            Render_Pitch_Mod (This, Buffer, Down => False, Octaves => 1);
+         when Pitch_Down_2oct =>
+            Render_Pitch_Mod (This, Buffer, Down => True, Octaves => 2);
+         when Pitch_Up_2oct   =>
+            Render_Pitch_Mod (This, Buffer, Down => False, Octaves => 2);
       end case;
    end Render;
 

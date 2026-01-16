@@ -31,15 +31,22 @@ package WNM.Voices.Sampler_Voice is
    is new Four_Params_Voice
    with private;
 
-   type Sampler_Engine is (Overdrive, Crusher);
+   type Sampler_Engine is (Overdrive, Crusher, Glide,
+                           Pitch_Down_1oct, Pitch_Down_2oct,
+                           Pitch_Up_1oct, Pitch_Up_2oct);
 
    function Engine (This : Instance) return Sampler_Engine;
    procedure Set_Engine (This : in out Instance; E : Sampler_Engine);
 
    function Img (E : Sampler_Engine) return String
    is (case E is
-          when Overdrive => "Overdrive",
-          when Crusher   => "Crusher");
+          when Overdrive       => "Overdrive",
+          when Crusher         => "Crusher",
+          when Glide           => "Glide",
+          when Pitch_Down_1oct => "Pitch Down (1-Octave)",
+          when Pitch_Down_2oct => "Pitch Down (2-Octaves)",
+          when Pitch_Up_1oct   => "Pitch Up (1-Octave)",
+          when Pitch_Up_2oct   => "Pitch Up (2-Octaves)");
 
    procedure Set_Sample (This : in out Instance; Id : MIDI.MIDI_Data);
 
@@ -64,7 +71,13 @@ package WNM.Voices.Sampler_Voice is
           when P_Sample  => "Sample",
           when P_Start   => "Start",
           when P_Release => "Release",
-          when P_Drive   => "Drive");
+          when P_Drive   =>
+         (case Engine (This) is
+             when Overdrive  => "Drive",
+             when Crusher    => "Crush",
+             when Glide      => "Glide",
+             when Pitch_Down_1oct | Pitch_Down_2oct => "Pitch Down",
+             when Pitch_Up_1oct | Pitch_Up_2oct => "Pitch Up"));
 
    overriding
    function Param_Short_Label (This : Instance; Id : Param_Id)
@@ -73,7 +86,12 @@ package WNM.Voices.Sampler_Voice is
           when P_Sample  => "SMP",
           when P_Start   => "STR",
           when P_Release => "REL",
-          when P_Drive   => "DRV");
+          when P_Drive   =>
+         (case Engine (This) is
+             when Overdrive => "DRV",
+             when Crusher   => "CRH",
+             when Glide     => "GLD",
+             when Pitch_Down_1oct .. Pitch_Up_2oct => "PCH"));
 
    --  Special type to play the recorded sample in sample rec/edit mode
    type Sample_Rec_Playback_Instance
@@ -105,8 +123,10 @@ private
 
       Phase : Sample_Phase := 0;
       Phase_Increment : Sample_Phase := 0;
+      Start_Phase_Increment  : Sample_Phase := 0;
+      Target_Phase_Increment : Sample_Phase := 0;
 
-      Env : Tresses.Envelopes.AR.Instance;
+      Env, Env2 : Tresses.Envelopes.AR.Instance;
 
       Do_Init : Boolean := True;
    end record;
@@ -114,8 +134,8 @@ private
    type Sample_Rec_Playback_Instance
    is tagged
            record
-              On              : Boolean := False;
-              Phase           : Sample_Phase := 0;
-              Phase_Increment : Sample_Phase := 0;
+              On                     : Boolean := False;
+              Phase                  : Sample_Phase := 0;
+              Phase_Increment        : Sample_Phase := 0;
            end record;
 end WNM.Voices.Sampler_Voice;
