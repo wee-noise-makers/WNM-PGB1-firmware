@@ -702,11 +702,6 @@ package body WNM.Synth is
          Mix (Snare_Channel);
          Stop (Synth_Perf (Snare_Channel));
 
-         Start (Synth_Perf (Hihat_Channel));
-         HH.Render (Buffer);
-         Mix (Hihat_Channel);
-         Stop (Synth_Perf (Hihat_Channel));
-
          Start (Synth_Perf (Lead_Channel));
          Lead.Render (Buffer, Aux_Buffer);
          Mix (Lead_Channel);
@@ -731,6 +726,11 @@ package body WNM.Synth is
          Sampler2.Render (Buffer);
          Mix (Sample2_Channel);
          Stop (Synth_Perf (Sample2_Channel));
+
+         Start (Synth_Perf (Hihat_Channel));
+         HH.Render (Buffer);
+         Mix (Hihat_Channel);
+         Stop (Synth_Perf (Hihat_Channel));
 
          --  Start (Synth_Perf (Speech_Channel));
          --  Speech.Render (Buffer);
