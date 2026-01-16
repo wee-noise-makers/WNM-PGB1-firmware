@@ -220,8 +220,11 @@ package body WNM.GUI.Menu.Chord_Settings is
 
       Len      : constant Project.Chord_Slot_Id :=
         WNM.Project.Progression_Length (Prog);
-      Id : constant Chord_Slot_Id := This.Selected_Chord;
+      Id : Chord_Slot_Id;
    begin
+
+      This.Selected_Chord := Chord_Slot_Id'Min (This.Selected_Chord, Len);
+      Id := This.Selected_Chord;
 
       Draw_Menu_Box ("Chord settings",
                      Count => Natural (Len) + 2,
