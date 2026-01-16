@@ -20,6 +20,7 @@
 -------------------------------------------------------------------------------
 
 with Interfaces; use Interfaces;
+with HAL_Configuration; use HAL_Configuration;
 
 package body WNM.Screen is
 
@@ -53,7 +54,7 @@ package body WNM.Screen is
          Pt.Y in Natural (Pix_Y'First) .. Natural (Pix_Y'Last)
       then
          WNM_HAL.Set_Pixel (Pix_X (Pt.X), Pix_Y (Pt.Y), On);
-      else
+      elsif Fail_On_Pixel_Out_Of_Bounds then
          raise Program_Error with "Pixel out of bounds: (" & Pt.X'Img &
            ", " & Pt.Y'Img & ")";
       end if;
