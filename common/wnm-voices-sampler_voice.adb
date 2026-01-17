@@ -588,7 +588,8 @@ package body WNM.Voices.Sampler_Voice is
    ------------------------
 
    procedure Render_Pitch_Glide (This   : in out Instance;
-                               Buffer :    out Tresses.Mono_Buffer)
+                                 Buffer :    out Tresses.Mono_Buffer;
+                                 Fast   :        Boolean)
    is
       use Standard.Interfaces;
 
@@ -615,7 +616,11 @@ package body WNM.Voices.Sampler_Voice is
          Init (This.Env2,
                Do_Hold => False,
                Release_Curve => Envelopes.AR.Exponential,
-               Release_Speed => Envelopes.AR.S_Half_Second);
+               Release_Speed =>
+                 (if Fast
+                  then Envelopes.AR.S_Half_Second
+                  else Envelopes.AR.S_2_Seconds));
+
          Set_Attack (This.Env2, 0);
 
          This.Phase := 0;
@@ -716,10 +721,13 @@ package body WNM.Voices.Sampler_Voice is
       case This.Engine is
          when Overdrive       => Render_Overdrive (This, Buffer);
          when Crusher         => Render_Crusher (This, Buffer);
-         when Glide           => Render_Pitch_Glide (This, Buffer);
-         when Pitch_Down_1oct      =>
+         when Glide_Fast      =>
+            Render_Pitch_Glide (This, Buffer, Fast => True);
+         when Glide_Slow      =>
+            Render_Pitch_Glide (This, Buffer, Fast => False);
+         when Pitch_Down_1oct =>
             Render_Pitch_Mod (This, Buffer, Down => True, Octaves => 1);
-         when Pitch_Up_1oct        =>
+         when Pitch_Up_1oct   =>
             Render_Pitch_Mod (This, Buffer, Down => False, Octaves => 1);
          when Pitch_Down_2oct =>
             Render_Pitch_Mod (This, Buffer, Down => True, Octaves => 2);

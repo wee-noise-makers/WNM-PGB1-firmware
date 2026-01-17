@@ -31,7 +31,7 @@ package WNM.Voices.Sampler_Voice is
    is new Four_Params_Voice
    with private;
 
-   type Sampler_Engine is (Overdrive, Crusher, Glide,
+   type Sampler_Engine is (Overdrive, Crusher, Glide_Fast, Glide_Slow,
                            Pitch_Down_1oct, Pitch_Down_2oct,
                            Pitch_Up_1oct, Pitch_Up_2oct);
 
@@ -42,7 +42,8 @@ package WNM.Voices.Sampler_Voice is
    is (case E is
           when Overdrive       => "Overdrive",
           when Crusher         => "Crusher",
-          when Glide           => "Glide",
+          when Glide_Fast      => "Glide (Fast)",
+          when Glide_Slow      => "Glide (Slow)",
           when Pitch_Down_1oct => "Pitch Down (1-Octave)",
           when Pitch_Down_2oct => "Pitch Down (2-Octaves)",
           when Pitch_Up_1oct   => "Pitch Up (1-Octave)",
@@ -75,7 +76,7 @@ package WNM.Voices.Sampler_Voice is
          (case Engine (This) is
              when Overdrive  => "Drive",
              when Crusher    => "Crush",
-             when Glide      => "Glide",
+             when Glide_Fast | Glide_Slow => "Glide",
              when Pitch_Down_1oct | Pitch_Down_2oct => "Pitch Down",
              when Pitch_Up_1oct | Pitch_Up_2oct => "Pitch Up"));
 
@@ -90,7 +91,7 @@ package WNM.Voices.Sampler_Voice is
          (case Engine (This) is
              when Overdrive => "DRV",
              when Crusher   => "CRH",
-             when Glide     => "GLD",
+             when Glide_Fast | Glide_Slow => "GLD",
              when Pitch_Down_1oct .. Pitch_Up_2oct => "PCH"));
 
    --  Special type to play the recorded sample in sample rec/edit mode
