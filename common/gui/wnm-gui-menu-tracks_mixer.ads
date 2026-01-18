@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                  Copyright (C) 2016-2017 Fabien Chouteau                  --
+--                  Copyright (C) 2016-2026 Fabien Chouteau                  --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,41 +19,51 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-package WNM.GUI.Menu.Root is
+with WNM.Project;
 
-   procedure Push_Root_Window;
+private with Enum_Next;
+
+package WNM.GUI.Menu.Tracks_Mixer is
+
+   procedure Push_Window;
 
 private
 
-   type Menu_Items is (Projects,
-                       Tracks_Mixer,
-                       User_Waveform,
-                       Inputs,
-                       MIDI_Settings,
-                       DFU_Mode,
-                       System_Info);
+   subtype Top_Settings
+     is Project.User_Track_Settings
+     range Project.Volume .. Project.Master_FX;
 
-   function Menu_Items_Count is new Enum_Count (Menu_Items);
+   function Img (S : Top_Settings) return String
+   is (case S is
+          when Project.Volume    => "Volume",
+          when Project.Pan       => "Pan",
+          when Project.Master_FX => "FX");
 
-   type Root_Menu is new Menu_Window with record
-      Item : Menu_Items;
+   function Top_Settings_Count is new Enum_Count (Top_Settings);
+   package Top_Settings_Next is new Enum_Next (Top_Settings);
+   use Top_Settings_Next;
+
+   subtype Track_Id is Tracks range 1 .. 8;
+   package Track_Id_Next is new Enum_Next (Track_Id, Wrap => False);
+   use Track_Id_Next;
+
+   type Instance is new Menu_Window with record
+      Current_Setting : Top_Settings := Top_Settings'First;
+      Selected_Track : Track_Id := Track_Id'First;
    end record;
 
    overriding
-   procedure Draw (This : in out Root_Menu);
+   procedure Draw (This   : in out Instance);
 
    overriding
-   procedure On_Event (This  : in out Root_Menu;
+   procedure On_Event (This  : in out Instance;
                        Event : Menu_Event);
 
    overriding
-   procedure On_Pushed (This  : in out Root_Menu);
+   procedure On_Pushed (This  : in out Instance) is null;
 
    overriding
-   procedure On_Focus (This       : in out Root_Menu;
-                       Exit_Value : Window_Exit_Value);
+   procedure On_Focus (This       : in out Instance;
+                       Exit_Value : Window_Exit_Value) is null;
 
-   overriding
-   procedure On_Pop (This : in out Root_Menu);
-
-end WNM.GUI.Menu.Root;
+end WNM.GUI.Menu.Tracks_Mixer;

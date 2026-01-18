@@ -1359,8 +1359,8 @@ package body WNM.Project is
    -- Next_Value --
    ----------------
 
-   procedure Next_Value (S : User_Track_Settings) is
-      T : constant Tracks := Editing_Track;
+   procedure Next_Value (T : Tracks; S : User_Track_Settings)
+   is
       Track : Track_Rec renames G_Project.Tracks (T);
    begin
       case S is
@@ -1413,8 +1413,7 @@ package body WNM.Project is
    -- Prev_Value --
    ----------------
 
-   procedure Prev_Value (S : User_Track_Settings) is
-      T : constant Tracks := Editing_Track;
+   procedure Prev_Value (T : Tracks; S : User_Track_Settings) is
       Track : Track_Rec renames G_Project.Tracks (T);
    begin
       case S is

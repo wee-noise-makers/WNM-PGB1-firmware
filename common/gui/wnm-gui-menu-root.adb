@@ -27,6 +27,7 @@ with WNM.GUI.Menu.Inputs;
 with WNM.GUI.Menu.System_Info;
 with WNM.GUI.Menu.MIDI_Settings;
 with WNM.GUI.Menu.User_Waveform;
+with WNM.GUI.Menu.Tracks_Mixer;
 with WNM.Power_Control;
 with WNM.Screen;
 
@@ -46,6 +47,7 @@ package body WNM.GUI.Menu.Root is
    function Menu_Item_Text (Item : Menu_Items) return String
    is (case Item is
           when Projects        => "Projects",
+          when Tracks_Mixer    => "Mixer",
           when Inputs          => "Inputs",
           when User_Waveform   => "Custom Waveform",
           when MIDI_Settings   => "MIDI Settings",
@@ -95,6 +97,8 @@ package body WNM.GUI.Menu.Root is
       case This.Item is
          when Projects =>
             Draw_Icon (project_icon.Data);
+         when Tracks_Mixer =>
+            null;
          when User_Waveform =>
             Draw_Icon (edit_wave_icon.Data);
          when Inputs =>
@@ -129,6 +133,9 @@ package body WNM.GUI.Menu.Root is
 
                when Inputs =>
                   Menu.Inputs.Push_Window;
+
+               when Tracks_Mixer =>
+                  Menu.Tracks_Mixer.Push_Window;
 
                when User_Waveform =>
                   Menu.User_Waveform.Push_Window;

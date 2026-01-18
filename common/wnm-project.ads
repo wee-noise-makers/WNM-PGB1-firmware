@@ -431,8 +431,8 @@ package WNM.Project is
                   S : User_Track_Settings;
                   V : WNM_HAL.Touch_Value);
 
-   procedure Next_Value (S : User_Track_Settings);
-   procedure Prev_Value (S : User_Track_Settings);
+   procedure Next_Value (T : Tracks; S : User_Track_Settings);
+   procedure Prev_Value (T : Tracks; S : User_Track_Settings);
    procedure Next_Value_Fast (S : User_Track_Settings);
    procedure Prev_Value_Fast (S : User_Track_Settings);
 

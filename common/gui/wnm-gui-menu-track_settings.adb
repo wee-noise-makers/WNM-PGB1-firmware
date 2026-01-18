@@ -387,7 +387,7 @@ package body WNM.GUI.Menu.Track_Settings is
                   GUI.Popup.Display ("Press A to edit ", 500_000);
 
                when others =>
-                  Project.Next_Value (This.Current_Setting);
+                  Project.Next_Value (T, This.Current_Setting);
                   --  Project.Next_Value_Fast (This.Current_Setting);
             end case;
          when Down_Press =>
@@ -401,7 +401,7 @@ package body WNM.GUI.Menu.Track_Settings is
                   GUI.Popup.Display ("Press A to edit ", 500_000);
 
                when others =>
-                  Project.Prev_Value (This.Current_Setting);
+                  Project.Prev_Value (T, This.Current_Setting);
                   --  Project.Prev_Value_Fast (This.Current_Setting);
             end case;
 
