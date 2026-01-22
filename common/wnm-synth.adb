@@ -230,13 +230,8 @@ package body WNM.Synth is
    Out_Voice_Parameters : Voice_Parameters_Array := (others => (others => 0));
 
    Last_Key : array (MIDI.MIDI_Channel) of MIDI.MIDI_Key := (others => 0);
-   FX_Send : array (MIDI.MIDI_Channel) of FX_Kind := (others => Bypass);
 
-   Pan_For_Chan : array (MIDI.MIDI_Channel) of WNM_HAL.Audio_Pan :=
-     (others => WNM_HAL.Init_Pan);
-
-   Volume_For_Chan : array (MIDI.MIDI_Channel) of WNM_HAL.Audio_Volume :=
-     (others => WNM_HAL.Init_Volume);
+   FX_Send         : Mixer.FX_Routing    := (others => Bypass);
 
    Overall_Synth_Perf : WNM.Utils.Perf_Timer;
    Synth_Perf : array (Tresses_Channels) of WNM.Utils.Perf_Timer;
@@ -255,6 +250,10 @@ package body WNM.Synth is
 
    function To_Param (V : MIDI.MIDI_Data)
                       return Tresses.Param_Range
+     with Inline_Always;
+
+   function Vol_To_Param (V : MIDI.MIDI_Data)
+                          return Tresses.Param_Range
      with Inline_Always;
 
    function To_Volume (V : Tresses.Param_Range)
@@ -298,10 +297,25 @@ package body WNM.Synth is
    function To_Param (V : MIDI.MIDI_Data)
                       return Tresses.Param_Range
    is
-   begin
-      return Param_Range (V) *
+      Ret : constant Tresses.Param_Range := Param_Range (V) *
         (Param_Range'Last / Param_Range (MIDI.MIDI_Data'Last));
+   begin
+      return Ret;
    end To_Param;
+
+   ------------------
+   -- Vol_To_Param --
+   ------------------
+
+   function Vol_To_Param (V : MIDI.MIDI_Data)
+                          return Tresses.Param_Range
+   is
+      V_Clamp : constant MIDI.MIDI_Data := MIDI.MIDI_Data'Min (V, 100);
+      Ret : constant Tresses.Param_Range := Param_Range (V_Clamp) *
+        (Param_Range'Last / Param_Range (100));
+   begin
+      return Ret;
+   end Vol_To_Param;
 
    ---------------
    -- To_Volume --
@@ -521,7 +535,17 @@ package body WNM.Synth is
                                  Sampler2.Set_Sample
                                    (Msg.MIDI_Evt.Controller_Value);
 
+                              elsif Msg.MIDI_Evt.Controller in
+                                Voice_Volume_CC | Voice_Pan_CC
+                              then
+                                 In_Voice_Parameters
+                                   (Msg.MIDI_Evt.Chan)
+                                   (Msg.MIDI_Evt.Controller)
+                                   := Vol_To_Param
+                                     (Msg.MIDI_Evt.Controller_Value);
+
                               else
+
                                  In_Voice_Parameters
                                    (Msg.MIDI_Evt.Chan)
                                    (Msg.MIDI_Evt.Controller)
@@ -638,7 +662,7 @@ package body WNM.Synth is
 
    procedure Next_Points (Output : out WNM.Mixer.FX_Send_Buffers)
    is
-      Buffer, Aux_Buffer : WNM_HAL.Mono_Buffer;
+      Aux_Buffer : WNM_HAL.Mono_Buffer;
 
       --------------
       -- Add_Clip --
@@ -656,17 +680,17 @@ package body WNM.Synth is
          end if;
       end Add_Clip;
 
-      ---------
-      -- Mix --
-      ---------
-
-      procedure Mix (Chan : MIDI.MIDI_Channel) is
-         FX : constant FX_Kind := FX_Send (Chan);
-         Volume : constant Audio_Volume := Volume_For_Chan (Chan);
-         Pan : constant Audio_Pan := Pan_For_Chan (Chan);
-      begin
-         WNM_HAL.Mix (Output.L (FX), Output.R (FX), Buffer, Volume, Pan);
-      end Mix;
+      --  ---------
+      --  -- Mix --
+      --  ---------
+      --
+      --  procedure Mix (Chan : MIDI.MIDI_Channel) is
+      --     FX : constant FX_Kind := FX_Send (Chan);
+      --     Volume : constant Audio_Volume := Volume_For_Chan (Chan);
+      --     Pan : constant Audio_Pan := Pan_For_Chan (Chan);
+      --  begin
+      --     WNM_HAL.Mix (Output.L (FX), Output.R (FX), Buffer, Volume, Pan);
+      --  end Mix;
    begin
       Utils.Start (Overall_Synth_Perf);
 
@@ -698,12 +722,13 @@ package body WNM.Synth is
          Synth_Voices (Chan).Set_Param
            (4, Out_Voice_Parameters (Chan)(Voice_Param_4_CC));
 
-         Pan_For_Chan (Chan) := To_Pan
+         Output.Pan (Chan) := To_Pan
            (Out_Voice_Parameters (Chan)(Voice_Pan_CC));
 
-         Volume_For_Chan (Chan) := To_Volume
+         Output.Volume (Chan) := To_Volume
            (Out_Voice_Parameters (Chan)(Voice_Volume_CC));
 
+         Output.Routing (Chan) := FX_Send (Chan);
       end loop;
 
       --  Send the FX parameters in FX buffer
@@ -716,8 +741,7 @@ package body WNM.Synth is
          --  We are in sample record playback mode, the synth CPU is now in
          --  charge of playing the recorded sample.
 
-         Sample_Rec_Playback.Render (Output.R (Bypass));
-         Output.L (Bypass) := Output.R (Bypass);
+         Sample_Rec_Playback.Render (Output.Buffers (Output.Buffers'First));
       elsif WNM.Mixer.Get_Sample_Rec_Mode in WNM.Mixer.Saving then
          --  Do nothing...
          null;
@@ -726,43 +750,51 @@ package body WNM.Synth is
          --  Regular synthesis of all channels
 
          Start (Synth_Perf (Kick_Channel));
-         TK.Render (Buffer);
-         Mix (Kick_Channel);
+         TK.Render (Output.Buffers (1));
+         --  TK.Render (Buffer);
+         --  Mix (Kick_Channel);
          Stop (Synth_Perf (Kick_Channel));
 
          Start (Synth_Perf (Snare_Channel));
-         TS.Render (Buffer);
-         Mix (Snare_Channel);
+         TS.Render (Output.Buffers (2));
+         --  TS.Render (Buffer);
+         --  Mix (Snare_Channel);
          Stop (Synth_Perf (Snare_Channel));
 
          Start (Synth_Perf (Lead_Channel));
-         Lead.Render (Buffer, Aux_Buffer);
-         Mix (Lead_Channel);
+         Lead.Render (Output.Buffers (5), Aux_Buffer);
+         --  Lead.Render (Buffer, Aux_Buffer);
+         --  Mix (Lead_Channel);
          Stop (Synth_Perf (Lead_Channel));
 
          Start (Synth_Perf (Bass_Channel));
-         Bass.Render (Buffer, Aux_Buffer);
-         Mix (Bass_Channel);
+         Bass.Render (Output.Buffers (4), Aux_Buffer);
+         --  Bass.Render (Buffer, Aux_Buffer);
+         --  Mix (Bass_Channel);
          Stop (Synth_Perf (Bass_Channel));
 
          Start (Synth_Perf (Chord_Channel));
-         Chord.Render (Buffer);
-         Mix (Chord_Channel);
+         Chord.Render (Output.Buffers (6));
+         --  Chord.Render (Buffer);
+         --  Mix (Chord_Channel);
          Stop (Synth_Perf (Chord_Channel));
 
          Start (Synth_Perf (Sample1_Channel));
-         Sampler1.Render (Buffer);
-         Mix (Sample1_Channel);
+         Sampler1.Render (Output.Buffers (7));
+         --  Sampler1.Render (Buffer);
+         --  Mix (Sample1_Channel);
          Stop (Synth_Perf (Sample1_Channel));
 
          Start (Synth_Perf (Sample2_Channel));
-         Sampler2.Render (Buffer);
-         Mix (Sample2_Channel);
+         Sampler2.Render (Output.Buffers (8));
+         --  Sampler2.Render (Buffer);
+         --  Mix (Sample2_Channel);
          Stop (Synth_Perf (Sample2_Channel));
 
          Start (Synth_Perf (Hihat_Channel));
-         HH.Render (Buffer);
-         Mix (Hihat_Channel);
+         HH.Render (Output.Buffers (3));
+         --  HH.Render (Buffer);
+         --  Mix (Hihat_Channel);
          Stop (Synth_Perf (Hihat_Channel));
 
          --  Start (Synth_Perf (Speech_Channel));

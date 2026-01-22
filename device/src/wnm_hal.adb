@@ -518,22 +518,24 @@ package body WNM_HAL is
    -- Mix --
    ---------
 
-   procedure Mix (Out_L, Out_R : in out Mono_Buffer;
-                  Input        :        Mono_Buffer;
-                  Volume       :        Audio_Volume;
-                  Pan          :        Audio_Pan)
+   procedure Mix (Out_L, Out_R   : in out Mono_Buffer;
+                  Input          :        Mono_Buffer;
+                  Volume         :        Audio_Volume;
+                  Pan            :        Audio_Pan;
+                  L_Peak, R_Peak :    out Mono_Point)
    is
       use Tresses;
       use Interfaces;
 
       procedure Point_Mix (P_Out    : in out Mono_Point;
                            P_In     :        Mono_Point;
-                           Chan_Vol :        S16)
+                           Chan_Vol :        S16;
+                           Peak     : in out S16)
       is
-
          Sample : constant S32 := (S32 (P_In) * S32 (Chan_Vol)) / 2**15;
          Res    : constant S32 := S32 (P_Out) + Sample;
       begin
+         Peak := Mono_Point'Max (Peak, Mono_Point (Sample));
 
          if Res > S32 (Mono_Point'Last) then
             P_Out := Mono_Point'Last;
@@ -544,11 +546,21 @@ package body WNM_HAL is
          end if;
       end Point_Mix;
 
+      Pan_L_Float : constant Float :=
+        (if Pan >= 50
+         then Float (100 - Pan) * 1.5
+         else 75.0 + Float (50 - Pan) * 0.5);
+
+      Pan_R_Float : constant Float :=
+        (if Pan <= 50
+         then Float (Pan) * 1.5
+         else 75.0 + Float (Pan - 50) * 0.5);
+
       Pan_R_S16 : constant S16 :=
-        (S16'Last / S16 (Audio_Pan'Last)) * S16 (Pan);
+        S16 (Float (S16'Last) * Pan_R_Float / 100.0);
 
       Pan_L_S16 : constant S16 :=
-        (S16'Last / S16 (Audio_Pan'Last)) * S16 (Audio_Pan'Last - Pan);
+        S16 (Float (S16'Last) * Pan_L_Float / 100.0);
 
       Vol_S16 : constant S16 :=
         (S16'Last / S16 (Audio_Volume'Last)) * S16 (Volume);
@@ -558,10 +570,15 @@ package body WNM_HAL is
 
       Vol_L_S16 : constant S16 :=
         S16 ((S32 (Vol_S16) * S32 (Pan_L_S16)) / 2**15);
+
    begin
+
+      L_Peak := 0;
+      R_Peak := 0;
+
       for Idx in Out_L'Range loop
-         Point_Mix (Out_L (Idx), Input (Idx), Vol_L_S16);
-         Point_Mix (Out_R (Idx), Input (Idx), Vol_R_S16);
+         Point_Mix (Out_L (Idx), Input (Idx), Vol_L_S16, L_Peak);
+         Point_Mix (Out_R (Idx), Input (Idx), Vol_R_S16, R_Peak);
       end loop;
    end Mix;
 

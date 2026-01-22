@@ -107,10 +107,11 @@ package WNM_HAL is
    type Audio_Input_Kind is (Line_In, Internal_Mic, Headset_Mic);
    procedure Mute (Kind : Audio_Input_Kind; Mute : Boolean := True);
 
-   procedure Mix (Out_L, Out_R : in out Mono_Buffer;
-                  Input        :        Mono_Buffer;
-                  Volume       :        Audio_Volume;
-                  Pan          :        Audio_Pan);
+   procedure Mix (Out_L, Out_R   : in out Mono_Buffer;
+                  Input          :        Mono_Buffer;
+                  Volume         :        Audio_Volume;
+                  Pan            :        Audio_Pan;
+                  L_Peak, R_Peak :    out Mono_Point);
 
    ----------
    -- Time --

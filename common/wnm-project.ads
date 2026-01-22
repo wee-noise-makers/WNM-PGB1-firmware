@@ -574,6 +574,22 @@ package WNM.Project is
 
    procedure Set_Origin (P : Parts);
 
+   -----------
+   -- Mixer --
+   -----------
+
+   type Project_Mixer_Settings is (Bypass_Gain,
+                                   Reverb_Gain,
+                                   Overdrive_Gain,
+                                   Crusher_Gain,
+                                   Output_Gain);
+
+   function Get (S : Project_Mixer_Settings) return Audio_Volume;
+   procedure Set (S  : Project_Mixer_Settings;
+                  V  : WNM_HAL.Touch_Value);
+   procedure Next_Value (S  : Project_Mixer_Settings);
+   procedure Prev_Value (S  : Project_Mixer_Settings);
+
    --------
    -- FX --
    --------
@@ -900,6 +916,8 @@ private
 
    type Song_Part_Arr is array (WNM.Parts) of Song_Part_Rec;
 
+   type Gains_Arr is array (Project_Mixer_Settings) of Audio_Volume;
+
    BPM_Default : constant := 120.0;
    type Project_Rec is record
       BPM : Beat_Per_Minute := BPM_Default;
@@ -923,6 +941,8 @@ private
 
       Alt_Slider_Track : WNM.Tracks := Lead_Track;
       Alt_Slider_Target : Alt_Slider_Control := Alt_Slider_Control'First;
+
+      Gains : Gains_Arr := (others => 33);
    end record;
 
    G_Project : Project_Rec := (others => <>);

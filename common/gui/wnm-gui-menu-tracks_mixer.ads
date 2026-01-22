@@ -19,6 +19,7 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with WNM.Mixer;
 with WNM.Project;
 
 private with Enum_Next;
@@ -29,27 +30,33 @@ package WNM.GUI.Menu.Tracks_Mixer is
 
 private
 
-   subtype Top_Settings
-     is Project.User_Track_Settings
-     range Project.Volume .. Project.Master_FX;
+   --  subtype Top_Settings
+   --    is Project.User_Track_Settings
+   --    range Project.Volume .. Project.Master_FX;
+
+   type Top_Settings is (Output_Gains, Track_Volume, Track_Pan, Track_FX);
 
    function Img (S : Top_Settings) return String
    is (case S is
-          when Project.Volume    => "Volume",
-          when Project.Pan       => "Pan",
-          when Project.Master_FX => "FX");
+          when Output_Gains => "Mixer Gain",
+          when Track_Volume => "Track Volume",
+          when Track_Pan    => "Track Pan",
+          when Track_FX     => "Track FX Send");
 
    function Top_Settings_Count is new Enum_Count (Top_Settings);
    package Top_Settings_Next is new Enum_Next (Top_Settings);
    use Top_Settings_Next;
 
-   subtype Track_Id is Tracks range 1 .. 8;
+   subtype Track_Id is WNM.Mixer.Synth_Tracks;
    package Track_Id_Next is new Enum_Next (Track_Id, Wrap => False);
    use Track_Id_Next;
 
    type Instance is new Menu_Window with record
       Current_Setting : Top_Settings := Top_Settings'First;
       Selected_Track : Track_Id := Track_Id'First;
+
+      Gain_Select : Project.Project_Mixer_Settings :=
+        Project.Project_Mixer_Settings'First;
    end record;
 
    overriding

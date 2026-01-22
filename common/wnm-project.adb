@@ -1322,7 +1322,7 @@ package body WNM.Project is
          when Track_Mode      => Set (Track.MIDI_Enabled, V);
             --  Switching from MIDI to synth, update all settings
             if not Track.MIDI_Enabled then
-               Synchronize_Synth_Settings (Editing_Track);
+               Synchronize_Synth_Settings (T);
             end if;
 
          when Engine          => Set (Track.Engine, V, Engine_Limits);
@@ -1351,7 +1351,7 @@ package body WNM.Project is
          when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D => null;
       end case;
 
-      Synchronize_Synth_Setting (Editing_Track, S);
+      Synchronize_Synth_Setting (T, S);
 
    end Set;
 
@@ -1368,7 +1368,7 @@ package body WNM.Project is
             Next (Track.MIDI_Enabled);
             --  Switching from MIDI to synth, update all settings
             if not Track.MIDI_Enabled then
-               Synchronize_Synth_Settings (Editing_Track);
+               Synchronize_Synth_Settings (T);
             end if;
 
          when Engine          => Next (Track.Engine, Engine_Limits);
@@ -1381,12 +1381,12 @@ package body WNM.Project is
 
          when LFO_Amplitude   =>
             Next (Track.LFO_Amp, Track.LFO_Amp_Mode, 1);
-            Synchronize_Synth_Setting (Editing_Track, LFO_Amp_Mode);
+            Synchronize_Synth_Setting (T, LFO_Amp_Mode);
 
          when LFO_Shape       =>
             Next (Track.LFO_Shape, Track.LFO_Sync, Track.LFO_Loop);
-            Synchronize_Synth_Setting (Editing_Track, LFO_Sync);
-            Synchronize_Synth_Setting (Editing_Track, LFO_Loop);
+            Synchronize_Synth_Setting (T, LFO_Sync);
+            Synchronize_Synth_Setting (T, LFO_Loop);
 
          when LFO_Target      => Next (Track.LFO_Target);
          when Arp_Mode        => Next (Track.Arp_Mode);
@@ -1405,7 +1405,7 @@ package body WNM.Project is
          when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D => null;
       end case;
 
-      Synchronize_Synth_Setting (Editing_Track, S);
+      Synchronize_Synth_Setting (T, S);
 
    end Next_Value;
 
@@ -1421,7 +1421,7 @@ package body WNM.Project is
             Prev (Track.MIDI_Enabled);
             --  Switching from MIDI to synth, update all settings
             if not Track.MIDI_Enabled then
-               Synchronize_Synth_Settings (Editing_Track);
+               Synchronize_Synth_Settings (T);
             end if;
 
          when Engine          => Prev (Track.Engine, Engine_Limits);
@@ -1433,12 +1433,12 @@ package body WNM.Project is
          when LFO_Rate        => Prev (Track.LFO_Rate);
          when LFO_Amplitude   =>
             Prev (Track.LFO_Amp, Track.LFO_Amp_Mode, 1);
-            Synchronize_Synth_Setting (Editing_Track, LFO_Amp_Mode);
+            Synchronize_Synth_Setting (T, LFO_Amp_Mode);
 
          when LFO_Shape       =>
             Prev (Track.LFO_Shape, Track.LFO_Sync, Track.LFO_Loop);
-            Synchronize_Synth_Setting (Editing_Track, LFO_Sync);
-            Synchronize_Synth_Setting (Editing_Track, LFO_Loop);
+            Synchronize_Synth_Setting (T, LFO_Sync);
+            Synchronize_Synth_Setting (T, LFO_Loop);
 
          when LFO_Target      => Prev (Track.LFO_Target);
          when Arp_Mode        => Prev (Track.Arp_Mode);
@@ -1457,7 +1457,7 @@ package body WNM.Project is
          when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D => null;
       end case;
 
-      Synchronize_Synth_Setting (Editing_Track, S);
+      Synchronize_Synth_Setting (T, S);
    end Prev_Value;
 
    ---------------------
@@ -1473,7 +1473,7 @@ package body WNM.Project is
             Next_Fast (Track.MIDI_Enabled);
             --  Switching from MIDI to synth, update all settings
             if not Track.MIDI_Enabled then
-               Synchronize_Synth_Settings (Editing_Track);
+               Synchronize_Synth_Settings (T);
             end if;
 
          when Engine          => Next_Fast (Track.Engine, Engine_Limits);
@@ -1486,12 +1486,12 @@ package body WNM.Project is
 
          when LFO_Amplitude   =>
             Next (Track.LFO_Amp, Track.LFO_Amp_Mode, 10);
-            Synchronize_Synth_Setting (Editing_Track, LFO_Amp_Mode);
+            Synchronize_Synth_Setting (T, LFO_Amp_Mode);
 
          when LFO_Shape       =>
             Next (Track.LFO_Shape, Track.LFO_Sync, Track.LFO_Loop);
-            Synchronize_Synth_Setting (Editing_Track, LFO_Sync);
-            Synchronize_Synth_Setting (Editing_Track, LFO_Loop);
+            Synchronize_Synth_Setting (T, LFO_Sync);
+            Synchronize_Synth_Setting (T, LFO_Loop);
 
          when LFO_Target      => Next_Fast (Track.LFO_Target);
          when Arp_Mode        => Next_Fast (Track.Arp_Mode);
@@ -1510,7 +1510,7 @@ package body WNM.Project is
          when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D => null;
       end case;
 
-      Synchronize_Synth_Setting (Editing_Track, S);
+      Synchronize_Synth_Setting (T, S);
    end Next_Value_Fast;
 
    ---------------------
@@ -1526,7 +1526,7 @@ package body WNM.Project is
             Prev_Fast (Track.MIDI_Enabled);
             --  Switching from MIDI to synth, update all settings
             if not Track.MIDI_Enabled then
-               Synchronize_Synth_Settings (Editing_Track);
+               Synchronize_Synth_Settings (T);
             end if;
 
          when Engine          => Prev_Fast (Track.Engine, Engine_Limits);
@@ -1539,12 +1539,12 @@ package body WNM.Project is
 
          when LFO_Amplitude   =>
             Prev (Track.LFO_Amp, Track.LFO_Amp_Mode, 10);
-            Synchronize_Synth_Setting (Editing_Track, LFO_Amp_Mode);
+            Synchronize_Synth_Setting (T, LFO_Amp_Mode);
 
          when LFO_Shape       =>
             Prev (Track.LFO_Shape, Track.LFO_Sync, Track.LFO_Loop);
-            Synchronize_Synth_Setting (Editing_Track, LFO_Sync);
-            Synchronize_Synth_Setting (Editing_Track, LFO_Loop);
+            Synchronize_Synth_Setting (T, LFO_Sync);
+            Synchronize_Synth_Setting (T, LFO_Loop);
 
          when LFO_Target      => Prev_Fast (Track.LFO_Target);
          when Arp_Mode        => Prev_Fast (Track.Arp_Mode);
@@ -1563,7 +1563,7 @@ package body WNM.Project is
          when CC_Label_A | CC_Label_B | CC_Label_C | CC_Label_D => null;
       end case;
 
-      Synchronize_Synth_Setting (Editing_Track, S);
+      Synchronize_Synth_Setting (T, S);
    end Prev_Value_Fast;
 
    -----------------------
@@ -2159,6 +2159,42 @@ package body WNM.Project is
       G_Project.Part_Origin := P;
       G_Part_Origin_Query := True;
    end Set_Origin;
+
+   ---------
+   -- Get --
+   ---------
+
+   function Get (S : Project_Mixer_Settings) return Audio_Volume
+   is (G_Project.Gains (S));
+
+   ---------
+   -- Set --
+   ---------
+
+   procedure Set (S  : Project_Mixer_Settings;
+                  V  : WNM_HAL.Touch_Value)
+   is
+   begin
+      Set (G_Project.Gains (S), V);
+   end Set;
+
+   ----------------
+   -- Next_Value --
+   ----------------
+
+   procedure Next_Value (S  : Project_Mixer_Settings) is
+   begin
+      Next (G_Project.Gains (S));
+   end Next_Value;
+
+   ----------------
+   -- Prev_Value --
+   ----------------
+
+   procedure Prev_Value (S  : Project_Mixer_Settings) is
+   begin
+      Prev (G_Project.Gains (S));
+   end Prev_Value;
 
    --------------------------------
    -- Synchronize_Synth_Settings --
