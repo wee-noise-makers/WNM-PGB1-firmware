@@ -70,15 +70,13 @@ package body WNM.GUI.Menu.Tracks_Mixer is
    -- Draw_Peaks --
    ----------------
 
-   procedure Draw_Peaks (X_Col_Center   :        Natural;
-                         L_Peak, R_Peak :        Tresses.S16;
-                         L_Hist, R_Hist : in out Tresses.S16;
-                         Selected       :        Boolean)
+   procedure Draw_Peaks (X_Col_Center   : Natural;
+                         L_Peak, R_Peak : Tresses.S16;
+                         L_Hist, R_Hist : Tresses.S16;
+                         Selected       : Boolean)
    is
       use Interfaces;
       use Tresses;
-
-      Peak_Decay_Step : constant := 150;
 
       F_L_Level : constant Float :=
         Float (abs L_Peak) / Float (S16'Last);

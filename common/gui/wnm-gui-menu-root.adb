@@ -37,6 +37,7 @@ with line_in_icon;
 with midi_icon;
 with system_info_icon;
 with firmware_update_icon;
+with mixer_icon;
 
 package body WNM.GUI.Menu.Root is
 
@@ -47,7 +48,7 @@ package body WNM.GUI.Menu.Root is
    function Menu_Item_Text (Item : Menu_Items) return String
    is (case Item is
           when Projects        => "Projects",
-          when Tracks_Mixer    => "Mixer",
+          when Tracks_Mixer    => "Project Mixer",
           when Inputs          => "Inputs",
           when User_Waveform   => "Custom Waveform",
           when MIDI_Settings   => "MIDI Settings",
@@ -98,7 +99,7 @@ package body WNM.GUI.Menu.Root is
          when Projects =>
             Draw_Icon (project_icon.Data);
          when Tracks_Mixer =>
-            null;
+            Draw_Icon (mixer_icon.Data);
          when User_Waveform =>
             Draw_Icon (edit_wave_icon.Data);
          when Inputs =>

@@ -48,6 +48,7 @@ private
                        Seq_Change_Track,
 
                        User_Waveform,
+                       Mixer,
 
                        End_Of_File,
                        End_Of_Section);
@@ -63,6 +64,7 @@ private
                        Seq_Change_Pattern        => 8,
                        Seq_Change_Track          => 9,
                        User_Waveform             => 10,
+                       Mixer                     => 11,
                        End_Of_File               => End_Of_Section_Value - 1,
                        End_Of_Section            => End_Of_Section_Value);
 

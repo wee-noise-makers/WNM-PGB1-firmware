@@ -32,6 +32,8 @@ private package WNM.Project.Storage.File_Out is
 
    procedure Start_User_Waveform (This : in out Instance);
 
+   procedure Start_Mixer (This : in out Instance);
+
    procedure Start_Track_Settings (This : in out Instance;
                                    T : Tracks);
    procedure Start_Pattern_Settings (This : in out Instance;

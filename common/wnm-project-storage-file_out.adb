@@ -42,6 +42,15 @@ package body WNM.Project.Storage.File_Out is
       This.Push (User_Waveform);
    end Start_User_Waveform;
 
+   -----------------
+   -- Start_Mixer --
+   -----------------
+
+   procedure Start_Mixer (This : in out Instance) is
+   begin
+      This.Push (Mixer);
+   end Start_Mixer;
+
    --------------------------
    -- Start_Track_Settings --
    --------------------------

@@ -536,6 +536,22 @@ package body WNM.Project.Storage is
       Output.End_Section;
    end Save_User_Waveform;
 
+   ----------------
+   -- Save_Mixer --
+   ----------------
+
+   procedure Save_Mixer (Output : in out File_Out.Instance) is
+   begin
+      Output.Start_Mixer;
+
+      for S in Project_Mixer_Settings loop
+         Output.Push (Out_UInt (S'Enum_Rep));
+         Output.Push (Out_UInt (G_Project.Gains (S)));
+      end loop;
+
+      Output.End_Section;
+   end Save_Mixer;
+
    ----------
    -- Save --
    ----------
@@ -580,6 +596,10 @@ package body WNM.Project.Storage is
 
       if Output.Status = Ok then
          Save_User_Waveform (Output);
+      end if;
+
+      if Output.Status = Ok then
+         Save_Mixer (Output);
       end if;
 
       Output.End_File;
@@ -1112,6 +1132,37 @@ package body WNM.Project.Storage is
       end if;
    end Load_User_Waveform;
 
+   ----------------
+   -- Load_Mixer --
+   ----------------
+
+   procedure Load_Mixer (Input : in out File_In.Instance) is
+      procedure To_Mixer_Settings
+      is new Convert_To_Enum (Project_Mixer_Settings);
+
+      procedure Read is new File_In.Read_Gen_Int (Audio_Volume);
+
+      Set : Project_Mixer_Settings;
+      Raw : In_UInt;
+      Success : Boolean;
+   begin
+
+      loop
+         Input.Read (Raw);
+
+         exit when Input.Status /= Ok
+           or else Raw = End_Of_Section_Value;
+
+         To_Mixer_Settings (Raw, Set, Success);
+
+         exit when not Success;
+
+         Read (Input, G_Project.Gains (Set));
+
+         exit when Input.Status /= Ok;
+      end loop;
+   end Load_Mixer;
+
    ----------
    -- Load --
    ----------
@@ -1131,6 +1182,9 @@ package body WNM.Project.Storage is
       --  The first data in a project file is a version number for the format.
       --  Right now it should always be 1 and we don't use this information.
       Input.Read (Version);
+
+      --  Set default gains in case there is no mixer section saved
+      G_Project.Gains := Default_Gains;
 
       loop
 
@@ -1159,6 +1213,9 @@ package body WNM.Project.Storage is
 
             when User_Waveform =>
                Load_User_Waveform (Input);
+
+            when Mixer =>
+               Load_Mixer (Input);
 
             when End_Of_File =>
                exit;

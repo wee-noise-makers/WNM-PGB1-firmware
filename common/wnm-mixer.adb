@@ -246,12 +246,12 @@ package body WNM.Mixer is
             Max (L_Bypass_Peak, S16 (Clip_S16 (Bypass_L)));
             Max (L_Reverb_Peak, S16 (Clip_S16 (Reverb_L)));
             Max (L_Overdrive_Peak, S16 (Clip_S16 (Overdrive_L)));
-            Max (L_Crusher_Peak, S16 (Clip_S16 (Overdrive_L)));
+            Max (L_Crusher_Peak, S16 (Clip_S16 (Bitcrusher_L)));
 
             Max (R_Bypass_Peak, S16 (Clip_S16 (Bypass_R)));
             Max (R_Reverb_Peak, S16 (Clip_S16 (Reverb_R)));
             Max (R_Overdrive_Peak, S16 (Clip_S16 (Overdrive_R)));
-            Max (R_Crusher_Peak, S16 (Clip_S16 (Overdrive_R)));
+            Max (R_Crusher_Peak, S16 (Clip_S16 (Bitcrusher_R)));
 
             L := Clip_S16 (Bypass_L + Reverb_L + Overdrive_L + Bitcrusher_L);
             R := Clip_S16 (Bypass_R + Reverb_R + Overdrive_R + Bitcrusher_R);
