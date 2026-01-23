@@ -19,6 +19,7 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
+with Interfaces;
 with HAL;
 
 package body WNM.Utils is
@@ -134,5 +135,21 @@ package body WNM.Utils is
 
    function Max_Load (This : Perf_Timer) return CPU_Load
    is (This.Max_Load);
+
+   ----------------
+   -- Peak_Decay --
+   ----------------
+
+   procedure Peak_Decay (V : in out Tresses.S16) is
+      use Interfaces;
+      Peak_Decay_Step : constant := 100;
+   begin
+
+      if V > Peak_Decay_Step then
+         V := @ - Peak_Decay_Step;
+      else
+         V := 0;
+      end if;
+   end Peak_Decay;
 
 end WNM.Utils;

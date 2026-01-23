@@ -24,6 +24,9 @@ with Interfaces;
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
 with WNM.Screen; use WNM.Screen;
 with WNM.Project; use WNM.Project;
+with WNM.Mixer;
+with WNM.Synth;
+with MIDI;
 
 with fx_bypass;
 with fx_bitcrusher;
@@ -121,17 +124,6 @@ package body WNM.GUI.Menu.Tracks_Mixer is
                  (X_Col_Center + 4, Col_Bot - R_Level_Alt),
                  On);
 
-      if L_Hist > Peak_Decay_Step then
-         L_Hist := @ - Peak_Decay_Step;
-      else
-         L_Hist := 0;
-      end if;
-      if R_Hist > Peak_Decay_Step then
-         R_Hist := @ - Peak_Decay_Step;
-      else
-         R_Hist := 0;
-      end if;
-
       if L_Peak = S16'Last then
          Draw_Line ((X_Col_Center - 4, Col_Top - 5),
                     (X_Col_Center - 1, Col_Top - 2),
@@ -225,18 +217,29 @@ package body WNM.GUI.Menu.Tracks_Mixer is
       end Draw_Pan;
 
    begin
-      for Id in Mixer.Synth_Tracks loop
+      for Id in Track_Id loop
          declare
             X_Col_Center : constant Natural :=
               (Natural (Id) - 1) * Col_Width + Col_Width / 2;
 
+            Chan : constant MIDI.MIDI_Channel :=
+              (case Id is
+                  when 1 => WNM.Synth.Kick_Channel,
+                  when 2 => WNM.Synth.Snare_Channel,
+                  when 3 => WNM.Synth.Hihat_Channel,
+                  when 4 => WNM.Synth.Bass_Channel,
+                  when 5 => WNM.Synth.Lead_Channel,
+                  when 6 => WNM.Synth.Chord_Channel,
+                  when 7 => WNM.Synth.Sample1_Channel,
+                  when 8 => WNM.Synth.Sample2_Channel);
+
          begin
 
             Draw_Peaks (X_Col_Center,
-                        WNM.Mixer.L_Peak (Id),
-                        WNM.Mixer.R_Peak (Id),
-                        WNM.Mixer.L_Peak_History (Id),
-                        WNM.Mixer.R_Peak_History (Id),
+                        WNM.Synth.L_Peak (Chan),
+                        WNM.Synth.R_Peak (Chan),
+                        WNM.Synth.L_Peak_History (Chan),
+                        WNM.Synth.R_Peak_History (Chan),
                         This.Selected_Track = Id);
 
             Draw_Str (X_Col_Center - Font_Width + 1,

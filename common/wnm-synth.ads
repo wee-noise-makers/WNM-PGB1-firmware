@@ -75,6 +75,20 @@ package WNM.Synth is
    LFO_Amp_Mode_Negative : constant MIDI.MIDI_Data :=
      Tresses.LFO.Negative'Enum_Rep;
 
+   subtype Synth_Tracks is Tracks range 1 .. 8;
+
+   L_Peak : array (MIDI.MIDI_Channel) of WNM_HAL.Mono_Point := (others => 0)
+     with Volatile_Components;
+   R_Peak : array (MIDI.MIDI_Channel) of WNM_HAL.Mono_Point := (others => 0)
+     with Volatile_Components;
+
+   L_Peak_History : array (MIDI.MIDI_Channel) of WNM_HAL.Mono_Point :=
+     (others => 0)
+     with Volatile_Components;
+   R_Peak_History : array (MIDI.MIDI_Channel) of WNM_HAL.Mono_Point :=
+     (others => 0)
+     with Volatile_Components;
+
    subtype LFO_Compatible_CC
      is MIDI.MIDI_Data range Voice_Param_1_CC .. Voice_Pan_CC;
 

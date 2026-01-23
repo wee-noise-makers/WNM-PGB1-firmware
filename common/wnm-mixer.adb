@@ -131,8 +131,8 @@ package body WNM.Mixer is
    -- Process_Input --
    -------------------
 
-   procedure Process_Input (L, R    : in out WNM_HAL.Mono_Buffer;
-                            Discard :        Boolean := False)
+   procedure Process_Input (Input : in out FX_Send_Buffers;
+                            FX    :        FX_Kind)
    is
       use Tresses;
       use Tresses.DSP;
@@ -143,23 +143,20 @@ package body WNM.Mixer is
       --  Handle audio input
       Read (Input_Queue, Input_RG, 1);
       if State (Input_RG) = Valid then
-         if not Discard then
-            declare
-               use System.Storage_Elements;
-               Offset : constant Storage_Offset := Slice (Input_RG).From;
-               In_Buffer : Stereo_Buffer renames
-                 Input_Audio_Buffers (Input_Audio_Buffers'First + Offset);
-            begin
+         declare
+            use System.Storage_Elements;
+            Offset : constant Storage_Offset := Slice (Input_RG).From;
+            In_Buffer : Stereo_Buffer renames
+              Input_Audio_Buffers (Input_Audio_Buffers'First + Offset);
+         begin
 
-               for Index in In_Buffer'Range loop
-                  L (Index) :=
-                    S16 (Clip_S16 (S32 (@) + S32 (In_Buffer (Index).L)));
-                  R (Index) :=
-                    S16 (Clip_S16 (S32 (@) + S32 (In_Buffer (Index).R)));
-               end loop;
-            end;
-         end if;
-
+            for Index in In_Buffer'Range loop
+               Input.L (FX)(Index) :=
+                 S16 (Clip_S16 (S32 (@) + S32 (In_Buffer (Index).L)));
+               Input.R (FX)(Index) :=
+                 S16 (Clip_S16 (S32 (@) + S32 (In_Buffer (Index).R)));
+            end loop;
+         end;
          Release (Input_Queue, Input_RG, 1);
       end if;
    end Process_Input;
@@ -168,183 +165,150 @@ package body WNM.Mixer is
    -- Mix_Regular --
    -----------------
 
-   type S32_Buffer is array (WNM_HAL.Mono_Buffer'Range) of Tresses.S32;
-   L32, R32 : S32_Buffer;
-
-   procedure Mix_Regular (Input  :        FX_Send_Buffers;
+   procedure Mix_Regular (Input  : in out FX_Send_Buffers;
                           Output : in out WNM_HAL.Stereo_Buffer)
    is
       use Tresses;
       use Tresses.DSP;
+      use WNM.Project;
 
-      LB, RB : WNM_HAL.Mono_Buffer;
-      Lane : Project.Project_Mixer_Settings;
+      L, R : S32;
+
+      function Get_Boost (G : Audio_Volume) return S32
+      is (S32 (32767.0 * (1.0 + 0.009999 * Float (G))));
+
+      procedure Max (A : in out S16; B : S16) is
+      begin
+         A := S16'Max (A, B);
+      end Max;
+
+      Bypass_Boost : constant S32 := Get_Boost (Get (Bypass_Gain));
+      Reverb_Boost : constant S32 := Get_Boost (Get (Reverb_Gain));
+      Overdrive_Boost : constant S32 := Get_Boost (Get (Overdrive_Gain));
+      Bitcrusher_Boost : constant S32 := Get_Boost (Get (Crusher_Gain));
+      Output_Boost : constant S32 := Get_Boost (Get (Output_Gain));
+
+      L_Bypass_Peak, R_Bypass_Peak : S16 := 0;
+      L_Reverb_Peak, R_Reverb_Peak : S16 := 0;
+      L_Overdrive_Peak, R_Overdrive_Peak : S16 := 0;
+      L_Crusher_Peak, R_Crusher_Peak : S16 := 0;
+      L_Output_Peak, R_Output_Peak : S16 := 0;
    begin
-      L32 := (others => 0);
-      R32 := (others => 0);
 
-      for Kind in FX_Kind loop
-         LB := (others => 0);
-         RB := (others => 0);
+      Process_Input (Input, Persistent.Data.Input_FX);
 
-         for Id in Synth_Tracks loop
-            declare
-               Chan : constant MIDI.MIDI_Channel := MIDI.MIDI_Channel (Id);
-            begin
-               if Input.Routing (Chan) = Kind then
-                  WNM_HAL.Mix (LB, RB,
-                               Input.Buffers (Id),
-                               Input.Volume (Chan),
-                               Input.Pan (Chan),
-                               L_Peak (Id), R_Peak (Id));
+      --  Overdrive
+      FX_Drive.Set_Param (1, Input.Parameters (Overdrive)(Voice_Param_1_CC));
+      FX_Drive.Set_Param (2, Input.Parameters (Overdrive)(Voice_Param_2_CC));
+      FX_Drive.Set_Param (3, Input.Parameters (Overdrive)(Voice_Param_3_CC));
+      FX_Drive.Set_Param (4, Input.Parameters (Overdrive)(Voice_Param_4_CC));
+      FX_Drive.Render (Input.L (Overdrive), Input.R (Overdrive));
 
-                  L_Peak_History (Id) :=
-                    S16'Max (L_Peak_History (Id), L_Peak (Id));
-                  R_Peak_History (Id) :=
-                    S16'Max (R_Peak_History (Id), R_Peak (Id));
-               end if;
-            end;
-         end loop;
+      --  Reverb
+      FX_Reverb.Set_Param (1, Input.Parameters (Reverb)(Voice_Param_1_CC));
+      FX_Reverb.Set_Param (2, Input.Parameters (Reverb)(Voice_Param_2_CC));
+      FX_Reverb.Set_Param (3, Input.Parameters (Reverb)(Voice_Param_3_CC));
+      FX_Reverb.Set_Param (4, Input.Parameters (Reverb)(Voice_Param_4_CC));
+      FX_Reverb.Render (Input.L (Reverb), Input.R (Reverb));
 
-         if Kind = Persistent.Data.Input_FX then
-            Process_Input (LB, RB);
-         end if;
+      --  Bitcrush
+      FX_Bitcrush.Set_Param (1,
+                             Input.Parameters (Bitcrusher)(Voice_Param_1_CC));
+      FX_Bitcrush.Set_Param (2,
+                             Input.Parameters (Bitcrusher)(Voice_Param_2_CC));
+      FX_Bitcrush.Set_Param (3,
+                             Input.Parameters (Bitcrusher)(Voice_Param_3_CC));
+      FX_Bitcrush.Set_Param (4,
+                             Input.Parameters (Bitcrusher)(Voice_Param_4_CC));
+      FX_Bitcrush.Render (Input.L (Bitcrusher), Input.R (Bitcrusher));
 
-         case Kind is
-            when Overdrive =>
-               --  Overdrive
-               FX_Drive.Set_Param
-                 (1, Input.Parameters (Overdrive)(Voice_Param_1_CC));
-               FX_Drive.Set_Param
-                 (2, Input.Parameters (Overdrive)(Voice_Param_2_CC));
-               FX_Drive.Set_Param
-                 (3, Input.Parameters (Overdrive)(Voice_Param_3_CC));
-               FX_Drive.Set_Param
-                 (4, Input.Parameters (Overdrive)(Voice_Param_4_CC));
-               FX_Drive.Render (LB, RB);
-               Lane := Project.Overdrive_Gain;
-            when Reverb =>
-               --  Reverb
-               FX_Reverb.Set_Param
-                 (1, Input.Parameters (Reverb)(Voice_Param_1_CC));
-               FX_Reverb.Set_Param
-                 (2, Input.Parameters (Reverb)(Voice_Param_2_CC));
-               FX_Reverb.Set_Param
-                 (3, Input.Parameters (Reverb)(Voice_Param_3_CC));
-               FX_Reverb.Set_Param
-                 (4, Input.Parameters (Reverb)(Voice_Param_4_CC));
-               FX_Reverb.Render (LB, RB);
-               Lane := Project.Reverb_Gain;
-
-            when Bitcrusher =>
-               --  Bitcrush
-               FX_Bitcrush.Set_Param
-                 (1, Input.Parameters (Bitcrusher)(Voice_Param_1_CC));
-               FX_Bitcrush.Set_Param
-                 (2, Input.Parameters (Bitcrusher)(Voice_Param_2_CC));
-               FX_Bitcrush.Set_Param
-                 (3, Input.Parameters (Bitcrusher)(Voice_Param_3_CC));
-               FX_Bitcrush.Set_Param
-                 (4, Input.Parameters (Bitcrusher)(Voice_Param_4_CC));
-               FX_Bitcrush.Render (LB, RB);
-               Lane := Project.Crusher_Gain;
-
-            when Bypass =>
-               Lane := Project.Bypass_Gain;
-         end case;
-
-         L_Mix_Peak (Lane) := 0;
-         R_Mix_Peak (Lane) := 0;
-
+      for Index in Output'Range loop
          declare
-            Boost : constant S32 :=
-              S32 (32767.0 * (1.0 + 0.009999 * Float (Project.Get (Lane))));
+            Bypass_L : constant S32 :=
+              (S32 (Input.L (Bypass)(Index)) * Bypass_Boost) / 2**15;
+            Reverb_L : constant S32 :=
+              (S32 (Input.L (Reverb)(Index)) * Reverb_Boost) / 2**15;
+            Overdrive_L : constant S32 :=
+              (S32 (Input.L (Overdrive)(Index)) * Overdrive_Boost) / 2**15;
+            Bitcrusher_L : constant S32 :=
+              (S32 (Input.L (Bitcrusher)(Index)) * Bitcrusher_Boost) / 2**15;
 
-            L, R : S32;
+            Bypass_R : constant S32 :=
+              (S32 (Input.R (Bypass)(Index)) * Bypass_Boost) / 2**15;
+            Reverb_R : constant S32 :=
+              (S32 (Input.R (Reverb)(Index)) * Reverb_Boost) / 2**15;
+            Overdrive_R : constant S32 :=
+              (S32 (Input.R (Overdrive)(Index)) * Overdrive_Boost) / 2**15;
+            Bitcrusher_R : constant S32 :=
+              (S32 (Input.R (Bitcrusher)(Index)) * Bitcrusher_Boost) / 2**15;
+
          begin
+            Max (L_Bypass_Peak, S16 (Clip_S16 (Bypass_L)));
+            Max (L_Reverb_Peak, S16 (Clip_S16 (Reverb_L)));
+            Max (L_Overdrive_Peak, S16 (Clip_S16 (Overdrive_L)));
+            Max (L_Crusher_Peak, S16 (Clip_S16 (Overdrive_L)));
 
-            for Index in Output'Range loop
+            Max (R_Bypass_Peak, S16 (Clip_S16 (Bypass_R)));
+            Max (R_Reverb_Peak, S16 (Clip_S16 (Reverb_R)));
+            Max (R_Overdrive_Peak, S16 (Clip_S16 (Overdrive_R)));
+            Max (R_Crusher_Peak, S16 (Clip_S16 (Overdrive_R)));
 
-               L := (S32 (LB (Index)) * Boost) / 2**15;
-               L32 (Index) := L32 (Index) + L;
+            L := Clip_S16 (Bypass_L + Reverb_L + Overdrive_L + Bitcrusher_L);
+            R := Clip_S16 (Bypass_R + Reverb_R + Overdrive_R + Bitcrusher_R);
 
-               L_Mix_Peak (Lane) :=
-                 S16'Max (L_Mix_Peak (Lane), S16 (Clip_S16 (L)));
+            Output (Index).L := S16 (Clip_S16 ((L * Output_Boost) / 2**15));
+            Output (Index).R := S16 (Clip_S16 ((R * Output_Boost) / 2**15));
 
-               R := (S32 (RB (Index)) * Boost) / 2**15;
-               R32 (Index) := R32 (Index) + R;
-
-               R_Mix_Peak (Lane) :=
-                 S16'Max (R_Mix_Peak (Lane), S16 (Clip_S16 (R)));
-
-            end loop;
-
-            L_Mix_Peak_History (Lane) :=
-              S16'Max (L_Mix_Peak_History (Lane), L_Mix_Peak (Lane));
-            R_Mix_Peak_History (Lane) :=
-              S16'Max (R_Mix_Peak_History (Lane), R_Mix_Peak (Lane));
+            Max (L_Output_Peak, (Output (Index).L));
+            Max (R_Output_Peak, (Output (Index).R));
          end;
       end loop;
 
-      L_Mix_Peak (Project.Output_Gain) := 0;
-      R_Mix_Peak (Project.Output_Gain) := 0;
+      L_Mix_Peak (Bypass_Gain)    := L_Bypass_Peak;
+      L_Mix_Peak (Reverb_Gain)    := L_Reverb_Peak;
+      L_Mix_Peak (Overdrive_Gain) := L_Overdrive_Peak;
+      L_Mix_Peak (Crusher_Gain)   := L_Crusher_Peak;
+      L_Mix_Peak (Output_Gain)    := L_Output_Peak;
 
-      declare
-         Boost : constant S32 :=
-           S32 (32767.0 *
-                (1.0 + 0.009999 * Float (Project.Get (Project.Output_Gain))));
-      begin
+      R_Mix_Peak (Bypass_Gain)    := R_Bypass_Peak;
+      R_Mix_Peak (Reverb_Gain)    := R_Reverb_Peak;
+      R_Mix_Peak (Overdrive_Gain) := R_Overdrive_Peak;
+      R_Mix_Peak (Crusher_Gain)   := L_Crusher_Peak;
+      R_Mix_Peak (Output_Gain)    := R_Output_Peak;
 
-         for Index in Output'Range loop
-
-            L32 (Index) := Clip_S16 (L32 (Index));
-
-            Output (Index).L :=
-              S16 (Clip_S16 (((L32 (Index) * Boost) / 2**15)));
-
-            L_Mix_Peak (Project.Output_Gain) :=
-              S16'Max (L_Mix_Peak (Project.Output_Gain), Output (Index).L);
-
-            R32 (Index) := Clip_S16 (R32 (Index));
-
-            Output (Index).R :=
-              S16 (Clip_S16 (((R32 (Index) * Boost) / 2**15)));
-
-            R_Mix_Peak (Project.Output_Gain) :=
-              S16'Max (R_Mix_Peak (Project.Output_Gain), Output (Index).R);
-         end loop;
-
-         L_Mix_Peak_History (Project.Output_Gain) :=
-           S16'Max (L_Mix_Peak_History (Project.Output_Gain),
-                    L_Mix_Peak (Project.Output_Gain));
-         R_Mix_Peak_History (Project.Output_Gain) :=
-           S16'Max (R_Mix_Peak_History (Project.Output_Gain),
-                    R_Mix_Peak (Project.Output_Gain));
-      end;
+      for Lane in Project_Mixer_Settings loop
+         Utils.Peak_Decay (L_Mix_Peak_History (Lane));
+         Utils.Peak_Decay (R_Mix_Peak_History (Lane));
+         Max (L_Mix_Peak_History (Lane), L_Mix_Peak (Lane));
+         Max (R_Mix_Peak_History (Lane), R_Mix_Peak (Lane));
+      end loop;
 
       Voices.Auto_Filter_FX.Render (FX_Auto_Filter, Output);
-
       Voices.Stutter_FX.Render (FX_Stutter, Output);
+
    end Mix_Regular;
 
    ------------------
    -- Mix_Sampling --
    ------------------
 
-   procedure Mix_Sampling (Input  :        FX_Send_Buffers;
+   procedure Mix_Sampling (Input  : in out  FX_Send_Buffers;
                            Output : in out WNM_HAL.Stereo_Buffer)
    is
       use Tresses;
-      LB, RB : WNM_HAL.Mono_Buffer := (others => 0);
    begin
       --  Handle Audio Input
 
       case Sample_Rec_State is
          when Preview | Rec =>
 
+            --  Discard audio comming from the synth CPU
+            Input.L (Bypass) := (others => 0);
+            Input.R (Bypass) := (others => 0);
+
             --  Pass the input to the output for preview of what we are
             --  recording.
-            Process_Input (LB, RB, Discard => False);
+            Process_Input (Input, Bypass);
 
             --  If in rec mode, save incoming data
             if Sample_Rec_State = Rec then
@@ -354,8 +318,8 @@ package body WNM.Mixer is
                begin
                   for Index in Output'Range loop
                      Mono (Index) :=
-                       S16 ((S32 (LB (Index)) +
-                                S32 (LB (Index))) / 2);
+                       S16 ((S32 (Input.L (Bypass)(Index)) +
+                                S32 (Input.R (Bypass)(Index))) / 2);
 
                      --  if ASFML_Sim.Put_Some_Noise then
                      --     Mono (Index) := S16 (Random) * 150;
@@ -371,19 +335,15 @@ package body WNM.Mixer is
             --  channel that is not used in this mode. We cannot use the
             --  bypass channel as it may contains sample playback comming
             --  from synth CPU.
-            Process_Input (LB, RB, Discard => True);
+            Process_Input (Input, Overdrive);
 
-            WNM_HAL.Mix (LB, RB,
-                         Input.Buffers (Input.Buffers'First),
-                         100, 50,
-                         L_Peak (L_Peak'First), R_Peak (R_Peak'First));
       end case;
 
       --  Input.[L|R] (Bypass) contains either the input audio or playback
       --  from synth CPU.
       for Index in Output'Range loop
-         Output (Index).L := LB (Index);
-         Output (Index).R := RB (Index);
+         Output (Index).L := Input.L (Bypass)(Index);
+         Output (Index).R := Input.R (Bypass)(Index);
       end loop;
    end Mix_Sampling;
 
@@ -406,6 +366,10 @@ package body WNM.Mixer is
 
       --  Push the mixed output buffer in ready queue
       Buffer_Id_Queues.Push (Output_Id_Queue, Id);
+
+      --  Clear the FX buffer
+      Input.R := (others => (others => 0));
+      Input.L := (others => (others => 0));
 
       WNM.Utils.Stop (Mixer_Perf);
    end Push_To_Mix;

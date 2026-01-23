@@ -32,21 +32,6 @@ with WNM.Voices.Stutter_FX;
 
 package WNM.Mixer is
 
-   subtype Synth_Tracks is Tracks range 1 .. 8;
-   type Synth_Buffers is array (Synth_Tracks) of WNM_HAL.Mono_Buffer;
-
-   L_Peak : array (Synth_Tracks) of WNM_HAL.Mono_Point := (others => 0)
-     with Volatile_Components;
-   R_Peak : array (Synth_Tracks) of WNM_HAL.Mono_Point := (others => 0)
-     with Volatile_Components;
-
-   L_Peak_History : array (Synth_Tracks) of WNM_HAL.Mono_Point :=
-     (others => 0)
-     with Volatile_Components;
-   R_Peak_History : array (Synth_Tracks) of WNM_HAL.Mono_Point :=
-     (others => 0)
-     with Volatile_Components;
-
    L_Mix_Peak : array (Project.Project_Mixer_Settings) of WNM_HAL.Mono_Point
      := (others => 0)
      with Volatile_Components;
@@ -65,18 +50,10 @@ package WNM.Mixer is
      with Volatile_Components;
 
    type FX_Buffers is array (FX_Kind) of WNM_HAL.Mono_Buffer;
-
    type FX_Parameters is array (FX_Kind) of WNM.Synth.Voice_Parameters;
-   type Tracks_Pan is array (MIDI.MIDI_Channel) of WNM_HAL.Audio_Pan;
-   type Tracks_Volume is array (MIDI.MIDI_Channel) of WNM_HAL.Audio_Volume;
-   type FX_Routing is array (MIDI.MIDI_Channel) of FX_Kind;
 
    type FX_Send_Buffers is record
-      Buffers : Synth_Buffers;
-
-      Routing : FX_Routing;
-      Pan     : Tracks_Pan;
-      Volume  : Tracks_Volume;
+      L, R : FX_Buffers;
       Parameters : FX_Parameters;
    end record;
 

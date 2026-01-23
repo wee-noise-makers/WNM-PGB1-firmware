@@ -20,6 +20,7 @@
 -------------------------------------------------------------------------------
 
 with WNM_HAL;
+with Tresses;
 
 package WNM.Utils is
 
@@ -60,5 +61,8 @@ package WNM.Utils is
    function Load (This : Perf_Timer) return CPU_Load;
 
    function Max_Load (This : Perf_Timer) return CPU_Load;
+
+   procedure Peak_Decay (V : in out Tresses.S16)
+     with Inline_Always;
 
 end WNM.Utils;
