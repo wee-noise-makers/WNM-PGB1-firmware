@@ -84,10 +84,12 @@ package body WNM.File_System.LEB128_File_Out is
    procedure Open (This : in out Instance; Filename : String) is
    begin
       case File_System.Open_Write (Filename) is
-      when File_System.Ok =>
-         This.Error := Ok;
-      when others =>
-         This.Error := Unknown_Error;
+         when File_System.Ok =>
+            This.Error := Ok;
+         when File_System.Already_Open =>
+            This.Error := Already_Open;
+         when File_System.Cannot_Open =>
+            This.Error := Cannot_Open;
       end case;
    end Open;
 
@@ -130,7 +132,7 @@ package body WNM.File_System.LEB128_File_Out is
       Encode (Sink, Out_UInt (A'Enum_Rep), Success);
 
       if not Success then
-         This.Error := Unknown_Error;
+         This.Error := Cannot_Encode;
       else
          This.Error := Ok;
       end if;

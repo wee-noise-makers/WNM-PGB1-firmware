@@ -20,46 +20,26 @@ package body WNM.File_System is
    G_FD : aliased Littlefs.LFS_File;
    G_FD_Mode : File_Mode := Closed;
 
-   ---------------
-   -- Error_Img --
-   ---------------
-
-   function Error_Img (Err : int) return String
-   is (case Err is
-          when LFS_ERR_OK          => "No error",
-          when LFS_ERR_IO          => "Error during device operation",
-          when LFS_ERR_CORRUPT     => "Corrupted",
-          when LFS_ERR_NOENT       => "No directory entry",
-          when LFS_ERR_EXIST       => "Entry already exists",
-          when LFS_ERR_NOTDIR      => "Entry is not a dir",
-          when LFS_ERR_ISDIR       => "Entry is a dir",
-          when LFS_ERR_NOTEMPTY    => "Dir is not empty",
-          when LFS_ERR_BADF        => "Bad file number",
-          when LFS_ERR_FBIG        => "File too large",
-          when LFS_ERR_INVAL       => "Invalid parameter",
-          when LFS_ERR_NOSPC       => "No space left on device",
-          when LFS_ERR_NOMEM       => "No more memory available",
-          when LFS_ERR_NOATTR      => "No data/attr available",
-          when LFS_ERR_NAMETOOLONG => "File name too long",
-          when others              => "Unknown LFS error (" & Err'Img & ")");
-
    --------------------------
    -- Query_User_To_Format --
    --------------------------
 
-   function Query_User_To_Format return Boolean is
+   function Query_User_To_Format (Err : int) return Boolean is
       X : Integer;
       Menu, Last_Menu : Boolean := False;
       Rec, Last_Rec : Boolean := False;
    begin
       Screen.Clear;
       X := 1;
-      GUI.Bitmap_Fonts.Print (X, 1, "No file-system found");
+      GUI.Bitmap_Fonts.Print (X, 1, "No file-system found:");
 
       X := 1;
-      GUI.Bitmap_Fonts.Print (X, 9, "Press Menu to format");
+      GUI.Bitmap_Fonts.Print (X, 9 * 1, Littlefs.Error_Img (Err));
+
       X := 1;
-      GUI.Bitmap_Fonts.Print (X, 18, "Press Rec to shutdown");
+      GUI.Bitmap_Fonts.Print (X, 9 * 2, "Press Edit to format");
+      X := 1;
+      GUI.Bitmap_Fonts.Print (X, 9 * 3, "Press Menu to shutdown");
 
       Screen.Update;
 
@@ -74,13 +54,13 @@ package body WNM.File_System is
             Last_Rec := Rec;
             Menu := State (WNM_Configuration.Menu) = Down;
             Rec := State (WNM_Configuration.Rec) = Down;
-            if Rec and then not Last_Rec then
+            if Menu and then not Last_Menu then
                Screen.Clear;
                X := 1;
                GUI.Bitmap_Fonts.Print (X, 1, "Shuting down...");
                Screen.Update;
                return False;
-            elsif Menu and then not Last_Menu then
+            elsif Rec and then not Last_Rec then
                Screen.Clear;
                X := 1;
                GUI.Bitmap_Fonts.Print (X, 1, "Formating...");
@@ -109,7 +89,7 @@ package body WNM.File_System is
    begin
       Err := Littlefs.Mount (FS, Get_LFS_Config.all);
       if Err /= 0 then
-         if Query_User_To_Format then
+         if Query_User_To_Format (Err) then
             Err := Littlefs.Format (FS, Get_LFS_Config.all);
             if Err /= 0 then
                raise Program_Error with "Format error: " & Error_Img (Err);

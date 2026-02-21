@@ -78,18 +78,30 @@ package WNM.File_System is
                           Move_Error,
                           Remove_Error,
                           Format_Error,
+                          Already_Open,
+                          Not_Found,
+                          Cannot_Open,
+                          Cannot_Decode,
+                          Cannot_Encode,
+                          Value_Not_In_Range,
                           Unknown_Error);
 
    function Img (S : Storage_Error) return String
    is (case S is
-          when Ok => "Ok",
-          when Out_Of_Space => "No space on disk",
+          when Ok                   => "Ok",
+          when Out_Of_Space         => "No space on disk",
           when Project_Do_Not_Exist => "No project",
-          when Disk_Error => "Disk error",
-          when Move_Error => "Move error",
-          when Remove_Error => "Remove error",
-          when Format_Error => "Format Error",
-          when Unknown_Error => "Unknown_Error");
+          when Disk_Error           => "Disk error",
+          when Move_Error           => "Move error",
+          when Remove_Error         => "Remove error",
+          when Format_Error         => "Format Error",
+          when Already_Open         => "Already Open",
+          when Not_Found            => "Not Found",
+          when Cannot_Open          => "Cannot Open",
+          when Cannot_Decode        => "Cannot Decode",
+          when Cannot_Encode        => "Cannot Encode",
+          when Value_Not_In_Range   => "Value not in range",
+          when Unknown_Error        => "Unknown_Error");
 
    ----------
    -- Flux --

@@ -41,8 +41,12 @@ package body WNM.File_System.LEB128_File_In is
       case File_System.Open_Read (Filename) is
          when File_System.Ok =>
             This.Error := Ok;
-         when others =>
-            This.Error := Unknown_Error;
+         when File_System.Already_Open =>
+            This.Error := Already_Open;
+         when File_System.Cannot_Open =>
+            This.Error := Cannot_Open;
+         when File_System.Not_Found =>
+            This.Error := Not_Found;
       end case;
    end Open;
 
@@ -88,7 +92,7 @@ package body WNM.File_System.LEB128_File_In is
 
       if not Success then
          A := In_UInt'Last;
-         This.Error := Unknown_Error;
+         This.Error := Cannot_Decode;
          return;
       end if;
    end Read;
@@ -117,7 +121,7 @@ package body WNM.File_System.LEB128_File_In is
       if Raw not in In_UInt (T'First'Enum_Rep) .. In_UInt (T'Last'Enum_Rep)
       then
          A := T'Last;
-         This.Error := Unknown_Error;
+         This.Error := Value_Not_In_Range;
          return;
       end if;
 
@@ -155,7 +159,7 @@ package body WNM.File_System.LEB128_File_In is
       if Raw not in In_UInt (T'First'Enum_Rep) .. In_UInt (T'Last'Enum_Rep)
       then
          A := T'Last;
-         This.Error := Unknown_Error;
+         This.Error := Value_Not_In_Range;
          return;
       end if;
 
@@ -193,7 +197,7 @@ package body WNM.File_System.LEB128_File_In is
       if Raw not in In_UInt (T'First'Enum_Rep) .. In_UInt (T'Last'Enum_Rep)
       then
          A := T'Last;
-         This.Error := Unknown_Error;
+         This.Error := Value_Not_In_Range;
          return;
       end if;
 
