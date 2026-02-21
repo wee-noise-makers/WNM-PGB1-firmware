@@ -292,7 +292,7 @@ package body WNM.Project.Step_Sequencer is
 
       for X in 1 .. Rep loop
          Start_Time := Start_Time + Repeat_Span;
-         Key := Arpeggiator.Next_Note (T);
+         Key := Offset (Arpeggiator.Next_Note (T), Oct);
 
          Play_Later (T, Start_Time, Key, Velo, Duration);
       end loop;
