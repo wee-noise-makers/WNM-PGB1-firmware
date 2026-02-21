@@ -24,7 +24,7 @@ with HAL;
 package WNM.Shared_Buffers is
 
    Shared_Buffer_Byte_Size : constant := 131_100;
-   --  As small as possbile, but big enough to fit either the QOA sample or
+   --  As small as possbile, but big enough to fit either the a sample or
    --  the reverb buffer.
 
    Shared_Butffer_Bit_Size : constant := Shared_Buffer_Byte_Size * 8;
