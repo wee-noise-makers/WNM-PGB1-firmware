@@ -1,0 +1,31 @@
+name: User Manual
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    defaults:
+      run:
+        working-directory: docs/user-manual/
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: actions/setup-python@v6
+
+    - run: sudo apt install cairosvg librsvg2-bin imagemagick inkscape latexmk texlive-latex-extra
+
+    - run: make setup
+
+    - name: Activate virtual environment
+      run: echo PATH=${GITHUB_WORKSPACE}/docs/user-manual/.venv/bin:$PATH >> $GITHUB_ENV
+        
+    - run: make
+
+    - name: Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: User Manual Build
+        path: docs/user-manual/build/

@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 620 120"
+   width="620"
+   height="120"
+   version="1.1"
+   id="svg44"
+   sodipodi:docname="beats-and-steps.svg"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs48" />
+  <sodipodi:namedview
+     id="namedview46"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="10.316236"
+     inkscape:cx="94.995889"
+     inkscape:cy="66.594057"
+     inkscape:window-width="1918"
+     inkscape:window-height="1037"
+     inkscape:window-x="1"
+     inkscape:window-y="22"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg44"
+     inkscape:snap-bbox="true"
+     inkscape:snap-bbox-midpoints="true"
+     inkscape:snap-page="false"
+     inkscape:snap-grids="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid26935" />
+  </sodipodi:namedview>
+  <!-- Background -->
+  <rect
+     width="620"
+     height="120.66284"
+     fill="#f5f5f5"
+     rx="4"
+     id="rect2"
+     x="0"
+     y="-10.662842"
+     style="stroke-width:1.41811" />
+  <!-- Beat separators -->
+  <rect
+     x="195.63181"
+     y="-0.39866427"
+     width="1"
+     height="60"
+     fill="#bbbbbb"
+     id="rect4" />
+  <rect
+     x="335.82166"
+     y="-0.92853057"
+     width="1"
+     height="60"
+     fill="#bbbbbb"
+     id="rect6" />
+  <rect
+     x="60.067101"
+     y="86.828072"
+     height="1.545428"
+     fill="#bbbbbb"
+     id="rect6-3"
+     width="553.09814"
+     style="stroke-width:3.77442" />
+  <rect
+     x="475.46173"
+     y="0.53154337"
+     width="1"
+     height="60"
+     fill="#bbbbbb"
+     id="rect8" />
+  <!-- Label -->
+  <text
+     x="12"
+     y="35"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10">Steps</text>
+  <text
+     x="10.602539"
+     y="69.289062"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10-8"><tspan
+       sodipodi:role="line"
+       id="tspan26599"
+       x="10.602539"
+       y="69.289062">Beats</tspan><tspan
+       sodipodi:role="line"
+       id="tspan26601"
+       x="10.602539"
+       y="84.289062" /></text>
+  <text
+     x="310.76562"
+     y="102.18234"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10-8-7"><tspan
+       sodipodi:role="line"
+       id="tspan26601-4"
+       x="310.76562"
+       y="102.18234">One Bar</tspan></text>
+  <!-- 16 steps, spacing=35, start=60 -->
+  <rect
+     x="60"
+     y="16"
+     width="28"
+     height="28"
+     rx="4"
+     fill="#e65100"
+     id="rect12" />
+  <rect
+     x="95"
+     y="16"
+     width="28"
+     height="28"
+     rx="4"
+     fill="#dddddd"
+     id="rect14" />
+  <rect
+     x="130"
+     y="16"
+     width="28"
+     height="28"
+     rx="4"
+     fill="#dddddd"
+     id="rect16" />
+  <rect
+     x="165"
+     y="16"
+     width="28"
+     height="28"
+     rx="4"
+     fill="#dddddd"
+     id="rect18" />
+  <rect
+     x="200"
+     y="16"
+     width="28"
+     height="28"
+     rx="4"
+     fill="#e65100"
+     id="rect20" />
+  <rect
+     x="235"
+     y="16"
+     width="28"
+     height="28"
+     rx="4"
+     fill="#dddddd"
+     id="rect22" />
+  <rect
+     x="270"
+     y="16"
+     width="28"
+     height="28"
+     rx="4"
+     fill="#dddddd"
+     id="rect24" />
+  <rect
+     x="305"
+     y="16"
+     width="28"
+     height="28"
+     rx="4"
+     fill="#dddddd"
+     id="rect26" />
+  <rect
+     x="340"
+     y="16"
+     width="28"
+     height="28"
+     rx="4"
+     fill="#e65100"
+     id="rect28" />
+  <rect
+     x="375"
+     y="16"
+     width="28"
+     height="28"
+     rx="4"
+     fill="#dddddd"
+     id="rect30" />
+  <rect
+     x="410"
+     y="16"
+     width="28"
+     height="28"
+     rx="4"
+     fill="#dddddd"
+     id="rect32" />
+  <rect
+     x="445"
+     y="16"
+     width="28"
+     height="28"
+     rx="4"
+     fill="#dddddd"
+     id="rect34" />
+  <rect
+     x="480"
+     y="16"
+     width="28"
+     height="28"
+     rx="4"
+     fill="#e65100"
+     id="rect36" />
+  <rect
+     x="515"
+     y="16"
+     width="28"
+     height="28"
+     rx="4"
+     fill="#dddddd"
+     id="rect38" />
+  <rect
+     x="550"
+     y="16"
+     width="28"
+     height="28"
+     rx="4"
+     fill="#dddddd"
+     id="rect40" />
+  <rect
+     x="585"
+     y="16"
+     width="28"
+     height="28"
+     rx="4"
+     fill="#dddddd"
+     id="rect42" />
+  <text
+     x="69.561523"
+     y="34.374023"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10-3">1</text>
+  <text
+     x="104.56152"
+     y="34.374023"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10-3-6">2</text>
+  <text
+     x="139.87207"
+     y="34.453125"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10-3-6-7">3</text>
+  <text
+     x="174.90137"
+     y="34.368164"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10-3-6-7-5">4</text>
+  <text
+     x="68.172188"
+     y="70.325829"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10-3-8">1</text>
+  <text
+     x="209.84703"
+     y="68.955086"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10-3-6-8">2</text>
+  <text
+     x="350.02316"
+     y="67.22419"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10-3-6-7-9">3</text>
+  <text
+     x="488.75247"
+     y="66.794128"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10-3-6-7-5-7">4</text>
+  <text
+     x="209.83105"
+     y="34.374023"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10-3-6-7-5-3">5</text>
+  <text
+     x="244.78125"
+     y="34.289062"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10-3-6-7-5-3-5">6</text>
+  <text
+     x="279.77539"
+     y="34.362305"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10-3-6-7-5-3-5-6">7</text>
+  <text
+     x="314.90137"
+     y="34.374023"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10-3-6-7-5-3-5-6-2">8</text>
+  <text
+     x="349.83105"
+     y="34.368164"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10-3-6-7-5-3-5-6-2-9">9</text>
+  <text
+     x="380.26074"
+     y="34.368164"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10-3-6-7-5-3-5-6-2-9-1">10</text>
+  <text
+     x="415.38672"
+     y="34.374023"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10-3-6-7-5-3-5-6-2-9-1-2">11</text>
+  <text
+     x="450.38672"
+     y="34.374023"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10-3-6-7-5-3-5-6-2-9-1-2-7"><tspan
+       sodipodi:role="line"
+       id="tspan14237"
+       x="450.38672"
+       y="34.374023">12</tspan></text>
+  <text
+     x="485.45117"
+     y="34.368164"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10-3-6-7-5-3-5-6-2-9-1-2-7-0"><tspan
+       sodipodi:role="line"
+       id="tspan14237-9"
+       x="485.45117"
+       y="34.368164">13</tspan></text>
+  <text
+     x="520.45117"
+     y="34.368164"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10-3-6-7-5-3-5-6-2-9-1-2-7-0-3"><tspan
+       sodipodi:role="line"
+       id="tspan14237-9-6"
+       x="520.45117"
+       y="34.368164">14</tspan></text>
+  <text
+     x="555.24902"
+     y="34.374023"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10-3-6-7-5-3-5-6-2-9-1-2-7-0-3-0"><tspan
+       sodipodi:role="line"
+       id="tspan14237-9-6-6"
+       x="555.24902"
+       y="34.374023">15</tspan></text>
+  <text
+     x="590.39258"
+     y="34.289062"
+     font-family="system-ui, sans-serif"
+     font-size="12px"
+     font-weight="bold"
+     fill="#333333"
+     id="text10-3-6-7-5-3-5-6-2-9-1-2-7-0-3-0-2"><tspan
+       sodipodi:role="line"
+       id="tspan14237-9-6-6-6"
+       x="590.39258"
+       y="34.289062">16</tspan></text>
+</svg>

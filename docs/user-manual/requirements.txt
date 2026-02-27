@@ -1,0 +1,6 @@
+sphinx>=8.1
+myst-parser>=4.0
+furo>=2023.9.10
+PyYAML>=6.0
+Pillow>=9.0
+cairosvg>=2.8

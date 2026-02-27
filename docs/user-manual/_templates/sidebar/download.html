@@ -1,0 +1,9 @@
+<div class="sidebar-download-pdf">
+  <a href="{{ pathto(pdf_filename, 1) }}" class="download-pdf-link">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 16l-5-5 1.41-1.41L11 13.17V4h2v9.17l2.59-2.58L17 11l-5 5zm-7 4v-2h14v2H5z"/>
+    </svg>
+    Download PDF
+    {%- if release %}<span class="pdf-version">v{{ release }}</span>{% endif %}
+  </a>
+</div>

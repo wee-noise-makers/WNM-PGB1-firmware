@@ -1,0 +1,37 @@
+/* PGB-1 User Manual — Sphinx/Furo custom styles */
+
+/* Keyboard key styling — replicates MkDocs Material key appearance */
+kbd {
+    display: inline-block;
+    padding: 0.1em 0.4em;
+    font-size: 0.85em;
+    line-height: 1.4;
+    color: var(--color-foreground-primary);
+    background-color: var(--color-background-secondary, #f5f5f5);
+    border: 1px solid var(--color-background-border, #ccc);
+    border-radius: 3px;
+    box-shadow: 0 1px 1px rgba(0,0,0,.2), 0 2px 0 0 rgba(255,255,255,.7) inset;
+    font-family: var(--font-stack--monospace);
+    white-space: nowrap;
+}
+
+/* Green accent for table header rows */
+table thead tr {
+    background-color: var(--color-brand-primary);
+    color: white;
+}
+
+table thead tr th {
+    color: white;
+}
+
+/* Code block left border accent */
+div[class*="highlight"] pre,
+.highlight pre {
+    border-left: 3px solid var(--color-brand-primary);
+}
+
+/* Admonition title color */
+.admonition > .admonition-title {
+    color: var(--color-brand-primary);
+}
