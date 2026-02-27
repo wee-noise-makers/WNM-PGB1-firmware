@@ -379,7 +379,7 @@ package body WNM.Mixer is
    ---------------------
 
    procedure Next_Out_Buffer (Buffer             : out System.Address;
-                               Stereo_Point_Count : out HAL.UInt32)
+                              Stereo_Point_Count : out HAL.UInt32)
    is
       Id : Mixer_Buffer_Index;
       Success : Boolean;

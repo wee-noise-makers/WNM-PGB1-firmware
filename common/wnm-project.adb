@@ -147,19 +147,6 @@ package body WNM.Project is
       return G_Project.BPM;
    end Get_BPM;
 
-   ----------------------
-   -- Samples_Per_Beat --
-   ----------------------
-
-   function Samples_Per_Beat return Synth.Sample_Time is
-      use Synth;
-
-      Samples_Per_Minute : constant Sample_Time :=
-        60 * WNM_Configuration.Audio.Sample_Frequency;
-   begin
-      return Samples_Per_Minute / Sample_Time (Get_BPM);
-   end Samples_Per_Beat;
-
    ---------------------------
    -- Microseconds_Per_Beat --
    ---------------------------
@@ -348,7 +335,7 @@ package body WNM.Project is
    -- Engines_Count --
    -------------------
 
-   function Engines_Count (T : Tracks := Editing_Track) return Natural is
+   function Engines_Count (T : Tracks) return Natural is
       Lim : constant MIDI_Data_Next.Limits := Engine_Limits (T);
    begin
       return Natural (Lim.Max) - Natural (Lim.Min) + 1;
@@ -784,7 +771,7 @@ package body WNM.Project is
    -- Mode --
    ----------
 
-   function Mode (T : Tracks := Editing_Track) return Track_Mode_Kind is
+   function Mode (T : Tracks) return Track_Mode_Kind is
    begin
       if G_Project.Tracks (T).MIDI_Enabled then
          return MIDI_Mode;
@@ -810,14 +797,14 @@ package body WNM.Project is
    -- MIDI_Chan --
    ---------------
 
-   function MIDI_Chan (T : Tracks := Editing_Track) return MIDI.MIDI_Channel
+   function MIDI_Chan (T : Tracks) return MIDI.MIDI_Channel
    is (G_Project.Tracks (T).Chan);
 
    ----------------
    -- Track_Name --
    ----------------
 
-   function Track_Name (T : Tracks := Editing_Track) return String
+   function Track_Name (T : Tracks) return String
    is (case Mode (T) is
           when MIDI_Mode => "MIDI" & MIDI_Chan (T)'Img,
           when others    => Img (Mode (T)));
@@ -826,35 +813,35 @@ package body WNM.Project is
    -- Track_Volume --
    ------------------
 
-   function Track_Volume (T : Tracks := Editing_Track) return Audio_Volume
+   function Track_Volume (T : Tracks) return Audio_Volume
    is (G_Project.Tracks (T).Volume);
 
    ---------------
    -- Track_Pan --
    ---------------
 
-   function Track_Pan (T : Tracks := Editing_Track) return Audio_Pan
+   function Track_Pan (T : Tracks) return Audio_Pan
    is (G_Project.Tracks (T).Pan);
 
    ------------------
    -- Track_Offset --
    ------------------
 
-   function Track_Offset (T : Tracks := Editing_Track) return Octave_Offset
+   function Track_Offset (T : Tracks) return Octave_Offset
    is (G_Project.Tracks (T).Offset);
 
    -------------------
    -- Track_Shuffle --
    -------------------
 
-   function Track_Shuffle (T : Tracks := Editing_Track) return Shuffle_Value
+   function Track_Shuffle (T : Tracks) return Shuffle_Value
    is (G_Project.Tracks (T).Shuffle);
 
    -------------------
    -- CC_Controller --
    -------------------
 
-   function CC_Controller (T : Tracks := Editing_Track;
+   function CC_Controller (T : Tracks;
                            Id : CC_Id)
                            return MIDI.MIDI_Data
    is (G_Project.Tracks (T).CC (Id).Controller);
@@ -863,7 +850,7 @@ package body WNM.Project is
    -- CC_Default --
    ----------------
 
-   function CC_Default (T : Tracks := Editing_Track;
+   function CC_Default (T : Tracks;
                         Id : CC_Id)
                         return MIDI.MIDI_Data
    is (G_Project.Tracks (T).CC (Id).Value);
@@ -872,56 +859,56 @@ package body WNM.Project is
    -- Master_FX --
    ---------------
 
-   function Master_FX (T : Tracks := Editing_Track) return FX_Kind
+   function Master_FX (T : Tracks) return FX_Kind
    is (G_Project.Tracks (T).FX);
 
    --------------
    -- LFO_Rate --
    --------------
 
-   function LFO_Rate (T : Tracks := Editing_Track) return MIDI.MIDI_Data
+   function LFO_Rate (T : Tracks) return MIDI.MIDI_Data
    is (G_Project.Tracks (T).LFO_Rate);
 
    -------------
    -- LFO_Amp --
    -------------
 
-   function LFO_Amp (T : Tracks := Editing_Track) return MIDI.MIDI_Data
+   function LFO_Amp (T : Tracks) return MIDI.MIDI_Data
    is (G_Project.Tracks (T).LFO_Amp);
 
    ----------------
    -- LFO_Target --
    ----------------
 
-   function LFO_Target (T : Tracks := Editing_Track) return LFO_Target_Kind
+   function LFO_Target (T : Tracks) return LFO_Target_Kind
    is (G_Project.Tracks (T).LFO_Target);
 
    ---------------
    -- LFO_Shape --
    ---------------
 
-   function LFO_Shape (T : Tracks := Editing_Track) return LFO_Shape_Kind
+   function LFO_Shape (T : Tracks) return LFO_Shape_Kind
    is (G_Project.Tracks (T).LFO_Shape);
 
    --------------
    -- LFO_Sync --
    --------------
 
-   function LFO_Sync (T : Tracks := Editing_Track) return LFO_Sync_Kind
+   function LFO_Sync (T : Tracks) return LFO_Sync_Kind
    is (G_Project.Tracks (T).LFO_Sync);
 
    --------------
    -- LFO_Loop --
    --------------
 
-   function LFO_Loop (T : Tracks := Editing_Track) return LFO_Loop_Kind
+   function LFO_Loop (T : Tracks) return LFO_Loop_Kind
    is (G_Project.Tracks (T).LFO_Loop);
 
    ------------------
    -- LFO_Amp_Mode --
    ------------------
 
-   function LFO_Amp_Mode (T : Tracks := Editing_Track) return LFO_Amp_Kind
+   function LFO_Amp_Mode (T : Tracks) return LFO_Amp_Kind
    is (G_Project.Tracks (T).LFO_Amp_Mode);
 
    ---------------------
@@ -945,7 +932,7 @@ package body WNM.Project is
    -- CC_Controller_Label --
    -------------------------
 
-   function CC_Controller_Label (T    : Tracks := Editing_Track;
+   function CC_Controller_Label (T    : Tracks;
                                  Id   : CC_Id)
                                  return Controller_Label
    is
@@ -1011,7 +998,7 @@ package body WNM.Project is
    -- CC_Controller_Short_Label --
    -------------------------------
 
-   function CC_Controller_Short_Label (T    : Tracks := Editing_Track;
+   function CC_Controller_Short_Label (T    : Tracks;
                                        Id   : CC_Id)
                                        return Tresses.Short_Label
    is
@@ -1065,16 +1052,14 @@ package body WNM.Project is
    -- Selected_Engine --
    ---------------------
 
-   function Selected_Engine (T : Tracks := Editing_Track)
-                             return MIDI.MIDI_Data
+   function Selected_Engine (T : Tracks) return MIDI.MIDI_Data
    is (G_Project.Tracks (T).Engine);
 
    -------------------------
    -- Selected_Engine_Img --
    -------------------------
 
-   function Selected_Engine_Img (T : Tracks := Editing_Track)
-                                 return String
+   function Selected_Engine_Img (T : Tracks) return String
    is
    begin
       case Mode (T) is
@@ -1099,133 +1084,22 @@ package body WNM.Project is
    -- Arp_Mode --
    --------------
 
-   function Arp_Mode (T : Tracks := Editing_Track) return Arp_Mode_Kind
+   function Arp_Mode (T : Tracks) return Arp_Mode_Kind
    is (G_Project.Tracks (T).Arp_Mode);
 
    ---------------
    -- Arp_Notes --
    ---------------
 
-   function Arp_Notes (T : Tracks := Editing_Track) return Arp_Notes_Kind
+   function Arp_Notes (T : Tracks) return Arp_Notes_Kind
    is (G_Project.Tracks (T).Arp_Notes);
 
    ---------------------
    -- Notes_Per_Chord --
    ---------------------
 
-   function Notes_Per_Chord (T : Tracks := Editing_Track)
-                             return Natural
+   function Notes_Per_Chord (T : Tracks) return Natural
    is (Natural (G_Project.Tracks (T).Notes_Per_Chord) + 1);
-
-   ----------
-   -- Next --
-   ----------
-
-   procedure Next (Shape : in out LFO_Shape_Kind;
-                   Sync  : in out LFO_Sync_Kind;
-                   Loo   : in out LFO_Loop_Kind)
-   is
-   begin
-      --         Loop
-      --  Sync + Loop
-      --  Sync
-      if Loo = On and then Sync = Off then
-         Sync := On;
-      elsif Loo = On and then Sync = On then
-         Loo := Off;
-      else
-         Sync := Off;
-         Loo := On;
-         Next (Shape);
-      end if;
-   end Next;
-
-   ----------
-   -- Prev --
-   ----------
-
-   procedure Prev (Shape : in out LFO_Shape_Kind;
-                   Sync  : in out LFO_Sync_Kind;
-                   Loo   : in out LFO_Loop_Kind)
-   is
-   begin
-      --  Sync
-      --  Sync + Loop
-      --         Loop
-      if Loo = Off and then Sync = On then
-         Loo := On;
-      elsif Loo = On and then Sync = On then
-         Sync := Off;
-      else
-         Sync := On;
-         Loo := Off;
-         Prev (Shape);
-      end if;
-   end Prev;
-
-   ----------
-   -- Next --
-   ----------
-
-   procedure Next (Amp    : in out MIDI.MIDI_Data;
-                   Mode   : in out LFO_Amp_Kind;
-                   Amount :        MIDI.MIDI_Data)
-   is
-      use MIDI;
-   begin
-      case Mode is
-         when Positive =>
-            if Amp <= MIDI_Data'Last - Amount then
-               Amp := Amp + Amount;
-            end if;
-         when Center =>
-            if Amp <= MIDI_Data'Last - Amount then
-               Amp := Amp + Amount;
-            else
-               Mode := Positive;
-               Amp := 0;
-            end if;
-         when Negative =>
-            if Amp >= Amount then
-               Amp := Amp - Amount;
-            else
-               Mode := Center;
-               Amp := 0;
-            end if;
-      end case;
-   end Next;
-
-   ----------
-   -- Prev --
-   ----------
-
-   procedure Prev (Amp    : in out MIDI.MIDI_Data;
-                   Mode   : in out LFO_Amp_Kind;
-                   Amount :        MIDI.MIDI_Data)
-   is
-      use MIDI;
-   begin
-      case Mode is
-         when Positive =>
-            if Amp >= Amount then
-               Amp := Amp - Amount;
-            else
-               Mode := Center;
-               Amp := MIDI_Data'Last;
-            end if;
-         when Center =>
-            if Amp >= Amount then
-               Amp := Amp - Amount;
-            else
-               Mode := Negative;
-               Amp := 0;
-            end if;
-         when Negative =>
-            if Amp <= MIDI_Data'Last - Amount then
-               Amp := Amp + Amount;
-            end if;
-      end case;
-   end Prev;
 
    --------------------------
    -- CC_For_Track_Setting --
@@ -1378,16 +1252,8 @@ package body WNM.Project is
          when Track_Octave_Offset => Next (Track.Offset);
          when Shuffle         => Next (Track.Shuffle);
          when LFO_Rate        => Next (Track.LFO_Rate);
-
-         when LFO_Amplitude   =>
-            Next (Track.LFO_Amp, Track.LFO_Amp_Mode, 1);
-            Synchronize_Synth_Setting (T, LFO_Amp_Mode);
-
-         when LFO_Shape       =>
-            Next (Track.LFO_Shape, Track.LFO_Sync, Track.LFO_Loop);
-            Synchronize_Synth_Setting (T, LFO_Sync);
-            Synchronize_Synth_Setting (T, LFO_Loop);
-
+         when LFO_Amplitude   => Next (Track.LFO_Amp);
+         when LFO_Shape       => Next (Track.LFO_Shape);
          when LFO_Target      => Next (Track.LFO_Target);
          when Arp_Mode        => Next (Track.Arp_Mode);
          when Arp_Notes       => Next (Track.Arp_Notes);
@@ -1431,15 +1297,8 @@ package body WNM.Project is
          when Track_Octave_Offset => Prev (Track.Offset);
          when Shuffle         => Prev (Track.Shuffle);
          when LFO_Rate        => Prev (Track.LFO_Rate);
-         when LFO_Amplitude   =>
-            Prev (Track.LFO_Amp, Track.LFO_Amp_Mode, 1);
-            Synchronize_Synth_Setting (T, LFO_Amp_Mode);
-
-         when LFO_Shape       =>
-            Prev (Track.LFO_Shape, Track.LFO_Sync, Track.LFO_Loop);
-            Synchronize_Synth_Setting (T, LFO_Sync);
-            Synchronize_Synth_Setting (T, LFO_Loop);
-
+         when LFO_Amplitude   => Prev (Track.LFO_Amp);
+         when LFO_Shape       => Prev (Track.LFO_Shape);
          when LFO_Target      => Prev (Track.LFO_Target);
          when Arp_Mode        => Prev (Track.Arp_Mode);
          when Arp_Notes       => Prev (Track.Arp_Notes);
@@ -1483,16 +1342,8 @@ package body WNM.Project is
          when Track_Octave_Offset => Next_Fast (Track.Offset);
          when Shuffle         => Next_Fast (Track.Shuffle);
          when LFO_Rate        => Next_Fast (Track.LFO_Rate);
-
-         when LFO_Amplitude   =>
-            Next (Track.LFO_Amp, Track.LFO_Amp_Mode, 10);
-            Synchronize_Synth_Setting (T, LFO_Amp_Mode);
-
-         when LFO_Shape       =>
-            Next (Track.LFO_Shape, Track.LFO_Sync, Track.LFO_Loop);
-            Synchronize_Synth_Setting (T, LFO_Sync);
-            Synchronize_Synth_Setting (T, LFO_Loop);
-
+         when LFO_Amplitude   => Next_Fast (Track.LFO_Amp);
+         when LFO_Shape       => Next_Fast (Track.LFO_Shape);
          when LFO_Target      => Next_Fast (Track.LFO_Target);
          when Arp_Mode        => Next_Fast (Track.Arp_Mode);
          when Arp_Notes       => Next_Fast (Track.Arp_Notes);
@@ -1536,16 +1387,8 @@ package body WNM.Project is
          when Track_Octave_Offset => Prev_Fast (Track.Offset);
          when Shuffle         => Prev_Fast (Track.Shuffle);
          when LFO_Rate        => Prev_Fast (Track.LFO_Rate);
-
-         when LFO_Amplitude   =>
-            Prev (Track.LFO_Amp, Track.LFO_Amp_Mode, 10);
-            Synchronize_Synth_Setting (T, LFO_Amp_Mode);
-
-         when LFO_Shape       =>
-            Prev (Track.LFO_Shape, Track.LFO_Sync, Track.LFO_Loop);
-            Synchronize_Synth_Setting (T, LFO_Sync);
-            Synchronize_Synth_Setting (T, LFO_Loop);
-
+         when LFO_Amplitude   => Prev_Fast (Track.LFO_Amp);
+         when LFO_Shape       => Prev_Fast (Track.LFO_Shape);
          when LFO_Target      => Prev_Fast (Track.LFO_Target);
          when Arp_Mode        => Prev_Fast (Track.Arp_Mode);
          when Arp_Notes       => Prev_Fast (Track.Arp_Notes);
@@ -1587,21 +1430,58 @@ package body WNM.Project is
       G_Project.Tracks (T).CC (Id).Label := Label;
    end Set_CC_Controller_Label;
 
+   ---------------------
+   -- LFO_Toggle_Sync --
+   ---------------------
+
+   procedure LFO_Toggle_Sync (T : Tracks) is
+   begin
+      Next (G_Project.Tracks (T).LFO_Sync);
+      Synchronize_Synth_Setting (T, LFO_Sync);
+   end LFO_Toggle_Sync;
+
+   ---------------------
+   -- LFO_Toggle_Loop --
+   ---------------------
+
+   procedure LFO_Toggle_Loop (T : Tracks) is
+   begin
+      Next (G_Project.Tracks (T).LFO_Loop);
+      Synchronize_Synth_Setting (T, LFO_Loop);
+   end LFO_Toggle_Loop;
+
+   -----------------------
+   -- LFO_Amp_Mode_Next --
+   -----------------------
+
+   procedure LFO_Amp_Mode_Next (T : Tracks) is
+   begin
+      Next (G_Project.Tracks (T).LFO_Amp_Mode);
+      Synchronize_Synth_Setting (T, LFO_Amp_Mode);
+   end LFO_Amp_Mode_Next;
+
+   -----------------------
+   -- LFO_Amp_Mode_Prev --
+   -----------------------
+
+   procedure LFO_Amp_Mode_Prev (T : Tracks) is
+   begin
+      Prev (G_Project.Tracks (T).LFO_Amp_Mode);
+      Synchronize_Synth_Setting (T, LFO_Amp_Mode);
+   end LFO_Amp_Mode_Prev;
+
    ----------
    -- Link --
    ----------
 
-   function Link (T : Tracks := Editing_Track;
-                      P : Patterns := Editing_Pattern)
-                      return Boolean
+   function Link (T : Tracks; P : Patterns) return Boolean
    is (G_Project.Patterns (T)(P).Has_Link);
 
    --------------------
    -- Pattern_Length --
    --------------------
 
-   function Pattern_Length (T : Tracks := Editing_Track;
-                            P : Patterns := Editing_Pattern)
+   function Pattern_Length (T : Tracks; P : Patterns)
                             return WNM.Pattern_Length
    is (G_Project.Patterns (T)(P).Length);
 
@@ -2488,10 +2368,17 @@ package body WNM.Project is
                                         ));
 
       Default_Bitcrush_Track : constant Track_Rec :=
-        (Default_Track with delta CC => ((0, 63, "CC0              "),
-                                         (1, 103, "CC1              "),
+        (Default_Track with delta CC => ((0, 70, "CC0              "),
+                                         (1, 30, "CC1              "),
+                                         (2, 127, "CC2              "),
+                                         (3, 127, "CC3              ")
+                                        ));
+
+      Default_Overdrive_Track : constant Track_Rec :=
+        (Default_Track with delta CC => ((0, 127, "CC0              "),
+                                         (1, 127, "CC1              "),
                                          (2, 63, "CC2              "),
-                                         (3, 119, "CC3              ")
+                                         (3, 31, "CC3              ")
                                         ));
 
    begin
@@ -2504,7 +2391,7 @@ package body WNM.Project is
       Tracks (Sample1_Track)  := Default_Sample1_Track;
       Tracks (Sample2_Track)  := Default_Sample2_Track;
       Tracks (9)              := Default_Track;
-      Tracks (10)             := Default_Track;
+      Tracks (Drive_Track)    := Default_Overdrive_Track;
       Tracks (Bitcrush_Track) := Default_Bitcrush_Track;
       Tracks (12)             := Default_Track;
       Tracks (13)             := Default_Track;

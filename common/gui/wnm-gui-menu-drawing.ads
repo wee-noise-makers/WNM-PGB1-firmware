@@ -21,7 +21,7 @@
 
 with MIDI;
 with HAL;
-
+with Tresses;
 with WNM.Screen;
 with WNM.Sample_Library;
 with WNM.Project;
@@ -69,12 +69,6 @@ package WNM.GUI.Menu.Drawing is
                             Index : Natural)
      with Pre => Index <= Count;
 
-   procedure Draw_Volume (Title : String;
-                          Val : WNM_HAL.Audio_Volume);
-
-   procedure Draw_Pan (Title : String;
-                       Val : WNM_HAL.Audio_Pan);
-
    procedure Draw_MIDI_Val (Val      : MIDI.MIDI_Data;
                             Selected : Boolean);
 
@@ -95,12 +89,15 @@ package WNM.GUI.Menu.Drawing is
 
    type CC_Draw_Style is (Positive, Center, Negative);
 
-   procedure Draw_CC_Value (Id       : WNM.Project.CC_Id;
-                            Value    : MIDI.MIDI_Data;
-                            Label    : String;
-                            Selected : Boolean;
-                            Enabled  : Boolean := True;
-                            Style    : CC_Draw_Style := Positive);
+   procedure Draw_CC_Value
+     (Id        : WNM.Project.CC_Id;
+      Value     : MIDI.MIDI_Data;
+      Label     : String;
+      Selected  : Boolean;
+      Enabled   : Boolean := True;
+      Style     : CC_Draw_Style := Positive;
+      Has_LFO   : Boolean := False;
+      LFO_Value : MIDI.MIDI_Data := MIDI.MIDI_Data'First);
 
    procedure Draw_LFO_Shape (Id       : WNM.Project.CC_Id;
                              Label    : String;
@@ -120,10 +117,12 @@ package WNM.GUI.Menu.Drawing is
                       Label    : String := "FX");
 
    procedure Draw_CC_Control_Page
-     (Mode        : WNM.Project.Track_Mode_Kind;
+     (T           : Tracks;
       Selected    : WNM.Project.CC_Id;
       Val_A, Val_B, Val_C, Val_D : MIDI.MIDI_Data;
-      Ena_A, Ena_B, Ena_C, Ena_D : Boolean := True);
+      Ena_A, Ena_B, Ena_C, Ena_D : Boolean := True;
+      LFO_Target : WNM.Project.LFO_Target_Kind := WNM.Project.None;
+      LFO_Value  : MIDI.MIDI_Data := MIDI.MIDI_Data'First);
 
    procedure Draw_Filter_Mode (Id       : WNM.Project.CC_Id;
                                Mode     : Project.Filter_Mode_Kind;
@@ -166,5 +165,12 @@ package WNM.GUI.Menu.Drawing is
    procedure Draw_Alt_Slider;
 
    procedure Draw_Chords_Progress (Center_X, Center_Y : Natural);
+
+   procedure Draw_LFO_Bar (Center_X, Y        : Natural;
+                           Width              : Natural;
+                           Param              : Tresses.Param_Range;
+                           LFO                : Tresses.Param_Range := 0;
+                           Draw_LFO           : Boolean := False;
+                           Param_Start_Center : Boolean := False);
 
 end WNM.GUI.Menu.Drawing;

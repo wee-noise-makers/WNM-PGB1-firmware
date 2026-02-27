@@ -64,6 +64,7 @@ package body WNM.GUI.Menu.Step_Settings is
    procedure Draw
      (This : in out Step_Settings_Menu)
    is
+      Track : constant Tracks := Editing_Track;
       Step : constant Sequencer_Steps := Editing_Step;
       Sub  : constant Sub_Settings := This.Current_Setting;
       Top_Setting : constant Top_Settings := To_Top (Sub);
@@ -129,7 +130,7 @@ package body WNM.GUI.Menu.Step_Settings is
                      when others => Project.D);
             begin
                Draw_CC_Control_Page
-                 (Mode => Project.Mode,
+                 (T => Track,
                   Selected => Selected,
                   Val_A => Project.CC_Value (Id => A),
                   Val_B => Project.CC_Value (Id => B),

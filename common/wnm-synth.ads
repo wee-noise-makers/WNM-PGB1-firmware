@@ -23,8 +23,6 @@ with WNM.Coproc;
 
 with HAL;
 
-with Interfaces;
-
 with MIDI;
 
 with Tresses;
@@ -48,6 +46,9 @@ package WNM.Synth is
    Drive_Channel               : constant MIDI.MIDI_Channel := 10;
    Bitcrusher_Channel          : constant MIDI.MIDI_Channel := 11;
    Sample_Rec_Playback_Channel : constant MIDI.MIDI_Channel := 13;
+
+   subtype Tresses_Channels
+     is MIDI.MIDI_Channel range Kick_Channel .. Bitcrusher_Channel;
 
    subtype Sampler_Channels
      is MIDI.MIDI_Channel range Sample1_Channel .. Sample2_Channel;
@@ -110,10 +111,14 @@ package WNM.Synth is
    procedure Clear_Max_CPU_Load;
    procedure Clear_Missed_Deadlines;
 
-   type Sample_Time is new Interfaces.Unsigned_64;
-
    procedure Push_Copro_Event (Msg : WNM.Coproc.Message);
    procedure Process_Coproc_Events;
+
+   function LFO_Current_Value (Chan : Tresses_Channels) return Tresses.S16;
+   function Param_Value_After_LFO (Chan : Tresses_Channels)
+                                   return Tresses.Param_Range;
+   function Param_Value_Before_LFO (Chan : Tresses_Channels)
+                                    return Tresses.Param_Range;
 
    -----------
    -- Synth --

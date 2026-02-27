@@ -171,6 +171,15 @@ package body WNM_HAL is
       Pixels_Internal (X, Y) := On;
    end Set_Pixel;
 
+   ----------------
+   -- Flip_Pixel --
+   ----------------
+
+   procedure Flip_Pixel (X : Pix_X; Y : Pix_Y) is
+   begin
+      Pixels_Internal (X, Y) := not Pixels_Internal (X, Y);
+   end Flip_Pixel;
+
    -------------------
    -- Update_Screen --
    -------------------

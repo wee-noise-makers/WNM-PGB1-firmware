@@ -38,12 +38,14 @@ package WNM.Screen is
    end record;
 
    procedure Set_Pixel (Pt : Point; On : Boolean := True);
+   procedure Flip_Pixel (Pt : Point);
    procedure Fill_Rect (R : Rect; On : Boolean := True);
    procedure Draw_Rect (R : Rect; On : Boolean := True);
    procedure Draw_Line (Start, Stop : Point; On : Boolean := True);
    procedure Draw_Circle (Center : Point; Radius : Natural);
-   procedure Draw_H_Line (Y : Natural; On : Boolean := True);
-   procedure Draw_Dot_H_Line (Y : Natural; On : Boolean := True);
+   procedure Draw_H_Line (X1, X2, Y : Natural; On : Boolean := True);
+   procedure Draw_Dot_H_Line (X1, X2, Y : Natural; On : Boolean := True);
+   procedure Flip_H_Line (X1, X2, Y : Natural);
 
    type Unsigned_8_Array is array (Positive range <>) of Interfaces.Unsigned_8;
 

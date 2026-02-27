@@ -20,7 +20,6 @@
 -------------------------------------------------------------------------------
 
 with HAL; use HAL;
-with Interfaces; use Interfaces;
 
 with WNM.Mixer;
 with WNM.Voices.Snare_Voice;
@@ -194,9 +193,6 @@ package body WNM.Synth is
           when 1      => Voices.Chord_Voice.Mixed_Waveforms,
           when others => Voices.Chord_Voice.Custom_Waveform);
 
-   subtype Tresses_Channels
-     is MIDI.MIDI_Channel range Kick_Channel .. Bitcrusher_Channel;
-
    Synth_Voices : constant array (Tresses_Channels) of
      Voice_Access :=
        (Sample1_Channel    => Sampler1'Access,
@@ -254,10 +250,6 @@ package body WNM.Synth is
 
    procedure Next_Points (Output : out WNM.Mixer.FX_Send_Buffers);
 
-   function To_Param (V : MIDI.MIDI_Data)
-                      return Tresses.Param_Range
-     with Inline_Always;
-
    function Vol_To_Param (V : MIDI.MIDI_Data)
                           return Tresses.Param_Range
      with Inline_Always;
@@ -295,19 +287,6 @@ package body WNM.Synth is
          WNM.Utils.Stop (This);
       end if;
    end Stop;
-
-   --------------
-   -- To_Param --
-   --------------
-
-   function To_Param (V : MIDI.MIDI_Data)
-                      return Tresses.Param_Range
-   is
-      Ret : constant Tresses.Param_Range := Param_Range (V) *
-        (Param_Range'Last / Param_Range (MIDI.MIDI_Data'Last));
-   begin
-      return Ret;
-   end To_Param;
 
    ------------------
    -- Vol_To_Param --
@@ -351,7 +330,8 @@ package body WNM.Synth is
           when 2 => Tresses.LFO.Ramp_Up,
           when 3 => Tresses.LFO.Ramp_Down,
           when 4 => Tresses.LFO.Exp_Up,
-          when others => Tresses.LFO.Exp_Down
+          when 5 => Tresses.LFO.Exp_Down,
+          when others => Tresses.LFO.Random
       );
 
    -------------------
@@ -488,7 +468,7 @@ package body WNM.Synth is
                            elsif Msg.MIDI_Evt.Chan = Chord_Channel then
 
                               Chord.Key_On (Msg.MIDI_Evt.Key,
-                                            To_Param
+                                            Tresses.MIDI_Param
                                               (Msg.MIDI_Evt.Velocity));
 
                            else
@@ -497,7 +477,7 @@ package body WNM.Synth is
                                                   (Key)));
                            end if;
 
-                           Voice.Note_On (To_Param
+                           Voice.Note_On (Tresses.MIDI_Param
                                           (Msg.MIDI_Evt.Velocity));
 
                            Last_Key (Msg.MIDI_Evt.Chan) := Key;
@@ -555,7 +535,7 @@ package body WNM.Synth is
                                  In_Voice_Parameters
                                    (Msg.MIDI_Evt.Chan)
                                    (Msg.MIDI_Evt.Controller)
-                                   := To_Param
+                                   := Tresses.MIDI_Param
                                      (Msg.MIDI_Evt.Controller_Value);
                               end if;
 
@@ -609,7 +589,7 @@ package body WNM.Synth is
 
                            when Voice_LFO_Rate_CC =>
                               LFOs (Msg.MIDI_Evt.Chan).Set_Rate
-                                (To_Param (Msg.MIDI_Evt.Controller_Value),
+                                (MIDI_Param (Msg.MIDI_Evt.Controller_Value),
                                  WNM_Configuration.Audio.Samples_Per_Buffer);
 
                            when Voice_LFO_Shape_CC =>
@@ -618,7 +598,7 @@ package body WNM.Synth is
 
                            when Voice_LFO_Amp_CC =>
                               LFOs (Msg.MIDI_Evt.Chan).Set_Amplitude
-                                (To_Param (Msg.MIDI_Evt.Controller_Value));
+                                (MIDI_Param (Msg.MIDI_Evt.Controller_Value));
 
                            when Voice_LFO_Amp_Mode_CC =>
                               LFOs (Msg.MIDI_Evt.Chan).Set_Amp_Mode
@@ -661,6 +641,47 @@ package body WNM.Synth is
          end case;
       end loop;
    end Process_Coproc_Events;
+
+   -----------------------
+   -- LFO_Current_Value --
+   -----------------------
+
+   function LFO_Current_Value (Chan : Tresses_Channels) return Tresses.S16 is
+   begin
+      return LFO_Values (Chan);
+   end LFO_Current_Value;
+
+   ---------------------------
+   -- Param_Value_After_LFO --
+   ---------------------------
+
+   function Param_Value_After_LFO (Chan : Tresses_Channels)
+                                   return Tresses.Param_Range
+   is
+      Target : constant MIDI.MIDI_Data := LFO_Targets (Chan);
+   begin
+      if Target in LFO_Compatible_CC then
+         return Out_Voice_Parameters (Chan) (Target);
+      else
+         return 0;
+      end if;
+   end Param_Value_After_LFO;
+
+   ----------------------------
+   -- Param_Value_Before_LFO --
+   ----------------------------
+
+   function Param_Value_Before_LFO (Chan : Tresses_Channels)
+                                    return Tresses.Param_Range
+   is
+      Target : constant MIDI.MIDI_Data := LFO_Targets (Chan);
+   begin
+      if Target in LFO_Compatible_CC then
+         return In_Voice_Parameters (Chan) (Target);
+      else
+         return 0;
+      end if;
+   end  Param_Value_Before_LFO;
 
    -----------------
    -- Next_Points --

@@ -24,8 +24,10 @@ with Interfaces;
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
 with WNM.GUI.Popup;
 with WNM.GUI.Menu.Text_Dialog;
+with WNM.Synth;
 
 with WNM.Utils; use WNM.Utils;
+with Tresses;
 
 package body WNM.GUI.Menu.Track_Settings is
 
@@ -188,6 +190,8 @@ package body WNM.GUI.Menu.Track_Settings is
    procedure Draw
      (This : in out Track_Settings_Menu)
    is
+      use Tresses;
+
       Mode : Project.Track_Mode_Kind;
       Sub : Sub_Settings;
       Top : Top_Settings;
@@ -208,29 +212,76 @@ package body WNM.GUI.Menu.Track_Settings is
             Draw_Value (Img (Mode));
 
          when Volume =>
-            Draw_Volume ("Volume:", Project.Track_Volume);
+            declare
+               Value : constant Audio_Volume := Project.Track_Volume (T);
+               Scaled : constant Param_Range :=
+                 Param_Range (Value) *
+                 (Param_Range'Last / Param_Range (Audio_Volume'Last));
+
+               M : constant Project.Track_Mode_Kind := Project.Mode (T);
+               Chan : constant MIDI.MIDI_Channel :=
+                 Project.Voice_MIDI_Chan (M);
+            begin
+               Draw_Title ("Volume:", "");
+               Draw_Str (Box_Center.X - 11, Value_Text_Y,
+                        Value'Img & "%");
+               if M in Project.Synth_Track_Mode_Kind then
+
+                  Draw_LFO_Bar
+                    (Box_Center.X,
+                     Box_Center.Y,
+                     Box_Width - 10,
+                     Scaled,
+                     WNM.Synth.Param_Value_After_LFO (Chan),
+                     Draw_LFO => Project.LFO_Target (T) = Vol);
+               end if;
+            end;
 
          when Pan =>
-            Draw_Pan ("Pan:", Project.Track_Pan);
+            declare
+               Value : constant Audio_Pan := Project.Track_Pan (T);
+               Scaled : constant Param_Range :=
+                 Param_Range (Value) *
+                 (Param_Range'Last / Param_Range (Audio_Pan'Last));
+
+               M : constant Project.Track_Mode_Kind := Project.Mode (T);
+               Chan : constant MIDI.MIDI_Channel :=
+                 Project.Voice_MIDI_Chan (M);
+            begin
+               Draw_Title ("Pan:", "");
+               Draw_Str (Box_Center.X - 8, Value_Text_Y,
+                        Value'Img);
+               if M in Project.Synth_Track_Mode_Kind then
+
+                  Draw_LFO_Bar
+                    (Box_Center.X,
+                     Box_Center.Y,
+                     Box_Width - 10,
+                     Scaled,
+                     WNM.Synth.Param_Value_After_LFO (Chan),
+                     Draw_LFO => Project.LFO_Target (T) = Pan,
+                     Param_Start_Center => True);
+               end if;
+            end;
 
          when Master_FX =>
             Draw_Title ("FX send:", "");
-            Draw_Value (Img (Project.Master_FX));
+            Draw_Value (Img (Project.Master_FX (T)));
 
             Draw_FX (Id => WNM.Project.A,
-                     Value => Project.Master_FX,
+                     Value => Project.Master_FX (T),
                      Selected => False,
                      Label => "");
 
          when Octave_Offset =>
             Draw_Title ("Octave offset:", "");
-            Draw_Value (Project.Track_Offset'Img);
+            Draw_Value (Project.Track_Offset (T)'Img);
 
          when Shuffle =>
             Draw_Title ("Shuffle:", "");
             declare
                Shuffle : constant Project.Shuffle_Value :=
-                 Project.Track_Shuffle;
+                 Project.Track_Shuffle (T);
 
                Linn : constant Integer :=
                  50 + Integer (Shuffle) / 2;
@@ -243,11 +294,11 @@ package body WNM.GUI.Menu.Track_Settings is
 
          when Arp_Mode =>
             Draw_Title ("Arpeggiator mode:", "");
-            Draw_Value (Project.Img (Project.Arp_Mode));
+            Draw_Value (Project.Img (Project.Arp_Mode (T)));
 
          when Arp_Notes =>
             Draw_Title ("Arpeggiator notes:", "");
-            Draw_Value (Project.Img (Project.Arp_Notes));
+            Draw_Value (Project.Img (Project.Arp_Notes (T)));
 
          when Notes_Per_Chord =>
             Draw_Title ("Notes per Chord:", "");
@@ -283,9 +334,13 @@ package body WNM.GUI.Menu.Track_Settings is
                when LFO_Rate =>
                   Draw_Title ("LFO Rate:", "");
                when LFO_Amplitude =>
-                  Draw_Title ("LFO Amplitude:", "");
+                  Draw_Title ("LFO Amp: " &
+                                Project.Img (Project.LFO_Amp_Mode (T)),
+                              "");
                when LFO_Shape =>
-                  Draw_Title ("LFO Shape:", "");
+                  Draw_Title ("LFO Shape: " &
+                                Project.Img (Project.LFO_Shape (T)),
+                              "");
                when LFO_Target =>
                   Draw_Title ("LFO Target:", "");
                when others =>
@@ -294,13 +349,13 @@ package body WNM.GUI.Menu.Track_Settings is
 
             Draw_CC_Value
               (A,
-               Project.LFO_Rate,
+               Project.LFO_Rate (T),
                "RAT",
                Sub = LFO_Rate);
 
             Draw_CC_Value
               (B,
-               Project.LFO_Amp,
+               Project.LFO_Amp (T),
                "AMP",
                Sub = LFO_Amplitude,
                Style => (case LFO_Amp_Mode (T) is
@@ -321,18 +376,50 @@ package body WNM.GUI.Menu.Track_Settings is
                Project.LFO_Target (T)'Img,
                Sub = LFO_Target);
 
+            declare
+               M : constant Project.Track_Mode_Kind := Project.Mode (T);
+               Chan : constant MIDI.MIDI_Channel :=
+                 Project.Voice_MIDI_Chan (M);
+            begin
+               if M in Project.Synth_Track_Mode_Kind
+                 and then
+                   Project.LFO_Target (T) /= None
+               then
+                  Draw_LFO_Bar (Box_Center.X,
+                                Box_Top + Font_Height + 6,
+                                Box_Width - 10,
+                                WNM.Synth.Param_Value_Before_LFO (Chan),
+                                WNM.Synth.Param_Value_After_LFO (Chan),
+                                Draw_LFO => True);
+               end if;
+            end;
+
          when CC_Default =>
-            Draw_CC_Control_Page
-              (Mode => Project.Mode,
-               Selected => To_CC_Id (Sub),
-               Val_A => Project.CC_Default (T, A),
-               Val_B => Project.CC_Default (T, B),
-               Val_C => Project.CC_Default (T, C),
-               Val_D => Project.CC_Default (T, D),
-               Ena_A => True,
-               Ena_B => True,
-               Ena_C => True,
-               Ena_D => True);
+            declare
+               LFO_Value : MIDI.MIDI_Data := 0;
+               LFO_Target : LFO_Target_Kind := None;
+            begin
+               if Mode /= MIDI_Mode then
+                  LFO_Target := Project.LFO_Target (T);
+                  LFO_Value := Tresses.Param_MIDI
+                    (WNM.Synth.Param_Value_After_LFO
+                       (Project.Voice_MIDI_Chan (Mode)));
+               end if;
+
+               Draw_CC_Control_Page
+                 (T => T,
+                  Selected => To_CC_Id (Sub),
+                  Val_A => Project.CC_Default (T, A),
+                  Val_B => Project.CC_Default (T, B),
+                  Val_C => Project.CC_Default (T, C),
+                  Val_D => Project.CC_Default (T, D),
+                  Ena_A => True,
+                  Ena_B => True,
+                  Ena_C => True,
+                  Ena_D => True,
+                  LFO_Target => LFO_Target,
+                  LFO_Value  => LFO_Value);
+            end;
 
          when CC_Ctrl_A | CC_Ctrl_B | CC_Ctrl_C | CC_Ctrl_D =>
             declare
@@ -440,11 +527,25 @@ package body WNM.GUI.Menu.Track_Settings is
                           (Project.CC_Controller_Label (T, CC)));
                   end;
 
+               when LFO_Amplitude =>
+                  Project.LFO_Amp_Mode_Next (T);
+
+               when LFO_Shape =>
+                  Project.LFO_Toggle_Loop (T);
+
                when others =>
                   null;
             end case;
          when B_Press =>
-            null;
+            case This.Current_Setting is
+               when LFO_Shape =>
+                  Project.LFO_Toggle_Sync (T);
+               when LFO_Amplitude =>
+                  Project.LFO_Amp_Mode_Prev (T);
+
+               when others =>
+                  null;
+            end case;
 
          when Slider_Touch =>
             Project.Set (T,

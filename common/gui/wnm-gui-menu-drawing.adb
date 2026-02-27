@@ -31,6 +31,7 @@ with lfo_ramp_down;
 with lfo_exp_up;
 with lfo_exp_down;
 with lfo_triangle;
+with lfo_random;
 with lfo_sync;
 with lfo_loop;
 with filter_bp;
@@ -273,57 +274,6 @@ package body WNM.GUI.Menu.Drawing is
       Screen.Set_Pixel ((Box_Right - 1, Box_Bottom - 1));
 
    end Draw_Menu_Box;
-
-   -----------------
-   -- Draw_Volume --
-   -----------------
-
-   procedure Draw_Volume (Title : String;
-                          Val   : WNM_HAL.Audio_Volume)
-   is
-      X : Integer := Box_Left + 4;
-   begin
-      Print (X_Offset    => X,
-             Y_Offset    => Title_Text_Y,
-             Str         => Title);
-
-      Screen.Draw_Line ((Box_Center.X - 50, Box_Center.Y),
-                        (Box_Center.X + 50, Box_Center.Y));
-
-      Screen.Draw_Line ((Box_Center.X - 50 + Integer (Val), Box_Center.Y - 2),
-                        (Box_Center.X - 50 + Integer (Val), Box_Center.Y + 2));
-
-      X := Box_Center.X - 11;
-      Print (X_Offset    => X,
-             Y_Offset    => Value_Text_Y,
-             Str         => Val'Img & "%");
-
-   end Draw_Volume;
-
-   --------------
-   -- Draw_Pan --
-   --------------
-
-   procedure Draw_Pan (Title : String;
-                       Val   : WNM_HAL.Audio_Pan)
-   is
-      X : Integer := Box_Left + 4;
-   begin
-      Print (X_Offset    => X,
-             Y_Offset    => Title_Text_Y,
-             Str         => Title);
-
-      Screen.Draw_Line ((Box_Center.X - 50, Box_Center.Y),
-                        (Box_Center.X + 50, Box_Center.Y));
-
-      Screen.Draw_Line ((Box_Center.X - 50 + Integer (Val), Box_Center.Y - 2),
-                        (Box_Center.X - 50 + Integer (Val), Box_Center.Y + 2));
-
-      X := Box_Center.X - 8;
-      Print (X_Offset    => X,
-             Y_Offset    => Value_Text_Y,
-             Str         => Val'Img);
-   end Draw_Pan;
 
    -------------------
    -- Draw_MIDI_Val --
@@ -619,13 +569,18 @@ package body WNM.GUI.Menu.Drawing is
    -- Draw_CC_Value --
    -------------------
 
-   procedure Draw_CC_Value (Id       : WNM.Project.CC_Id;
-                            Value    : MIDI.MIDI_Data;
-                            Label    : String;
-                            Selected : Boolean;
-                            Enabled  : Boolean := True;
-                            Style    : CC_Draw_Style := Positive)
+   procedure Draw_CC_Value
+     (Id        : WNM.Project.CC_Id;
+      Value     : MIDI.MIDI_Data;
+      Label     : String;
+      Selected  : Boolean;
+      Enabled   : Boolean := True;
+      Style     : CC_Draw_Style := Positive;
+      Has_LFO   : Boolean := False;
+      LFO_Value : MIDI.MIDI_Data := MIDI.MIDI_Data'First)
    is
+      use MIDI;
+
       Val : Natural := Natural (Value) + 1;
       Last_Width : Natural;
       X, Y : Natural;
@@ -673,36 +628,36 @@ package body WNM.GUI.Menu.Drawing is
 
                while Val >= Bar_Width loop
                   Val := Val - Bar_Width;
-                  Screen.Draw_Line ((Bar_Left, Y),
-                                    (Bar_Left + Bar_Width - 1, Y));
+                  Screen.Draw_H_Line (Bar_Left, Bar_Left + Bar_Width - 1,
+                                      Y);
                   Y := Y - 1;
                end loop;
 
                if Val > 0 then
                   Last_Width := Val - 1;
-                  Screen.Draw_Line ((Bar_Left, Y),
-                                    (Bar_Left + Last_Width, Y));
+                  Screen.Draw_H_Line (Bar_Left, Bar_Left + Last_Width, Y);
                end if;
 
             when Center | Negative =>
 
                if Style = Center then
                   Y := Bar_Top + (Bar_Height / 2 - (Val / Bar_Width) / 2);
+                  if Value = MIDI.MIDI_Data'Last then
+                     Y := Y + 1;
+                  end if;
                else
                   Y := Bar_Top;
                end if;
 
                while Val >= Bar_Width loop
                   Val := Val - Bar_Width;
-                  Screen.Draw_Line ((Bar_Left, Y),
-                                    (Bar_Left + Bar_Width - 1, Y));
+                  Screen.Draw_H_Line (Bar_Left, Bar_Left + Bar_Width - 1, Y);
                   Y := Y + 1;
                end loop;
 
                if Val > 0 then
                   Last_Width := Val - 1;
-                  Screen.Draw_Line ((Bar_Left, Y),
-                                    (Bar_Left + Last_Width, Y));
+                  Screen.Draw_H_Line (Bar_Left, Bar_Left + Last_Width, Y);
                end if;
 
          end case;
@@ -715,6 +670,16 @@ package body WNM.GUI.Menu.Drawing is
             (Bar_Center.X - Bar_Width / 2, Bar_Center.Y - Bar_Width / 2));
       end if;
 
+      if Has_LFO then
+         declare
+            LFO_Height : constant Float :=
+              Float (Bar_Height) *
+              (Float (LFO_Value) / Float (MIDI.MIDI_Data'Last));
+         begin
+            Screen.Flip_H_Line (Bar_Left, Bar_Left + Bar_Width - 1,
+                                Bar_Bottom - Natural (LFO_Height));
+         end;
+      end if;
    end Draw_CC_Value;
 
    --------------------
@@ -801,6 +766,9 @@ package body WNM.GUI.Menu.Drawing is
          when Triangle =>
             Screen.Copy_Bitmap
               (lfo_triangle.Data, X, Y);
+         when Random =>
+            Screen.Copy_Bitmap
+              (lfo_random.Data, X, Y);
       end case;
 
    end Draw_LFO_Shape;
@@ -947,13 +915,16 @@ package body WNM.GUI.Menu.Drawing is
    --------------------------
 
    procedure Draw_CC_Control_Page
-     (Mode        : WNM.Project.Track_Mode_Kind;
+     (T           : Tracks;
       Selected    : WNM.Project.CC_Id;
       Val_A, Val_B, Val_C, Val_D : MIDI.MIDI_Data;
-      Ena_A, Ena_B, Ena_C, Ena_D : Boolean := True)
+      Ena_A, Ena_B, Ena_C, Ena_D : Boolean := True;
+      LFO_Target : WNM.Project.LFO_Target_Kind := WNM.Project.None;
+      LFO_Value  : MIDI.MIDI_Data := MIDI.MIDI_Data'First)
    is
       use WNM.Project;
 
+      Mode : constant Track_Mode_Kind := Project.Mode (T);
       First : Project.CC_Id;
    begin
 
@@ -985,17 +956,24 @@ package body WNM.GUI.Menu.Drawing is
                       when B => Val_B,
                       when C => Val_C,
                       when D => Val_D),
-               Project.CC_Controller_Short_Label (Editing_Track, Id),
+               Project.CC_Controller_Short_Label (T, Id),
                Id = Selected,
                Enabled => (case Id is
                              when A => Ena_A,
                              when B => Ena_B,
                              when C => Ena_C,
-                             when D => Ena_D));
+                              when D => Ena_D),
+               Has_LFO => Mode /= MIDI_Mode and then
+                 (case Id is
+                     when A => LFO_Target = P1,
+                     when B => LFO_Target = P2,
+                     when C => LFO_Target = P3,
+                     when D => LFO_Target = P4),
+               LFO_Value => LFO_Value);
          end loop;
 
          Draw_Title
-           (Project.CC_Controller_Label (Editing_Track, Selected),
+           (Project.CC_Controller_Label (T, Selected),
             "");
       end if;
    end Draw_CC_Control_Page;
@@ -1532,5 +1510,67 @@ package body WNM.GUI.Menu.Drawing is
             (Margin + (Tick_W * (Shadow_Index + 1) - 3 - 1), Y - 4));
       end if;
    end Draw_Chords_Progress;
+
+   ------------------
+   -- Draw_LFO_Bar --
+   ------------------
+
+   procedure Draw_LFO_Bar (Center_X, Y        : Natural;
+                           Width              : Natural;
+                           Param              : Tresses.Param_Range;
+                           LFO                : Tresses.Param_Range := 0;
+                           Draw_LFO           : Boolean := False;
+                           Param_Start_Center : Boolean := False)
+   is
+      use Tresses;
+
+      Param_Scaled : constant Float :=
+        Float (Param) / Float (Param_Range'Last + 1);
+
+      Param_Len : constant Natural :=
+        Integer (Float (Width) * Param_Scaled);
+
+      LFO_Scaled : constant Float :=
+        Float (LFO) / Float (Param_Range'Last + 1);
+
+      LFO_Len : constant Natural :=
+        Integer (Float (Width) * LFO_Scaled);
+
+      Left : constant Natural := Center_X - Width / 2;
+      Param_Start : constant Natural :=
+        (if Param_Start_Center
+         then Center_X
+         else Left);
+
+      Param_End : constant Natural := Left + Param_Len;
+
+      LFO_Start : constant Natural := Param_End;
+      LFO_End : constant Natural := Left + LFO_Len;
+   begin
+
+      WNM.Screen.Draw_H_Line (Param_Start, Param_End, Y);
+
+      WNM.Screen.Draw_Line ((Param_End, Y + 1),
+                            (Param_End, Y - 1));
+
+      if Draw_LFO then
+
+         WNM.Screen.Draw_Dot_H_Line (LFO_Start, LFO_End, Y);
+
+         WNM.Screen.Draw_Line ((LFO_End, Y - 2),
+                               (LFO_End, Y + 2));
+         if LFO = Param_Range'First then
+            WNM.Screen.Draw_Line ((LFO_End - 2, Y - 2),
+                                  (LFO_End - 1, Y - 1));
+            WNM.Screen.Draw_Line ((LFO_End - 2, Y + 2),
+                                  (LFO_End - 1, Y + 1));
+         elsif LFO = Param_Range'Last then
+            WNM.Screen.Draw_Line ((LFO_End + 2, Y - 2),
+                                  (LFO_End + 1, Y - 1));
+            WNM.Screen.Draw_Line ((LFO_End + 2, Y + 2),
+                                  (LFO_End + 1, Y + 1));
+         end if;
+      end if;
+   end Draw_LFO_Bar;
 
 end WNM.GUI.Menu.Drawing;

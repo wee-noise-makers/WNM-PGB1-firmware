@@ -50,7 +50,6 @@ package WNM.Project is
    procedure Change_BPM (BPM_Delta : Integer);
    function Get_BPM return Beat_Per_Minute;
 
-   function Samples_Per_Beat return Synth.Sample_Time;
    function Microseconds_Per_Beat return Time.Time_Microseconds;
 
    procedure Clear;
@@ -286,22 +285,22 @@ package WNM.Project is
    function Add_Sat (A, B : Octave_Offset) return Octave_Offset;
 
    -- Track Getters --
-   function Mode (T : Tracks := Editing_Track) return Track_Mode_Kind;
-   function MIDI_Chan (T : Tracks := Editing_Track) return MIDI.MIDI_Channel;
-   function Track_Name (T : Tracks := Editing_Track) return String;
-   function Track_Volume (T : Tracks := Editing_Track) return Audio_Volume;
-   function Track_Pan (T : Tracks := Editing_Track) return Audio_Pan;
-   function Track_Offset (T : Tracks := Editing_Track) return Octave_Offset;
+   function Mode (T : Tracks) return Track_Mode_Kind;
+   function MIDI_Chan (T : Tracks) return MIDI.MIDI_Channel;
+   function Track_Name (T : Tracks) return String;
+   function Track_Volume (T : Tracks) return Audio_Volume;
+   function Track_Pan (T : Tracks) return Audio_Pan;
+   function Track_Offset (T : Tracks) return Octave_Offset;
 
    type Shuffle_Value is range 0 .. 100;
-   function Track_Shuffle (T : Tracks := Editing_Track) return Shuffle_Value;
-   function CC_Default (T : Tracks := Editing_Track;
+   function Track_Shuffle (T : Tracks) return Shuffle_Value;
+   function CC_Default (T : Tracks;
                         Id : CC_Id)
                         return MIDI.MIDI_Data;
-   function Master_FX (T : Tracks := Editing_Track) return FX_Kind;
+   function Master_FX (T : Tracks) return FX_Kind;
 
-   function LFO_Rate (T : Tracks := Editing_Track) return MIDI.MIDI_Data;
-   function LFO_Amp (T : Tracks := Editing_Track) return MIDI.MIDI_Data;
+   function LFO_Rate (T : Tracks) return MIDI.MIDI_Data;
+   function LFO_Amp (T : Tracks) return MIDI.MIDI_Data;
 
    type LFO_Target_Kind is (P1, P2, P3, P4, Vol, Pan, None);
    for LFO_Target_Kind use (P1 => Synth.Voice_Param_1_CC,
@@ -311,55 +310,72 @@ package WNM.Project is
                             Vol => Synth.Voice_Volume_CC,
                             Pan => Synth.Voice_Pan_CC,
                             None => MIDI.MIDI_Data'Last);
-   function LFO_Target (T : Tracks := Editing_Track) return LFO_Target_Kind;
+   function LFO_Target (T : Tracks) return LFO_Target_Kind;
 
    type LFO_Shape_Kind is (Sine, Triangle, Ramp_Up, Ramp_Down,
-                           Exp_Up, Exp_Down);
+                           Exp_Up, Exp_Down, Random);
    for LFO_Shape_Kind use (Sine      => 0,
                            Triangle  => 1,
                            Ramp_Up   => 2,
                            Ramp_Down => 3,
                            Exp_Up    => 4,
-                           Exp_Down  => 5);
-   function LFO_Shape (T : Tracks := Editing_Track) return LFO_Shape_Kind;
+                           Exp_Down  => 5,
+                           Random    => 6);
+   function Img (Shape : LFO_Shape_Kind) return String
+   is (case Shape is
+          when Sine      => "Sine",
+          when Triangle  => "Triangle",
+          when Ramp_Up   => "Ramp Up",
+          when Ramp_Down => "Ramp Down",
+          when Exp_Up    => "Exp Up",
+          when Exp_Down  => "Exp Down",
+          when Random    => "Random");
+
+   function LFO_Shape (T : Tracks) return LFO_Shape_Kind;
 
    type LFO_Sync_Kind is (Off, On);
    for LFO_Sync_Kind use (Off => 0, On => 1);
-   function LFO_Sync (T : Tracks := Editing_Track) return LFO_Sync_Kind;
+   function LFO_Sync (T : Tracks) return LFO_Sync_Kind;
 
    type LFO_Loop_Kind is (Off, On);
    for LFO_Loop_Kind use (Off => 0, On => 1);
-   function LFO_Loop (T : Tracks := Editing_Track) return LFO_Loop_Kind;
+   function LFO_Loop (T : Tracks) return LFO_Loop_Kind;
 
    type LFO_Amp_Kind is (Positive, Center, Negative);
    for LFO_Amp_Kind use (Positive => 0,
                          Center   => 1,
                          Negative => 2);
-   function LFO_Amp_Mode (T : Tracks := Editing_Track) return LFO_Amp_Kind;
+   function Img (M : LFO_Amp_Kind) return String
+   is (case M is
+          when Positive => "Add",
+          when Center   => "Bipolar",
+          when Negative => "Sub");
+
+   function LFO_Amp_Mode (T : Tracks) return LFO_Amp_Kind;
 
    function CC_Value_To_Use (P : Patterns; T : Tracks; S : Sequencer_Steps;
                              Id : CC_Id)
                              return MIDI.MIDI_Data;
    --  Return the value for the given step if any, otherwise the default value
 
-   function CC_Controller (T : Tracks := Editing_Track;
+   function CC_Controller (T : Tracks;
                            Id : CC_Id)
                            return MIDI.MIDI_Data;
-   function CC_Controller_Label (T    : Tracks := Editing_Track;
+   function CC_Controller_Label (T    : Tracks;
                                  Id   : CC_Id)
                                  return Controller_Label;
-   function CC_Controller_Short_Label (T    : Tracks := Editing_Track;
+   function CC_Controller_Short_Label (T    : Tracks;
                                        Id   : CC_Id)
                                        return Tresses.Short_Label;
-   function Selected_Engine (T : Tracks := Editing_Track)
+   function Selected_Engine (T : Tracks)
                              return MIDI.MIDI_Data;
-   function Selected_Engine_Img (T : Tracks := Editing_Track)
+   function Selected_Engine_Img (T : Tracks)
                                  return String;
-   function Engines_Count (T : Tracks := Editing_Track) return Natural;
+   function Engines_Count (T : Tracks) return Natural;
 
-   function Arp_Mode (T : Tracks := Editing_Track) return Arp_Mode_Kind;
-   function Arp_Notes (T : Tracks := Editing_Track) return Arp_Notes_Kind;
-   function Notes_Per_Chord (T : Tracks := Editing_Track)
+   function Arp_Mode (T : Tracks) return Arp_Mode_Kind;
+   function Arp_Notes (T : Tracks) return Arp_Notes_Kind;
+   function Notes_Per_Chord (T : Tracks)
                              return Natural;
 
    type Track_Settings is (Engine,
@@ -442,16 +458,22 @@ package WNM.Project is
                                       Id   : CC_Id;
                                       Label : Controller_Label);
 
+   procedure LFO_Toggle_Sync (T : Tracks);
+   procedure LFO_Toggle_Loop (T : Tracks);
+
+   procedure LFO_Amp_Mode_Next (T : Tracks);
+   procedure LFO_Amp_Mode_Prev (T : Tracks);
+
    -------------
    -- Pattern --
    -------------
 
-   function Link (T : Tracks := Editing_Track;
-                  P : Patterns := Editing_Pattern)
+   function Link (T : Tracks;
+                  P : Patterns)
                   return Boolean;
 
-   function Pattern_Length (T : Tracks := Editing_Track;
-                            P : Patterns := Editing_Pattern)
+   function Pattern_Length (T : Tracks;
+                            P : Patterns)
                             return WNM.Pattern_Length;
 
    type Pattern_Settings is (Length,
@@ -715,6 +737,18 @@ private
    package LFO_Shape_Next is new Enum_Next (T    => LFO_Shape_Kind,
                                             Wrap => True);
    use LFO_Shape_Next;
+
+   package LFO_Sync_Next is new Enum_Next (T     => LFO_Sync_Kind,
+                                            Wrap => True);
+   use LFO_Sync_Next;
+
+   package LFO_Amp_Kind_Next is new Enum_Next (T    => LFO_Amp_Kind,
+                                               Wrap => False);
+   use LFO_Amp_Kind_Next;
+
+   package LFO_Loop_Next is new Enum_Next (T     => LFO_Loop_Kind,
+                                            Wrap => True);
+   use LFO_Loop_Next;
 
    package LFO_Target_Next is new Enum_Next (T    => LFO_Target_Kind,
                                              Wrap => True);

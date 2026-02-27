@@ -124,15 +124,15 @@ package body WNM.GUI.Menu.Pattern_Settings is
             end case;
 
             Draw_Pattern_Length (6,
-                                 Project.Pattern_Length (P => EP),
+                                 Project.Pattern_Length (T, EP),
                                  Selected => Sub = Length);
 
             Screen.Copy_Bitmap
-              ((case Project.Link (P => EP) is
+              ((case Project.Link (T, EP) is
                   when True => go_next_icon.Data,
                   when False => (if EP = 1
                                   or else
-                                    not Project.Link (P => EP - 1)
+                                    not Project.Link (T, EP - 1)
                                  then loop_icon.Data
                                  else go_back_icon.Data)),
 
@@ -145,7 +145,7 @@ package body WNM.GUI.Menu.Pattern_Settings is
       end case;
 
       for P in Patterns loop
-         Draw_Icon (P, P = EP, P = PP, Project.Link (P => P));
+         Draw_Icon (P, P = EP, P = PP, Project.Link (T, P));
       end loop;
 
    end Draw;

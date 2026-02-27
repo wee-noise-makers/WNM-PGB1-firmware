@@ -69,6 +69,9 @@ package WNM_HAL is
    procedure Set_Pixel (X : Pix_X; Y : Pix_Y; On : Boolean := True);
    --  Set the state of a pixel in the internal state
 
+   procedure Flip_Pixel (X : Pix_X; Y : Pix_Y);
+   --  Invert the state of a pixel in the internal state
+
    procedure Update_Screen;
    --  Update the screen using the internal pixels state
 

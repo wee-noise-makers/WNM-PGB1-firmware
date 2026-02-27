@@ -42,6 +42,7 @@ package body WNM.GUI.Update is
 
    procedure Update is
       B : Integer;
+      T : constant Tracks := Project.Editing_Track;
    begin
 
       WNM.Screen.Clear;
@@ -58,16 +59,16 @@ package body WNM.GUI.Update is
       B := 1;
       Print (X_Offset    => B,
              Y_Offset    => 0,
-             Str         => Project.Track_Name);
+             Str         => Project.Track_Name (T));
       if WNM_Configuration.Individual_Synth_Perf_Enabled
         and then
-          Project.Mode in Project.Synth_Track_Mode_Kind
+          Project.Mode (T) in Project.Synth_Track_Mode_Kind
       then
          Print (X_Offset    => B,
                 Y_Offset    => 0,
                 Str         =>
                   Img (Synth.Synth_CPU_Load
-                    (Project.Voice_MIDI_Chan (Project.Mode))));
+                    (Project.Voice_MIDI_Chan (Project.Mode (T)))));
       end if;
 
       B := 79;
@@ -76,7 +77,7 @@ package body WNM.GUI.Update is
              Str         => 'P' & Img (Project.Editing_Pattern) &
                             "S" & Img (Project.Editing_Step));
       Menu.Drawing.Draw_Battery (Anim_Step);
-      Screen.Draw_H_Line (8);
+      Screen.Draw_H_Line (0, Screen_Width - 1, 8);
 
       case WNM.UI.Input_GUI_Mode is
          when WNM.UI.Volume_BPM_Mute | WNM.UI.Volume_BPM_Solo =>

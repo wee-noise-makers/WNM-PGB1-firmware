@@ -55,11 +55,26 @@ package body WNM.Screen is
       then
          WNM_HAL.Set_Pixel (Pix_X (Pt.X), Pix_Y (Pt.Y), On);
       elsif Fail_On_Pixel_Out_Of_Bounds then
-         raise Program_Error with "Pixel out of bounds: (" & Pt.X'Img &
+         raise Program_Error with "Set Pixel out of bounds: (" & Pt.X'Img &
            ", " & Pt.Y'Img & ")";
       end if;
       pragma Warnings (On, "lower bound check");
    end Set_Pixel;
+
+   procedure Flip_Pixel (Pt : Point) is
+   begin
+      pragma Warnings (Off, "lower bound check");
+      if Pt.X in Natural (Pix_X'First) .. Natural (Pix_X'Last)
+        and then
+         Pt.Y in Natural (Pix_Y'First) .. Natural (Pix_Y'Last)
+      then
+         WNM_HAL.Flip_Pixel (Pix_X (Pt.X), Pix_Y (Pt.Y));
+      elsif Fail_On_Pixel_Out_Of_Bounds then
+         raise Program_Error with "Flip Pixel out of bounds: (" & Pt.X'Img &
+           ", " & Pt.Y'Img & ")";
+      end if;
+      pragma Warnings (On, "lower bound check");
+   end Flip_Pixel;
 
    ---------------
    -- Fill_Rect --
@@ -183,9 +198,17 @@ package body WNM.Screen is
    -- Draw_H_Line --
    -----------------
 
-   procedure Draw_H_Line (Y : Natural; On : Boolean := True) is
+   procedure Draw_H_Line (X1, X2, Y : Natural; On : Boolean := True) is
+      XA, XB : Natural;
    begin
-      for X in 0 .. Width - 1 loop
+      if X2 > X1 then
+         XA := X1;
+         XB := X2;
+      else
+         XA := X2;
+         XB := X1;
+      end if;
+      for X in XA .. XB loop
          Set_Pixel ((X, Y), On);
       end loop;
    end Draw_H_Line;
@@ -194,12 +217,41 @@ package body WNM.Screen is
    -- Draw_Dot_H_Line --
    ---------------------
 
-   procedure Draw_Dot_H_Line (Y : Natural; On : Boolean := True) is
+   procedure Draw_Dot_H_Line (X1, X2, Y : Natural; On : Boolean := True) is
+      Flip : Boolean := On;
+      XA, XB : Natural;
    begin
-      for X in 0 .. Width - 1 loop
-         Set_Pixel ((X, Y), (if (X mod 2) = 0 then On else not On));
+      if X2 > X1 then
+         XA := X1;
+         XB := X2;
+      else
+         XA := X2;
+         XB := X1;
+      end if;
+      for X in XA .. XB loop
+         Set_Pixel ((X, Y), Flip);
+         Flip := not Flip;
       end loop;
    end Draw_Dot_H_Line;
+
+   -----------------
+   -- Flip_H_Line --
+   -----------------
+
+   procedure Flip_H_Line (X1, X2, Y : Natural) is
+      XA, XB : Natural;
+   begin
+      if X2 > X1 then
+         XA := X1;
+         XB := X2;
+      else
+         XA := X2;
+         XB := X1;
+      end if;
+      for X in XA .. XB loop
+         Flip_Pixel ((X, Y));
+      end loop;
+   end Flip_H_Line;
 
    -----------------
    -- Copy_Bitmap --

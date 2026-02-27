@@ -423,6 +423,15 @@ package body WNM_HAL is
       Screen.Set_Pixel (Screen.Pix_X (X), Screen.Pix_Y (Y), On => On);
    end Set_Pixel;
 
+   ----------------
+   -- Flip_Pixel --
+   ----------------
+
+   procedure Flip_Pixel (X : Pix_X; Y : Pix_Y) is
+   begin
+      Screen.Flip_Pixel (Screen.Pix_X (X), Screen.Pix_Y (Y));
+   end Flip_Pixel;
+
    -------------------
    -- Update_Screen --
    -------------------
