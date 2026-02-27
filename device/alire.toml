@@ -21,6 +21,7 @@ release.runtime_checks = "none"
 
 [[pins]]
 tresses = {url="https://github.com/wee-noise-makers/tresses", branch="main"}
+noise_nugget_sdk = {url="https://github.com/wee-noise-makers/noise-nugget-ada-sdk", branch="main"}
 # tresses = { path = "../../tresses"}
 
 [configuration.values]
