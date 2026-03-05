@@ -63,7 +63,7 @@ package body WNM.Voices.Stutter_FX is
          --  Very short attack and release
          Init (This.Env,
                Do_Hold => True,
-               Attack_Speed =>  S_HalfStutter_Step_MuteStutter_Step_Mute_Second,
+               Attack_Speed => S_Half_Second,
                Release_Speed => S_Half_Second);
       end if;
 

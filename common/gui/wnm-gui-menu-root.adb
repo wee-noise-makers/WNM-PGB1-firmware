@@ -39,6 +39,7 @@ with midi_icon;
 with system_info_icon;
 with firmware_update_icon;
 with mixer_icon;
+with live_FX_icon;
 
 package body WNM.GUI.Menu.Root is
 
@@ -50,9 +51,9 @@ package body WNM.GUI.Menu.Root is
    is (case Item is
           when Projects        => "Projects",
           when Tracks_Mixer    => "Project Mixer",
-          when Inputs          => "Inputs",
+          when Inputs          => "Inputs Settings",
           when User_Waveform   => "Custom Waveform",
-          when Live_FX         => "Live FX",
+          when Live_FX         => "Live FX Settings",
           when MIDI_Settings   => "MIDI Settings",
           when DFU_Mode        => "Update Mode",
           when System_Info     => "System Info");
@@ -104,10 +105,8 @@ package body WNM.GUI.Menu.Root is
             Draw_Icon (mixer_icon.Data);
          when User_Waveform =>
             Draw_Icon (edit_wave_icon.Data);
-
          when Live_FX =>
-            null;
-
+            Draw_Icon (live_FX_icon.Data);
          when Inputs =>
             Draw_Icon (line_in_icon.Data);
          when MIDI_Settings =>
