@@ -40,6 +40,9 @@ package WNM.Voices.Auto_Filter_FX is
    procedure Render (This   : in out Instance;
                      Buffer : in out WNM_HAL.Stereo_Buffer);
 
+   function Last_Cutoff return Pitch_Range;
+   function Last_Cutoff_After_LFO return Pitch_Range;
+
 private
 
    type Instance is record
@@ -51,6 +54,8 @@ private
       Right : Tresses.Filters.SVF.Instance;
 
       LFO : Tresses.LFO.Instance;
+
+      Cutoff_LP : Tresses.S32 := 0;
    end record;
 
 end WNM.Voices.Auto_Filter_FX;

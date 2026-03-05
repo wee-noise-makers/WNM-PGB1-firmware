@@ -33,6 +33,10 @@ with WNM.Project;
 with WNM.Audio_Routing;
 with WNM.Time;
 with WNM.Synth;
+with WNM.Mixer;
+with WNM.Voices.Auto_Filter_FX;
+
+with Tresses;
 
 package body WNM.GUI.Update is
 
@@ -117,10 +121,30 @@ package body WNM.GUI.Update is
               Box_Left + (Box_Right - Box_Left - 7 * Bitmap_Fonts.Width) / 2;
 
             Print (X_Offset => B,
-                   Y_Offset => Box_Top - 5,
+                   Y_Offset => Box_Top - 12,
                    Str      => "FX/Copy");
 
-            Draw_Chords_Progress (Screen_Width / 2, Box_Top + 15);
+            declare
+               use WNM.Voices.Auto_Filter_FX;
+               use Tresses;
+               Mode : constant Mode_Kind := WNM.Mixer.Auto_Filter_Mode;
+            begin
+               if Mode /= Off then
+                  Draw_Filter_Bar
+                    (Center_X => Box_Center.X ,
+                     Y => Box_Top + 5,
+                     Width => Screen_Width - 10,
+                     Param => WNM.Voices.Auto_Filter_FX.Last_Cutoff_After_LFO,
+                     Mode =>
+                       (case Mode is
+                           when Fix_Low_Pass | Sweep_Low_Pass   => LP,
+                           when Fix_Band_Pass | Sweep_Band_Pass => BP,
+                           when Fix_High_Pass | Sweep_High_Pass => HP,
+                           when Off => BP));
+               end if;
+            end;
+
+            Draw_Chords_Progress (Screen_Width / 2, Box_Top + 20);
 
             Draw_Alt_Slider;
 

@@ -2,7 +2,7 @@
 --                                                                           --
 --                              Wee Noise Maker                              --
 --                                                                           --
---                  Copyright (C) 2016-2017 Fabien Chouteau                  --
+--                  Copyright (C) 2016-2026 Fabien Chouteau                  --
 --                                                                           --
 --    Wee Noise Maker is free software: you can redistribute it and/or       --
 --    modify it under the terms of the GNU General Public License as         --
@@ -19,42 +19,59 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-package WNM.GUI.Menu.Root is
+private with WNM.Voices.Stutter_FX;
+private with WNM.Project;
+private with Enum_Next;
 
-   procedure Push_Root_Window;
+package WNM.GUI.Menu.FX_Settings is
+
+   procedure Push_Window;
 
 private
+   type Top_Settings is (Auto_Fill_Tracks_Select,
+                         Auto_Fill_Low_Proba,
+                         Auto_Fill_High_Proba,
+                         Auto_Fill_Build_Proba,
+                         Filter_LP,
+                         Filter_BP,
+                         Filter_HP,
+                         Filter_Sweep,
+                         Stutter_Pattern_A,
+                         Stutter_Pattern_B,
+                         Stutter_Env);
 
-   type Menu_Items is (Projects,
-                       Tracks_Mixer,
-                       User_Waveform,
-                       Live_FX,
-                       Inputs,
-                       MIDI_Settings,
-                       DFU_Mode,
-                       System_Info);
+   subtype Sub_Settings
+     is WNM.Project.FX_Settings
+     range WNM.Project.FX_Settings'First .. WNM.Project.Stutter_Release;
+   --  We don't cover the Alt slider settings here because their are
+   --  available in Alt/FX mode.
 
-   function Menu_Items_Count is new Enum_Count (Menu_Items);
+   package Sub_Settings_Next is new Enum_Next (Sub_Settings, Wrap => False);
+   use Sub_Settings_Next;
 
-   type Root_Menu is new Menu_Window with record
-      Item : Menu_Items;
+   function Top_Count is new Enum_Count (Top_Settings);
+
+   type Instance is new Menu_Window with record
+      Item : Sub_Settings;
+
+      Track_Select : Tracks := Tracks'First;
+      Edit_Pattern : Boolean := False;
+      Pattern_Step_Select : WNM.Project.Stutter_Pattern_Range
+        := WNM.Project.Stutter_Pattern_Range'First;
    end record;
 
    overriding
-   procedure Draw (This : in out Root_Menu);
+   procedure Draw (This   : in out Instance);
 
    overriding
-   procedure On_Event (This  : in out Root_Menu;
+   procedure On_Event (This  : in out Instance;
                        Event : Menu_Event);
 
    overriding
-   procedure On_Pushed (This  : in out Root_Menu);
+   procedure On_Pushed (This  : in out Instance) is null;
 
    overriding
-   procedure On_Focus (This       : in out Root_Menu;
+   procedure On_Focus (This       : in out Instance;
                        Exit_Value : Window_Exit_Value);
 
-   overriding
-   procedure On_Pop (This : in out Root_Menu);
-
-end WNM.GUI.Menu.Root;
+end WNM.GUI.Menu.FX_Settings;

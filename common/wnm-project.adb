@@ -806,7 +806,8 @@ package body WNM.Project is
 
    function Track_Name (T : Tracks) return String
    is (case Mode (T) is
-          when MIDI_Mode => "MIDI" & MIDI_Chan (T)'Img,
+          when MIDI_Mode =>
+             "MIDI" & Natural'Image (Natural (MIDI_Chan (T)) + 1),
           when others    => Img (Mode (T)));
 
    ------------------
@@ -1779,112 +1780,6 @@ package body WNM.Project is
       end;
    end Randomly_Pick_A_Progression;
 
-   -----------------------
-   -- Alt_Slider_Target --
-   -----------------------
-
-   function Alt_Slider_Target return Alt_Slider_Control
-   is (G_Project.Alt_Slider_Target);
-
-   ----------------------
-   -- Alt_Slider_Value --
-   ----------------------
-
-   function Alt_Slider_Value return MIDI.MIDI_Data is
-      use MIDI;
-      T : constant Tracks := G_Project.Alt_Slider_Track;
-   begin
-      return
-        (case Alt_Slider_Target is
-            when Alt_Sld_CC_Default_A  => CC_Default (T, A),
-            when Alt_Sld_CC_Default_B  => CC_Default (T, B),
-            when Alt_Sld_CC_Default_C  => CC_Default (T, C),
-            when Alt_Sld_CC_Default_D  => CC_Default (T, D),
-            when Alt_Sld_LFO_Rate      => LFO_Rate (T),
-            when Alt_Sld_LFO_Amplitude => LFO_Amp (T),
-            when Alt_Sld_Volume        => MIDI.MIDI_Data (Track_Volume (T)),
-            when Alt_Sld_Pan           => MIDI.MIDI_Data (Track_Pan (T)),
-            when Alt_Sld_Shuffle       =>
-              50 + MIDI.MIDI_Data (Track_Shuffle (T)) / 2
-        );
-   end Alt_Slider_Value;
-
-   ---------------------------
-   -- Alt_Slider_Target_Img --
-   ---------------------------
-
-   function Alt_Slider_Target_Label return String is
-      T : constant Tracks := G_Project.Alt_Slider_Track;
-   begin
-      return Utils.Trim
-        (
-         case Alt_Slider_Target is
-            when Alt_Sld_CC_Default_A  => CC_Controller_Label (T, A),
-            when Alt_Sld_CC_Default_B  => CC_Controller_Label (T, B),
-            when Alt_Sld_CC_Default_C  => CC_Controller_Label (T, C),
-            when Alt_Sld_CC_Default_D  => CC_Controller_Label (T, D),
-            when Alt_Sld_LFO_Rate      => "LFO Rate",
-            when Alt_Sld_LFO_Amplitude => "LFO Amp",
-            when Alt_Sld_Volume        => "Volume",
-            when Alt_Sld_Pan           => "Pan",
-            when Alt_Sld_Shuffle       => "Shuffle"
-        );
-   end Alt_Slider_Target_Label;
-
-   ----------------------
-   -- Alt_Slider_Track --
-   ----------------------
-
-   function Alt_Slider_Track return Tracks
-   is (G_Project.Alt_Slider_Track);
-
-   --------------------
-   -- Alt_Slider_Set --
-   --------------------
-
-   procedure Alt_Slider_Set (Val : WNM_HAL.Touch_Value) is
-      S : constant User_Track_Settings :=
-        To_Track_Setting (G_Project.Alt_Slider_Target);
-   begin
-      Set (G_Project.Alt_Slider_Track, S, Val);
-   end Alt_Slider_Set;
-
-   ----------------------------
-   -- Alt_Slider_Target_Next --
-   ----------------------------
-
-   procedure Alt_Slider_Target_Next is
-   begin
-      Next (G_Project.Alt_Slider_Target);
-   end Alt_Slider_Target_Next;
-
-   ----------------------------
-   -- Alt_Slider_Target_Prev --
-   ----------------------------
-
-   procedure Alt_Slider_Target_Prev is
-   begin
-      Prev (G_Project.Alt_Slider_Target);
-   end Alt_Slider_Target_Prev;
-
-   ---------------------------
-   -- Alt_Slider_Track_Next --
-   ---------------------------
-
-   procedure Alt_Slider_Track_Next is
-   begin
-      Next (G_Project.Alt_Slider_Track);
-   end Alt_Slider_Track_Next;
-
-   ---------------------------
-   -- Alt_Slider_Track_Prev --
-   ---------------------------
-
-   procedure Alt_Slider_Track_Prev is
-   begin
-      Prev (G_Project.Alt_Slider_Track);
-   end Alt_Slider_Track_Prev;
-
    ------------------
    -- Part_Pattern --
    ------------------
@@ -2128,8 +2023,7 @@ package body WNM.Project is
 
       G_Project.Progressions := (others => <>);
 
-      G_Project.Alt_Slider_Track := Lead_Track;
-      G_Project.Alt_Slider_Target := Alt_Slider_Control'First;
+      G_Project.FX := (others => <>);
 
       WNM.Project_Load_Broadcast.Broadcast;
    end Clear;
@@ -2251,7 +2145,7 @@ package body WNM.Project is
    procedure Auto_Fill (Kind : Auto_Fill_Kind) is
    begin
       if Kind = Auto_Buildup and then G_Auto_Fill_State /= Auto_Buildup then
-         G_Fill_Buildup_Proba := 1;
+         G_Fill_Buildup_Proba := G_Project.FX.Auto_Fill_Build_Up_Start_Proba;
       end if;
 
       G_Auto_Fill_State := Kind;
@@ -2295,6 +2189,382 @@ package body WNM.Project is
          return Octave_Offset (Sum);
       end if;
    end Add_Sat;
+
+   ---------
+   -- Set --
+   ---------
+
+   procedure Set (S  : FX_Settings; V  : WNM_HAL.Touch_Value)
+   is
+   begin
+      case S is
+         when Auto_Fill_Tracks_Select |
+              Stutter_Pattern_A |
+              Stutter_Pattern_B =>
+            null;
+
+         when Auto_Fill_Low_Proba =>
+            Set (G_Project.FX.Auto_Fill_Low_Proba, V);
+         when Auto_Fill_High_Proba =>
+            Set (G_Project.FX.Auto_Fill_High_Proba, V);
+         when Auto_Fill_Build_Proba =>
+            Set (G_Project.FX.Auto_Fill_Build_Up_Start_Proba, V);
+
+         when Filter_LP_Cutoff =>
+            Set (G_Project.FX.LP_Cutoff, V);
+         when Filter_BP_Cutoff =>
+            Set (G_Project.FX.BP_Cutoff, V);
+         when Filter_HP_Cutoff =>
+            Set (G_Project.FX.HP_Cutoff, V);
+
+         when Filter_LP_Reso =>
+            Set (G_Project.FX.LP_Reso, V);
+         when Filter_BP_Reso =>
+            Set (G_Project.FX.BP_Reso, V);
+         when Filter_HP_Reso =>
+            Set (G_Project.FX.HP_Reso, V);
+
+         when Filter_Sweep_Rate =>
+            Set (G_Project.FX.Sweep_Rate, V);
+         when Filter_Sweep_Amp =>
+            Set (G_Project.FX.Sweep_Amp, V);
+
+         when Stutter_Attack =>
+            Set (G_Project.FX.Stutter_Atk, V);
+         when Stutter_Release =>
+            Set (G_Project.FX.Stutter_Rel, V);
+
+         when Alt_Slider_Track | Alt_Slider_Ctrl =>
+            null; --  Touch strip control not applicable
+      end case;
+   end Set;
+
+   ----------------
+   -- Next_Value --
+   ----------------
+
+   procedure Next_Value (S  : FX_Settings) is
+   begin
+      case S is
+         when Auto_Fill_Tracks_Select |
+              Stutter_Pattern_A |
+              Stutter_Pattern_B =>
+            null;
+
+         when Auto_Fill_Low_Proba =>
+            Next (G_Project.FX.Auto_Fill_Low_Proba);
+         when Auto_Fill_High_Proba =>
+            Next (G_Project.FX.Auto_Fill_High_Proba);
+         when Auto_Fill_Build_Proba =>
+            Next (G_Project.FX.Auto_Fill_Build_Up_Start_Proba);
+
+         when Filter_LP_Cutoff =>
+            Next (G_Project.FX.LP_Cutoff);
+         when Filter_BP_Cutoff =>
+            Next (G_Project.FX.BP_Cutoff);
+         when Filter_HP_Cutoff =>
+            Next (G_Project.FX.HP_Cutoff);
+
+         when Filter_LP_Reso =>
+            Next (G_Project.FX.LP_Reso);
+         when Filter_BP_Reso =>
+            Next (G_Project.FX.BP_Reso);
+         when Filter_HP_Reso =>
+            Next (G_Project.FX.HP_Reso);
+
+         when Filter_Sweep_Rate =>
+            Next (G_Project.FX.Sweep_Rate);
+         when Filter_Sweep_Amp =>
+            Next (G_Project.FX.Sweep_Amp);
+
+         when Stutter_Attack =>
+            Next (G_Project.FX.Stutter_Atk);
+         when Stutter_Release =>
+            Next (G_Project.FX.Stutter_Rel);
+
+         when Alt_Slider_Track =>
+            Next (G_Project.FX.Alt_Slider_Track);
+         when Alt_Slider_Ctrl =>
+            Next (G_Project.FX.Alt_Slider_Target);
+
+      end case;
+   end Next_Value;
+
+   ----------------
+   -- Prev_Value --
+   ----------------
+
+   procedure Prev_Value (S  : FX_Settings) is
+   begin
+      case S is
+         when Auto_Fill_Tracks_Select |
+              Stutter_Pattern_A |
+              Stutter_Pattern_B =>
+            null;
+
+         when Auto_Fill_Low_Proba =>
+            Prev (G_Project.FX.Auto_Fill_Low_Proba);
+         when Auto_Fill_High_Proba =>
+            Prev (G_Project.FX.Auto_Fill_High_Proba);
+         when Auto_Fill_Build_Proba =>
+            Prev (G_Project.FX.Auto_Fill_Build_Up_Start_Proba);
+
+         when Filter_LP_Cutoff =>
+            Prev (G_Project.FX.LP_Cutoff);
+         when Filter_BP_Cutoff =>
+            Prev (G_Project.FX.BP_Cutoff);
+         when Filter_HP_Cutoff =>
+            Prev (G_Project.FX.HP_Cutoff);
+
+         when Filter_LP_Reso =>
+            Prev (G_Project.FX.LP_Reso);
+         when Filter_BP_Reso =>
+            Prev (G_Project.FX.BP_Reso);
+         when Filter_HP_Reso =>
+            Prev (G_Project.FX.HP_Reso);
+
+         when Filter_Sweep_Rate =>
+            Prev (G_Project.FX.Sweep_Rate);
+         when Filter_Sweep_Amp =>
+            Prev (G_Project.FX.Sweep_Amp);
+
+         when Stutter_Attack =>
+            Prev (G_Project.FX.Stutter_Atk);
+         when Stutter_Release =>
+            Prev (G_Project.FX.Stutter_Rel);
+
+         when Alt_Slider_Track =>
+            Prev (G_Project.FX.Alt_Slider_Track);
+         when Alt_Slider_Ctrl =>
+            Prev (G_Project.FX.Alt_Slider_Target);
+
+      end case;
+   end Prev_Value;
+
+   -----------------------
+   -- Get_Auto_Fill_Low --
+   -----------------------
+
+   function Get_Auto_Fill_Low return Rand_Percent
+   is (G_Project.FX.Auto_Fill_Low_Proba);
+
+   ------------------------
+   -- Get_Auto_Fill_High --
+   ------------------------
+
+   function Get_Auto_Fill_High return Rand_Percent
+   is (G_Project.FX.Auto_Fill_High_Proba);
+
+   ---------------------------
+   -- Get_Auto_Fill_Buildup --
+   ---------------------------
+
+   function Get_Auto_Fill_Buildup return Rand_Percent
+   is (G_Project.FX.Auto_Fill_Build_Up_Start_Proba);
+
+   ---------------------
+   -- Auto_Fill_Track --
+   ---------------------
+
+   function Auto_Fill_Track (T : Tracks) return Boolean
+   is (G_Project.FX.Auto_Fill_Tracks (T));
+
+   -------------------------
+   -- Auto_Fill_Track_Set --
+   -------------------------
+
+   procedure Auto_Fill_Track_Set (T : Tracks) is
+   begin
+      G_Project.FX.Auto_Fill_Tracks (T) := True;
+   end Auto_Fill_Track_Set;
+
+   -------------------------
+   -- Auto_Fill_Track_Set --
+   -------------------------
+
+   procedure Auto_Fill_Track_Clear (T : Tracks) is
+   begin
+      G_Project.FX.Auto_Fill_Tracks (T) := False;
+   end Auto_Fill_Track_Clear;
+
+   -------------------------
+   -- FX_Filter_LP_Cutoff --
+   -------------------------
+
+   function FX_Filter_LP_Cutoff return MIDI.MIDI_Key
+   is (G_Project.FX.LP_Cutoff);
+
+   -------------------------
+   -- FX_Filter_BP_Cutoff --
+   -------------------------
+
+   function FX_Filter_BP_Cutoff return MIDI.MIDI_Key
+   is (G_Project.FX.BP_Cutoff);
+
+   -------------------------
+   -- FX_Filter_HP_Cutoff --
+   -------------------------
+
+   function FX_Filter_HP_Cutoff return MIDI.MIDI_Key
+   is (G_Project.FX.HP_Cutoff);
+
+   -----------------------
+   -- FX_Filter_LP_Reso --
+   -----------------------
+
+   function FX_Filter_LP_Reso return MIDI.MIDI_Data
+   is (G_Project.FX.LP_Reso);
+
+   -----------------------
+   -- FX_Filter_BP_Reso --
+   -----------------------
+
+   function FX_Filter_BP_Reso return MIDI.MIDI_Data
+   is (G_Project.FX.BP_Reso);
+
+   -----------------------
+   -- FX_Filter_HP_Reso --
+   -----------------------
+
+   function FX_Filter_HP_Reso return MIDI.MIDI_Data
+   is (G_Project.FX.HP_Reso);
+
+   --------------------------
+   -- FX_Filter_Sweep_Rate --
+   --------------------------
+
+   function FX_Filter_Sweep_Rate return MIDI.MIDI_Data
+   is (G_Project.FX.Sweep_Rate);
+
+   -------------------------
+   -- FX_Filter_Sweep_Amp --
+   -------------------------
+
+   function FX_Filter_Sweep_Amp return MIDI.MIDI_Data
+   is (G_Project.FX.Sweep_Amp);
+
+   --------------------------
+   -- Stutter_Step_Enabled --
+   --------------------------
+
+   function Stutter_Step_Mute (P : Stutter_Patterns;
+                                  S : Stutter_Pattern_Range)
+                                  return Boolean
+   is (case P is
+          when Stutter_Pattern_A => G_Project.FX.Pattern_A (S),
+          when Stutter_Pattern_B => G_Project.FX.Pattern_B (S));
+
+   -------------------------
+   -- Stutter_Step_Toggle --
+   -------------------------
+
+   procedure Stutter_Step_Set (P : Stutter_Patterns;
+                               S : Stutter_Pattern_Range)
+   is
+   begin
+      case P is
+         when Stutter_Pattern_A => G_Project.FX.Pattern_A (S) := True;
+         when Stutter_Pattern_B => G_Project.FX.Pattern_B (S) := True;
+      end case;
+   end Stutter_Step_Set;
+
+   ------------------------
+   -- Stutter_Step_Clear --
+   ------------------------
+
+   procedure Stutter_Step_Clear (P : Stutter_Patterns;
+                                 S : Stutter_Pattern_Range)
+   is
+   begin
+      case P is
+         when Stutter_Pattern_A => G_Project.FX.Pattern_A (S) := False;
+         when Stutter_Pattern_B => G_Project.FX.Pattern_B (S) := False;
+      end case;
+   end Stutter_Step_Clear;
+
+   --------------------
+   -- Stutter_Attack --
+   --------------------
+
+   function Stutter_Attack return MIDI.MIDI_Data
+   is (G_Project.FX.Stutter_Atk);
+
+   ---------------------
+   -- Stutter_Release --
+   ---------------------
+
+   function Stutter_Release return MIDI.MIDI_Data
+   is (G_Project.FX.Stutter_Rel);
+
+   -----------------------
+   -- Alt_Slider_Target --
+   -----------------------
+
+   function Alt_Slider_Target return Alt_Slider_Control
+   is (G_Project.FX.Alt_Slider_Target);
+
+   ----------------------
+   -- Alt_Slider_Value --
+   ----------------------
+
+   function Alt_Slider_Value return MIDI.MIDI_Data is
+      use MIDI;
+      T : constant Tracks := G_Project.FX.Alt_Slider_Track;
+   begin
+      return
+        (case Alt_Slider_Target is
+            when Alt_Sld_CC_Default_A  => CC_Default (T, A),
+            when Alt_Sld_CC_Default_B  => CC_Default (T, B),
+            when Alt_Sld_CC_Default_C  => CC_Default (T, C),
+            when Alt_Sld_CC_Default_D  => CC_Default (T, D),
+            when Alt_Sld_LFO_Rate      => LFO_Rate (T),
+            when Alt_Sld_LFO_Amplitude => LFO_Amp (T),
+            when Alt_Sld_Volume        => MIDI.MIDI_Data (Track_Volume (T)),
+            when Alt_Sld_Pan           => MIDI.MIDI_Data (Track_Pan (T)),
+            when Alt_Sld_Shuffle       =>
+              50 + MIDI.MIDI_Data (Track_Shuffle (T)) / 2
+        );
+   end Alt_Slider_Value;
+
+   ---------------------------
+   -- Alt_Slider_Target_Img --
+   ---------------------------
+
+   function Alt_Slider_Target_Label return String is
+      T : constant Tracks := G_Project.FX.Alt_Slider_Track;
+   begin
+      return Utils.Trim
+        (
+         case Alt_Slider_Target is
+            when Alt_Sld_CC_Default_A  => CC_Controller_Label (T, A),
+            when Alt_Sld_CC_Default_B  => CC_Controller_Label (T, B),
+            when Alt_Sld_CC_Default_C  => CC_Controller_Label (T, C),
+            when Alt_Sld_CC_Default_D  => CC_Controller_Label (T, D),
+            when Alt_Sld_LFO_Rate      => "LFO Rate",
+            when Alt_Sld_LFO_Amplitude => "LFO Amp",
+            when Alt_Sld_Volume        => "Volume",
+            when Alt_Sld_Pan           => "Pan",
+            when Alt_Sld_Shuffle       => "Shuffle"
+        );
+   end Alt_Slider_Target_Label;
+
+   ----------------------
+   -- Alt_Slider_Track --
+   ----------------------
+
+   function Alt_Slider_Track return Tracks
+   is (G_Project.FX.Alt_Slider_Track);
+
+   --------------------
+   -- Alt_Slider_Set --
+   --------------------
+
+   procedure Alt_Slider_Set (Val : WNM_HAL.Touch_Value) is
+      S : constant User_Track_Settings :=
+        To_Track_Setting (G_Project.FX.Alt_Slider_Target);
+   begin
+      Set (G_Project.FX.Alt_Slider_Track, S, Val);
+   end Alt_Slider_Set;
 
    ------------------------
    -- Set_Track_Defaults --

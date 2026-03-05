@@ -51,6 +51,15 @@ package body WNM.Project.Storage.File_Out is
       This.Push (Mixer);
    end Start_Mixer;
 
+   -----------------------
+   -- Start_FX_Settings --
+   -----------------------
+
+   procedure Start_FX_Settings (This : in out Instance) is
+   begin
+      This.Push (FX_Settings);
+   end Start_FX_Settings;
+
    --------------------------
    -- Start_Track_Settings --
    --------------------------
@@ -256,6 +265,38 @@ package body WNM.Project.Storage.File_Out is
 
    procedure Push (This : in out Instance; A : WNM.Pattern_Length) is
       procedure Push_G is new Push_Gen (WNM.Pattern_Length);
+   begin
+      Push_G (Parent (This), A);
+   end Push;
+
+   ----------
+   -- Push --
+   ----------
+
+   procedure Push (This : in out Instance; A : WNM.Rand_Percent) is
+      procedure Push_G is new Push_Gen (WNM.Rand_Percent);
+   begin
+      Push_G (Parent (This), A);
+   end Push;
+
+   ----------
+   -- Push --
+   ----------
+
+   procedure Push (This : in out Instance; A : WNM.Tracks) is
+      procedure Push_G is new Push_Gen (WNM.Tracks);
+   begin
+      Push_G (Parent (This), A);
+   end Push;
+
+   ----------
+   -- Push --
+   ----------
+
+   procedure Push (This : in out Instance;
+                   A    :        WNM.Project.Alt_Slider_Control)
+   is
+      procedure Push_G is new Push_Gen (WNM.Project.Alt_Slider_Control);
    begin
       Push_G (Parent (This), A);
    end Push;

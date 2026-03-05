@@ -21,6 +21,8 @@
 
 with Tresses.Envelopes.AR; use Tresses.Envelopes.AR;
 
+with WNM.Project;
+
 with WNM.MIDI_Clock;
 with MIDI.Time; use MIDI.Time;
 
@@ -61,23 +63,28 @@ package body WNM.Voices.Stutter_FX is
          --  Very short attack and release
          Init (This.Env,
                Do_Hold => True,
-               Attack_Speed =>  S_Quarter_Second,
-               Release_Speed => S_Quarter_Second);
-         Set_Attack (This.Env, Param_Range'Last / 16);
-         Set_Release (This.Env, Param_Range'Last / 16);
+               Attack_Speed =>  S_HalfStutter_Step_MuteStutter_Step_Mute_Second,
+               Release_Speed => S_Half_Second);
       end if;
+
+      Set_Attack (This.Env, MIDI_Param (WNM.Project.Stutter_Attack));
+      Set_Release (This.Env, MIDI_Param (WNM.Project.Stutter_Release));
 
       This.Mute :=
         (case This.Mode is
             when Off => False,
             when On_Short =>
               WNM.MIDI_Clock.Running
-               and then
-              WNM.MIDI_Clock.Step mod 6 < 2,
+             and then
+              WNM.Project.Stutter_Step_Mute
+                (WNM.Project.Stutter_Pattern_A,
+                 WNM.MIDI_Clock.Step mod 24),
             when On_Trip =>
               WNM.MIDI_Clock.Running
                and then
-              WNM.MIDI_Clock.Step mod 24 in 0 .. 2 | 6 .. 8 | 12 .. 14);
+              WNM.Project.Stutter_Step_Mute
+                (WNM.Project.Stutter_Pattern_B,
+                 WNM.MIDI_Clock.Step mod 24));
 
       if not Last_Mute and then This.Mute then
          --  Entering mute

@@ -122,13 +122,13 @@ package body WNM.UI is
             when FX_Alt =>
                case B is
                   when PAD_Up =>
-                     Project.Alt_Slider_Target_Next;
+                     Project.Next_Value (Project.Alt_Slider_Ctrl);
                   when PAD_Down =>
-                     Project.Alt_Slider_Target_Prev;
+                     Project.Prev_Value (Project.Alt_Slider_Ctrl);
                   when PAD_Left =>
-                     Project.Alt_Slider_Track_Prev;
+                     Project.Prev_Value (Project.Alt_Slider_Track);
                   when PAD_Right =>
-                     Project.Alt_Slider_Track_Next;
+                     Project.Next_Value (Project.Alt_Slider_Track);
                   when others =>
                      null;
                end case;

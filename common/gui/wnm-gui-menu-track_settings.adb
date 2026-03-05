@@ -306,7 +306,7 @@ package body WNM.GUI.Menu.Track_Settings is
 
          when MIDI_Chan =>
             Draw_Title ("MIDI Channel:", "");
-            Draw_Value (Project.MIDI_Chan (T)'Img);
+            Draw_Value (Natural'Image (Natural (Project.MIDI_Chan (T)) + 1));
 
          when MIDI_Instrument =>
             Draw_Title ("MIDI instrument:", "");

@@ -281,10 +281,10 @@ package body WNM.GUI.Menu.Chord_Settings is
                            "");
             when Chord_Slot_Id'Last =>
                Draw_Title ("",
-                           "B: remove a chord");
+                           "B: remove last chord");
             when others =>
                Draw_Title ("A: add a chord",
-                           "B: remove a chord");
+                           "B: remove last chord");
             end case;
 
          when Magic_Hat =>

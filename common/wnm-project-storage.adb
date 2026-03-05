@@ -100,6 +100,25 @@ package body WNM.Project.Storage is
 
    Format_Version : constant := 1;
 
+   procedure Read is new File_In.Read_Gen_Int (Tracks);
+   procedure Read is new File_In.Read_Gen_Int (Patterns);
+   procedure Read is new File_In.Read_Gen_Int (Sequencer_Steps);
+   procedure Read is new File_In.Read_Gen_Enum (Part_Link_Kind);
+   procedure Read is new File_In.Read_Gen_Int (Song_Element);
+   procedure Read is new File_In.Read_Gen_Int (WNM.Duration_In_Steps);
+   procedure Read is new File_In.Read_Gen_Enum (Boolean);
+   procedure Read is new File_In.Read_Gen_Int (WNM.Pattern_Length);
+   procedure Read is new File_In.Read_Gen_Mod (HAL.UInt8);
+   procedure Read is new File_In.Read_Gen_Enum (Trigger_Kind);
+   procedure Read is new File_In.Read_Gen_Mod (MIDI.MIDI_Data);
+   procedure Read is new File_In.Read_Gen_Enum (Note_Duration);
+   procedure Read is new File_In.Read_Gen_Mod (Repeat_Cnt);
+   procedure Read is new File_In.Read_Gen_Enum (Repeat_Rate_Kind);
+   procedure Read is new File_In.Read_Gen_Enum (Note_Mode_Kind);
+   procedure Read is new File_In.Read_Gen_Int (WNM.Rand_Percent);
+   procedure Read is new File_In.Read_Gen_Enum
+     (WNM.Project.Alt_Slider_Control);
+
    ----------------
    -- Save_Steps --
    ----------------
@@ -552,6 +571,72 @@ package body WNM.Project.Storage is
       Output.End_Section;
    end Save_Mixer;
 
+   -------------
+   -- Save_FX --
+   -------------
+
+   procedure Save_FX (Output : in out File_Out.Instance) is
+   begin
+      Output.Start_FX_Settings;
+
+      for S in Project.FX_Settings loop
+         Output.Push (Out_UInt (S'Enum_Rep));
+         case S is
+            when Auto_Fill_Tracks_Select =>
+               for Elt of G_Project.FX.Auto_Fill_Tracks loop
+                  Output.Push (Elt);
+               end loop;
+            when Auto_Fill_Low_Proba =>
+               Output.Push (G_Project.FX.Auto_Fill_Low_Proba);
+            when Auto_Fill_High_Proba =>
+               Output.Push (G_Project.FX.Auto_Fill_High_Proba);
+            when Auto_Fill_Build_Proba =>
+               Output.Push (G_Project.FX.Auto_Fill_Build_Up_Start_Proba);
+
+            when Stutter_Pattern_A =>
+               for Elt of G_Project.FX.Pattern_A loop
+                  Output.Push (Elt);
+               end loop;
+            when Stutter_Pattern_B =>
+               for Elt of G_Project.FX.Pattern_B loop
+                  Output.Push (Elt);
+               end loop;
+
+            when Stutter_Attack =>
+               Output.Push (G_Project.FX.Stutter_Atk);
+            when Stutter_Release =>
+               Output.Push (G_Project.FX.Stutter_Rel);
+
+            when Filter_LP_Cutoff =>
+               Output.Push (G_Project.FX.LP_Cutoff);
+            when Filter_BP_Cutoff =>
+               Output.Push (G_Project.FX.BP_Cutoff);
+            when Filter_HP_Cutoff =>
+               Output.Push (G_Project.FX.HP_Cutoff);
+
+            when Filter_LP_Reso =>
+               Output.Push (G_Project.FX.LP_Reso);
+            when Filter_BP_Reso =>
+               Output.Push (G_Project.FX.BP_Reso);
+            when Filter_HP_Reso =>
+               Output.Push (G_Project.FX.HP_Reso);
+
+            when Filter_Sweep_Rate =>
+               Output.Push (G_Project.FX.Sweep_Rate);
+            when Filter_Sweep_Amp =>
+               Output.Push (G_Project.FX.Sweep_Amp);
+
+            when Alt_Slider_Track =>
+               Output.Push (G_Project.FX.Alt_Slider_Track);
+
+            when Alt_Slider_Ctrl =>
+               Output.Push (G_Project.FX.Alt_Slider_Target);
+         end case;
+      end loop;
+
+      Output.End_Section;
+   end Save_FX;
+
    ----------
    -- Save --
    ----------
@@ -600,6 +685,10 @@ package body WNM.Project.Storage is
 
       if Output.Status = Ok then
          Save_Mixer (Output);
+      end if;
+
+      if Output.Status = Ok then
+         Save_FX (Output);
       end if;
 
       Output.End_File;
@@ -723,10 +812,6 @@ package body WNM.Project.Storage is
 
    procedure Load_Part (Input : in out File_In.Instance) is
       procedure To_Part_Settings is new Convert_To_Enum (Part_Settings);
-
-      procedure Read is new File_In.Read_Gen_Enum (Part_Link_Kind);
-      procedure Read is new File_In.Read_Gen_Int (Song_Element);
-      procedure Read is new File_In.Read_Gen_Int (WNM.Duration_In_Steps);
 
       Elt : Song_Element;
       P_Id : Parts;
@@ -896,11 +981,6 @@ package body WNM.Project.Storage is
    procedure Load_Pattern (Input : in out File_In.Instance) is
       procedure To_Pattern_Settings is new Convert_To_Enum (Pattern_Settings);
 
-      procedure Read is new File_In.Read_Gen_Int (Tracks);
-      procedure Read is new File_In.Read_Gen_Int (Patterns);
-      procedure Read is new File_In.Read_Gen_Enum (Boolean);
-      procedure Read is new File_In.Read_Gen_Int (WNM.Pattern_Length);
-
       T_Id : Tracks;
       P_Id : Patterns;
       S : Pattern_Settings;
@@ -948,14 +1028,6 @@ package body WNM.Project.Storage is
                         P : Patterns; T : Tracks; S : Sequencer_Steps)
    is
       procedure To_Step_Settings is new Convert_To_Enum (Step_Settings);
-
-      procedure Read is new File_In.Read_Gen_Mod (HAL.UInt8);
-      procedure Read is new File_In.Read_Gen_Enum (Trigger_Kind);
-      procedure Read is new File_In.Read_Gen_Mod (MIDI.MIDI_Data);
-      procedure Read is new File_In.Read_Gen_Enum (Note_Duration);
-      procedure Read is new File_In.Read_Gen_Mod (Repeat_Cnt);
-      procedure Read is new File_In.Read_Gen_Enum (Repeat_Rate_Kind);
-      procedure Read is new File_In.Read_Gen_Enum (Note_Mode_Kind);
 
       Step : Step_Rec renames G_Project.Steps (T)(P)(S);
       Set : Step_Settings;
@@ -1017,10 +1089,6 @@ package body WNM.Project.Storage is
 
    procedure Load_Sequences (Input : in out File_In.Instance) is
       Token : Token_Kind;
-
-      procedure Read is new File_In.Read_Gen_Int (Tracks);
-      procedure Read is new File_In.Read_Gen_Int (Patterns);
-      procedure Read is new File_In.Read_Gen_Int (Sequencer_Steps);
 
       In_Pattern : Patterns        := Patterns'First;
       In_Track   : Tracks          := Tracks'First;
@@ -1163,6 +1231,85 @@ package body WNM.Project.Storage is
       end loop;
    end Load_Mixer;
 
+   -------------
+   -- Load_FX --
+   -------------
+
+   procedure Load_FX (Input : in out File_In.Instance) is
+      procedure To_FX_Settings is new Convert_To_Enum (Project.FX_Settings);
+
+      Set : Project.FX_Settings;
+      Raw : In_UInt;
+      Success : Boolean;
+   begin
+      loop
+         Input.Read (Raw);
+
+         exit when Input.Status /= Ok
+           or else Raw = End_Of_Section_Value;
+
+         To_FX_Settings (Raw, Set, Success);
+
+         exit when not Success;
+
+         case Set is
+            when Auto_Fill_Tracks_Select =>
+               for Elt of G_Project.FX.Auto_Fill_Tracks loop
+                  Read (Input, Elt);
+                  exit when Input.Status /= Ok;
+               end loop;
+            when Auto_Fill_Low_Proba =>
+               Read (Input, G_Project.FX.Auto_Fill_Low_Proba);
+            when Auto_Fill_High_Proba =>
+               Read (Input, G_Project.FX.Auto_Fill_High_Proba);
+            when Auto_Fill_Build_Proba =>
+               Read (Input, G_Project.FX.Auto_Fill_Build_Up_Start_Proba);
+
+            when Stutter_Pattern_A =>
+               for Elt of G_Project.FX.Pattern_A loop
+                  Read (Input, Elt);
+                  exit when Input.Status /= Ok;
+               end loop;
+            when Stutter_Pattern_B =>
+               for Elt of G_Project.FX.Pattern_B loop
+                  Read (Input, Elt);
+                  exit when Input.Status /= Ok;
+               end loop;
+
+            when Stutter_Attack =>
+               Read (Input, G_Project.FX.Stutter_Atk);
+            when Stutter_Release =>
+               Read (Input, G_Project.FX.Stutter_Rel);
+
+            when Filter_LP_Cutoff =>
+               Read (Input, G_Project.FX.LP_Cutoff);
+            when Filter_BP_Cutoff =>
+               Read (Input, G_Project.FX.BP_Cutoff);
+            when Filter_HP_Cutoff =>
+               Read (Input, G_Project.FX.HP_Cutoff);
+
+            when Filter_LP_Reso =>
+               Read (Input, G_Project.FX.LP_Reso);
+            when Filter_BP_Reso =>
+               Read (Input, G_Project.FX.BP_Reso);
+            when Filter_HP_Reso =>
+               Read (Input, G_Project.FX.HP_Reso);
+
+            when Filter_Sweep_Rate =>
+               Read (Input, G_Project.FX.Sweep_Rate);
+            when Filter_Sweep_Amp =>
+               Read (Input, G_Project.FX.Sweep_Amp);
+
+            when Alt_Slider_Track =>
+               Read (Input, G_Project.FX.Alt_Slider_Track);
+            when Alt_Slider_Ctrl =>
+               Read (Input, G_Project.FX.Alt_Slider_Target);
+         end case;
+
+         exit when Input.Status /= Ok;
+      end loop;
+   end Load_FX;
+
    ----------
    -- Load --
    ----------
@@ -1216,6 +1363,9 @@ package body WNM.Project.Storage is
 
             when Mixer =>
                Load_Mixer (Input);
+
+            when FX_Settings =>
+               Load_FX (Input);
 
             when End_Of_File =>
                exit;

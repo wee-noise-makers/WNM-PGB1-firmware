@@ -24,6 +24,7 @@ with WNM.GUI.Bitmap_Fonts; use WNM.GUI.Bitmap_Fonts;
 with WNM.Utils;
 with WNM.Sample_Recording;
 with WNM.Project.Chord_Sequencer;
+with WNM.Screen;
 
 with lfo_sine;
 with lfo_ramp_up;
@@ -1453,24 +1454,20 @@ package body WNM.GUI.Menu.Drawing is
       T : constant Tracks := WNM.Project.Alt_Slider_Track;
       Name : constant String := WNM.Project.Track_Name (T);
 
-      Text_Bottom : constant := Box_Bottom - 7;
+      Text_Bottom : constant := Box_Bottom - 4;
    begin
       Draw_Str_Center
         (Text_Bottom - Bitmap_Fonts.Height * 2,
          Str      =>
            Arrow_Left & " "  & Name & "(" & Utils.Trim (T'Img) & ") " &
            Arrow_Right);
-
       Draw_Str_Center
         (Text_Bottom - Bitmap_Fonts.Height * 1,
          Str      => Arrow_Up & " " &
            WNM.Project.Alt_Slider_Target_Label & " " & Arrow_Down);
 
-      for Cnt in 1 .. 5 loop
-         Screen.Draw_Line
-           ((0, Box_Bottom - Cnt),
-            (Natural (WNM.Project.Alt_Slider_Value), Box_Bottom - Cnt));
-      end loop;
+      Screen.Fill_Rect (((0, Text_Bottom + 2),
+                        Natural (WNM.Project.Alt_Slider_Value), 3));
 
    end Draw_Alt_Slider;
 
@@ -1572,5 +1569,52 @@ package body WNM.GUI.Menu.Drawing is
          end if;
       end if;
    end Draw_LFO_Bar;
+
+   ---------------------
+   -- Draw_Filter_Bar --
+   ---------------------
+
+   procedure Draw_Filter_Bar (Center_X, Y : Natural;
+                              Width       : Natural;
+                              Param       : Tresses.Pitch_Range;
+                              Mode        : Filter_Bar_Kind)
+   is
+      use Tresses;
+
+      Param_Scaled : constant Float :=
+        Float (Param) / Float (Pitch_Range'Last + 1);
+
+      Param_Len : constant Natural :=
+        Integer (Float (Width) * Param_Scaled);
+
+      Band_Pass_Size : constant := 20;
+
+      Left : constant Natural := Center_X - Width / 2;
+      Right : constant Natural := Center_X + Width / 2;
+      Param_Start_X : constant Natural :=
+        (case Mode is
+            when Drawing.LP => Left,
+            when Drawing.BP =>
+              Natural'Max (Left + Param_Len - Band_Pass_Size, 0),
+            when Drawing.HP => Left + Param_Len);
+
+      Param_End : constant Natural :=
+        (case Mode is
+            when Drawing.LP => Left + Param_Len,
+            when Drawing.BP =>
+              Natural'Min (Left + Param_Len + Band_Pass_Size, Right),
+            when Drawing.HP => Right);
+   begin
+      WNM.Screen.Draw_H_Line (Param_Start_X, Param_End, Y);
+
+      if Mode in BP | LP then
+         WNM.Screen.Draw_Line ((Param_End, Y + 2),
+                               (Param_End, Y - 2));
+      end if;
+      if Mode in BP | HP then
+         WNM.Screen.Draw_Line ((Param_Start_X, Y + 2),
+                               (Param_Start_X, Y - 2));
+      end if;
+   end Draw_Filter_Bar;
 
 end WNM.GUI.Menu.Drawing;

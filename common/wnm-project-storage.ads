@@ -49,6 +49,7 @@ private
 
                        User_Waveform,
                        Mixer,
+                       FX_Settings,
 
                        End_Of_File,
                        End_Of_Section);
@@ -65,6 +66,7 @@ private
                        Seq_Change_Track          => 9,
                        User_Waveform             => 10,
                        Mixer                     => 11,
+                       FX_Settings               => 12,
                        End_Of_File               => End_Of_Section_Value - 1,
                        End_Of_Section            => End_Of_Section_Value);
 

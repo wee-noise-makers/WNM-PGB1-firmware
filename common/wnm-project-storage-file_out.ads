@@ -34,6 +34,8 @@ private package WNM.Project.Storage.File_Out is
 
    procedure Start_Mixer (This : in out Instance);
 
+   procedure Start_FX_Settings (This : in out Instance);
+
    procedure Start_Track_Settings (This : in out Instance;
                                    T : Tracks);
    procedure Start_Pattern_Settings (This : in out Instance;
@@ -62,6 +64,9 @@ private package WNM.Project.Storage.File_Out is
    procedure Push (This : in out Instance; A : MIDI.MIDI_Data);
    procedure Push (This : in out Instance; A : WNM.Duration_In_Steps);
    procedure Push (This : in out Instance; A : WNM.Pattern_Length);
+   procedure Push (This : in out Instance; A : WNM.Rand_Percent);
+   procedure Push (This : in out Instance; A : WNM.Tracks);
+   procedure Push (This : in out Instance; A : WNM.Project.Alt_Slider_Control);
 
 private
 

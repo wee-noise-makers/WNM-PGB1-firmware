@@ -618,11 +618,108 @@ package WNM.Project is
    procedure Next_Value (S  : Project_Mixer_Settings);
    procedure Prev_Value (S  : Project_Mixer_Settings);
 
+   ----------
+   -- Roll --
+   ----------
+   type Roll_Kind is (Off, Beat, Half, Quarter, Eighth);
+   procedure Roll (Kind : Roll_Kind);
+   function Roll_State return Roll_Kind;
+
+   ----------
+   -- Fill --
+   ----------
+
+   type Auto_Fill_Kind is (Off, Auto_Low, Auto_High, Auto_Buildup);
+   procedure Auto_Fill (Kind : Auto_Fill_Kind);
+   function Auto_Fill_State return Auto_Fill_Kind;
+
+   procedure Step_Fill_Toogle;
+   function Step_Fill return Boolean;
+
    --------
    -- FX --
    --------
 
    type Filter_Mode_Kind is (Low_Pass, Band_Pass, High_Pass);
+
+
+   type FX_Settings is (Auto_Fill_Tracks_Select,
+                        Auto_Fill_Low_Proba,
+                        Auto_Fill_High_Proba,
+                        Auto_Fill_Build_Proba,
+                        Filter_LP_Cutoff,
+                        Filter_LP_Reso,
+                        Filter_BP_Cutoff,
+                        Filter_BP_Reso,
+                        Filter_HP_Cutoff,
+                        Filter_HP_Reso,
+                        Filter_Sweep_Rate,
+                        Filter_Sweep_Amp,
+                        Stutter_Pattern_A,
+                        Stutter_Pattern_B,
+                        Stutter_Attack,
+                        Stutter_Release,
+                        Alt_Slider_Track,
+                        Alt_Slider_Ctrl);
+   for FX_Settings'Size use 8;
+   for FX_Settings use (Auto_Fill_Tracks_Select => 0,
+                        Auto_Fill_Low_Proba     => 1,
+                        Auto_Fill_High_Proba    => 2,
+                        Auto_Fill_Build_Proba   => 3,
+                        Filter_LP_Cutoff        => 4,
+                        Filter_LP_Reso          => 5,
+                        Filter_BP_Cutoff        => 6,
+                        Filter_BP_Reso          => 7,
+                        Filter_HP_Cutoff        => 8,
+                        Filter_HP_Reso          => 9,
+                        Filter_Sweep_Rate       => 10,
+                        Filter_Sweep_Amp        => 11,
+                        Stutter_Pattern_A       => 12,
+                        Stutter_Pattern_B       => 13,
+                        Stutter_Attack          => 14,
+                        Stutter_Release         => 15,
+                        Alt_Slider_Track        => 16,
+                        Alt_Slider_Ctrl         => 17);
+
+   subtype Stutter_Patterns
+     is FX_Settings range Stutter_Pattern_A .. Stutter_Pattern_B;
+
+   procedure Set (S  : FX_Settings;
+                  V  : WNM_HAL.Touch_Value);
+   procedure Next_Value (S  : FX_Settings);
+   procedure Prev_Value (S  : FX_Settings);
+
+   function Get_Auto_Fill_Low return Rand_Percent;
+   function Get_Auto_Fill_High return Rand_Percent;
+   function Get_Auto_Fill_Buildup return Rand_Percent;
+
+   function Auto_Fill_Track (T : Tracks) return Boolean;
+   procedure Auto_Fill_Track_Set (T : Tracks);
+   procedure Auto_Fill_Track_Clear (T : Tracks);
+
+   function FX_Filter_LP_Cutoff return MIDI.MIDI_Key;
+   function FX_Filter_BP_Cutoff return MIDI.MIDI_Key;
+   function FX_Filter_HP_Cutoff return MIDI.MIDI_Key;
+
+   function FX_Filter_LP_Reso return MIDI.MIDI_Data;
+   function FX_Filter_BP_Reso return MIDI.MIDI_Data;
+   function FX_Filter_HP_Reso return MIDI.MIDI_Data;
+
+   function FX_Filter_Sweep_Rate return MIDI.MIDI_Data;
+   function FX_Filter_Sweep_Amp return MIDI.MIDI_Data;
+
+   subtype Stutter_Pattern_Range is MIDI.Time.Step_Count range 0 .. 23;
+
+   function Stutter_Step_Mute (P : Stutter_Patterns;
+                               S : Stutter_Pattern_Range)
+                               return Boolean;
+   procedure Stutter_Step_Set (P : Stutter_Patterns;
+                               S : Stutter_Pattern_Range);
+   procedure Stutter_Step_Clear (P : Stutter_Patterns;
+                                 S : Stutter_Pattern_Range);
+
+   function Stutter_Attack return MIDI.MIDI_Data;
+   function Stutter_Release return MIDI.MIDI_Data;
 
    ------------
    -- Slider --
@@ -654,32 +751,8 @@ package WNM.Project is
    function Alt_Slider_Target return Alt_Slider_Control;
    function Alt_Slider_Value return MIDI.MIDI_Data;
    function Alt_Slider_Target_Label return String;
-
    function Alt_Slider_Track return Tracks;
-
    procedure Alt_Slider_Set (Val : WNM_HAL.Touch_Value);
-   procedure Alt_Slider_Target_Next;
-   procedure Alt_Slider_Target_Prev;
-   procedure Alt_Slider_Track_Next;
-   procedure Alt_Slider_Track_Prev;
-
-   ----------
-   -- Roll --
-   ----------
-   type Roll_Kind is (Off, Beat, Half, Quarter, Eighth);
-   procedure Roll (Kind : Roll_Kind);
-   function Roll_State return Roll_Kind;
-
-   ----------
-   -- Fill --
-   ----------
-
-   type Auto_Fill_Kind is (Off, Auto_Low, Auto_High, Auto_Buildup);
-   procedure Auto_Fill (Kind : Auto_Fill_Kind);
-   function Auto_Fill_State return Auto_Fill_Kind;
-
-   procedure Step_Fill_Toogle;
-   function Step_Fill return Boolean;
 
 private
 
@@ -688,6 +761,9 @@ private
 
    package Boolean_Next is new Enum_Next (Boolean);
    use Boolean_Next;
+
+   package Rand_Percent_Next is new Enum_Next (Rand_Percent, Wrap => False);
+   use Rand_Percent_Next;
 
    package Trigger_Kind_Next is new Enum_Next (Trigger_Kind);
    use Trigger_Kind_Next;
@@ -959,6 +1035,51 @@ private
    type Gains_Arr is array (Project_Mixer_Settings) of Audio_Volume;
    Default_Gains : constant Gains_Arr := (others => 0);
 
+   type Auto_Fill_Tracks_Arr is array (Tracks) of Boolean ;
+
+   Default_Auto_Fill_Tracks : constant Auto_Fill_Tracks_Arr :=
+     (1 .. 3 => True, others => False);
+
+   Default_Auto_Fill_Low : constant Rand_Percent := 25;
+   Default_Auto_Fill_High : constant Rand_Percent := 100;
+   Default_Auto_Fill_Buildup : constant Rand_Percent := 1;
+
+   type Stutter_Pattern is array (Stutter_Pattern_Range) of Boolean;
+
+   Default_Pattern_A : constant Stutter_Pattern :=
+     (0 .. 1 | 6 .. 7 | 12 .. 13 | 18 .. 19 => True,
+      others => False);
+
+   Default_Pattern_B : constant Stutter_Pattern :=
+     (0 .. 2 | 6 .. 8 | 12 .. 14 => True,
+      others => False);
+
+   type FX_Settings_Rec is record
+      Auto_Fill_Tracks : Auto_Fill_Tracks_Arr := Default_Auto_Fill_Tracks;
+
+      Auto_Fill_Low_Proba : Rand_Percent := Default_Auto_Fill_Low;
+      Auto_Fill_High_Proba : Rand_Percent := Default_Auto_Fill_High;
+      Auto_Fill_Build_Up_Start_Proba : Rand_Percent :=
+        Default_Auto_Fill_Buildup;
+
+      Pattern_A : Stutter_Pattern := Default_Pattern_A;
+      Pattern_B : Stutter_Pattern := Default_Pattern_B;
+      Stutter_Atk : MIDI.MIDI_Data := 12;
+      Stutter_Rel : MIDI.MIDI_Data := 12;
+
+      LP_Cutoff : MIDI.MIDI_Key := MIDI.C4;
+      BP_Cutoff : MIDI.MIDI_Key := MIDI.C4;
+      HP_Cutoff : MIDI.MIDI_Key := MIDI.C4;
+      LP_Reso : MIDI.MIDI_Data := 63;
+      BP_Reso : MIDI.MIDI_Data := 63;
+      HP_Reso : MIDI.MIDI_Data := 63;
+      Sweep_Rate : MIDI.MIDI_Data := 78;
+      Sweep_Amp : MIDI.MIDI_Data := 63;
+
+      Alt_Slider_Track : WNM.Tracks := Lead_Track;
+      Alt_Slider_Target : Alt_Slider_Control := Alt_Slider_Control'First;
+   end record;
+
    BPM_Default : constant := 120.0;
 
    type Project_Rec is record
@@ -981,10 +1102,9 @@ private
 
       Progressions : Chord_Progression_Arr;
 
-      Alt_Slider_Track : WNM.Tracks := Lead_Track;
-      Alt_Slider_Target : Alt_Slider_Control := Alt_Slider_Control'First;
-
       Gains : Gains_Arr := Default_Gains;
+
+      FX : FX_Settings_Rec;
    end record;
 
    G_Project : Project_Rec := (others => <>);

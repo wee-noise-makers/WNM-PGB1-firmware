@@ -68,7 +68,7 @@ package body WNM.GUI.Menu.User_Waveform is
       Icon_Top : constant Natural :=
         Box_Top + 2;
    begin
-      Draw_Menu_Box ("Menu",
+      Draw_Menu_Box ("Custom Waveform",
                      Count => Menu_Items_Count,
                      Index => Menu_Items'Pos (This.Item));
 

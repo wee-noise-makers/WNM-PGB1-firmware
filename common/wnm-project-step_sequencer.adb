@@ -511,14 +511,15 @@ package body WNM.Project.Step_Sequencer is
             end case;
 
             --  Auto fill
-            if not Condition and then Track in 1 .. 3 then
+            if not Condition and then G_Project.FX.Auto_Fill_Tracks (Track)
+            then
                case G_Auto_Fill_State is
                   when Off =>
                      null;
                   when Auto_Low =>
-                     Condition := Random <= 25;
+                     Condition := Random <= G_Project.FX.Auto_Fill_Low_Proba;
                   when Auto_High =>
-                     Condition := True;
+                     Condition := Random <= G_Project.FX.Auto_Fill_High_Proba;
                   when Auto_Buildup =>
                      Condition := Random <= G_Fill_Buildup_Proba;
                end case;

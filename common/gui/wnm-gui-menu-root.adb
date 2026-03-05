@@ -23,6 +23,7 @@ with WNM.GUI.Menu.Drawing;       use WNM.GUI.Menu.Drawing;
 with WNM.GUI.Menu.Yes_No_Dialog;
 with WNM.GUI.Bitmap_Fonts;
 with WNM.GUI.Menu.Projects;
+with WNM.GUI.Menu.FX_Settings;
 with WNM.GUI.Menu.Inputs;
 with WNM.GUI.Menu.System_Info;
 with WNM.GUI.Menu.MIDI_Settings;
@@ -51,6 +52,7 @@ package body WNM.GUI.Menu.Root is
           when Tracks_Mixer    => "Project Mixer",
           when Inputs          => "Inputs",
           when User_Waveform   => "Custom Waveform",
+          when Live_FX         => "Live FX",
           when MIDI_Settings   => "MIDI Settings",
           when DFU_Mode        => "Update Mode",
           when System_Info     => "System Info");
@@ -102,6 +104,10 @@ package body WNM.GUI.Menu.Root is
             Draw_Icon (mixer_icon.Data);
          when User_Waveform =>
             Draw_Icon (edit_wave_icon.Data);
+
+         when Live_FX =>
+            null;
+
          when Inputs =>
             Draw_Icon (line_in_icon.Data);
          when MIDI_Settings =>
@@ -140,6 +146,9 @@ package body WNM.GUI.Menu.Root is
 
                when User_Waveform =>
                   Menu.User_Waveform.Push_Window;
+
+               when Live_FX =>
+                  Menu.FX_Settings.Push_Window;
 
                when MIDI_Settings =>
                   Menu.MIDI_Settings.Push_Window;

@@ -173,4 +173,10 @@ package WNM.GUI.Menu.Drawing is
                            Draw_LFO           : Boolean := False;
                            Param_Start_Center : Boolean := False);
 
+   type Filter_Bar_Kind is (LP, BP, HP);
+   procedure Draw_Filter_Bar (Center_X, Y : Natural;
+                              Width       : Natural;
+                              Param       : Tresses.Pitch_Range;
+                              Mode        : Filter_Bar_Kind);
+
 end WNM.GUI.Menu.Drawing;
