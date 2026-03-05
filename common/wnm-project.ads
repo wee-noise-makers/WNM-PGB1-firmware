@@ -642,7 +642,6 @@ package WNM.Project is
 
    type Filter_Mode_Kind is (Low_Pass, Band_Pass, High_Pass);
 
-
    type FX_Settings is (Auto_Fill_Tracks_Select,
                         Auto_Fill_Low_Proba,
                         Auto_Fill_High_Proba,
@@ -1035,7 +1034,7 @@ private
    type Gains_Arr is array (Project_Mixer_Settings) of Audio_Volume;
    Default_Gains : constant Gains_Arr := (others => 0);
 
-   type Auto_Fill_Tracks_Arr is array (Tracks) of Boolean ;
+   type Auto_Fill_Tracks_Arr is array (Tracks) of Boolean;
 
    Default_Auto_Fill_Tracks : constant Auto_Fill_Tracks_Arr :=
      (1 .. 3 => True, others => False);

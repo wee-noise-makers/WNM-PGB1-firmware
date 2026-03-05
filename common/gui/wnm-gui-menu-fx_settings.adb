@@ -21,8 +21,6 @@
 
 with MIDI.Time; use MIDI.Time;
 
-with HAL; use HAL;
-
 with WNM.GUI.Menu.Drawing; use WNM.GUI.Menu.Drawing;
 with WNM.Screen;
 with WNM.GUI.Bitmap_Fonts;
@@ -31,9 +29,6 @@ with WNM.Project; use WNM.Project;
 package body WNM.GUI.Menu.FX_Settings is
 
    Singleton : aliased Instance;
-
-   function Menu_Item_Text (Item : Sub_Settings) return String
-   is (Item'Img);
 
    -----------------
    -- Push_Window --
@@ -143,15 +138,15 @@ package body WNM.GUI.Menu.FX_Settings is
 
          when Auto_Fill_Low_Proba =>
             Draw_Title ("Auto-Fill Low", "(FX #10)");
-            Draw_Value (Wnm.Project.Get_Auto_Fill_Low'Img & "%");
+            Draw_Value (WNM.Project.Get_Auto_Fill_Low'Img & "%");
 
          when Auto_Fill_High_Proba =>
             Draw_Title ("Auto-Fill High", "(FX #11)");
-            Draw_Value (Wnm.Project.Get_Auto_Fill_High'Img & "%");
+            Draw_Value (WNM.Project.Get_Auto_Fill_High'Img & "%");
 
          when Auto_Fill_Build_Proba =>
             Draw_Title ("Auto-Fill Build-up", "(FX #12)");
-            Draw_Value (Wnm.Project.Get_Auto_Fill_Buildup'Img & "%");
+            Draw_Value (WNM.Project.Get_Auto_Fill_Buildup'Img & "%");
 
          when Filter_LP =>
             Draw_Title ("Low-Pass(FX #5 #13)", "");

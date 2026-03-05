@@ -24,7 +24,6 @@ with WNM.GUI.Bitmap_Fonts; use WNM.GUI.Bitmap_Fonts;
 with WNM.Utils;
 with WNM.Sample_Recording;
 with WNM.Project.Chord_Sequencer;
-with WNM.Screen;
 
 with lfo_sine;
 with lfo_ramp_up;

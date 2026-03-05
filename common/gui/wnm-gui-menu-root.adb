@@ -39,7 +39,7 @@ with midi_icon;
 with system_info_icon;
 with firmware_update_icon;
 with mixer_icon;
-with live_FX_icon;
+with live_fx_icon;
 
 package body WNM.GUI.Menu.Root is
 
@@ -106,7 +106,7 @@ package body WNM.GUI.Menu.Root is
          when User_Waveform =>
             Draw_Icon (edit_wave_icon.Data);
          when Live_FX =>
-            Draw_Icon (live_FX_icon.Data);
+            Draw_Icon (live_fx_icon.Data);
          when Inputs =>
             Draw_Icon (line_in_icon.Data);
          when MIDI_Settings =>

@@ -129,11 +129,11 @@
      showguides="true"
      inkscape:guide-bbox="true"
      inkscape:zoom="0.75008803"
-     inkscape:cx="83.323554"
+     inkscape:cx="82.656965"
      inkscape:cy="330.62786"
-     inkscape:window-width="1428"
+     inkscape:window-width="1918"
      inkscape:window-height="1037"
-     inkscape:window-x="491"
+     inkscape:window-x="1"
      inkscape:window-y="22"
      inkscape:window-maximized="0"
      inkscape:current-layer="layer2"
@@ -141,7 +141,8 @@
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
      inkscape:snap-midpoints="true"
-     inkscape:snap-grids="true">
+     inkscape:snap-grids="false"
+     inkscape:snap-page="true">
     <inkscape:grid
        type="xygrid"
        id="grid899" />
@@ -163,6 +164,13 @@
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="Layer 2">
+    <rect
+       style="opacity:1;fill:#ffffff;fill-opacity:0.993914;stroke:none;stroke-width:1.07601;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:0"
+       id="rect39317"
+       width="155.19521"
+       height="124.2926"
+       x="0"
+       y="0" />
     <g
        id="g19906" />
     <g
@@ -2864,9 +2872,9 @@
          id="text2777"><tspan
            x="208.46064"
            y="67.481378"
-           id="tspan110594"><tspan
+           id="tspan40464"><tspan
              style="text-align:center;text-anchor:middle"
-             id="tspan110592">B</tspan></tspan></text>
+             id="tspan40462">B</tspan></tspan></text>
       <path
          style="opacity:0.58422;fill:none;fill-opacity:0;stroke:none;stroke-width:0.264999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:0.264999, 0.794999;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
          sodipodi:type="inkscape:offset"
@@ -2918,7 +2926,7 @@
          transform="translate(0.21484991,0.13776911)"><tspan
            x="208.19916"
            y="67.481378"
-           id="tspan110596">A</tspan></text>
+           id="tspan40466">A</tspan></text>
       <path
          style="opacity:0.58422;fill:none;fill-opacity:0;stroke:none;stroke-width:0.264999;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:0.264999, 0.794999;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
          sodipodi:type="inkscape:offset"
@@ -2965,7 +2973,7 @@
          id="text2813-6-2"><tspan
            x="181.17943"
            y="39.254816"
-           id="tspan110598">Menu</tspan></text>
+           id="tspan40468">Menu</tspan></text>
       <path
          style="opacity:0.58422;fill:none;fill-opacity:0;stroke:none;stroke-width:0.147741;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:0.147741, 0.443224;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
          sodipodi:type="inkscape:offset"
@@ -3012,7 +3020,7 @@
          id="text50106"><tspan
            x="181.17943"
            y="39.254816"
-           id="tspan110600">Song</tspan></text>
+           id="tspan40470">Song</tspan></text>
       <path
          style="opacity:0.58422;fill:none;fill-opacity:0;stroke:none;stroke-width:0.147741;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:0.147741, 0.443224;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
          sodipodi:type="inkscape:offset"
@@ -3059,7 +3067,7 @@
          id="text53060"><tspan
            x="181.35844"
            y="39.254816"
-           id="tspan110602">Pattern
+           id="tspan40472">Pattern
 </tspan></text>
       <path
          style="opacity:0.58422;fill:none;fill-opacity:0;stroke:none;stroke-width:0.13011;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:0.13011, 0.39033;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
@@ -3107,7 +3115,7 @@
          id="text55694"><tspan
            x="181.55458"
            y="39.254816"
-           id="tspan110604">Copy/FX</tspan></text>
+           id="tspan40474">Copy/FX</tspan></text>
       <path
          style="opacity:0.58422;fill:none;fill-opacity:0;stroke:none;stroke-width:0.116519;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:0.116519, 0.349558;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
          sodipodi:type="inkscape:offset"
@@ -3154,7 +3162,7 @@
          id="text57110"><tspan
            x="181.01888"
            y="39.254816"
-           id="tspan110606">Edit</tspan></text>
+           id="tspan40476">Edit</tspan></text>
       <path
          style="opacity:0.58422;fill:none;fill-opacity:0;stroke:none;stroke-width:0.171798;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:0.171798, 0.515395;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
          sodipodi:type="inkscape:offset"
@@ -3201,7 +3209,7 @@
          id="text59330"><tspan
            x="181.02982"
            y="39.254816"
-           id="tspan110608">Play</tspan></text>
+           id="tspan40478">Play</tspan></text>
       <path
          style="opacity:0.58422;fill:none;fill-opacity:0;stroke:none;stroke-width:0.169733;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:0.169733, 0.5092;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
          sodipodi:type="inkscape:offset"
@@ -3248,7 +3256,7 @@
          id="text72791"><tspan
            x="181.06735"
            y="39.254816"
-           id="tspan110610">Step</tspan></text>
+           id="tspan40480">Step</tspan></text>
       <path
          style="opacity:0.58422;fill:none;fill-opacity:0;stroke:none;stroke-width:0.163497;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:0.163497, 0.490491;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
          sodipodi:type="inkscape:offset"
@@ -3295,7 +3303,7 @@
          id="text76362"><tspan
            x="181.14049"
            y="39.254816"
-           id="tspan110612">Track</tspan></text>
+           id="tspan40482">Track</tspan></text>
       <path
          style="opacity:0.58422;fill:none;fill-opacity:0;stroke:none;stroke-width:0.152741;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:0.152741, 0.458222;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
          sodipodi:type="inkscape:offset"
@@ -3342,7 +3350,7 @@
          id="text84075"><tspan
            x="179.39262"
            y="39.254816"
-           id="tspan110614">Down</tspan></text>
+           id="tspan40484">Down</tspan></text>
       <path
          style="opacity:0.58422;fill:none;fill-opacity:0;stroke:none;stroke-width:0.1468;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:0.1468, 0.440401;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
          sodipodi:type="inkscape:offset"
@@ -3389,7 +3397,7 @@
          id="text84787"><tspan
            x="179.6788"
            y="39.254816"
-           id="tspan110616">Right</tspan></text>
+           id="tspan40486">Right</tspan></text>
       <path
          style="opacity:0.58422;fill:none;fill-opacity:0;stroke:none;stroke-width:0.149298;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:0.149298, 0.447895;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
          sodipodi:type="inkscape:offset"
@@ -3436,7 +3444,7 @@
          id="text85961"><tspan
            x="182.08017"
            y="39.254816"
-           id="tspan110618">Left</tspan></text>
+           id="tspan40488">Left</tspan></text>
       <path
          style="opacity:0.58422;fill:none;fill-opacity:0;stroke:none;stroke-width:0.17688;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:0.17688, 0.530639;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
          sodipodi:type="inkscape:offset"
@@ -3483,7 +3491,7 @@
          id="text87321"><tspan
            x="183.79951"
            y="39.254816"
-           id="tspan110620">Up</tspan></text>
+           id="tspan40490">Up</tspan></text>
       <path
          style="opacity:0.58422;fill:none;fill-opacity:0;stroke:none;stroke-width:0.209774;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:0.209774, 0.62932;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
          sodipodi:type="inkscape:offset"
@@ -3530,7 +3538,7 @@
          id="text105000"><tspan
            x="178.92529"
            y="39.254816"
-           id="tspan110622">1</tspan></text>
+           id="tspan40492">1</tspan></text>
       <path
          style="opacity:0.58422;fill:none;fill-opacity:0;stroke:none;stroke-width:0.293366;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:0.293366, 0.8801;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
          sodipodi:type="inkscape:offset"
@@ -3574,7 +3582,7 @@
          transform="translate(0.12153445,0.11765771)"><tspan
            x="185.34157"
            y="39.31341"
-           id="tspan110624">16</tspan></text>
+           id="tspan40494">16</tspan></text>
       <path
          style="opacity:0.58422;fill:none;fill-opacity:0;stroke:none;stroke-width:0.21712;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:0.21712, 0.651362;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
          sodipodi:type="inkscape:offset"

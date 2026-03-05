@@ -107,7 +107,6 @@ package body WNM.Voices.Auto_Filter_FX is
       Set_Amplitude (This.LFO,
                      MIDI_Param (Project.FX_Filter_Sweep_Amp) / 2);
 
-
       case This.Mode is
          when Fix_Low_Pass | Sweep_Low_Pass =>
             Set_Mode (This.Left, Low_Pass);

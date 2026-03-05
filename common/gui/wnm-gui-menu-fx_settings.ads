@@ -19,7 +19,6 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 
-private with WNM.Voices.Stutter_FX;
 private with WNM.Project;
 private with Enum_Next;
 

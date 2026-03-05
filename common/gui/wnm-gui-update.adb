@@ -131,7 +131,7 @@ package body WNM.GUI.Update is
             begin
                if Mode /= Off then
                   Draw_Filter_Bar
-                    (Center_X => Box_Center.X ,
+                    (Center_X => Box_Center.X,
                      Y => Box_Top + 5,
                      Width => Screen_Width - 10,
                      Param => WNM.Voices.Auto_Filter_FX.Last_Cutoff_After_LFO,
