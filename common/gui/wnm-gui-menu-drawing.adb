@@ -1512,32 +1512,36 @@ package body WNM.GUI.Menu.Drawing is
    -- Draw_LFO_Bar --
    ------------------
 
-   procedure Draw_LFO_Bar (Center_X, Y        : Natural;
-                           Width              : Natural;
-                           Param              : Tresses.Param_Range;
-                           LFO                : Tresses.Param_Range := 0;
-                           Draw_LFO           : Boolean := False;
-                           Param_Start_Center : Boolean := False)
+   procedure Draw_LFO_Bar (Center_X, Y : Natural;
+                           Width       : Natural;
+                           Param       : Tresses.Param_Range;
+                           LFO         : Tresses.Param_Range := 0;
+                           Draw_LFO    : Boolean := False;
+                           Param_Start : LFO_Bar_Param_Start := Left;
+                           Max_Value   : Tresses.Param_Range :=
+                             Tresses.Param_Range'Last)
    is
       use Tresses;
 
       Param_Scaled : constant Float :=
-        Float (Param) / Float (Param_Range'Last + 1);
+        Float (Param) / Float (Max_Value + 1);
 
       Param_Len : constant Natural :=
         Integer (Float (Width) * Param_Scaled);
 
       LFO_Scaled : constant Float :=
-        Float (LFO) / Float (Param_Range'Last + 1);
+        Float (LFO) / Float (Max_Value + 1);
 
       LFO_Len : constant Natural :=
         Integer (Float (Width) * LFO_Scaled);
 
       Left : constant Natural := Center_X - Width / 2;
-      Param_Start : constant Natural :=
-        (if Param_Start_Center
-         then Center_X
-         else Left);
+      Right : constant Natural := Center_X + Width / 2;
+      Param_Start_X : constant Natural :=
+        (case Param_Start is
+            when Drawing.Left   => Left,
+            when Drawing.Center => Center_X,
+            when Drawing.Right  => Right);
 
       Param_End : constant Natural := Left + Param_Len;
 
@@ -1545,7 +1549,7 @@ package body WNM.GUI.Menu.Drawing is
       LFO_End : constant Natural := Left + LFO_Len;
    begin
 
-      WNM.Screen.Draw_H_Line (Param_Start, Param_End, Y);
+      WNM.Screen.Draw_H_Line (Param_Start_X, Param_End, Y);
 
       WNM.Screen.Draw_Line ((Param_End, Y + 1),
                             (Param_End, Y - 1));
@@ -1561,7 +1565,7 @@ package body WNM.GUI.Menu.Drawing is
                                   (LFO_End - 1, Y - 1));
             WNM.Screen.Draw_Line ((LFO_End - 2, Y + 2),
                                   (LFO_End - 1, Y + 1));
-         elsif LFO = Param_Range'Last then
+         elsif LFO >= Max_Value then
             WNM.Screen.Draw_Line ((LFO_End + 2, Y - 2),
                                   (LFO_End + 1, Y - 1));
             WNM.Screen.Draw_Line ((LFO_End + 2, Y + 2),

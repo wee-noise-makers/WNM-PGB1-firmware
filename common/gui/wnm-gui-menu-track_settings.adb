@@ -260,7 +260,7 @@ package body WNM.GUI.Menu.Track_Settings is
                      Scaled,
                      WNM.Synth.Param_Value_After_LFO (Chan),
                      Draw_LFO => Project.LFO_Target (T) = Pan,
-                     Param_Start_Center => True);
+                     Param_Start => Center);
                end if;
             end;
 

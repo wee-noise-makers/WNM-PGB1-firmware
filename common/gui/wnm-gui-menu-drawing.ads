@@ -166,12 +166,15 @@ package WNM.GUI.Menu.Drawing is
 
    procedure Draw_Chords_Progress (Center_X, Center_Y : Natural);
 
-   procedure Draw_LFO_Bar (Center_X, Y        : Natural;
-                           Width              : Natural;
-                           Param              : Tresses.Param_Range;
-                           LFO                : Tresses.Param_Range := 0;
-                           Draw_LFO           : Boolean := False;
-                           Param_Start_Center : Boolean := False);
+   type LFO_Bar_Param_Start is (Left, Center, Right);
+   procedure Draw_LFO_Bar (Center_X, Y : Natural;
+                           Width       : Natural;
+                           Param       : Tresses.Param_Range;
+                           LFO         : Tresses.Param_Range := 0;
+                           Draw_LFO    : Boolean := False;
+                           Param_Start : LFO_Bar_Param_Start := Left;
+                           Max_Value   : Tresses.Param_Range :=
+                             Tresses.Param_Range'Last);
 
    type Filter_Bar_Kind is (LP, BP, HP);
    procedure Draw_Filter_Bar (Center_X, Y : Natural;
