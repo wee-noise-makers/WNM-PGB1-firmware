@@ -94,6 +94,28 @@ The bitcrusher creates lo-fi digital distortion by reducing bit depth and sample
 Use LFO modulation on the Downsampling parameter to create a robotic sound
 effect.
 
+## Project Mixer Settings
+
+*Available from firmware 1.3.0*
+
+A dedicated menu page provides visualisation on audio levels and clipping, as
+well as quick edit of various track and track effects controls.
+
+Press {kbd}`menu` and navigate to the `Project Mixer` page, press {kbd}`A`.
+
+In the `Project Mixer` pages, use {kbd}`←` and {kbd}`→` to navigate between the
+different settings, {kbd}`↑` and {kbd}`↓` to change values.
+
+For each of the output levels (track effect, mixer output, synth tracks) two
+bars represent peak audio signal values for left and right channels with a
+cross `X` at the top if the signal is clipping (i.e. the sound is too loud to
+handle and may generate harsh digital distortion).
+
+- **1st page**: gain control for the four track effects and mixer output
+- **2nd page**: volume control for each of the synth tracks
+- **3rd page**: stereo pan control for each of the synth tracks
+- **4th page**: send effect control for each of the synth tracks
+
 ## Mixing Tips
 
 ### Creating Space

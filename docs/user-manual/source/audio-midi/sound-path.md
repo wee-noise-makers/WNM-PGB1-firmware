@@ -1,61 +1,13 @@
 # Sound Path
 
-Understanding how audio flows through the PGB-1 helps you make better mixing and sound design decisions. This page explains the complete signal path from note trigger to audio output.
+Understanding how audio flows through the PGB-1 helps you make better mixing
+and sound design decisions. This page explains the complete signal path from
+note trigger to audio output.
 
 ## Overview Diagram
 
-```text
-flowchart TB
-    subgraph tracks["TRACKS 1-8"]
-        seq[Step Sequencer]
-        synth[Synth Engine]
-        vol[Volume]
-        pan[Stereo Panning]
-
-        seq -->|note triggers| synth
-        synth -->|mono audio| vol
-        vol --> pan
-    end
-
-    subgraph lfo["LFO Modulation"]
-        lfomod[LFO]
-    end
-
-    subgraph inputs["AUDIO INPUTS"]
-        line[Line Input]
-        mic[Internal Microphone]
-        headset[Headset Microphone]
-    end
-
-    subgraph fxbus["FX ROUTING · select one per track"]
-        bypass[Bypass]
-        drive[Overdrive]
-        reverb[Reverb]
-        crush[Bitcrusher]
-    end
-
-    subgraph output["OUTPUT"]
-        mix[Final Mix]
-        livefx[Live FX]
-        out[Speakers / Headphones]
-    end
-
-    lfomod -.->|synth params| synth
-    lfomod -.->|volume| vol
-    lfomod -.->|panning| pan
-
-    pan -->|stereo audio| fxbus
-    line --> fxbus
-    mic --> fxbus
-    headset --> fxbus
-
-    bypass --> mix
-    drive --> mix
-    reverb --> mix
-    crush --> mix
-
-    mix --> livefx
-    livefx --> out
+```{figure} ../../../assets/graphs/PGB-1-audio-path.svg 
+:alt: Audio path diagram
 ```
 
 ## The 8 Tracks
@@ -120,14 +72,17 @@ Each track routes to one of **4 effect buses**:
 
 :::{admonition} One Effect Per Track
 :class: tip
-
 Each track can only use one global effect at a time. Choose the effect that
 best suits each sound.
 :::
 
+Each effect bus has a gain stage at its output controlled from the [Project
+Mixer menu](../deep-dive/mixing.md).
+
 ### 5. Final Mix
 
-All 4 effect buses are mixed together into a single stereo output.
+All 4 effect buses are mixed together into a single stereo output. A last gain
+stage is available on the stereo output.
 
 ### 6. Live FX
 

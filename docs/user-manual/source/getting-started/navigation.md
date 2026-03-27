@@ -15,13 +15,10 @@ The PGB-1 uses a consistent navigation scheme across all menus and modes:
 
 ### Page Indicator
 
-
-```{figure} ../assets/images/navigation-screenshot.png
+```{figure} ../../../assets/OLED-screenshots/zoom/PGB1-OLED-menu-navigation.png 
 :alt: Navigation screenshot
-:width: 500px
+:width: 300px
 ```
-
-
 
 At the top of the screen, a **page indicator** shows:
 
@@ -36,21 +33,15 @@ In most modes, the screen displays:
 - **Top left**: Current track name
 - **Top right**: Current pattern and step numbers
 
-
-```{figure} ../assets/images/track-name-screenshot.png
+```{figure} ../../../assets/OLED-screenshots/zoom/PGB1-OLED-track-name.png
 :alt: Track name screenshot
 :width: 300px
 ```
 
-
-
-```{figure} ../assets/images/current-pattern-and-step-screenshot.png
+```{figure} ../../../assets/OLED-screenshots/zoom/PGB1-OLED-pattern-and-step-id.png
 :alt: Current pattern and step screenshot
 :width: 300px
 ```
-
-
-
 
 ## Menu Navigation
 

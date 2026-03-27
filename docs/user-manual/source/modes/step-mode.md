@@ -9,13 +9,10 @@ In step mode, you are always editing steps of the selected pattern (see
 [Pattern mode](pattern-mode.md)) The numbers of the selected pattern and step
 is shown at the top right of the screen:
 
-
-```{figure} ../assets/images/current-pattern-and-step-screenshot.png
+```{figure} ../../../assets/OLED-screenshots/zoom/PGB1-OLED-pattern-and-step-id.png
 :alt: Current pattern and step on screen
-:width: 400px
+:width: 300px
 ```
-
-
 
 ## Entering Step Mode
 

@@ -9,14 +9,10 @@ In Track mode, pressing one of the {kbd}`1` to {kbd}`16` buttons will select the
 corresponding track and trigger a "preview" note for this track. The name of
 the selected track is shown at the top left of the screen.
 
-
-
-```{figure} ../assets/images/track-name-screenshot.png
+```{figure} ../../../assets/OLED-screenshots/zoom/PGB1-OLED-track-name.png
 :alt: Track name on screen
-:width: 400px
+:width: 300px
 ```
-
-
 
 ## Entering Track Mode
 

@@ -7,7 +7,7 @@ copyright = '2025, Wee Noise Makers'
 language = 'en'
 
 # Firmware version — update this for each release
-release = '1.2.0'
+release = '1.3.0'
 branch = 'main'
 version = release
 

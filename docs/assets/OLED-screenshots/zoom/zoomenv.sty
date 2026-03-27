@@ -1,0 +1,14 @@
+\usepackage{tikz}
+\usetikzlibrary{spy}
+
+\newenvironment{zoomed}[1]
+    {
+     \begin{tikzpicture}
+     [spy using outlines={circle, gray, magnification=3, connect spies, every spy on node/.append style={thick}}, image/.style = {scale=0.8,},]
+     \node[image] (A) {\includegraphics{#1}};
+    }
+    {
+     \end{tikzpicture}
+    }
+
+

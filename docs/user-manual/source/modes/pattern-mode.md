@@ -14,9 +14,11 @@ selected and then switch to the bass track, you will now edit pattern 4 of the
 bass track.
 
 The numbers of the selected pattern is shown at the top right of the screen:
-![Current pattern and step on
-screen](../assets/images/current-pattern-and-step-screenshot.png){ width="400" }
 
+```{figure} ../../../assets/OLED-screenshots/zoom/PGB1-OLED-pattern-and-step-id.png
+:alt: Current pattern and step on screen
+:width: 300px
+```
 
 ## Entering Pattern Mode
 
@@ -64,12 +66,10 @@ Use {kbd}`↑`/{kbd}`↓` to enable/ disable linking.
  - A line between two boxes is visible when they are linked together
  - The box corresponding to the currently playing pattern is blinking
 
-
-```{figure} ../assets/images/pattern-link-screenshot.png
+```{figure} ../../../assets/OLED-screenshots/zoom/PGB1-OLED-pattern-link.png
 :alt: Pattern link on screen
-:width: 400px
+:width: 300px
 ```
-
 
 
 ### LED Indicators

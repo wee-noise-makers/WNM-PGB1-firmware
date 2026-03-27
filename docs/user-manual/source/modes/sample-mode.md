@@ -13,6 +13,11 @@ When entering Sample Mode, you can choose:
 - **New Sample**: Record a new sample
 - **Edit Sample**: Modify an existing sample's start/end points and name
 
+```{figure} ../../../assets/OLED-screenshots/framed/PGB1-OLED-sampling-new-vs-edit-framed.png
+:alt: Song mode on screen
+:width: 200px
+```
+
 ## Recording a New Sample
 
 ### Step 1: Select Input Source
@@ -26,6 +31,11 @@ Choose which input to record from using the {kbd}`←` and {kbd}`→` buttons:
 | Headset Mic | Microphone on connected headset | Voice recording |
 
 Use {kbd}`↑` / {kbd}`↓` to adjust the input volume before recording.
+
+```{figure} ../../../assets/OLED-screenshots/framed/PGB1-OLED-sampling-source-framed.png
+:alt: Song mode on screen
+:width: 200px
+```
 
 :::{admonition} Best Practice
 :class: tip
@@ -42,6 +52,11 @@ Press {kbd}`A` to begin recording. The PGB-1 uses a **2-second rolling buffer**:
 - When buffer is full, new audio overwrites the oldest
 - This lets you capture a sound even slightly after it happens
 
+```{figure} ../../../assets/OLED-screenshots/framed/PGB1-OLED-sampling-recording-framed.png
+:alt: Song mode on screen
+:width: 200px
+```
+
 ### Step 3: Stop Recording
 
 Press {kbd}`A` again to stop recording. The captured audio is displayed as a waveform.
@@ -50,6 +65,11 @@ Press {kbd}`A` again to stop recording. The captured audio is displayed as a wav
 
 - Use {kbd}`←` / {kbd}`→` to move the start point
 - Use {kbd}`↑` / {kbd}`↓` to move the end point
+
+```{figure} ../../../assets/OLED-screenshots/framed/PGB1-OLED-sampling-trim-framed.png
+:alt: Song mode on screen
+:width: 200px
+```
 
 The keyboard lights up showing available preview keys:
 
@@ -69,6 +89,11 @@ Enter a name for the sample (up to 15 characters).
 
 Press {kbd}`A` to continue.
 
+```{figure} ../../../assets/OLED-screenshots/framed/PGB1-OLED-sampling-name-framed.png
+:alt: Song mode on screen
+:width: 200px
+```
+
 ### Step 7: Save
 
 2. Select a sample slot (1-64)
@@ -78,6 +103,11 @@ Press {kbd}`A` to continue.
 :::{warning}
 Saving to a slot will overwrite any existing sample in that slot.
 :::
+
+```{figure} ../../../assets/OLED-screenshots/framed/PGB1-OLED-sampling-slot-framed.png
+:alt: Song mode on screen
+:width: 200px
+```
 
 ## Editing Existing Samples
 

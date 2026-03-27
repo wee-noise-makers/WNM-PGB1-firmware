@@ -11,8 +11,11 @@ Hold {kbd}`Cpy/FX` and press {kbd}`1` to {kbd}`16` to toggle effects.
 
 Effects are split into two categories:
 
-- **Sequencing Effects** (left side: 1-4, 9-12) - Affect pattern playback
-- **Mixing Effects** (right side: 5-8, 13-16) - Affect audio output
+- **Sequencing Effects** (left side: {kbd}`1`-{kbd}`4`, {kbd}`9`-{kbd}`12`) -
+  Affect pattern playback
+
+- **Mixing Effects** (right side: {kbd}`5`-{kbd}`8`, {kbd}`13`-{kbd}`16`) -
+  Affect audio output
 
 ## Sequencing Effects
 
@@ -43,8 +46,14 @@ Add or modify steps automatically:
 | {kbd}`12` | Auto-fill Build-up | Increasing random fill intensity  on drum tracks |
 
 :::{important}
-The auto-fill effects work with drum tracks (Kikc, Snare, Hihat) while the Fill
-Steps can be used on any track.
+
+The auto-fill effects work on selected tracks (Kick, Snare, Hihat by default)
+while the Fill Steps can be used on any track.
+
+:::
+
+:::{tip}
+You can configure the auto-fill tracks in `Menu -> Live FX Settings`.
 :::
 
 ## Mixing Effects
@@ -59,6 +68,11 @@ Apply filters to the master output:
 | {kbd}`6` | Band Pass Filter | Removes highs and lows |
 | {kbd}`7` | High Pass Filter | Removes low frequencies |
 
+:::{tip}
+You can configure the cutoff frequency and resonance of each filter in
+`Menu -> Live FX Settings`.
+:::
+
 ### Filter Sweeps
 
 Animated filter effects:
@@ -69,12 +83,71 @@ Animated filter effects:
 | {kbd}`14` | BP Sweep | Band pass filter that sweeps |
 | {kbd}`15` | HP Sweep | High pass filter that sweeps |
 
+:::{tip}
+You can configure the frequency and amplitude of filter sweep in
+`Menu -> Live FX Settings`.
+:::
+
 ### Stutter Effects
 
 | Button | Effect | Description |
 |--------|--------|-------------|
-| {kbd}`8` | Stutter 1 | Short audio repeat effect |
-| {kbd}`16` | Stutter 2 | Variation of stutter |
+| {kbd}`8` | Stutter A | Short audio repeat effect |
+| {kbd}`16` | Stutter B | Variation of stutter |
+
+:::{tip}
+You can configure the stutter patterns in `Menu -> Live FX Settings`.
+:::
+
+## Live FX Settings
+
+*Available from firmware 1.3.0*
+
+You can configure various parameters of the live effects in a dedicated menu.
+Press {kbd}`menu` and navigate to the `Live FX Settings` page, press {kbd}`A`.
+
+Navigate between the different pages to customize live effects:
+
+ - **Auto-Fill Tracks**: Select which track is triggered by the auto-fill
+   effects ({kbd}`10`, {kbd}`11`, {kbd}`12`). Press {kbd}`A` to start editing
+   the selected tracks, use {kbd}`←` and {kbd}`→` to navigate between the
+   different track, use {kbd}`↑` to enable auto-fill for the selected track,
+   use {kbd}`↓` to disable auto-fill on the selected track, press {kbd}`A` or
+   {kbd}`B` to end the edit.
+
+ - **Auto-Fill Low*: Change the trigger probability of auto-fill low effect
+   ({kbd}`10`)
+
+ - **Auto-Fill High**: Change the trigger probability of auto-fill high effect
+   ({kbd}`11`)
+
+ - **Auto-Fill Build-up**: Change the start trigger probability of auto-fill
+   build-up effect({kbd}`12`)
+
+ - **Low-Pass**: Change the cutoff frequency and resonance of the low-pass
+   ({kbd}`5`) and low-pass-sweep ({kbd}`13`) effects
+
+ - **Band-Pass**: Change the cutoff frequency and resonance of the band-pass
+   ({kbd}`6`) and band-pass-sweep ({kbd}`14`) effects
+
+ - **High-Pass**: Change the cutoff frequency and resonance of the high-pass
+   ({kbd}`7`) and high-pass-sweep ({kbd}`15`) effects
+
+ - **Auto-Filter Sweep**: Change the rate and amplitude of filter sweeps
+   effects ({kbd}`13`, {kbd}`14`, {kbd}`15`)
+
+ - **Stutter A**: Change the pattern of the first stutter effect ({kbd}`8`).
+   Press {kbd}`A` to start editing the pattern, use {kbd}`←` and {kbd}`→` to
+   navigate between the different steps, use {kbd}`↑` to unmute the selected
+   step, use {kbd}`↓` to mute the selected step, press {kbd}`A` or {kbd}`B` to
+   end the edit.
+
+ - **Stutter B**: Change the pattern of the second stutter effect ({kbd}`16`).
+   See **Stutter A** just above for edit instructions.
+
+ - **Stutter Envelope**: Change the attack (how fast the volume drops) and
+   release (how fast sound comes back up) of the two sutter effects ({kbd}`8`
+   and {kbd}`16`)
 
 ## One Effect Per Category
 
@@ -102,7 +175,8 @@ chord changes.
 ## Quick Parameter Control
 
 While holding {kbd}`Cpy/FX`, the touch strip controls a single parameter for a
-selected track. This lets you perform parameter changes during Live FX.
+selected track. This gives you quick and direct access to one parameter for
+live performance without having to navigate in the track settings.
 
 With this feature you can control one of:
 
@@ -121,6 +195,8 @@ holding {kbd}`Cpy/FX`.
 
 To change the selected parameter, use the {kbd}`↑` or {kbd}`↓` buttons while
 holding {kbd}`Cpy/FX`.
+
+Use the touch strip to change the value of the selected parameter.
 
 ## Performance Tips
 

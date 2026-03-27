@@ -17,17 +17,17 @@ song parts, and tracks, 2 for patterns (Track and Pattern), 3 for steps (Track,
 Pattern, and Step).
 
 
-```{figure} ../assets/images/PGB1-OLED-copy-track.png
+```{figure} ../../../assets/OLED-screenshots/framed/PGB1-OLED-copy-track-framed.png
 :alt: Copy Track
 ```
 
 
-```{figure} ../assets/images/PGB1-OLED-copy-pattern.png
+```{figure} ../../../assets/OLED-screenshots/framed/PGB1-OLED-copy-pattern-framed.png
 :alt: Copy Pattern
 ```
 
 
-```{figure} ../assets/images/PGB1-OLED-copy-step.png
+```{figure} ../../../assets/OLED-screenshots/framed/PGB1-OLED-copy-step-framed.png
 :alt: Copy Step
 ```
 
