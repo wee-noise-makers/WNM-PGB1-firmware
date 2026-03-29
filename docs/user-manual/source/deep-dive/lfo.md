@@ -37,16 +37,9 @@ There are three modes that control the direction and range of modulation
 Modulation adds to the target parameter value. The LFO output ranges from the
 base value upward.
 
-```
-Parameter
-Value
-  ^
-  |     /\      /\
-  |    /  \    /  \
-  |   /    \  /    \
-  |  /      \/      \
-  +-------------------> Time
-  Base
+```{figure} ../../../assets/graphs/lfo-add.svg
+:alt: LFO Add
+:width: 300px
 ```
 
 Use this when you want the parameter to increase from its set value. For
@@ -58,15 +51,9 @@ example, if filter cutoff is set to 50%, the LFO will sweep from 50% up toward
 Modulation oscillates around the target parameter value, going both above and
 below.
 
-```
-Parameter
-Value
-  ^
-  |   /\      /\
-  | /   \   /   \
---+------\-/------\-/---> Time
-  |       V        V
-  Base (center)
+```{figure} ../../../assets/graphs/lfo-bipolar.svg
+:alt: LFO Add
+:width: 300px
 ```
 
 Use this for classic vibrato and tremolo effects where the parameter swings
@@ -78,16 +65,9 @@ LFO will create vibrato by going sharp and flat around that pitch.
 Modulation subtracts from the target parameter value. The LFO output ranges
 from the base value downward.
 
-```
-Parameter
-Value
-  +-------------------> Time
-  Base
-  |  \      /\      /
-  |   \    /  \    /
-  |    \  /    \  /
-  |     \/      \/
-  v
+```{figure} ../../../assets/graphs/lfo-sub.svg
+:alt: LFO Add
+:width: 300px
 ```
 
 Use this when you want the parameter to decrease from its set value. For
@@ -171,7 +151,6 @@ bar.
 :alt: LFO visualization: minimum limit
 :width: 200px
 ```
-
 ```{figure} ../../../assets/OLED-screenshots/zoom/PGB1-OLED-lfo-visu-max.png
 :alt: LFO visualization: maximum limit
 :width: 200px

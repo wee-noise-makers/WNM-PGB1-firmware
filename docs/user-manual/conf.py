@@ -76,6 +76,27 @@ html_sidebars = {
 
 # -- PDF output (LaTeX) ------------------------------------------------------
 
+latex_elements = {
+    'papersize': 'a4paper',
+    'preamble': r'''
+\usepackage{eso-pic}
+''',
+
+    'maketitle': r'''
+\date{}  % Remove date from cover page
+\begin{titlepage}
+\AddToShipoutPictureBG*{
+    \includegraphics[width=\paperwidth,height=\paperheight]{../../../assets/user-manual-front-page.pdf}
+}
+
+\sphinxmaketitle
+
+\end{titlepage}
+''',
+
+    'figure_align': 'H',
+}
+
 latex_documents = [
-    ('index', 'pgb1-user-manual.tex', 'PGB-1 User Manual', 'Wee Noise Makers', 'manual'),
+    ('index', 'pgb1-user-manual.tex', 'PGB-1 User Manual', '', 'manual'),
 ]

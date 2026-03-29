@@ -1,5 +1,6 @@
 # Reference
 
+- [Changelogs](changelogs.md)
 - [Engines](engines.md)
 - [Warranty](warranty.md)
 
@@ -7,7 +8,7 @@
 :maxdepth: 2
 :hidden:
 
+changelogs
 engines
 warranty
 ```
-
