@@ -276,7 +276,7 @@ package body WNM.GUI.Menu.Tracks_Mixer is
          declare
             Id : constant Natural :=
               (if S /= Project.Output_Gain
-               then Project.Project_Mixer_Settings'Pos (S)
+               then Project.Project_Mixer_Settings'Pos (S) + 1
                else Project.Project_Mixer_Settings'Pos (S) + 2);
             X_Col_Center : constant Natural := Id * Col_Width + Col_Width / 2;
          begin
