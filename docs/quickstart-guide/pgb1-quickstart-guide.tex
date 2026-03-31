@@ -16,6 +16,7 @@
 \usepackage{../wnm-latex-utils}
 \usepackage{ragged2e}
 \usepackage{amssymb}
+\usepackage{tabularx}
 
 \geometry{top=0.7cm,left=0.7cm,right=0.7cm,bottom=0.7cm}
 
@@ -30,6 +31,7 @@
 \def\fulldocurl{https://weenoisemakers.com/pgb-1}
 \def\firmwareupdatesurl{https://weenoisemakers.com/pgb-1}
 \def\discordurl{https://discord.gg/EAmAgsmV5V}
+\def\usermanualurl{https://weenoisemakers.com/pgb-1-user-manual/}
 \def\doctitle{WNM PGB-1 Quick Start Guide}
 
 \newcommand{\OLEDscreenshot}[1]{
@@ -63,13 +65,30 @@
 \setlength{\multicolsep}{1pt}
 \setlength{\columnsep}{2pt}
 
+\section{Welcome}
+
+\begin{tabularx}{\linewidth}{ m{0.24\textwidth} X }
+
+  Welcome to the \device Quick Start Guide. This guide will help you get up and
+  running quickly. You can refer to the full user manual online for
+  comprehensive guidance and additional details: \newline \url{\usermanualurl}
+
+  & \qrcode[height=40pt]{\usermanualurl} \\
+\end{tabularx}
+
 \section{Join the Community}
 
-Join the \WNM discord server to engage with a community of users, share your experience, tips and tricks, and music made on the \device
+\begin{tabularx}{\linewidth}{ m{0.24\textwidth} X }
 
-\url{\discordurl} \qrcode[height=40pt]{\discordurl}
+  Join the \WNM discord server to engage with a community of users, share your
+  experience, tips and tricks, and music made on the \device: \newline
+  \url{\discordurl}
 
-And don't hesitate to tag us in your social media posts (@weenoisemakers), we will be happy to share your creations.
+  And don't hesitate to tag us in your social media posts (@weenoisemakers), we
+  will be happy to share your creations.
+
+  & \qrcode[height=40pt]{\discordurl} \\
+\end{tabularx}
 
 \section{Hardware Layout}
 
@@ -391,6 +410,7 @@ For example the following sequence will copy step 2 from pattern 5 of track 7, t
     \item[] Mute Track \dotfill Hold \kbd{Play} + Press \kbd{1} to \kbd{16}
     \item[] Solo Track \dotfill Hold \kbd{Play} + Press \kbd{Track}, then Press \kbd{1} to \kbd{16}
     \item[] Enter Sampling Mode \dotfill Hold \kbd{Cpy/FX} + Press \kbd{Edit}
+    \item[] Piano Keyboard \dotfill Hold \kbd{Edit}
 \end{itemize}
 
 \section{Tips and Tricks}
