@@ -1,0 +1,468 @@
+\documentclass[8pt]{extarticle}
+\usepackage{amssymb,amsmath,amsthm,amsfonts}
+\usepackage{multicol,multirow}
+\usepackage{calc}
+\usepackage{ifthen}
+\usepackage[a4paper, landscape]{geometry}
+\usepackage[hidelinks,colorlinks=false]{hyperref}
+\usepackage{tcolorbox}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,
+    positioning,
+    quotes, shapes, spy, matrix}
+\usepackage[percent]{overpic}
+\usepackage{../wnm-latex-utils}
+\usepackage{ragged2e}
+\usepackage{amssymb}
+\usepackage{tabularx}
+
+\geometry{top=0.7cm,left=0.7cm,right=0.7cm,bottom=0.7cm}
+
+\makeatletter
+\makeatother
+\setcounter{secnumdepth}{0}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt plus 0.5ex}
+
+\def\device{PGB-1 }
+\def\WNM{Wee Noise Makers }
+\def\fulldocurl{https://weenoisemakers.com/pgb-1}
+\def\firmwareupdatesurl{https://weenoisemakers.com/pgb-1}
+\def\discordurl{https://discord.gg/EAmAgsmV5V}
+\def\usermanualurl{https://weenoisemakers.com/pgb-1-user-manual/}
+\def\doctitle{WNM PGB-1 Quick Start Guide}
+
+\newcommand{\OLEDscreenshot}[1]{
+\begin{tcolorbox}[hbox, colframe=black, colback=white, boxsep=-3pt]%
+\includegraphics{#1}
+\end{tcolorbox}
+}
+
+\newcommand{\reflabel}[2]{
+[\hyperref[#1]{#2}]
+}
+
+\title{\doctitle}
+
+\begin{document}
+
+\raggedright
+\footnotesize
+
+\begin{center}
+    \scalebox{1.5}{\Huge{\textbf{\doctitle}}}
+\end{center}
+
+\rule{\paperwidth}{0.4pt}
+
+\justifying
+
+\begin{multicols*}{3}
+\setlength{\premulticols}{1pt}
+\setlength{\postmulticols}{1pt}
+\setlength{\multicolsep}{1pt}
+\setlength{\columnsep}{2pt}
+
+\fontsize{5}{4}\selectfont
+
+\section{Bienvenue}
+
+\begin{tabularx}{\linewidth}{ m{0.24\textwidth} X }
+
+ Bienvenue dans le guide de démarrage rapide du \device. Ce guide vous aidera à le mettre en marche rapidement. Vous pouvez consulter le manuel d'utilisation complet en ligne pour obtenir des instructions détaillées et des informations supplémentaires: \newline \url{\usermanualurl}
+
+  & \qrcode[height=40pt]{\usermanualurl} \\
+\end{tabularx}
+
+\section{Rejoignez la communauté}
+
+\begin{tabularx}{\linewidth}{ m{0.24\textwidth} X }
+
+Rejoignez le serveur Discord de \WNM pour interagir avec la communauté d'utilisateurs, partagez votre expérience, vos astuces et vos créations musicales sur le serveur Discord \device: \url{\discordurl}
+
+  N’hésitez pas à nous taguer dans vos publications sur les réseaux sociaux (@weenoisemakers), nous serons ravis de partager vos créations.
+
+  & \qrcode[height=40pt]{\discordurl} \\
+\end{tabularx}
+
+\section{Disposition du matériel}
+
+\includesvg[width=240pt]{../assets/PGB1-front-black-n-white-with-labels.svg}
+
+\section{Mise sous tension et charge}
+
+Pour allumer l'appareil, faites glisser l'interrupteur de mise en marche vers la gauche. L'appareil s'allumera et la LED deviendra bleue cyan.
+
+La batterie interne peut être chargée en connectant le \device à l'aide d'un câble USB-C branché à un port USB standard d'un ordinateur, d'un adaptateur secteur USB ou d'une batterie externe USB. Veillez à toujours utiliser du matériel et des câbles de bonne qualité. Le voyant d'état s'allume en rouge pendant la charge.
+
+Une charge complète prend environ 1h20. La LED rouge s'éteindra une fois la charge terminée.
+\begin{important}
+   Les batteries neuves doivent être complètement chargées avant utilisation.
+\end{important}
+
+\begin{important}
+    Pendant la charge, l'indicateur de niveau de batterie à l'écran ne fournit aucune information fiable sur l'état de charge. Seule la LED rouge indique si la batterie est toujours en charge.
+\end{important}
+
+\section{Mises à jour du firmware}
+\label{procedure:firmware_update}
+
+Vérifiez régulièrement la disponibilité d'une mise à jour du firmware sur le site web de \WNM website \url{\firmwareupdatesurl}. Vous pouvez également rejoindre le serveur Discord (\url{\discordurl}) ou nous suivre sur les réseaux sociaux pour être informé des mises à jour.
+
+\begin{important}
+    Ne jamais éteindre l'appareil ni débrancher le câble USB pendant une mise à jour du firmware. Cela pourrait rendre l'appareil inutilisable et vous obligerait à suivre la \reflabel{procedures:forced_firmware_update}{Procédure de mise à jour forcée du firmware}.
+\end{important}
+
+Commencez par connecter l'appareil à votre ordinateur à l'aide d'un câble USB de bonne qualité. Pour démarrer la mise à jour du firmware, allumez l'appareil et appuyez sur le bouton \kbd{Menu}, utilisez les touches \kbd{Gauche} ou \kbd{Droite} pour sélectionner \pgbmenu{Mode mise à jour} dans le menu, puis appuyez sur \kbd{A} pour valider, appuyez ensuite sur \kbd{Droite} puis de nouveau sur \kbd{A} pour confirmer. L'appareil devrait maintenant être en mode de mise à jour du firmware, comme l'indiquent les lettres "UP" affichées sur les voyants du clavier.
+
+L'appareil devrait apparaître comme un disque dure amovible nommé "RPI-RP2" sur votre ordinateur. Glissez-déposez le fichier du firmware UF2 sur le lecteur amovible "RPI-RP2". La mise à jour se lancera et \device redémarrera automatiquement une fois terminée.
+
+\section{Menus et Navigation}
+
+Utilisez les boutons \kbd{Gauche}, \kbd{Droite}, \kbd{Haut}, \kbd{Bas}, \kbd{A}, et \kbd{B} pour naviguer dans les paramètres et menus de l'appareil.
+
+Les boutons \kbd{Gauche} et \kbd{Droite} permettent de sélectionner un paramètre.
+Les boutons \kbd{Haut} et \kbd{Bas} modifient la valeur du paramètre sélectionné.
+Le bouton \kbd{A} sert à effectuer des actions positives (sélectionner, accepter, activer, etc.),
+le bouton \kbd{B} à effectuer des actions négatives (retour, refuser, désactiver, etc.).
+
+À l'écran, un indicateur de position du menu affiche le nombre de pages de paramètres disponibles et la page actuellement affichée.
+De plus, une flèche pointant vers la gauche ou la droite indique la présence de pages à gauche ou à droite de la page actuelle.
+
+Par exemple, en consultant les paramètres de la piste :
+
+% LaTeX is amazing... (https://tikz.dev/library-spy)
+\begin{center}
+    \scalebox{0.7}{
+    \begin{tikzpicture}
+    [spy using outlines={circle, magnification=3, connect spies},
+    image/.style = {scale=0.8,},
+    ]
+
+    \node[image] (A) {\OLEDscreenshot{../assets/OLED-screenshots/PGB1-OLED-track-LFO.png}};
+
+    % Page indicator
+    \spy [black, size=2cm] on (-0.85,0.25) in node [left] at (-2.1,-0.5);
+
+    % Right arrow
+    \spy [black, size=2cm] on (1.68, 0.45) in node [right] at (2.1,-0.5);
+    \end{tikzpicture}
+    }
+\end{center}
+
+\section{Entrée/Sortie audio et volume}
+
+La sortie audio bascule automatiquement du haut-parleur interne à la sortie casque lorsqu'une prise jack est branchée. Pour modifier le volume de sortie, maintenez le bouton
+\kbd{Play} enfoncé et appuyez sur \kbd{Haut} ou \kbd{Bas}. Le volume maximal peut être très élevé, surtout avec un casque ou des écouteurs. Attention : une exposition prolongée à un volume élevé peut endommager votre audition
+
+Les entrées audio sont désactivées par défaut. Pour les configurer, ouvrez le menu principal avec
+\kbd{Menu}, puis sélectionnez \pgbmenu{Inputs}. Vous pourrez activer/désactiver le son pour chaque entrée (entrée ligne, microphone interne, microphone casque) et définir un volume général. Sur la page suivante, vous pouvez sélectionner un effet général pour les entrées audio.
+
+\section{Lecture des projets de démo}
+
+\device est fourni avec des projets de démo intégrés que vous pouvez utiliser pour vous familiariser avec ses fonctionnalités.
+
+Pour charger un projet, appuyez sur la touche \kbd{Menu}, puis sur \kbd{A} pour accéder au sous-menu \pgbmenu{Projects}. Déplacez-vous vers la \kbd{Droite} pour sélectionner \pgbmenu{Load} et appuyez sur \kbd{A}. Une liste des projets enregistrés sur l'appareil s'affiche. Utilisez les touches \kbd{Haut} et \kbd{Bas} pour sélectionner un projet, puis appuyez de nouveau sur \kbd{A}.
+Vous devrez ensuite confirmer l'action, car le chargement d'un projet effacera les motifs, les pas, les pistes et les paramètres du morceau en cours.
+
+Une fois le projet chargé, appuyez sur la touche \kbd{Play} pour démarrer le séquenceur.
+
+La plupart des projets de démo contiennent plusieurs “parties de morceau”, c'est-à-dire des sections d'un morceau avec différents motifs, accords ou instruments activés (intro, refrain, break, outro, etc.).
+
+Pour changer de partie, appuyez sur la touche \kbd{Song} pour passer en mode \pgbmode{Song}, puis sur la touche \kbd{2} pour ajouter la deuxième partie à la file d'attente. Le séquenceur attendra la fin de la partie en cours avant de passer à la suivante, ce qui peut prendre un certain temps avant que la nouvelle partie ne démarre.
+
+Familiarisez-vous avec chaque partie et interprétez votre propre version du morceau. Vous pouvez également passer en mode \pgbmode{Track} et ajuster les paramètres des synthétiseurs.
+
+\hfill
+
+Remerciements pour les projets de démo:
+\begin{itemize}
+    \item "Lost1" (Lost one) par AA Battery Music (\url{youtube.com/aabattery}, @aabatterymusic on Instagram)
+    \item "Noxis" en collaboration avec Technoval (\url{soundcloud.com/technoval})
+    \item "Dark (\#1)" basé sur le tutoriel dark trap de BroBeatzTV (\url{youtube.com/BroBeatzTV})
+    \item "Echo (\#2)" basé sur le tutoriel downtempo d’Alice Efe (\url{youtube.com/@Alice-Efe})
+\end{itemize}
+
+\section{Modes principaux}
+
+L’interface de \device peut fonctionner selon 4 modes principaux qui affectent les informations affichées à l’écran, les LED du clavier et la fonction des boutons.
+Les modes principaux sont: \pgbmode{Track} Mode, \pgbmode{Step} Mode, \pgbmode{Pattern} Mode, \pgbmode{Song} Mode.
+
+Pour accéder à l'un des modes principaux, appuyez brièvement sur les boutons de mode (\kbd{Track}, \kbd{Step}, \kbd{Pattern}, \kbd{Song}). La LED correspondante s'allume et l'écran affiche les paramètres du mode sélectionné.
+
+\begin{notes}
+    \item Un cinquième mode est disponible : le mode Sample. Ce mode permet de créer et de modifier des samples directement sur l'appareil. Pour y accéder, maintenez le bouton \kbd{Cpy/FX} enfoncez et appuyer sur \kbd{Edit}.
+\end{notes}
+
+\subsection{\pgbmode{Track} Mode (Pistes)}
+
+Le mode \pgbmode{Track} permet de configurer l'une des 16 pistes de l'appareil. Par défaut, les pistes 1 à 6 sont des pistes de synthétiseurs (Kick, Snare, HiHat, basse, lead, accords), les pistes 7 et 8 sont des pistes de sampler, les pistes 9 à 11 sont des pistes d'effets audio et les pistes 12 à 16 sont des pistes MIDI. Notez que toutes les pistes peuvent être configurées en mode MIDI et ainsi contrôler des périphériques externes.
+
+En mode \pgbmode{Track}, appuyer sur l’une des touches \kbd{1} à \kbd{16} permet de sélectionner la piste correspondante et de déclencher un aperçu. Le nom de la piste sélectionnée s'affiche en haut à gauche de l'écran.
+
+\begin{center}
+    \scalebox{0.7}{
+    \begin{tikzpicture}
+        [spy using outlines={circle, magnification=3, connect spies},
+        image/.style = {scale=0.6,},
+        ]
+
+        \node[image] (A) {\OLEDscreenshot{../assets/OLED-screenshots/PGB1-OLED-track-LFO.png}};
+
+        \spy [black, size=2cm] on (-1.10,0.6) in node [left] at (-2.1,0.0);
+    \end{tikzpicture}
+    }
+\end{center}
+
+Pour sélectionner une piste sans declancher d'aperçu, maintenez le bouton \kbd{Track} enfoncez puis appuyez sur l’un des boutons \kbd{1} à \kbd{16}. Notez que vous pouvez utiliser la même méthode pour changer de piste depuis l'un des autres modes principaux sans passer en mode \pgbmode{Track}.
+
+À l'écran, le menu des paramètres de piste vous permet de configurer la piste sélectionnée (moteur de synthèse, paramètres de synthèse, LFO, volume, shuffle, arpégiateur, etc.).
+
+\subsection{\pgbmode{Step} Mode (Pas)}
+
+Le mode \pgbmode{Step} vous permet de configurer chacune des 16 pas du motif sélectionné de la piste sélectionnée.
+
+En mode \pgbmode{Step} appuyer sur l'un des boutons \kbd{1} à \kbd{16} électionnera le pas correspondante et le déclenchera simultanément. Les numéros du motif et pas sélectionnés s'affichent en haut à droite de l'écran.
+
+\begin{center}
+    \scalebox{0.7}{
+    \begin{tikzpicture}
+        [spy using outlines={circle, magnification=3, connect spies},
+        image/.style = {scale=0.6,},
+        ]
+
+        \node[image] (A) {\OLEDscreenshot{../assets/OLED-screenshots/PGB1-OLED-track-LFO.png}};
+
+        \spy [black, size=2.4cm] on (0.7,0.6) in node [left] at (4.0,0.0);
+    \end{tikzpicture}
+    }
+\end{center}
+
+
+Pour sélectionner un pas sans le déclencher, maintenez la touche \kbd{Step} enfoncée, puis appuyez sur l'une des touches \kbd{1} à \kbd{16}. Notez que vous pouvez utiliser la même méthode pour changer le pas sélectionnée depuis l'un des autres modes principaux sans passer en mode \pgbmode{Step} mode.
+
+À l'écran, le menu des paramètres de pas vous permet de configurer le pas sélectionné (condition de déclenchement, note, durée, vélocité, répétitions, etc.).
+
+\subsection{\pgbmode{Pattern} Mode (Motifs)}
+
+Le mode \pgbmode{Pattern} vous permet de configurer chacun des 16 motifs de la piste sélectionnée.
+
+En mode \pgbmode{Pattern}, appuyer sur l'une des touches \kbd{1} à \kbd{16} sélectionne le motif correspondant. Le numéro du motif sélectionné s'affiche en haut à droite de l'écran. Pour changer le motif sélectionné depuis un autre mode principal sans passer en mode \pgbmode{Pattern}, maintenez la touche \kbd{Pattern} enfoncée, puis appuyez sur l'une des touches \kbd{1} à \kbd{16}.
+
+\begin{important}
+    La sélection d'un motif ne le lance pas automatiquement.
+    Le motif joué pour chaque piste est déterminé en mode \pgbmode{Song} mode.
+\end{important}
+
+À l'écran, le menu des paramètres de motif permet de configurer le motif sélectionné (longueur et enchaînement).
+
+Lorsque deux motifs sont enchaînés, le second se lance automatiquement à la fin du premier. Grâce à cette fonction et à la configuration de la longueur, il est possible de créer des motifs de 1 à 256 pas (tous les motifs enchaînés : 16 × 16).
+
+Une visualisation des motifs enchaînés s'affiche à l'écran.
+Des LED cyan indiquent également tous les motifs enchaînés au motif sélectionné (bleu).
+
+\begin{center}
+    \scalebox{0.7}{
+    \begin{tikzpicture}
+        [spy using outlines={circle, magnification=3, connect spies},
+        image/.style = {scale=0.6,},
+        ]
+
+        \node[image] (A) {\OLEDscreenshot{../assets/OLED-screenshots/PGB1-OLED-pattern-link.png}};
+
+        \spy [black, size=2cm] on (-0.1,0.1) in node [left] at (4.0,0.0);
+    \end{tikzpicture}
+    }
+\end{center}
+
+\subsection{\pgbmode{Song} Mode (Morceau)}
+
+Le mode \pgbmode{Song} se distingue des autres modes par sa gestion de deux éléments : les parties du morceau et les progressions d'accords..
+
+En mode \pgbmode{Song}, appuyer sur l'une des touches \kbd{1} à \kbd{12} permet de sélectionner et d'ajouter à la file d'attente la partie du morceau correspondantes. Pour sélectionner une partie sans l'ajouter à la file d'attente, maintenez la touche \kbd{Song} enfoncée, puis appuyez sur l'une des touches \kbd{1} à \kbd{12}.
+
+À l'écran, le menu de configuration des parties du morceau permet de paramétrer la partie sélectionnée, et notamment, pour chaque piste, quel motif jouer.
+Chacune des 16 cases de la grille correspond à une piste, comme les 16 touches du mode \pgbmode{Track}. Le chiffre dans la case détermine le motif à jouer pour la piste concernée.
+Une case vide coupe le son de la piste (aucun motif n'est joué).
+
+\begin{center}
+    \scalebox{0.7}{
+    \begin{tikzpicture}
+        [spy using outlines={circle, magnification=3, connect spies},
+        image/.style = {scale=0.6,},
+        ]
+
+        \node[image] (A) {\OLEDscreenshot{../assets/OLED-screenshots/PGB1-OLED-song.png}};
+
+        \spy [black, size=2.5cm] on (0.2,0.2) in node [left] at (4.0,0.0);
+    \end{tikzpicture}
+    }
+\end{center}
+
+Utilisez les touches \kbd{A} et \kbd{B}, pour accéder aux paramètres en bas de l'écran : longueur de la partie, progression d'accords sélectionnée et liaison de la partie.
+
+\hfill
+
+Appuyez sur les touches \kbd{13} à \kbd{16} pour sélectionner la progression d'accords correspondante. À l'écran, le menu  de configuration des accords vous permet de programmer une progression d'accords en spécifiant la note fondamentale, la qualité et la durée des accords. Sur la dernière page des paramètres d'accords, vous pouvez également générer une progression d'accords aléatoire.
+
+\section{Effets Live}
+
+\device propose 16 effets live activables à tout moment pendant la lecture. Ils sont répartis en deux catégories : effets de séquençage et effets de mixage.
+
+Pour activer ou désactiver un effet, maintenez la touche \kbd{Cpy/FX} enfoncée et appuyez sur l'une des touches \kbd{1} à \kbd{16}.
+
+Les effets de séquençage se trouvent à gauche du clavier, dans les emplacements \kbd{1} à \kbd{4} et \kbd{9} à \kbd{12}.
+Les effets de mixage se trouvent à droite du clavier, dans les emplacements \kbd{5} à \kbd{8} et \kbd{9} à \kbd{12}.
+
+\begin{multicols}{2}
+    Effets de séquençage :
+    \begin{itemize}
+    \item[\kbd{1}] Roll 16th
+    \item[\kbd{2}] Roll 8th
+    \item[\kbd{3}] Roll Quarter
+    \item[\kbd{4}] Roll Beat
+    \item[\kbd{9}] Fill Steps
+    \item[\kbd{10}] Auto-fill Faible Probabilité
+    \item[\kbd{11}] Auto-fill Haute Probabilité
+    \item[\kbd{12}] Auto-fill Build-up
+    \end{itemize}
+
+    \columnbreak
+
+    Effets de mixage :
+    \begin{itemize}
+    \item[\kbd{5}] Filtre Passe-Nas
+    \item[\kbd{6}] Filtre Passe-Nande
+    \item[\kbd{7}] Filtre Passe-Haut
+    \item[\kbd{8}] Stutter 1
+    \item[\kbd{13}] Balayage du Filtre Passe-Bas
+    \item[\kbd{14}] Balayage du Filtre Passe-Bande
+    \item[\kbd{15}] Balayage du Filtre Passe-Haut
+    \item[\kbd{16}] Stutter 2
+    \end{itemize}
+\end{multicols}
+
+Un seul effet de la même catégorie peut être activé à la fois (Filtre, Fill, Stutter, Roll) ; leur activation s'annule mutuellement.
+
+\section{Créer votre premier projet}
+
+Cette section explique comment créer un groove simple sur le \device:
+\begin{itemize}
+   \item Démarrer un nouveau projet : appuyez sur \kbd{Menu} puis $\rightarrow$ Projects $\rightarrow$ Nouveau
+   \item Passer en mode \pgbmode{Track} : appuyez sur \kbd{Track}
+   \item Sélectionner la piste de Kick : appuyez sur \kbd{1}
+   \item Activer l'édition de motif : appuyez sur \kbd{Edit}
+   \item Activer les pas : appuyez sur \kbd{1}, \kbd{5}, \kbd{9}, et \kbd{13}
+   \item Passer à la piste de Snare : maintenez \kbd{Track} enfoncez et appuyez kbd{2}
+   \item Activer les pas : appuyez sur \kbd{5}, et \kbd{13}
+   \item Passer à la piste de HiHat : maintenez \kbd{Track} enfoncé et appuyez sur \kbd{3}
+   \item Activer les pas : appuyez sur \kbd{3}, \kbd{5}, \kbd{7}, \kbd{8}, \kbd{11}, \kbd{15}, et \kbd{16}
+   \item Passer en mode \pgbmode{Step}: appuyez sur \kbd{Step}
+   \item Sélectionner le pas 1: appuyez sur \kbd{1}
+   \item Modifier la "Condition" à "75\%": appuyez plusieurs fois sur \kbd{Haut} 
+   \item Accéder aux paramètres de "Velocity" appuyez trois fois sur \kbd{Droite}
+   \item Utiliser la bande tactile pour réduire la vélocité d’environ un tiers
+   \item Copier-coller le pas 1 : maintenir \kbd{Cpy/FX} enfoncé, puis appuyer successivement sur \kbd{Step}, \kbd{1}, \kbd{2}, \kbd{5}, \kbd{6}, \kbd{9}, \kbd{10}, \kbd{13}, \kbd{14}
+   \item Passer en mode \pgbmode{Track}: appuyez sur \kbd{Track}
+   \item Régler le shuffle du HiHat : appuyez plusieurs fois sur \kbd{Droite} jusqu'à atteindre la page "Shuffle" , puis appuyez sur \kbd{Haut} pour augmenter la valeur (selon vos préférences)..
+   \item Appuyer sur \kbd{Play}.
+\end{itemize}
+
+\section{Copier et Coller}
+
+Quatre éléments peuvent être copiés et collés sur l'appareil : les parties de morceau, les pistes, les motifs et les pas.
+Copier des pistes signifie copier tous les motifs d'une piste vers une autre, à l'exception des paramètres de piste.
+Copier des motifs signifie copier tous les pas d'un motif vers un autre, y compris les paramètres de motif.
+
+Pour copier/coller, maintenez le bouton \kbd{Cpy/FX}, enfoncé pendant toute la procédure.
+Sélectionnez ensuite le type d'élément à copier en appuyant sur l'un des boutons \kbd{Step}, \kbd{Pattern}, \kbd{Track}, or \kbd{Song}.
+
+L'écran affichera alors le type d'élément à copier, ainsi que deux "adresses": "From" et "To". Chaque adresse comporte entre un et trois identifiants : un pour les parties de morceau, et pistes, 2 pour les motifs (Track and Pattern), 3 pour les pas (Track, Pattern, and Step).
+
+\begin{center}
+    \scalebox{0.5}{\OLEDscreenshot{../assets/OLED-screenshots/PGB1-OLED-copy-track.png}}
+    \scalebox{0.5}{\OLEDscreenshot{../assets/OLED-screenshots/PGB1-OLED-copy-pattern.png}}
+    \scalebox{0.5}{\OLEDscreenshot{../assets/OLED-screenshots/PGB1-OLED-copy-step.png}}
+\end{center}
+
+
+Dans le champ "From", deux points d’interrogation clignotants indiquent l’identifiant à saisir. Appuyez sur une touche de \kbd{1} à \kbd{16} pour le définir. C’est ce qui sera copié. 
+Dans le champ "To", deux points d'interrogation clignotants apparaissent. Appuyez sur une touche de  \kbd{1} à \kbd{16} pour sélectionner la destination de la copie. Le copier-coller s'effectue immédiatement et les points d'interrogation clignotants dans le champ "To" indiquent que vous pouvez coller le même élément vers une autre destination.
+
+Les adresses de motifs et de pas possèdent plusieurs identifiants, les identifiants de la piste et du motif sont automatiquement définis sur la piste et le motif actuel.
+Pour modifier ces valeurs, appuyez sur \kbd{Track}, ou \kbd{Pattern} après avoir sélectionné le type de copie. 
+Par exemple, la séquence suivante copiera le pas 2 du motif 5 de la piste 7 au pas 9 du motif 3 de la piste 1.
+
+
+\kbd{Cpy/FX} $\rightarrow$ \kbd{Step}, \kbd{Track}, \kbd{5}, \kbd{7}, \kbd{2}, \kbd{Track}, \kbd{7}, \kbd{3}, \kbd{9}
+
+\section{Raccourcis}
+
+\begin{itemize}
+    \item[] Augmenter le volume \dotfill Maintenez la touche \kbd{Play} + Appuyez sur \kbd{Haut}
+    \item[] Diminuer le volume \dotfill Maintenez la touche \kbd{Play} + Appuyez sur \kbd{Bas}
+    \item[] Augmenter le BPM \dotfill Maintenez la touche \kbd{Play} + Appuyez sur \kbd{Droite}
+    \item[] Diminuer le BPM \dotfill Maintenez la touche \kbd{Play} + Appuyez sur \kbd{Gauche}
+    \item[] Couper le son d'une piste \dotfill Maintenez la touche \kbd{Play} + Appuyez sur \kbd{1} à \kbd{16}
+    \item[] Solo d'une piste \dotfill Maintenez la touche \kbd{Play} + Appuyez sur \kbd{Track}, Appuyer sur \kbd{1} à \kbd{16}
+    \item[] Activer le mode sampler \dotfill Maintenez \kbd{Cpy/FX} + Appuyez sur \kbd{Edit}
+    \item[] Clavier Piano \dotfill Maintenez \kbd{Edit}
+\end{itemize}
+
+\section{Conseils et astuces}
+
+\begin{itemize}
+    \item En combinant les fonctions de longueur et de liaison des motifs, vous pouvez créer des séquences de 1 à 256 pas.
+
+    \item Utilisez le réglage de la vélocité des pas pour déclencher les synthétiseurs à différentes intensités. Par exemple, sur le HiHat pour créer un groove, ou sur la Snare pour simuler des "notes fantômes".
+
+    \item Pour créer des pas de HiHat ouvert, augmentez le paramètre de synthétiseur "Release" du pas concerné.
+\end{itemize}
+
+\section{Dépannage}
+
+\subsubsection{L’appareil ne s'éteint pas}
+
+Si l'appareil ne s'éteint pas lorsque l'interrupteur d'alimentation est en position \kbd{Off} cela signifie qu'il y a un dysfonctionnement logiciel irrécupérable.
+
+La seule solution est de suivre la \reflabel{procedures:reset}{Procédure de réinitialisation} ci-dessous.
+
+\subsection{Procedures}
+
+\subsubsection{Procédure de réinitialisation}
+\label{procedures:reset}
+
+\begin{important}
+Les modifications apportées au projet en cours, le cas échéant, ne seront pas enregistrées
+\end{important}
+
+Utilisez un trombone pour appuyer sur le bouton de réinitialisation (le trou le plus à gauche en bas à droite de la face avant).
+
+\subsubsection{Procédure de mise à jour forcée du firmware}
+\label{procedures:forced_firmware_update}
+
+Assurez-vous d'abord que l'appareil est éteint (interrupteur de mise en marche à droite et voyant d'état bleu cyan éteint). Si l'appareil ne s'éteint pas, suivez la \reflabel{procedures:reset}{Procédure de réinitialisation}.
+
+Connectez l'appareil à votre ordinateur à l'aide d'un câble USB de bonne qualité.
+
+Utilisez un trombone pour maintenir enfoncé le bouton de boot (le trou le plus à droite en bas à droite du panneau avant). Tout en maintenant le bouton de boot enfoncé, allumez l'appareil (interrupteur de mise en marche à gauche).
+
+L'appareil devrait apparaître comme un dique amovible nommé "RPI-RP2" sur votre ordinateur. Glissez-déposez le fichier du firmware UF2 sur le disque amovible "RPI-RP2". La mise à jour se lancera et l'appareil redémarrera automatiquement une fois terminée.
+
+\section{Garantie}
+
+Les appareils achetés directement auprès de \WNM bénéficient d'une garantie de six mois à compter de la date d'achat. Cette garantie peut être prolongée selon la réglementation locale.
+
+Cette garantie couvre tout défaut de fabrication de l'appareil. Elle ne couvre pas les dommages causés par une mauvaise utilisation, un stockage incorrect, une alimentation électrique inadaptée, une surtension ou des modifications.
+
+Veuillez utiliser le formulaire "Contact" de notre site web si vous rencontrez des problèmes avec votre appareil. Les appareils retournés sous garantie seront remboursés, remplacés ou réparés à notre discrétion. Les données utilisateur peuvent ne pas être conservées. Les frais de retour de l'appareil à \WNM sont à votre charges.
+
+\section{Modding et Hacking}
+
+\device est open source et conçu pour être étendu et modifié par les utilisateurs. Cependant, toute modification matérielle ou installation de firmware tiers peut entraîner des dommages irréversibles. \WNM décline toute responsabilité en cas de tels dommages. Toute modification annulera la garantie et pourrait entraîner la perte du droit d'utilisation de l'équipement. Aucun remboursement, réparation ou remplacement ne sera effectué pour les produits modifiés.
+
+
+\end{multicols*}
+
+\end{document}
